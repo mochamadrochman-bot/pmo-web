@@ -10,6 +10,7 @@ const { renderPage } = require('./render');
 const { migrate } = require('./migrate');
 const authRoutes = require('./routes/auth');
 const projectRoutes = require('./routes/projects');
+const portalRoutes = require('./routes/portal');
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
@@ -61,15 +62,7 @@ app.post('/api/auth/logout', authRoutes.logout);
 // ---- butuh sesi
 app.get('/api/auth/me', requireUser, authRoutes.me);
 app.use('/api', projectRoutes);
-
-app.get('/', requireUser, async (req, res, next) => {
-  try {
-    const rows = await db.query('select id, name, status from projects order by name limit 50');
-    renderPage(res, 'pages/home', { title: 'Proyek', user: req.user, projects: rows.rows });
-  } catch (err) {
-    next(err);
-  }
-});
+app.use('/', portalRoutes);
 
 // ---- 404 dan penanganan galat
 app.use((req, res) => {
