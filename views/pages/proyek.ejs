@@ -1,0 +1,112 @@
+<style>
+  .balik { font-size: 12px; color: var(--teal); text-decoration: none; }
+  .judul { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+  .kpi { display: flex; gap: 28px; margin: 18px 0 8px; flex-wrap: wrap; }
+  .kpi div { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .kpi b { display: block; font-size: 24px; color: var(--navy); letter-spacing: -.4px; }
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-top: 16px; }
+  .panel h3 { margin: 0 0 12px; font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+  .legend { display: flex; gap: 18px; font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+  table.mini { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.mini th { text-align: left; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--line); padding: 6px 4px; }
+  table.mini td { padding: 6px 4px; border-bottom: 1px solid #f1f5f9; }
+  table.mini td.n { text-align: right; font-variant-numeric: tabular-nums; }
+  .neg { color: #b91c1c; }
+  .pos { color: #166534; }
+  .concern { font-size: 12.5px; line-height: 1.5; padding: 10px 0; border-top: 1px solid #f1f5f9; }
+  .concern:first-of-type { border-top: 0; }
+  .concern b { color: var(--navy); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; display: block; margin-bottom: 2px; }
+  .concern .mit { color: var(--muted); margin-top: 4px; }
+  .kosong { color: var(--muted); font-size: 12px; }
+</style>
+
+<a class="balik" href="/">&larr; Portal</a>
+
+<div class="judul">
+  <div>
+    <h1><%= project.name %></h1>
+    <p class="sub"><%= project.id %> &middot; week <%= kpi.week %> &middot;
+      <% if (!kpi.hasData) { %>belum ada data<% } else { %>data sampai week <%= kpi.latestWeek %><% } %>
+    </p>
+  </div>
+</div>
+
+<div class="kpi">
+  <div>Rencana<b><%= kpi.overall.plan === null ? '—' : kpi.overall.plan.toFixed(2) %></b></div>
+  <div>Realisasi<b><%= kpi.overall.actual === null ? '—' : kpi.overall.actual.toFixed(2) %></b></div>
+  <div>Deviasi<b class="<%= (kpi.overall.deviation || 0) < 0 ? 'neg' : 'pos' %>"><%= kpi.overall.deviation === null ? '—' : (kpi.overall.deviation >= 0 ? '+' : '') + kpi.overall.deviation.toFixed(2) %></b></div>
+  <div>Jumlah bobot<b><%= kpi.checks.bobotSum %></b></div>
+</div>
+
+<div class="panel">
+  <h3>Riwayat rencana dan realisasi</h3>
+  <div class="legend">
+    <span><i class="dot" style="background:#94a3b8"></i>Rencana</span>
+    <span><i class="dot" style="background:#0f766e"></i>Realisasi</span>
+  </div>
+  <svg viewBox="0 0 <%= chart.W %> <%= chart.H %>" width="100%" height="220" role="img" aria-label="Grafik rencana dan realisasi per minggu">
+    <% chart.grid.forEach(function (g) { %>
+      <line x1="<%= chart.P %>" y1="<%= g.y %>" x2="<%= chart.W - chart.P %>" y2="<%= g.y %>" stroke="#eef2f7" stroke-width="1" />
+      <text x="<%= chart.P - 6 %>" y="<%= Number(g.y) + 3 %>" font-size="9" fill="#94a3b8" text-anchor="end"><%= g.v %></text>
+    <% }); %>
+    <% chart.plan.forEach(function (pts) { %>
+      <polyline points="<%= pts %>" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4 3" />
+    <% }); %>
+    <% chart.actual.forEach(function (pts) { %>
+      <polyline points="<%= pts %>" fill="none" stroke="#0f766e" stroke-width="2.5" />
+    <% }); %>
+    <% chart.labels.forEach(function (l) { %>
+      <text x="<%= l.x %>" y="<%= chart.H - 12 %>" font-size="9" fill="#94a3b8" text-anchor="middle"><%= l.label %></text>
+    <% }); %>
+  </svg>
+</div>
+
+<div class="panel">
+  <h3>Progres per disiplin, week <%= kpi.week %></h3>
+  <table class="mini">
+    <thead>
+      <tr><th>Disiplin</th><th>Bobot</th><th>Rencana</th><th>Realisasi</th><th>Deviasi</th></tr>
+    </thead>
+    <tbody>
+      <% kpi.fields.forEach(function (f) { %>
+        <tr>
+          <td><%= f.name.charAt(0) + f.name.slice(1).toLowerCase() %></td>
+          <td class="n"><%= f.bobot === null ? '—' : f.bobot.toFixed(0) + '%' %></td>
+          <td class="n"><%= f.plan === null ? '—' : f.plan.toFixed(2) %></td>
+          <td class="n"><%= f.actual === null ? '—' : f.actual.toFixed(2) %></td>
+          <td class="n <%= (f.deviation || 0) < 0 ? 'neg' : 'pos' %>"><%= f.deviation === null ? '—' : (f.deviation >= 0 ? '+' : '') + f.deviation.toFixed(2) %></td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
+
+<% if (highlight) { %>
+  <div class="panel">
+    <h3>Highlight kegiatan</h3>
+    <div class="concern"><%= highlight %></div>
+  </div>
+<% } %>
+
+<div class="panel">
+  <h3>Concern dan mitigasi</h3>
+  <% if (!concerns.length) { %>
+    <div class="kosong">Tidak ada concern yang dicatat pada week ini.</div>
+  <% } else { %>
+    <% concerns.forEach(function (c) { %>
+      <div class="concern">
+        <b><%= c.field.charAt(0) + c.field.slice(1).toLowerCase() %></b>
+        <%= c.concern || '—' %>
+        <% if (c.mitigation) { %><div class="mit">Mitigasi: <%= c.mitigation %></div><% } %>
+      </div>
+    <% }); %>
+  <% } %>
+</div>
+
+<% if (issueK3) { %>
+  <div class="panel">
+    <h3>Catatan K3</h3>
+    <div class="concern"><%= issueK3 %></div>
+  </div>
+<% } %>

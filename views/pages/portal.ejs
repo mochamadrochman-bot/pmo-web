@@ -36,7 +36,7 @@
         Belum ada data mingguan untuk proyek ini.
       </div>
     <% } else { %>
-      <div class="kartu">
+      <a class="kartu" href="/proyek/<%= c.id %>" style="text-decoration:none;color:inherit;display:block">
         <h2><%= c.name %></h2>
         <div class="meta"><%= c.id %> · week <%= c.week %></div>
 
@@ -60,7 +60,7 @@
             </div>
           <% }); %>
         </div>
-      </div>
+      </a>
     <% } %>
   <% }); %>
 </div>

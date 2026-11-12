@@ -60,6 +60,25 @@ create table if not exists progress (
 
 create index if not exists progress_week_idx on progress(project_id, week_no);
 
+-- Nilai mingguan apa adanya dari spreadsheet (hasil transformasi EAV).
+-- Nilainya masih berupa teks terformat: "10%", "0.00%", atau catatan bebas.
+create table if not exists project_items (
+  id          bigserial primary key,
+  project_id  text not null references projects(id) on delete cascade,
+  item_key    text not null,
+  unique (project_id, item_key)
+);
+
+create table if not exists weekly_values (
+  project_id  text not null references projects(id) on delete cascade,
+  item_key    text not null,
+  week_no     smallint not null check (week_no between 0 and 200),
+  value_text  text not null,
+  primary key (project_id, item_key, week_no)
+);
+
+create index if not exists weekly_values_week_idx on weekly_values(project_id, week_no);
+
 create table if not exists audit_log (
   id          bigserial primary key,
   at          timestamptz not null default now(),

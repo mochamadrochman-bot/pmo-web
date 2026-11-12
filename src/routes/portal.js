@@ -2,23 +2,72 @@
 
 const express = require('express');
 const db = require('../db');
-const { buildWeeklyKpi } = require('../lib/weekly');
+const { buildWeeklyKpi, FIELDS } = require('../lib/weekly');
 const { renderPage } = require('../render');
 const { requireUser } = require('../middleware/auth');
 
 const router = express.Router();
 
 /**
- * Portal: satu kartu per proyek dengan KPI minggu terakhir.
- *
- * Catatan: satu query per proyek. Untuk 7 proyek ini masih cepat, tetapi
- * nanti perlu diganti satu query agregat ketika jumlah proyek bertambah.
+ * Menyiapkan titik-titik grafik dari riwayat KPI.
+ * Segmen dipisah ketika nilainya null, supaya garis tidak menyambung
+ * melewati minggu yang belum punya data.
  */
+function buildChart(history) {
+  const W = 720;
+  const H = 220;
+  const P = 34;
+  const pts = history;
+  const n = pts.length;
+  const x = (i) => (n <= 1 ? P : P + (i * (W - 2 * P)) / (n - 1));
+  const y = (v) => H - P - (Math.max(0, Math.min(100, v)) / 100) * (H - 2 * P);
+
+  function segments(key) {
+    const out = [];
+    let cur = [];
+    pts.forEach(function (h, i) {
+      const v = h[key];
+      if (v === null || v === undefined) {
+        if (cur.length > 1) out.push(cur.join(' '));
+        cur = [];
+      } else {
+        cur.push(x(i).toFixed(1) + ',' + y(v).toFixed(1));
+      }
+    });
+    if (cur.length > 1) out.push(cur.join(' '));
+    return out;
+  }
+
+  const grid = [0, 25, 50, 75, 100].map((v) => ({ v: v, y: y(v).toFixed(1) }));
+  const labels = [];
+  const step = Math.max(1, Math.ceil(n / 8));
+  pts.forEach(function (h, i) {
+    if (i % step === 0 || i === n - 1) labels.push({ x: x(i).toFixed(1), label: h.week });
+  });
+
+  return {
+    W: W, H: H, P: P,
+    plan: segments('plan'),
+    actual: segments('actual'),
+    grid: grid,
+    labels: labels,
+  };
+}
+
+function textMap(rows) {
+  const map = new Map();
+  rows.forEach(function (r) {
+    map.set(r.item_key + '|' + r.week_no, String(r.value_text || '').trim());
+  });
+  return map;
+}
+
+// --- Portal ---------------------------------------------------------------
 router.get('/', requireUser, async (req, res, next) => {
   try {
     const projects = await db.query('select id, name from projects order by name');
-
     const cards = [];
+
     for (const p of projects.rows) {
       const values = await db.query(
         'select item_key, week_no, value_text from weekly_values where project_id = $1',
@@ -30,26 +79,65 @@ router.get('/', requireUser, async (req, res, next) => {
         name: p.name,
         week: kpi.week,
         hasData: kpi.hasData,
-        plan: kpi.overall.plan,
         actual: kpi.overall.actual,
         deviation: kpi.overall.deviation,
         fields: kpi.fields,
-        check: kpi.checks,
       });
     }
 
-    const total = cards.length;
     const aktif = cards.filter((c) => c.hasData).length;
     const rata = cards.filter((c) => c.actual !== null);
     const avg = rata.length
-      ? Math.round(rata.reduce((a, c) => a + c.actual, 0) / rata.length * 100) / 100
+      ? Math.round((rata.reduce((a, c) => a + c.actual, 0) / rata.length) * 100) / 100
       : null;
 
     renderPage(res, 'pages/portal', {
       title: 'Portal',
       user: req.user,
       cards: cards,
-      ringkasan: { total: total, aktif: aktif, rata: avg },
+      ringkasan: { total: cards.length, aktif: aktif, rata: avg },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// --- Detail proyek --------------------------------------------------------
+router.get('/proyek/:id', requireUser, async (req, res, next) => {
+  try {
+    const projectId = req.params.id;
+    const proj = await db.query('select id, name from projects where id = $1', [projectId]);
+    if (!proj.rows.length) {
+      res.status(404);
+      return renderPage(res, 'pages/error', { code: 404, message: 'Proyek tidak ditemukan.' });
+    }
+
+    const values = await db.query(
+      'select item_key, week_no, value_text from weekly_values where project_id = $1',
+      [projectId]
+    );
+
+    const week = req.query.week ? Number(req.query.week) : undefined;
+    const kpi = buildWeeklyKpi(values.rows, week ? { week: week } : {});
+    const texts = textMap(values.rows);
+
+    const concerns = FIELDS.map(function (f) {
+      return {
+        field: f,
+        concern: texts.get(f + '_CONCERN|' + kpi.week) || '',
+        mitigation: texts.get(f + '_MITIGASI|' + kpi.week) || '',
+      };
+    }).filter(function (c) { return c.concern || c.mitigation; });
+
+    renderPage(res, 'pages/proyek', {
+      title: proj.rows[0].name,
+      user: req.user,
+      project: proj.rows[0],
+      kpi: kpi,
+      chart: buildChart(kpi.history),
+      concerns: concerns,
+      highlight: texts.get('HIGHLIGHT_ACTIVITY|' + kpi.week) || '',
+      issueK3: texts.get('ISSUE_K3|' + kpi.week) || '',
     });
   } catch (err) {
     next(err);
