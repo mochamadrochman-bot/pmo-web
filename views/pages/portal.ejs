@@ -1,0 +1,66 @@
+<style>
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .kartu { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .kartu h2 { font-size: 14px; margin: 0 0 2px; color: var(--navy); line-height: 1.3; }
+  .meta { font-size: 11px; color: var(--muted); margin-bottom: 12px; }
+  .angka { display: flex; align-items: baseline; gap: 8px; }
+  .angka b { font-size: 26px; color: var(--ink); letter-spacing: -.5px; }
+  .delta { font-size: 12px; font-weight: 600; }
+  .naik { color: #166534; }
+  .turun { color: #b91c1c; }
+  .bar { height: 6px; background: #e8edf3; border-radius: 3px; overflow: hidden; margin: 6px 0 12px; }
+  .bar > span { display: block; height: 100%; background: var(--teal); }
+  .disiplin { font-size: 11px; color: var(--muted); }
+  .disiplin div { display: flex; justify-content: space-between; padding: 3px 0; border-top: 1px solid #f1f5f9; }
+  .disiplin b { color: var(--ink); font-weight: 600; }
+  .kosong { background: #fff; border: 1px dashed var(--line); border-radius: 12px; padding: 16px; color: var(--muted); font-size: 12px; }
+  .ringkas { display: flex; gap: 24px; margin: 0 0 18px; }
+  .ringkas div { font-size: 12px; color: var(--muted); }
+  .ringkas b { display: block; font-size: 20px; color: var(--navy); }
+</style>
+
+<h1>Portal Proyek</h1>
+<p class="sub">Angka diambil dari database, dihitung dengan rumus yang sama seperti aplikasi lama.</p>
+
+<div class="ringkas">
+  <div><b><%= ringkasan.total %></b>proyek</div>
+  <div><b><%= ringkasan.aktif %></b>punya data mingguan</div>
+  <div><b><%= ringkasan.rata === null ? '—' : ringkasan.rata %></b>rata-rata realisasi (%)</div>
+</div>
+
+<div class="grid">
+  <% cards.forEach(function (c) { %>
+    <% if (!c.hasData) { %>
+      <div class="kosong">
+        <b style="color:var(--navy)"><%= c.name %></b><br />
+        Belum ada data mingguan untuk proyek ini.
+      </div>
+    <% } else { %>
+      <div class="kartu">
+        <h2><%= c.name %></h2>
+        <div class="meta"><%= c.id %> · week <%= c.week %></div>
+
+        <div class="angka">
+          <b><%= c.actual === null ? '—' : c.actual.toFixed(2) %></b>
+          <span style="font-size:12px;color:var(--muted)">realisasi</span>
+          <% if (c.deviation !== null) { %>
+            <span class="delta <%= c.deviation >= 0 ? 'naik' : 'turun' %>">
+              <%= c.deviation >= 0 ? '+' : '' %><%= c.deviation.toFixed(2) %>
+            </span>
+          <% } %>
+        </div>
+
+        <div class="bar"><span style="width: <%= Math.max(0, Math.min(100, c.actual || 0)) %>%"></span></div>
+
+        <div class="disiplin">
+          <% c.fields.forEach(function (f) { %>
+            <div>
+              <span><%= f.name.charAt(0) + f.name.slice(1).toLowerCase() %></span>
+              <b><%= f.actual === null ? '—' : f.actual.toFixed(1) + '%' %></b>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+    <% } %>
+  <% }); %>
+</div>
