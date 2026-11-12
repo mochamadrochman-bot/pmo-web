@@ -1,0 +1,34 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pmo
+      POSTGRES_USER: pmo
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/10-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pmo -d pmo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgres://pmo:${POSTGRES_PASSWORD:-dev}@db:5432/pmo
+      SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-6}
+      LEGACY_PBKDF2_ITERATIONS: ${LEGACY_PBKDF2_ITERATIONS:-120000}
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:

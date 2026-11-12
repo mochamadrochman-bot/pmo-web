@@ -1,0 +1,23 @@
+{
+  "name": "pmo-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PMO Infrastructure Project Dashboard - Jalur B scaffold",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "db:init": "psql \"$DATABASE_URL\" -f db/schema.sql",
+    "check": "node --check src/server.js && node --check src/db.js && node --check src/session.js"
+  },
+  "dependencies": {
+    "@node-rs/argon2": "^2.0.2",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "pg": "^8.13.1"
+  }
+}

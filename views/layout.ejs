@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= typeof title !== 'undefined' ? title : 'PMO Dashboard' %></title>
+  <style>
+    :root {
+      --ink: #24313f;
+      --muted: #5b6773;
+      --line: #d5dbe3;
+      --navy: #16324f;
+      --teal: #0f766e;
+      --bg: #f7f9fb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--ink);
+      font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    header {
+      background: var(--navy); color: #fff; padding: 14px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    header b { font-weight: 600; letter-spacing: .2px; }
+    header form { margin: 0; }
+    header button {
+      background: transparent; color: #c8d6e2; border: 1px solid #3c5a78;
+      padding: 6px 12px; border-radius: 8px; cursor: pointer; font: inherit;
+    }
+    main { max-width: 960px; margin: 24px auto; padding: 0 20px; }
+    h1 { font-size: 20px; color: var(--navy); margin: 0 0 4px; }
+    p.sub { color: var(--muted); margin: 0 0 20px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+    th { background: #eef2f7; font-size: 13px; color: var(--navy); }
+    .empty { padding: 24px; background: #fff; color: var(--muted); }
+    .card {
+      background: #fff; border: 1px solid var(--line); border-radius: 12px;
+      padding: 22px; max-width: 420px; margin: 40px auto;
+    }
+    label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
+    input {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--line);
+      border-radius: 8px; font: inherit;
+    }
+    input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+    button.primary {
+      margin-top: 18px; width: 100%; padding: 11px; border: 0; border-radius: 8px;
+      background: var(--navy); color: #fff; font: inherit; font-weight: 600; cursor: pointer;
+    }
+    .err { color: #991b1b; font-size: 13px; margin-top: 12px; }
+    a { color: var(--teal); }
+  </style>
+</head>
+<body>
+  <header>
+    <b>PMO Dashboard</b>
+    <% if (typeof user !== 'undefined' && user) { %>
+      <form method="post" action="/api/auth/logout">
+        <span style="color:#9fb4c8;font-size:13px;margin-right:12px"><%= user.username %> · <%= user.role %></span>
+        <button type="submit">Keluar</button>
+      </form>
+    <% } %>
+  </header>
+  <main>
+    <%- body %>
+  </main>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<h1>Proyek</h1>
+<p class="sub">Halaman contoh. Ganti dengan Portal setelah B5.</p>
+
+<% if (!projects.length) { %>
+  <div class="empty">
+    Belum ada proyek. Impor data pada tahap B3, lalu muat ulang halaman ini.
+  </div>
+<% } else { %>
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Nama</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <% projects.forEach(function (p) { %>
+        <tr>
+          <td><%= p.id %></td>
+          <td><%= p.name %></td>
+          <td><%= p.status %></td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+<% } %>
