@@ -21,12 +21,19 @@
 
 <h1>Portal Proyek</h1>
 <p class="sub">Angka diambil dari database, dihitung dengan rumus yang sama seperti aplikasi lama.</p>
+<% if (user && user.role === 'kontraktor') { %>
+  <p class="sub">Akun kontraktor hanya melihat proyeknya sendiri. Modul EPCC Control akan tersedia di sini setelah dipindahkan.</p>
+<% } %>
 
 <div class="ringkas">
   <div><b><%= ringkasan.total %></b>proyek</div>
   <div><b><%= ringkasan.aktif %></b>punya data mingguan</div>
   <div><b><%= ringkasan.rata === null ? '—' : ringkasan.rata %></b>rata-rata realisasi (%)</div>
 </div>
+
+<% if (!cards.length) { %>
+  <div class="empty">Belum ada proyek yang bisa ditampilkan untuk akun ini. Hubungi Admin PMO.</div>
+<% } %>
 
 <div class="grid">
   <% cards.forEach(function (c) { %>
@@ -36,7 +43,8 @@
         Belum ada data mingguan untuk proyek ini.
       </div>
     <% } else { %>
-      <a class="kartu" href="/proyek/<%= c.id %>" style="text-decoration:none;color:inherit;display:block">
+      <% var tag = canOpenDashboard ? 'a' : 'div'; %>
+      <<%= tag %> class="kartu"<% if (canOpenDashboard) { %> href="/proyek/<%= c.id %>"<% } %> style="text-decoration:none;color:inherit;display:block">
         <h2><%= c.name %></h2>
         <div class="meta"><%= c.id %> · week <%= c.week %></div>
 
@@ -60,7 +68,7 @@
             </div>
           <% }); %>
         </div>
-      </a>
+      </<%= tag %>>
     <% } %>
   <% }); %>
 </div>

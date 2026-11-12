@@ -2,7 +2,8 @@
 
 const express = require('express');
 const db = require('../db');
-const { requireUser } = require('../middleware/auth');
+const { requireUser, forbidden } = require('../middleware/auth');
+const access = require('../lib/access');
 
 const router = express.Router();
 
@@ -21,7 +22,7 @@ router.get('/projects', requireUser, async (req, res, next) => {
         order by p.name`,
       [status]
     );
-    res.json({ ok: true, data: rows.rows });
+    res.json({ ok: true, data: access.visibleProjects(req.user, rows.rows) });
   } catch (err) {
     next(err);
   }
@@ -31,6 +32,7 @@ router.get('/projects', requireUser, async (req, res, next) => {
 router.get('/projects/:id', requireUser, async (req, res, next) => {
   try {
     const { id } = req.params;
+    if (!access.canViewProject(req.user, id)) return forbidden(req, res);
     const project = await db.query('select * from projects where id = $1', [id]);
     if (!project.rows.length) {
       return res.status(404).json({ ok: false, error: 'Proyek tidak ditemukan.' });

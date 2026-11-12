@@ -4,7 +4,8 @@ const express = require('express');
 const db = require('../db');
 const { buildWeeklyKpi, FIELDS } = require('../lib/weekly');
 const { renderPage } = require('../render');
-const { requireUser } = require('../middleware/auth');
+const { requireUser, requireModule, forbidden } = require('../middleware/auth');
+const access = require('../lib/access');
 
 const router = express.Router();
 
@@ -65,7 +66,8 @@ function textMap(rows) {
 // --- Portal ---------------------------------------------------------------
 router.get('/', requireUser, async (req, res, next) => {
   try {
-    const projects = await db.query('select id, name from projects order by name');
+    const all = await db.query('select id, name from projects order by name');
+    const projects = { rows: access.visibleProjects(req.user, all.rows) };
     const cards = [];
 
     for (const p of projects.rows) {
@@ -95,6 +97,7 @@ router.get('/', requireUser, async (req, res, next) => {
       title: 'Portal',
       user: req.user,
       cards: cards,
+      canOpenDashboard: access.canUseModule(req.user, 'dashboard'),
       ringkasan: { total: cards.length, aktif: aktif, rata: avg },
     });
   } catch (err) {
@@ -103,9 +106,10 @@ router.get('/', requireUser, async (req, res, next) => {
 });
 
 // --- Detail proyek --------------------------------------------------------
-router.get('/proyek/:id', requireUser, async (req, res, next) => {
+router.get('/proyek/:id', requireModule('dashboard'), async (req, res, next) => {
   try {
     const projectId = req.params.id;
+    if (!access.canViewProject(req.user, projectId)) return forbidden(req, res);
     const proj = await db.query('select id, name from projects where id = $1', [projectId]);
     if (!proj.rows.length) {
       res.status(404);

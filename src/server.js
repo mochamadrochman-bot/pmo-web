@@ -5,17 +5,22 @@ const express = require('express');
 const helmet = require('helmet');
 
 const db = require('./db');
-const { attachUser, requireUser } = require('./middleware/auth');
+const {
+  attachUser, requireUser, mustChangePasswordGate, sameOrigin, loginRateLimit,
+} = require('./middleware/auth');
 const { renderPage } = require('./render');
 const { migrate } = require('./migrate');
 const authRoutes = require('./routes/auth');
 const projectRoutes = require('./routes/projects');
 const portalRoutes = require('./routes/portal');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 
 app.disable('x-powered-by');
+// Aplikasi berada di belakang Traefik (Coolify): ambil IP pengunjung dari X-Forwarded-For.
+app.set('trust proxy', Number(process.env.TRUST_PROXY_HOPS || 1));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 
@@ -39,7 +44,9 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(sameOrigin);
 app.use(attachUser);
+app.use(mustChangePasswordGate);
 
 // ---- publik
 app.get('/health', async (req, res) => {
@@ -56,11 +63,18 @@ app.get('/login', (req, res) => {
   renderPage(res, 'pages/login', { title: 'Masuk', error: null });
 });
 
-app.post('/api/auth/login', authRoutes.login);
+app.post('/api/auth/login', loginRateLimit, authRoutes.login);
 app.post('/api/auth/logout', authRoutes.logout);
 
 // ---- butuh sesi
 app.get('/api/auth/me', requireUser, authRoutes.me);
+app.post('/api/auth/password', requireUser, authRoutes.changePassword);
+app.get('/akun/password', requireUser, (req, res) => {
+  renderPage(res, 'pages/akun-password', {
+    title: 'Ganti Password', user: req.user, minLength: authRoutes.MIN_PASSWORD,
+  });
+});
+app.use('/', adminRoutes);
 app.use('/api', projectRoutes);
 app.use('/', portalRoutes);
 
@@ -70,7 +84,7 @@ app.use((req, res) => {
     return res.status(404).json({ ok: false, error: 'Rute tidak dikenal.' });
   }
   res.status(404);
-  renderPage(res, 'pages/error', { code: 404, message: 'Halaman tidak ditemukan.' });
+  renderPage(res, 'pages/error', { code: 404, message: 'Halaman tidak ditemukan.', user: req.user });
 });
 
 app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars

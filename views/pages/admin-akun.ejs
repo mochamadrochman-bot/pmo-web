@@ -1,0 +1,313 @@
+<style>
+  .wrap { max-width: 1100px; }
+  .bar-atas { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: #fff; color: var(--navy); font: inherit; font-size: 14px; cursor: pointer; }
+  .btn.utama { background: var(--navy); color: #fff; border-color: var(--navy); font-weight: 600; }
+  .btn.kecil { padding: 4px 10px; font-size: 13px; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+  table.akun td, table.akun th { font-size: 13px; vertical-align: top; }
+  table.akun tr:hover td { background: #f8fafc; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .b-admin { background: #e0e7ff; color: #3730a3; }
+  .b-input { background: #dcfce7; color: #166534; }
+  .b-kontraktor { background: #fef3c7; color: #92400e; }
+  .b-viewer, .b-reviewer { background: #f1f5f9; color: #475569; }
+  .b-off { background: #fee2e2; color: #991b1b; }
+  .b-lock { background: #fde68a; color: #78350f; }
+  .b-temp { background: #e0f2fe; color: #075985; }
+  .muted { color: var(--muted); }
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin: 0 0 18px; }
+  .panel h2 { font-size: 16px; margin: 0 0 4px; color: var(--navy); }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0 16px; }
+  select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; background: #fff; }
+  .proyek-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 12px; margin-top: 6px; font-size: 13px; }
+  .proyek-list label { display: flex; gap: 8px; align-items: flex-start; margin: 0; color: var(--ink); font-size: 13px; }
+  .proyek-list input { width: auto; margin-top: 3px; }
+  .aksi { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .temp { margin-top: 12px; padding: 12px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; font-size: 14px; }
+  .temp code { font-size: 18px; letter-spacing: 1px; background: #fff; padding: 2px 8px; border-radius: 6px; border: 1px solid #bbf7d0; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  [hidden] { display: none !important; }
+  @media (max-width: 640px) {
+    .tbl-wrap { border: 0; overflow: visible; }
+    table.akun thead { display: none; }
+    table.akun, table.akun tbody, table.akun tr, table.akun td { display: block; width: 100%; }
+    table.akun tr { background: #fff; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; padding: 6px 4px; }
+    table.akun td { border: 0; padding: 4px 10px; display: flex; gap: 10px; }
+    table.akun td::before { content: attr(data-label); flex: 0 0 104px; color: var(--muted); font-size: 12px; }
+    table.akun td:last-child::before { content: none; }
+    table.akun td:last-child { justify-content: flex-end; }
+  }
+</style>
+
+<div class="wrap">
+  <div class="bar-atas">
+    <div>
+      <h1>Kelola Akun</h1>
+      <p class="sub" style="margin:0">Tambah akun, atur peran dan proyek, buka kunci, atau reset password.</p>
+    </div>
+    <button class="btn utama" id="btnTambah" type="button">Tambah akun</button>
+  </div>
+
+  <div class="panel" id="panel" hidden>
+    <h2 id="panelJudul">Tambah akun</h2>
+    <p class="sub" id="panelSub" style="margin:0 0 6px">Akun baru wajib mengganti password saat login pertama.</p>
+    <form id="formAkun">
+      <div class="grid2">
+        <div>
+          <label for="fUsername">Username</label>
+          <input id="fUsername" autocomplete="off" />
+        </div>
+        <div>
+          <label for="fNama">Nama lengkap</label>
+          <input id="fNama" autocomplete="off" />
+        </div>
+        <div>
+          <label for="fPeran">Peran</label>
+          <select id="fPeran">
+            <% roles.forEach(function (r) { %><option value="<%= r.id %>"><%= r.label %></option><% }); %>
+          </select>
+          <div class="hint" id="peranHint"></div>
+        </div>
+        <div id="statusWrap" hidden>
+          <label for="fStatus">Status</label>
+          <select id="fStatus">
+            <option value="aktif">Aktif</option>
+            <option value="nonaktif">Nonaktif (tidak bisa login)</option>
+          </select>
+        </div>
+      </div>
+
+      <label id="proyekLabel">Proyek</label>
+      <div class="hint" id="proyekHint"></div>
+      <div class="proyek-list">
+        <label><input type="checkbox" value="*" id="cbAll" /> <b>Semua proyek</b></label>
+        <% projects.forEach(function (p) { %>
+          <label><input type="checkbox" class="cbProyek" value="<%= p.id %>" /> <span><%= p.name %> <span class="muted">(<%= p.id %>)</span></span></label>
+        <% }); %>
+      </div>
+
+      <div class="aksi">
+        <button class="btn utama" type="submit" id="btnSimpan">Simpan</button>
+        <button class="btn" type="button" id="btnReset" hidden>Reset password</button>
+        <button class="btn" type="button" id="btnUnlock" hidden>Buka kunci</button>
+        <button class="btn" type="button" id="btnBatal">Batal</button>
+      </div>
+      <div class="err" id="formErr" role="alert"></div>
+      <div class="temp" id="tempBox" hidden></div>
+    </form>
+  </div>
+
+  <div class="tbl-wrap">
+    <table class="akun">
+      <thead>
+        <tr><th>Username</th><th>Nama</th><th>Peran</th><th>Proyek</th><th>Status</th><th>Login terakhir</th><th></th></tr>
+      </thead>
+      <tbody id="rows"><tr><td colspan="7" class="muted">Memuat…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+(function () {
+  var ME = <%- JSON.stringify(user.id).replace(/</g, '\\u003c') %>;
+  var PROJECT_NAMES = <%- JSON.stringify(projects.reduce(function (m, p) { m[p.id] = p.name; return m; }, {})).replace(/</g, '\\u003c') %>;
+  var ROLE_LABEL = <%- JSON.stringify(roles.reduce(function (m, r) { m[r.id] = r.label; return m; }, { reviewer: 'Reviewer' })).replace(/</g, '\\u003c') %>;
+  var HINT = {
+    admin: 'Melihat dan mengedit semua proyek, serta mengelola akun.',
+    input: 'Melihat semua proyek, mengedit hanya proyek yang dicentang.',
+    kontraktor: 'Hanya melihat proyek yang dicentang, hanya modul EPCC Control.',
+    viewer: 'Melihat semua proyek, tidak bisa mengedit.'
+  };
+  var PROYEK_HINT = {
+    admin: 'Admin selalu bisa mengakses semua proyek; centang tidak berpengaruh.',
+    input: 'Proyek yang boleh diedit.',
+    kontraktor: 'Proyek yang boleh dilihat dan diisi EPCC-nya (wajib minimal satu).',
+    viewer: 'Viewer melihat semua proyek; centang tidak berpengaruh.'
+  };
+
+  var users = [];
+  var editing = null;
+  var $ = function (id) { return document.getElementById(id); };
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function fmtDate(v) {
+    if (!v) return '<span class="muted">belum pernah</span>';
+    var d = new Date(v);
+    return esc(d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' +
+      d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }));
+  }
+  function projText(ids) {
+    if (!ids || !ids.length) return '<span class="muted">—</span>';
+    if (ids.indexOf('*') >= 0) return 'Semua proyek';
+    return ids.map(function (id) { return esc(PROJECT_NAMES[id] || id); }).join('<br>');
+  }
+
+  async function api(method, url, body) {
+    var res = await fetch(url, {
+      method: method,
+      headers: body ? { 'content-type': 'application/json' } : {},
+      body: body ? JSON.stringify(body) : undefined
+    });
+    var json = await res.json().catch(function () { return { ok: false, error: 'Jawaban server tidak terbaca.' }; });
+    if (!json.ok) throw new Error(json.error || 'Gagal.');
+    return json.data;
+  }
+
+  async function load() {
+    try {
+      users = await api('GET', '/api/admin/users');
+      render();
+    } catch (e) {
+      $('rows').innerHTML = '<tr><td colspan="7" class="err">' + esc(e.message) + '</td></tr>';
+    }
+  }
+
+  function render() {
+    if (!users.length) {
+      $('rows').innerHTML = '<tr><td colspan="7" class="muted">Belum ada akun.</td></tr>';
+      return;
+    }
+    $('rows').innerHTML = users.map(function (u) {
+      var st = u.status === 'aktif' ? '' : '<span class="badge b-off">Nonaktif</span> ';
+      if (u.locked) st += '<span class="badge b-lock">Terkunci</span> ';
+      if (u.must_change_password) st += '<span class="badge b-temp">Password sementara</span>';
+      if (!st) st = 'Aktif';
+      return '<tr>' +
+        '<td data-label="Username"><b>' + esc(u.username) + '</b>' + (u.id === ME ? ' <span class="muted">(Anda)</span>' : '') + '</td>' +
+        '<td data-label="Nama">' + esc(u.full_name) + '</td>' +
+        '<td data-label="Peran"><span class="badge b-' + esc(u.role) + '">' + esc(ROLE_LABEL[u.role] || u.role) + '</span></td>' +
+        '<td data-label="Proyek">' + projText(u.project_ids) + '</td>' +
+        '<td data-label="Status">' + st + '</td>' +
+        '<td data-label="Login terakhir">' + fmtDate(u.last_login_at) + '</td>' +
+        '<td><button class="btn kecil" type="button" data-edit="' + esc(u.id) + '">Ubah</button></td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  function setChecks(ids) {
+    ids = ids || [];
+    var all = ids.indexOf('*') >= 0;
+    $('cbAll').checked = all;
+    document.querySelectorAll('.cbProyek').forEach(function (cb) {
+      cb.checked = !all && ids.indexOf(cb.value) >= 0;
+      cb.disabled = all;
+    });
+  }
+  function getChecks() {
+    if ($('cbAll').checked) return ['*'];
+    return Array.prototype.filter.call(document.querySelectorAll('.cbProyek'), function (cb) { return cb.checked; })
+      .map(function (cb) { return cb.value; });
+  }
+  function updateHints() {
+    var r = $('fPeran').value;
+    $('peranHint').textContent = HINT[r] || '';
+    $('proyekHint').textContent = PROYEK_HINT[r] || '';
+    $('cbAll').parentElement.hidden = (r === 'kontraktor');
+    if (r === 'kontraktor' && $('cbAll').checked) setChecks([]);
+  }
+
+  function openPanel(u) {
+    editing = u || null;
+    $('formErr').textContent = '';
+    $('tempBox').hidden = true;
+    $('panel').hidden = false;
+    $('fUsername').value = u ? u.username : '';
+    $('fUsername').disabled = !!u;
+    $('fNama').value = u ? u.full_name : '';
+    $('fPeran').value = u ? u.role : 'viewer';
+    $('fStatus').value = u ? u.status : 'aktif';
+    $('statusWrap').hidden = !u;
+    var self = u && u.id === ME;
+    $('fPeran').disabled = !!self;
+    $('fStatus').disabled = !!self;
+    $('btnReset').hidden = !u;
+    $('btnUnlock').hidden = !(u && u.locked);
+    $('panelJudul').textContent = u ? 'Ubah akun ' + u.username : 'Tambah akun';
+    $('panelSub').textContent = u
+      ? (self ? 'Ini akun Anda sendiri: peran dan status tidak bisa diubah dari sini.' : 'Perubahan peran, status, atau proyek langsung mengeluarkan akun ini dari semua perangkat.')
+      : 'Password sementara dibuat otomatis. Akun baru wajib menggantinya saat login pertama.';
+    setChecks(u ? u.project_ids : []);
+    updateHints();
+    $('panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    (u ? $('fNama') : $('fUsername')).focus();
+  }
+
+  function showTemp(username, pw) {
+    $('tempBox').hidden = false;
+    $('tempBox').innerHTML = 'Password sementara untuk <b>' + esc(username) + '</b>: <code>' + esc(pw) + '</code>' +
+      '<div class="hint">Salin dan berikan langsung ke pemilik akun. Password ini tidak akan ditampilkan lagi.</div>';
+  }
+
+  $('btnTambah').addEventListener('click', function () { openPanel(null); });
+  $('btnBatal').addEventListener('click', function () { $('panel').hidden = true; editing = null; });
+  $('fPeran').addEventListener('change', updateHints);
+  $('cbAll').addEventListener('change', function () { setChecks(this.checked ? ['*'] : []); });
+  $('rows').addEventListener('click', function (e) {
+    var id = e.target.getAttribute('data-edit');
+    if (!id) return;
+    openPanel(users.find(function (u) { return u.id === id; }));
+  });
+
+  $('formAkun').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    $('formErr').textContent = '';
+    var btn = $('btnSimpan');
+    btn.disabled = true;
+    try {
+      if (editing) {
+        var body = { full_name: $('fNama').value, project_ids: getChecks() };
+        if (editing.id !== ME) { body.role = $('fPeran').value; body.status = $('fStatus').value; }
+        await api('PATCH', '/api/admin/users/' + encodeURIComponent(editing.id), body);
+        $('panel').hidden = true;
+        editing = null;
+      } else {
+        var username = $('fUsername').value.trim().toLowerCase();
+        var data = await api('POST', '/api/admin/users', {
+          username: username, full_name: $('fNama').value, role: $('fPeran').value, project_ids: getChecks()
+        });
+        if (data.tempPassword) showTemp(username, data.tempPassword);
+        $('fUsername').disabled = true;
+        editing = { id: data.id, username: username };
+      }
+      await load();
+    } catch (ex) {
+      $('formErr').textContent = ex.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  $('btnReset').addEventListener('click', async function () {
+    if (!editing) return;
+    if (!confirm('Reset password ' + editing.username + '? Akun ini akan keluar dari semua perangkat dan wajib mengganti password.')) return;
+    $('formErr').textContent = '';
+    try {
+      var data = await api('POST', '/api/admin/users/' + encodeURIComponent(editing.id) + '/reset-password');
+      showTemp(editing.username, data.tempPassword);
+      await load();
+    } catch (ex) {
+      $('formErr').textContent = ex.message;
+    }
+  });
+
+  $('btnUnlock').addEventListener('click', async function () {
+    if (!editing) return;
+    $('formErr').textContent = '';
+    try {
+      await api('PATCH', '/api/admin/users/' + encodeURIComponent(editing.id), { unlock: true });
+      $('btnUnlock').hidden = true;
+      await load();
+    } catch (ex) {
+      $('formErr').textContent = ex.message;
+    }
+  });
+
+  load();
+})();
+</script>

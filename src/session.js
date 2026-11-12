@@ -23,7 +23,8 @@ async function create(userId, userAgent) {
 async function read(token) {
   if (!token) return null;
   const res = await db.query(
-    `select s.token, s.expires_at, u.id, u.username, u.full_name, u.role
+    `select s.token, s.expires_at, u.id, u.username, u.full_name, u.role,
+            u.project_ids, u.must_change_password
        from sessions s
        join users u on u.id = s.user_id
       where s.token = $1 and s.expires_at > now() and u.status = 'aktif'`,
@@ -39,6 +40,11 @@ async function destroy(token) {
 
 async function destroyAllFor(userId) {
   await db.query('delete from sessions where user_id = $1', [userId]);
+}
+
+/** Hapus semua sesi lain milik user ini, sesi yang sedang dipakai tetap. */
+async function destroyOthers(userId, keepToken) {
+  await db.query('delete from sessions where user_id = $1 and token <> $2', [userId, keepToken]);
 }
 
 async function purgeExpired() {
@@ -60,5 +66,5 @@ function clearCookie(res) {
 }
 
 module.exports = {
-  COOKIE, TTL_HOURS, create, read, destroy, destroyAllFor, purgeExpired, setCookie, clearCookie,
+  COOKIE, TTL_HOURS, create, read, destroy, destroyAllFor, destroyOthers, purgeExpired, setCookie, clearCookie,
 };

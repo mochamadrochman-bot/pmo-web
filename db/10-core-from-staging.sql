@@ -58,12 +58,19 @@ commit;
 alter table users add column if not exists legacy_role text;
 alter table users add column if not exists team text;
 
+alter table users add column if not exists access_migrated boolean not null default false;
+
 insert into users (username, full_name, role, hash, salt, algo, status, legacy_role, team)
 select lower(btrim(u.username)),
        coalesce(nullif(btrim(u.nama), ''), u.username),
+       -- Cakupan proyek (project_ids) diisi db/migrations/001-auth.sql saat aplikasi
+       -- start berikutnya. Sampai itu cakupannya kosong: kontraktor tidak melihat proyek
+       -- apa pun dan INPUT/PIC belum bisa mengedit. Restart aplikasi setelah impor.
        case upper(btrim(u.role))
             when 'ADMIN' then 'admin'
             when 'INPUT' then 'input'
+            when 'PIC' then 'input'
+            when 'KONTRAKTOR' then 'kontraktor'
             else 'viewer'
        end,
        u.password_hash,

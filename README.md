@@ -68,3 +68,24 @@ Panduan lengkap ada di [deploy/DEPLOY.md](deploy/DEPLOY.md), memakai domain
 | `deploy/DEPLOY.md` | Urutan lengkap: DNS, hardening, Coolify, database, aplikasi, sertifikat, backup |
 | `deploy/.env.production.example` | Daftar variabel lingkungan produksi |
 | `docker-compose.prod.yml` | Alternatif satu compose, untuk resource Docker Compose di Coolify |
+
+## Peran dan akses (Tahap A)
+
+Aturan ada di satu tempat: `src/lib/access.js`. Tampilan hanya menyembunyikan tombol;
+pemeriksaan sebenarnya selalu di server.
+
+| Peran | Lihat proyek | Edit proyek | Modul |
+|---|---|---|---|
+| admin | semua | semua | semua + Kelola Akun |
+| input (INPUT/PIC lama) | semua | hanya `project_ids` | semua kecuali Kelola Akun |
+| kontraktor | hanya `project_ids` | hanya `project_ids`, modul EPCC | Portal + EPCC |
+| viewer | semua | tidak ada | semua kecuali Kelola Akun |
+
+- Peran dan kolom PROYEK dari sheet USER ACCESS diterjemahkan otomatis oleh
+  `db/migrations/001-auth.sql` saat aplikasi start (sekali per akun). Setelah itu,
+  ubah lewat halaman **Kelola Akun** (`/admin/akun`).
+- Password salah 5 kali: akun dikunci 15 menit (`LOGIN_MAX_FAILED`, `LOGIN_LOCK_MINUTES`).
+- Akun baru dan akun yang direset Admin wajib mengganti password saat login berikutnya.
+- Migrasi di `db/migrations/*.sql` dijalankan otomatis setiap start. `db/10-core-from-staging.sql`
+  tidak ikut, karena mengosongkan data proyek; jalankan manual hanya saat pindah data,
+  lalu restart aplikasi supaya cakupan proyek akun baru diterjemahkan.

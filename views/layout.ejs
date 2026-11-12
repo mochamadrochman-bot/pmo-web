@@ -24,6 +24,11 @@
     }
     header b { font-weight: 600; letter-spacing: .2px; }
     header form { margin: 0; }
+    .topnav { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: flex-end; }
+    .topnav a { color: #dbe6f0; text-decoration: none; font-size: 14px; }
+    .topnav a:hover { text-decoration: underline; }
+    .topnav .who { color: #9fb4c8; font-size: 13px; }
+    @media (max-width: 640px) { header { flex-direction: column; align-items: flex-start; gap: 8px; } }
     header button {
       background: transparent; color: #c8d6e2; border: 1px solid #3c5a78;
       padding: 6px 12px; border-radius: 8px; cursor: pointer; font: inherit;
@@ -57,10 +62,18 @@
   <header>
     <b>PMO Dashboard</b>
     <% if (typeof user !== 'undefined' && user) { %>
-      <form method="post" action="/api/auth/logout">
-        <span style="color:#9fb4c8;font-size:13px;margin-right:12px"><%= user.username %> · <%= user.role %></span>
-        <button type="submit">Keluar</button>
-      </form>
+      <% var roleLabel = { admin: 'Admin', input: 'Input / PIC', kontraktor: 'Kontraktor', viewer: 'Viewer', reviewer: 'Reviewer' }[user.role] || user.role; %>
+      <nav class="topnav">
+        <% if (!user.must_change_password) { %>
+          <a href="/">Portal</a>
+          <% if (user.role === 'admin') { %><a href="/admin/akun">Kelola Akun</a><% } %>
+          <a href="/akun/password">Ganti Password</a>
+        <% } %>
+        <span class="who"><%= user.full_name || user.username %> · <%= roleLabel %></span>
+        <form method="post" action="/api/auth/logout">
+          <button type="submit">Keluar</button>
+        </form>
+      </nav>
     <% } %>
   </header>
   <main>

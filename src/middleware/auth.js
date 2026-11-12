@@ -14,6 +14,11 @@ const PUBLIC_PATHS = [
 
 const session = require('../session');
 
+/** Router yang dipasang di '/api' melihat req.path tanpa awalan, jadi pakai originalUrl. */
+function isApi(req) {
+  return String(req.originalUrl || req.path).startsWith('/api/');
+}
+
 function isPublic(req) {
   return PUBLIC_PATHS.some((p) => p.method === req.method && p.path === req.path);
 }
@@ -30,7 +35,7 @@ async function attachUser(req, res, next) {
 
 function requireUser(req, res, next) {
   if (!req.user) {
-    if (req.path.startsWith('/api/')) {
+    if (isApi(req)) {
       return res.status(401).json({ ok: false, error: 'Sesi tidak valid. Silakan login.' });
     }
     return res.redirect('/login');
@@ -48,6 +53,74 @@ function requireRole(...roles) {
     }
     next();
   };
+}
+
+/** Hanya untuk modul tertentu (lihat src/lib/access.js). */
+function requireModule(module) {
+  const access = require('../lib/access');
+  return (req, res, next) => {
+    if (!req.user) return requireUser(req, res, next);
+    if (!access.canUseModule(req.user, module)) return forbidden(req, res);
+    next();
+  };
+}
+
+function forbidden(req, res, message) {
+  const msg = message || 'Akun Anda tidak berhak membuka halaman ini.';
+  if (isApi(req)) return res.status(403).json({ ok: false, error: msg });
+  res.status(403);
+  const { renderPage } = require('../render');
+  return renderPage(res, 'pages/error', { code: 403, message: msg, user: req.user });
+}
+
+/**
+ * Akun dengan password sementara (dibuat atau direset Admin) wajib menggantinya dulu.
+ * Selain halaman ganti password dan logout, semua rute ditolak.
+ */
+const ALLOWED_WHILE_CHANGING = ['/akun/password', '/api/auth/password', '/api/auth/logout', '/api/auth/me', '/health'];
+function mustChangePasswordGate(req, res, next) {
+  if (!req.user || !req.user.must_change_password) return next();
+  if (ALLOWED_WHILE_CHANGING.includes(req.path)) return next();
+  if (isApi(req)) {
+    return res.status(403).json({ ok: false, error: 'Ganti password sementara Anda dulu.' });
+  }
+  return res.redirect('/akun/password');
+}
+
+/**
+ * Tolak permintaan yang mengubah data bila datang dari situs lain (lapisan tambahan
+ * di samping cookie SameSite=Lax).
+ */
+function sameOrigin(req, res, next) {
+  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return next();
+  const origin = req.headers.origin;
+  if (!origin) return next();
+  let host = null;
+  try { host = new URL(origin).host; } catch (e) { host = null; }
+  if (host && host === req.headers.host) return next();
+  return res.status(403).json({ ok: false, error: 'Permintaan ditolak.' });
+}
+
+/** Batas percobaan login per alamat IP, di memori (cukup untuk satu container). */
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_MAX_PER_IP = Number(process.env.LOGIN_MAX_PER_IP || 30);
+const loginHits = new Map();
+function loginRateLimit(req, res, next) {
+  const now = Date.now();
+  const key = req.ip || 'unknown';
+  let hit = loginHits.get(key);
+  if (!hit || hit.reset < now) {
+    hit = { count: 0, reset: now + LOGIN_WINDOW_MS };
+    loginHits.set(key, hit);
+  }
+  hit.count += 1;
+  if (loginHits.size > 5000) {
+    for (const [k, v] of loginHits) if (v.reset < now) loginHits.delete(k);
+  }
+  if (hit.count > LOGIN_MAX_PER_IP) {
+    return res.status(429).json({ ok: false, error: 'Terlalu banyak percobaan login. Coba lagi beberapa menit lagi.' });
+  }
+  next();
 }
 
 /**
@@ -71,4 +144,7 @@ async function audit(actor, action, entity, entityId, detail) {
   }
 }
 
-module.exports = { attachUser, requireUser, requireRole, isPublic, PUBLIC_PATHS, route, ROUTES, audit };
+module.exports = {
+  attachUser, requireUser, requireRole, requireModule, forbidden, isPublic, PUBLIC_PATHS, route, ROUTES, audit,
+  mustChangePasswordGate, sameOrigin, loginRateLimit,
+};
