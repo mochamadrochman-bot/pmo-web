@@ -17,6 +17,7 @@ const adminRoutes = require('./routes/admin');
 const gasRoutes = require('./routes/gas');
 const gasStore = require('./gas/store');
 const gasRuntime = require('./gas/runtime');
+const googleAuth = require('./google/auth');
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
@@ -80,6 +81,7 @@ app.get('/akun/password', requireUser, (req, res) => {
     title: 'Ganti Password', user: req.user, minLength: authRoutes.MIN_PASSWORD,
   });
 });
+app.get('/privasi', (req, res) => renderPage(res, 'pages/privasi', { title: 'Kebijakan Privasi', user: req.user }));
 app.use('/', adminRoutes);
 app.use('/', gasRoutes);
 app.use('/api', projectRoutes);
@@ -113,6 +115,8 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
 async function start() {
   try {
     await migrate();
+    const g = await googleAuth.load();
+    console.log(JSON.stringify({ ev: 'google_auth', configured: g.configured, connected: g.connected }));
     const info = await gasStore.load();
     const rt = gasRuntime.load();
     console.log(JSON.stringify({ ev: 'gas_ready', sheets: info.sheets, functions: rt.functions, html: rt.html }));

@@ -240,4 +240,65 @@ router.post('/api/admin/import-xlsx',
     }
   });
 
+// --- Koneksi Google (Drive, Sheets) --------------------------------------------
+const crypto = require('node:crypto');
+const gauth = require('../google/auth');
+const OAUTH_COOKIE = 'pmo_goauth';
+
+function redirectUri(req) {
+  const base = process.env.APP_BASE_URL || (req.protocol + '://' + req.get('host'));
+  return base.replace(/\/$/, '') + '/admin/google/callback';
+}
+
+router.get('/admin/google', onlyAdmin, (req, res) => {
+  renderPage(res, 'pages/admin-google', {
+    title: 'Koneksi Google', user: req.user, st: gauth.status(), redirectUri: redirectUri(req),
+    msg: String(req.query.ok || ''), err: String(req.query.err || ''),
+  });
+});
+
+router.get('/admin/google/connect', onlyAdmin, (req, res) => {
+  if (!gauth.configured()) return res.redirect('/admin/google?err=' + encodeURIComponent('GOOGLE_CLIENT_ID dan GOOGLE_CLIENT_SECRET belum diisi di Coolify.'));
+  const csrf = crypto.randomBytes(16).toString('hex');
+  res.cookie(OAUTH_COOKIE, csrf, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 10 * 60 * 1000, path: '/admin/google' });
+  res.redirect(gauth.authUrl(redirectUri(req), csrf));
+});
+
+router.get('/admin/google/callback', onlyAdmin, async (req, res) => {
+  const back = (k, v) => res.redirect('/admin/google?' + k + '=' + encodeURIComponent(v));
+  const csrf = req.cookies ? req.cookies[OAUTH_COOKIE] : null;
+  res.clearCookie(OAUTH_COOKIE, { path: '/admin/google' });
+  if (req.query.error) return back('err', 'Izin dibatalkan: ' + req.query.error);
+  if (!csrf || csrf !== req.query.state) return back('err', 'Sesi penghubungan kedaluwarsa. Ulangi dari tombol Hubungkan.');
+  try {
+    const r = await gauth.exchangeCode(String(req.query.code || ''), redirectUri(req), req.user.username);
+    await audit(req.user, 'google_connect', 'google', r.email || '', null);
+    clearCache();
+    return back('ok', 'Terhubung dengan ' + (r.email || 'akun Google') + '.');
+  } catch (e) {
+    return back('err', e.message);
+  }
+});
+
+router.post('/api/admin/google/disconnect', onlyAdmin, async (req, res, next) => {
+  try {
+    await gauth.disconnect();
+    await audit(req.user, 'google_disconnect', 'google', '', null);
+    clearCache();
+    res.json({ ok: true, data: null });
+  } catch (err) { next(err); }
+});
+
+router.post('/api/admin/google/test', onlyAdmin, async (req, res) => {
+  try {
+    const token = gauth.accessTokenSync();
+    const r = await fetch((process.env.GOOGLE_DRIVE_API || 'https://www.googleapis.com/drive/v3') + '/about?fields=user(emailAddress),storageQuota(limit,usage)', { headers: { Authorization: 'Bearer ' + token } });
+    const j = await r.json();
+    if (!r.ok) throw new Error((j.error && j.error.message) || 'HTTP ' + r.status);
+    res.json({ ok: true, data: { email: j.user && j.user.emailAddress, usage: j.storageQuota } });
+  } catch (e) {
+    res.json({ ok: false, error: e.message });
+  }
+});
+
 module.exports = router;

@@ -12,6 +12,8 @@ const zlib = require('node:zlib');
 const store = require('./store');
 const { Spreadsheet } = require('./sheets');
 const { compileTemplate } = require('./template');
+const { makeDrive } = require('./drive');
+const gauth = require('../google/auth');
 
 const TZ = process.env.TZ || 'Asia/Bangkok';
 
@@ -142,7 +144,13 @@ function makeProps(prefix) {
   const P = store.state;
   const full = (k) => prefix + k;
   const api = {
-    getProperty: (k) => (P.props.has(full(k)) ? P.props.get(full(k)) : null),
+    getProperty: (k) => {
+      if (P.props.has(full(k))) return P.props.get(full(k));
+      // Script Properties dari Apps Script tidak ikut impor .xlsx. Nilai rahasia (mis. ANTHROPIC_API_KEY)
+      // bisa diisi lewat variabel lingkungan GAS_PROP_<NAMA> di Coolify.
+      if (prefix === 'S:' && process.env['GAS_PROP_' + k] !== undefined) return process.env['GAS_PROP_' + k];
+      return null;
+    },
     setProperty: (k, v) => { P.props.set(full(k), String(v)); P.propsDirty.add(full(k)); P.propsDeleted.delete(full(k)); return api; },
     deleteProperty: (k) => { P.props.delete(full(k)); P.propsDeleted.add(full(k)); P.propsDirty.delete(full(k)); return api; },
     getProperties: () => { const o = {}; for (const [k, v] of P.props) if (k.startsWith(prefix)) o[k.slice(prefix.length)] = v; return o; },
@@ -201,6 +209,7 @@ function notYet(service) {
  */
 function makeGlobals(ctx) {
   const cacheScript = makeCache('S:');
+  const drive = makeDrive(Blob);
   const SpreadsheetApp = {
     openById: (id) => {
       const b = store.book(id);
@@ -266,7 +275,7 @@ function makeGlobals(ctx) {
 
   const ScriptApp = {
     getService: () => ({ getUrl: () => ctx.appUrl, isEnabled: () => true }),
-    getOAuthToken: () => '',
+    getOAuthToken: () => { try { return gauth.accessTokenSync(); } catch (e) { return ''; } },
     getScriptId: () => 'pmo-web',
     getProjectTriggers: () => [],
     newTrigger: () => { const b = new Proxy({}, { get: (t, p) => (p === 'create' ? () => ({ getUniqueId: () => crypto.randomUUID() }) : () => b) }); return b; },
@@ -295,8 +304,8 @@ function makeGlobals(ctx) {
     CacheService: { getScriptCache: () => cacheScript, getUserCache: () => makeCache('U:' + ((ctx.user && ctx.user.username) || '') + ':'), getDocumentCache: () => cacheScript },
     PropertiesService: { getScriptProperties: () => makeProps('S:'), getUserProperties: () => makeProps('U:' + ((ctx.user && ctx.user.username) || '') + ':'), getDocumentProperties: () => makeProps('D:') },
     LockService: { getScriptLock: () => lock, getUserLock: () => lock, getDocumentLock: () => lock },
-    DriveApp: notYet('DriveApp'),
-    UrlFetchApp: notYet('UrlFetchApp'),
+    DriveApp: drive.DriveApp,
+    UrlFetchApp: drive.UrlFetchApp,
     MailApp: notYet('MailApp'),
     GmailApp: notYet('GmailApp'),
     DocumentApp: notYet('DocumentApp'),

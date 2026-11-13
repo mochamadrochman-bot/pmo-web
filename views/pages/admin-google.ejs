@@ -1,0 +1,66 @@
+<style>
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin: 0 0 18px; }
+  .panel h2 { font-size: 16px; margin: 0 0 6px; color: var(--navy); }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+  .btn { display: inline-block; padding: 9px 16px; border-radius: 8px; border: 1px solid var(--line); background: #fff; color: var(--navy); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; }
+  .btn.utama { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+  .on { background: #dcfce7; color: #166534; } .off { background: #fee2e2; color: #991b1b; } .wait { background: #fef3c7; color: #92400e; }
+  .note { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .msg { padding: 10px 12px; border-radius: 8px; font-size: 14px; margin-bottom: 14px; }
+  .msg.ok { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+  .msg.err { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+  code { background: #f1f5f9; padding: 1px 6px; border-radius: 4px; font-size: 13px; word-break: break-all; }
+</style>
+
+<h1>Koneksi Google</h1>
+<p class="sub">Dipakai untuk foto Portal dan Story Lapangan, galeri, lampiran dokumen, dan nanti sinkron spreadsheet otomatis.</p>
+
+<% if (msg) { %><div class="msg ok"><%= msg %></div><% } %>
+<% if (err) { %><div class="msg err"><%= err %></div><% } %>
+
+<div class="panel">
+  <h2>Status</h2>
+  <% if (!st.configured) { %>
+    <span class="badge wait">Belum disetel</span>
+    <p class="note">Isi <code>GOOGLE_CLIENT_ID</code> dan <code>GOOGLE_CLIENT_SECRET</code> di Coolify (aplikasi pmo-web → Environment Variables), lalu Redeploy.</p>
+  <% } else if (!st.connected) { %>
+    <span class="badge off">Belum terhubung</span>
+    <p class="note">Klik tombol di bawah dan masuk dengan akun Google <b>pemilik</b> folder Drive dan spreadsheet PMO DASHBOARD. Jika Google menampilkan peringatan "aplikasi belum diverifikasi", pilih <b>Advanced → Go to PMO Dashboard</b>, lalu centang semua izin.</p>
+    <div class="row"><a class="btn utama" href="/admin/google/connect">Hubungkan akun Google</a></div>
+  <% } else { %>
+    <span class="badge on">Terhubung</span>
+    <span style="margin-left:8px"><%= st.email || 'akun Google' %></span>
+    <% if (st.connectedAt) { %><p class="note">Sejak <%= new Date(st.connectedAt).toLocaleString('id-ID', { timeZone: 'Asia/Bangkok' }) %></p><% } %>
+    <% if (st.lastError) { %><p class="note" style="color:#991b1b">Galat terakhir: <%= st.lastError %></p><% } %>
+    <div class="row">
+      <button class="btn utama" id="test" type="button">Uji koneksi</button>
+      <a class="btn" href="/admin/google/connect">Hubungkan ulang</a>
+      <button class="btn" id="off" type="button">Putuskan</button>
+    </div>
+    <div class="note" id="out" role="status"></div>
+  <% } %>
+</div>
+
+<div class="panel">
+  <h2>Pengaturan Google Cloud</h2>
+  <p class="note" style="margin-top:0">Authorized redirect URI di OAuth client harus persis:</p>
+  <code><%= redirectUri %></code>
+</div>
+
+<script>
+(function () {
+  var out = document.getElementById('out');
+  var t = document.getElementById('test'), o = document.getElementById('off');
+  if (t) t.addEventListener('click', async function () {
+    out.textContent = 'Menguji…';
+    var j = await (await fetch('/api/admin/google/test', { method: 'POST' })).json();
+    out.textContent = j.ok ? 'Berhasil. Drive terbaca sebagai ' + (j.data.email || '-') + '.' : 'Gagal: ' + j.error;
+  });
+  if (o) o.addEventListener('click', async function () {
+    if (!confirm('Putuskan koneksi Google? Foto, galeri, dan lampiran tidak akan tampil sampai dihubungkan lagi.')) return;
+    await fetch('/api/admin/google/disconnect', { method: 'POST' });
+    location.reload();
+  });
+})();
+</script>
