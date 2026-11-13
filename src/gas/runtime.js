@@ -44,6 +44,12 @@ const HTML_PATCHES = [
     find: "p.insertBefore(btnFor(ref,'self'),ref);if(role==='ADMIN')p.insertBefore(btnFor(ref,'admin'),ref)",
     replace: "p.insertBefore(btnFor(ref,'self'),ref);if(role==='ADMIN'){p.insertBefore(btnFor(ref,'admin'),ref);p.insertBefore(btnFor(ref,'data'),ref);p.insertBefore(btnFor(ref,'google'),ref)}",
   },
+  {
+    // Kartu proyek Portal: pakai nilai week terakhir (field lw) dan tanpa baris "Naik … poin".
+    file: 'Portal',
+    find: "$('pulse').innerHTML=items.map(function(i){",
+    replace: "$('pulse').innerHTML=items.map(function(i){i=i.lw?Object.assign({},i,i.lw,{pending:false,prevActual:null,cutWeek:i.lw.week,last:null}):Object.assign({},i,{prevActual:null});",
+  },
   // Panel "Permintaan Akun" lama tidak dipakai lagi: akun dikelola di /admin/akun.
   ...['Portal', 'ExecutiveDashboard'].map((file) => ({
     file,
@@ -64,6 +70,32 @@ const BRIDGE_CODE = `
   authPendingAccounts = function () { return []; };
   authResendPendingNotifications = function () { return { success: true, sent: 0, failed: 0, message: 'Tidak ada permintaan akun.', errors: [] }; };
 ${RETIRED.map((n) => `  ${n} = function () { throw new Error('Akun kini dikelola di menu Ganti Password dan Kelola Akun.'); };`).join('\n')}
+  // Portal: kartu proyek memakai week terakhir yang sudah diisi (bukan week cut-off bulanan).
+  // Ringkasan atas (hero) tetap cut-off bulanan; nilai week terakhir dikirim di field 'lw'.
+  var __origPortal = getPortalData;
+  getPortalData = function (token) {
+    var r = __origPortal(token);
+    try {
+      var items = r && r.brief && r.brief.items;
+      if (!items || !items.length) return r;
+      var db = loadDb_();
+      var pct = function (v) { return v === null || v === undefined ? null : v / 100; };
+      r = Object.assign({}, r, { brief: Object.assign({}, r.brief, { items: items.map(function (i) {
+        var w = Number(i.latestWeek) || 0;
+        if (!w) return i;
+        var act = pct(weekPercent_(db.weekly, i.projectId, 'KOMULATIF_REALISASI', w));
+        var plan = pct(weekPercent_(db.weekly, i.projectId, 'KOMULATIF_PLAN', w));
+        if (act === null) return i;
+        var dev = plan === null ? null : act - plan;
+        var hl = weekText_(db.weekly, i.projectId, 'HIGHLIGHT_ACTIVITY', w) || weekText_(db.weekly, i.projectId, 'HIGHLIGHT', w);
+        hl = String(hl || '').split(/\\n+/).map(function (x) { return x.replace(/^\\s*(?:\\d+[.)]|[-\\u2022*])\\s*/, '').trim(); }).filter(Boolean)[0] || '';
+        if (hl.length > 150) hl = hl.slice(0, 147).replace(/\\s+\\S*$/, '') + '\\u2026';
+        var status = dev === null ? 'Data tidak tersedia' : dev < DB_CONFIG.CRITICAL_DEVIATION ? 'Critical' : dev <= 0 ? 'At risk' : 'On track';
+        return Object.assign({}, i, { lw: { week: w, actual: act, plan: plan, deviation: dev, status: status, highlight: hl || i.highlight } });
+      }) }) });
+    } catch (e) { /* kalau gagal, Portal tetap tampil dengan data cut-off */ }
+    return r;
+  };
   getLoginPageHtml = function () {
     return '<!doctype html><meta charset="utf-8"><script>location.replace("/login")</script>';
   };

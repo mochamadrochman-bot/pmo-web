@@ -39,6 +39,8 @@ async function activeAdminCount(excludeId) {
 }
 
 // --- Halaman ---------------------------------------------------------------
+router.get(['/admin', '/admin/'], onlyAdmin, (req, res) => res.redirect('/admin/data'));
+
 router.get('/admin/akun', onlyAdmin, async (req, res, next) => {
   try {
     const projects = await db.query('select id, name from projects order by name');
