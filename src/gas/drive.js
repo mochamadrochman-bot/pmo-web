@@ -19,7 +19,7 @@ const Permission = { VIEW: 'VIEW', EDIT: 'EDIT', COMMENT: 'COMMENT', NONE: 'NONE
 
 const READONLY_MSG = 'Server baru masih dalam mode baca-saja: unggah, ubah, atau hapus file Drive dilakukan lewat aplikasi lama dulu.';
 function guardWrite() {
-  if (process.env.GAS_READONLY !== '0') throw new Error(READONLY_MSG);
+  if (require('./store').readOnly()) throw new Error(READONLY_MSG);
 }
 
 function makeDrive(Blob) {

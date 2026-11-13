@@ -44,6 +44,12 @@ const HTML_PATCHES = [
     find: "p.insertBefore(btnFor(ref,'self'),ref);if(role==='ADMIN')p.insertBefore(btnFor(ref,'admin'),ref)",
     replace: "p.insertBefore(btnFor(ref,'self'),ref);if(role==='ADMIN'){p.insertBefore(btnFor(ref,'admin'),ref);p.insertBefore(btnFor(ref,'data'),ref);p.insertBefore(btnFor(ref,'google'),ref)}",
   },
+  // Panel "Permintaan Akun" lama tidak dipakai lagi: akun dikelola di /admin/akun.
+  ...['Portal', 'ExecutiveDashboard'].map((file) => ({
+    file,
+    find: "box=document.createElement('div');box.id=key;box.className='pmo-requests';box.hidden=true;",
+    replace: "return;box=document.createElement('div');box.id=key;box.className='pmo-requests';box.hidden=true;",
+  })),
 ];
 
 /** Penghubung login baru (cookie) ke bentuk akun yang dikenal kode lama. */

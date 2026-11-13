@@ -16,19 +16,43 @@
 <h1>Impor Data</h1>
 <p class="sub">Isi spreadsheet PMO DASHBOARD yang dipakai halaman Portal, Executive, Weekly, dan modul lain.</p>
 
+<style>
+  .modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin-top: 10px; }
+  .mode { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; cursor: pointer; background: #fff; }
+  .mode.on { border-color: var(--teal); box-shadow: 0 0 0 2px #99f6e4; background: #f0fdfa; }
+  .mode b { display: block; color: var(--navy); margin-bottom: 4px; }
+  .mode small { color: var(--muted); font-size: 13px; line-height: 1.4; display: block; }
+  .mode input { width: auto; margin: 0 6px 0 0; }
+</style>
+<div class="panel">
+  <h2>Mode data</h2>
+  <p class="muted" style="margin:0;font-size:13px">Menentukan dari mana data dashboard berasal dan apakah input boleh dilakukan di server ini.</p>
+  <div class="modes" id="modes">
+    <label class="mode <%= sync.mode === 'baca' ? 'on' : '' %>"><b><input type="radio" name="mode" value="baca" <%= sync.mode === 'baca' ? 'checked' : '' %>>Baca</b>
+      <small>Input di aplikasi lama. Server mengikuti Google Sheets otomatis. Aman untuk sekarang.</small></label>
+    <label class="mode <%= sync.mode === 'uji' ? 'on' : '' %>"><b><input type="radio" name="mode" value="uji" <%= sync.mode === 'uji' ? 'checked' : '' %>>Uji coba</b>
+      <small>Input di server ini aktif untuk dicoba. Sinkron berhenti. Kembali ke Baca = data uji dibuang dan diganti data Google terbaru.</small></label>
+    <label class="mode <%= sync.mode === 'produksi' ? 'on' : '' %>"><b><input type="radio" name="mode" value="produksi" <%= sync.mode === 'produksi' ? 'checked' : '' %>>Produksi</b>
+      <small>Server ini menjadi sumber data utama. Aplikasi lama tidak dipakai lagi untuk input. Sinkron dan impor mati.</small></label>
+  </div>
+  <div style="margin-top:12px"><button class="btn" id="modeBtn" type="button" disabled>Terapkan mode</button></div>
+  <div class="err" id="modeErr" role="alert"></div>
+  <div class="ok" id="modeOk" role="status"></div>
+</div>
+
 <div class="panel">
   <h2>Sinkron dari Google Sheets</h2>
   <% if (!google.connected) { %>
     <p class="muted" style="margin:0">Akun Google belum dihubungkan. Buka <a href="/admin/google">Koneksi Google</a> dulu, atau pakai unggah manual di bawah.</p>
   <% } else { %>
     <p style="margin:0 0 6px;font-size:14px">
-      <% if (sync.auto) { %>Otomatis setiap <b><%= sync.minutes %> menit</b>, hanya bila spreadsheet berubah.<% } else { %>Sinkron otomatis <b>mati</b>.<% } %>
+      <% if (sync.auto) { %>Otomatis setiap <b><%= sync.minutes %> menit</b>, hanya bila spreadsheet berubah.<% } else if (sync.mode === 'uji') { %>Sinkron otomatis <b>berhenti</b> selama mode uji coba. Tombol di bawah mengembalikan data ke versi Google Sheets.<% } else if (sync.mode === 'produksi') { %>Mode produksi: sinkron <b>mati</b>.<% } else { %>Sinkron otomatis <b>mati</b>.<% } %>
     </p>
     <% if (sync.lastResult) { %>
       <p class="muted" style="margin:0;font-size:13px">Pemeriksaan terakhir: <%= new Date(sync.lastResult.at).toLocaleString('id-ID', { timeZone: 'Asia/Bangkok' }) %> ·
         <%= sync.lastResult.status === 'synced' ? 'data diperbarui' : sync.lastResult.status === 'unchanged' ? 'tidak ada perubahan' : 'gagal: ' + sync.lastResult.error %></p>
     <% } %>
-    <div style="margin-top:12px"><button class="btn" id="syncBtn" type="button">Sinkron sekarang</button></div>
+    <% if (sync.mode !== 'produksi') { %><div style="margin-top:12px"><button class="btn" id="syncBtn" type="button"><%= sync.mode === 'uji' ? 'Kembalikan ke data Google Sheets' : 'Sinkron sekarang' %></button></div><% } %>
     <div class="err" id="syncErr" role="alert"></div>
     <div class="ok" id="syncOk" role="status"></div>
   <% } %>
@@ -65,6 +89,34 @@
 </div>
 
 <script>
+(function () {
+  var current = <%- JSON.stringify(sync.mode) %>, btn = document.getElementById('modeBtn');
+  var pick = function () { var r = document.querySelector('input[name=mode]:checked'); return r ? r.value : current; };
+  document.querySelectorAll('input[name=mode]').forEach(function (r) {
+    r.addEventListener('change', function () {
+      document.querySelectorAll('.mode').forEach(function (m) { m.classList.toggle('on', m.contains(r) && r.checked); });
+      btn.disabled = pick() === current;
+    });
+  });
+  btn.addEventListener('click', async function () {
+    var m = pick(), e = document.getElementById('modeErr'), o = document.getElementById('modeOk'), body = { mode: m };
+    e.textContent = ''; o.textContent = '';
+    if (m === 'uji' && !confirm('Aktifkan mode uji coba? Sinkron otomatis berhenti dan input di server ini aktif.')) return;
+    if (m === 'baca' && current === 'uji' && !confirm('Kembali ke mode Baca? Semua data yang diisi selama uji coba dibuang dan diganti data Google Sheets terbaru.')) return;
+    if (m === 'produksi') {
+      var c = prompt('Mode produksi: server ini menjadi sumber data utama dan aplikasi lama tidak dipakai lagi untuk input. Ketik PINDAH untuk melanjutkan.');
+      if (c === null) return;
+      body.confirm = c;
+    }
+    btn.disabled = true; o.textContent = 'Menerapkan…';
+    try {
+      var j = await (await fetch('/api/admin/mode', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })).json();
+      if (!j.ok) throw new Error(j.error || 'Gagal.');
+      o.textContent = 'Mode sekarang: ' + j.data.mode + (j.data.restored ? ' · data Google: ' + j.data.restored.status : '') + '. Memuat ulang…';
+      setTimeout(function () { location.reload(); }, 1200);
+    } catch (x) { o.textContent = ''; e.textContent = x.message; btn.disabled = false; }
+  });
+})();
 (function () {
   var sb = document.getElementById('syncBtn');
   if (sb) sb.addEventListener('click', async function () {

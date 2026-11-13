@@ -140,6 +140,7 @@ function makeCache(prefix) {
 setInterval(() => { const now = Date.now(); for (const [k, e] of cacheMap) if (e.exp < now) cacheMap.delete(k); }, 60000).unref();
 
 // ---------------------------------------------------------------- Properties (persisten)
+const PLAIN_ENV_PROPS = ['ANTHROPIC_API_KEY', 'CLAUDE_MODEL', 'AI_DAILY_LIMIT', 'LIBRARY_FOLDER_ID', 'PORTAL_HERO_FOLDER'];
 function makeProps(prefix) {
   const P = store.state;
   const full = (k) => prefix + k;
@@ -149,6 +150,8 @@ function makeProps(prefix) {
       // Script Properties dari Apps Script tidak ikut impor .xlsx. Nilai rahasia (mis. ANTHROPIC_API_KEY)
       // bisa diisi lewat variabel lingkungan GAS_PROP_<NAMA> di Coolify.
       if (prefix === 'S:' && process.env['GAS_PROP_' + k] !== undefined) return process.env['GAS_PROP_' + k];
+      // Nama tanpa awalan juga diterima untuk properti yang dikenal.
+      if (prefix === 'S:' && PLAIN_ENV_PROPS.includes(k) && process.env[k] !== undefined) return process.env[k];
       return null;
     },
     setProperty: (k, v) => { P.props.set(full(k), String(v)); P.propsDirty.add(full(k)); P.propsDeleted.delete(full(k)); return api; },

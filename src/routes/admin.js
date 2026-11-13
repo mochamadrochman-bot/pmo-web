@@ -234,6 +234,7 @@ router.post('/api/admin/import-xlsx',
       const required = ['DATA MINGGUAN PROYEK', 'DATA BULANAN'];
       const missing = required.filter((n) => !names.includes(n));
       if (missing.length) return bad(res, 'Sheet wajib tidak ditemukan: ' + missing.join(', ') + '. Pastikan yang diunggah adalah spreadsheet PMO DASHBOARD.');
+      if (gasStore.mode() === 'produksi') return bad(res, 'Mode produksi: impor dimatikan supaya data server tidak tertimpa. Ubah mode dulu bila memang perlu.');
       await gasStore.replaceMain(sheets, req.user.username, fileName);
       clearCache();
       await audit(req.user, 'data_import', 'spreadsheet', fileName, { sheets: sheets.length });
@@ -298,6 +299,30 @@ router.post('/api/admin/google/test', onlyAdmin, async (req, res) => {
     const j = await r.json();
     if (!r.ok) throw new Error((j.error && j.error.message) || 'HTTP ' + r.status);
     res.json({ ok: true, data: { email: j.user && j.user.emailAddress, usage: j.storageQuota } });
+  } catch (e) {
+    res.json({ ok: false, error: e.message });
+  }
+});
+
+router.post('/api/admin/mode', onlyAdmin, async (req, res) => {
+  try {
+    const target = String((req.body && req.body.mode) || '');
+    const from = gasStore.mode();
+    if (target === from) return res.json({ ok: true, data: { mode: from } });
+    if (target === 'produksi' && String(req.body.confirm || '') !== 'PINDAH') {
+      return bad(res, 'Ketik PINDAH untuk mengonfirmasi mode produksi.');
+    }
+    let restored = null;
+    if (target === 'baca' && from === 'uji') {
+      // Kembali ke baca: buang data uji coba, ambil ulang dari Google Sheets.
+      await gasStore.setMode('baca', req.user.username);
+      try { restored = await gasSync.syncNow({ force: true, actor: req.user.username }); } catch (e) { restored = { status: 'error', error: e.message }; }
+    } else {
+      await gasStore.setMode(target, req.user.username);
+    }
+    clearCache();
+    await audit(req.user, 'data_mode', 'gas', target, { from, restored: restored && restored.status });
+    res.json({ ok: true, data: { mode: target, restored } });
   } catch (e) {
     res.json({ ok: false, error: e.message });
   }

@@ -13,6 +13,14 @@
 
 const SSF = require('xlsx').SSF;
 
+/**
+ * Kait untuk mesin rumus (dipasang oleh store.js):
+ *   onWrite(book)          : ada sel yang ditulis -> rumus perlu dihitung ulang
+ *   beforeRead(book)       : sebelum data dibaca -> hitung ulang bila perlu
+ *   onShift(book, sheet, axis, at, delta) : baris/kolom disisipkan/dihapus
+ */
+const hooks = { onWrite: null, beforeRead: null, onShift: null };
+
 // ---------------------------------------------------------------- nilai sel
 const DATE_TAG = '$d';
 
@@ -259,8 +267,9 @@ class Range {
     }
     return out;
   }
-  getValues() { return this._grid((r, c) => { const v = this._d.get(r, c); return v instanceof Date ? new Date(v.getTime()) : v; }); }
-  getDisplayValues() { return this._grid((r, c) => this._d.getDisplay(r, c)); }
+  _pre() { if (hooks.beforeRead) hooks.beforeRead(this._s._ss._b); }
+  getValues() { this._pre(); return this._grid((r, c) => { const v = this._d.get(r, c); return v instanceof Date ? new Date(v.getTime()) : v; }); }
+  getDisplayValues() { this._pre(); return this._grid((r, c) => this._d.getDisplay(r, c)); }
   getFormulas() { return this._grid((r, c) => this._d.formulas[r + ',' + c] || ''); }
   getNumberFormats() { return this._grid((r, c) => this._d.fmts[r + ',' + c] || 'General'); }
   getValue() { return this.getValues()[0][0]; }
@@ -289,19 +298,23 @@ class Range {
   }
   setValues(values) {
     this._check(values);
+    if (hooks.onWrite) hooks.onWrite(this._s._ss._b);
     for (let i = 0; i < this._nr; i++) for (let j = 0; j < this._nc; j++) this._d.set(this._r - 1 + i, this._c - 1 + j, values[i][j]);
     return proxyOf(this);
   }
   setValue(v) {
+    if (hooks.onWrite) hooks.onWrite(this._s._ss._b);
     for (let i = 0; i < this._nr; i++) for (let j = 0; j < this._nc; j++) this._d.set(this._r - 1 + i, this._c - 1 + j, v);
     return proxyOf(this);
   }
   setFormulas(f) {
     this._check(f);
+    if (hooks.onWrite) hooks.onWrite(this._s._ss._b);
     for (let i = 0; i < this._nr; i++) for (let j = 0; j < this._nc; j++) this._d.setFormula(this._r - 1 + i, this._c - 1 + j, f[i][j]);
     return proxyOf(this);
   }
   setFormula(f) {
+    if (hooks.onWrite) hooks.onWrite(this._s._ss._b);
     for (let i = 0; i < this._nr; i++) for (let j = 0; j < this._nc; j++) this._d.setFormula(this._r - 1 + i, this._c - 1 + j, f);
     return proxyOf(this);
   }
@@ -316,6 +329,7 @@ class Range {
   }
   clearContent() { return this.setValue(''); }
   clear() {
+    if (hooks.onWrite) hooks.onWrite(this._s._ss._b);
     for (let i = 0; i < this._nr; i++) for (let j = 0; j < this._nc; j++) {
       const r = this._r - 1 + i, c = this._c - 1 + j, k = r + ',' + c;
       delete this._d.formulas[k]; delete this._d.links[k];
@@ -371,7 +385,7 @@ class Sheet {
   getSheetId() { return this._d.sheetId; }
   getIndex() { return this._d.index + 1; }
   getParent() { return this._ss; }
-  getLastRow() { return this._d.lastRow(); }
+  getLastRow() { if (hooks.beforeRead) hooks.beforeRead(this._ss._b); return this._d.lastRow(); }
   getLastColumn() { return this._d.lastCol(); }
   getMaxRows() { return this._d.maxRows; }
   getMaxColumns() { return this._d.maxCols; }
@@ -392,20 +406,25 @@ class Sheet {
     return this.getRange(1, 1, Math.max(1, this._d.lastRow()), Math.max(1, this._d.lastCol()));
   }
   appendRow(row) {
+    if (hooks.onWrite) hooks.onWrite(this._ss._b);
     const r = this._d.lastRow();
     row.forEach((v, c) => this._d.set(r, c, v));
     return proxyOf(this);
   }
-  insertRowsAfter(after, n) { this._d.insertRows(after, n || 1); return proxyOf(this); }
-  insertRowsBefore(before, n) { this._d.insertRows(before - 1, n || 1); return proxyOf(this); }
+  _shift(axis, at, delta) {
+    if (hooks.onShift) hooks.onShift(this._ss._b, this._d.name, axis, at, delta);
+    if (hooks.onWrite) hooks.onWrite(this._ss._b);
+  }
+  insertRowsAfter(after, n) { this._d.insertRows(after, n || 1); this._shift('row', after + 1, n || 1); return proxyOf(this); }
+  insertRowsBefore(before, n) { this._d.insertRows(before - 1, n || 1); this._shift('row', before, n || 1); return proxyOf(this); }
   insertRowAfter(after) { return this.insertRowsAfter(after, 1); }
   insertRowBefore(before) { return this.insertRowsBefore(before, 1); }
-  deleteRow(r) { this._d.deleteRows(r - 1, 1); return proxyOf(this); }
-  deleteRows(r, n) { this._d.deleteRows(r - 1, n); return proxyOf(this); }
-  insertColumnsAfter(after, n) { this._d.insertCols(after, n || 1); return proxyOf(this); }
+  deleteRow(r) { return this.deleteRows(r, 1); }
+  deleteRows(r, n) { this._d.deleteRows(r - 1, n); this._shift('row', r, -n); return proxyOf(this); }
+  insertColumnsAfter(after, n) { this._d.insertCols(after, n || 1); this._shift('col', after + 1, n || 1); return proxyOf(this); }
   insertColumnAfter(after) { return this.insertColumnsAfter(after, 1); }
-  deleteColumn(c) { this._d.deleteCols(c - 1, 1); return proxyOf(this); }
-  deleteColumns(c, n) { this._d.deleteCols(c - 1, n); return proxyOf(this); }
+  deleteColumn(c) { return this.deleteColumns(c, 1); }
+  deleteColumns(c, n) { this._d.deleteCols(c - 1, n); this._shift('col', c, -n); return proxyOf(this); }
   clear() { this._d.values = []; this._d.display = []; this._d.formulas = {}; this._d.links = {}; this._d.dirty = true; return proxyOf(this); }
   clearContents() { return this.clear(); }
   getSheetValues(r, c, nr, nc) {
@@ -485,6 +504,7 @@ class Workbook {
 }
 
 module.exports = {
+  hooks,
   SheetData, Workbook, Spreadsheet, Sheet, Range, proxyOf,
   encodeCell, decodeCell, displayOf, dateToSerial, parseA1, numToCol, colToNum,
 };

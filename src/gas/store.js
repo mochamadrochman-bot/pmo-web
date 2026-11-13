@@ -8,7 +8,26 @@
  */
 
 const db = require('../db');
-const { Workbook, SheetData } = require('./sheets');
+const { Workbook, SheetData, hooks, displayOf } = require('./sheets');
+const formula = require('./formula');
+
+// ---------------------------------------------------------------- mesin rumus
+// Setelah ada sel yang ditulis, semua rumus dihitung ulang sebelum data dibaca lagi
+// (sama seperti Google Sheets). Hitung ulang penuh ±0,15 detik untuk 12.700 rumus.
+const astCache = new Map();
+const pending = new WeakSet();
+function recalcNow(book) {
+  pending.delete(book);
+  const r = formula.recalc(book, { astCache });
+  const changed = formula.apply(r.results, displayOf);
+  if (r.unsupported.length) {
+    console.warn(JSON.stringify({ ev: 'formula_unsupported', count: r.unsupported.length, first: r.unsupported[0] }));
+  }
+  return { computed: r.computed, changed, unsupported: r.unsupported.length };
+}
+hooks.onWrite = (book) => { pending.add(book); };
+hooks.beforeRead = (book) => { if (pending.has(book)) recalcNow(book); };
+hooks.onShift = (book, sheet, axis, at, delta) => { formula.shiftRefs(book, sheet, axis, at, delta); };
 
 const MAIN_ID = process.env.GAS_SPREADSHEET_ID || '1OVqQZQ9MfBVQl1O2d6VpxQ385wNaGzfJOC-8LduHvcE';
 
@@ -83,6 +102,7 @@ function flush() {
 }
 
 async function flushNow() {
+  for (const b of state.books.values()) if (pending.has(b)) recalcNow(b);
   const jobs = [];
   for (const b of state.books.values()) {
     for (const d of b.dirtySheets()) {
@@ -170,8 +190,30 @@ async function revertDirty() {
 const READONLY_WRITABLE = (process.env.GAS_READONLY_WRITABLE || 'AI_LOG').split(',').map((x) => x.trim()).filter(Boolean);
 function writableInReadOnly(name) { return READONLY_WRITABLE.includes(name); }
 
+/**
+ * Mode data (diganti Admin di halaman Impor Data, disimpan di gas_props 'SYS:MODE'):
+ *   baca     : server hanya menampilkan; data mengikuti Google Sheets (sinkron otomatis)
+ *   uji      : input di server aktif untuk uji coba; sinkron otomatis berhenti;
+ *              data bisa dikembalikan ke versi Google Sheets kapan saja
+ *   produksi : server menjadi sumber data utama; sinkron dan impor dimatikan
+ * GAS_READONLY=0 di lingkungan = bawaan 'produksi' (untuk kompatibilitas).
+ */
+const MODES = ['baca', 'uji', 'produksi'];
+function mode() {
+  const m = state.props.get('SYS:MODE');
+  if (MODES.includes(m)) return m;
+  return process.env.GAS_READONLY === '0' ? 'produksi' : 'baca';
+}
+async function setMode(m, actor) {
+  if (!MODES.includes(m)) throw new Error('Mode tidak dikenal.');
+  await db.query(
+    `insert into gas_props (key, value, updated_at) values ('SYS:MODE', $1, now())
+     on conflict (key) do update set value = excluded.value, updated_at = now()`, [m]);
+  state.props.set('SYS:MODE', m);
+  console.log(JSON.stringify({ ev: 'gas_mode', mode: m, actor: actor || null }));
+}
 function readOnly() {
-  return process.env.GAS_READONLY !== '0';
+  return mode() === 'baca';
 }
 
-module.exports = { state, load, flush, revertDirty, readOnly, writableInReadOnly, book, replaceMain, lastImport, summary, MAIN_ID, ensureTables };
+module.exports = { state, load, flush, recalcNow, revertDirty, readOnly, mode, setMode, MODES, writableInReadOnly, book, replaceMain, lastImport, summary, MAIN_ID, ensureTables };

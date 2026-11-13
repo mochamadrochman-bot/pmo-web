@@ -43,6 +43,7 @@ async function api(path, token) {
 async function syncNow(opts) {
   const o = opts || {};
   if (state.running) return { status: 'skipped', reason: 'Sinkron sebelumnya masih berjalan.' };
+  if (store.mode() === 'produksi') return { status: 'skipped', reason: 'Mode produksi: data server tidak lagi diambil dari Google Sheets.' };
   if (!gauth.status().connected) return { status: 'skipped', reason: 'Akun Google belum dihubungkan.' };
   state.running = true;
   state.lastCheck = new Date();
@@ -83,23 +84,24 @@ function minutes() {
 }
 
 function autoEnabled() {
-  return minutes() > 0 && store.readOnly();
+  return minutes() > 0;
 }
 
 function start() {
   if (state.timer) clearInterval(state.timer);
   if (!autoEnabled()) return false;
   state.timer = setInterval(() => {
+    if (store.mode() !== 'baca') return; // mode uji/produksi: jangan timpa data server
     syncNow({ actor: 'sinkron-otomatis' }).catch(() => { /* sudah dicatat */ });
   }, minutes() * 60 * 1000);
   state.timer.unref();
   // Sinkron pertama sesaat setelah server menyala.
-  setTimeout(() => syncNow({ actor: 'sinkron-otomatis' }).catch(() => {}), 20 * 1000).unref();
+  setTimeout(() => { if (store.mode() === 'baca') syncNow({ actor: 'sinkron-otomatis' }).catch(() => {}); }, 20 * 1000).unref();
   return true;
 }
 
 function info() {
-  return { auto: autoEnabled(), minutes: minutes(), running: state.running, lastCheck: state.lastCheck, lastResult: state.lastResult };
+  return { auto: autoEnabled() && store.mode() === 'baca', mode: store.mode(), minutes: minutes(), running: state.running, lastCheck: state.lastCheck, lastResult: state.lastResult };
 }
 
 module.exports = { syncNow, start, info };

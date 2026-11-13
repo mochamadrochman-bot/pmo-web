@@ -95,8 +95,11 @@ function clientShim() {
 </script>`;
 }
 
+const UJI_BANNER = '<div id="pmoUjiBanner" style="position:fixed;left:0;right:0;bottom:0;z-index:2147483000;background:#b45309;color:#fff;font:600 13px/1.4 system-ui,sans-serif;padding:6px 12px;text-align:center">MODE UJI COBA — data yang diisi di sini dapat dikembalikan ke versi Google Sheets oleh Admin.</div>';
+
 function wrapPage(out) {
   let html = out.getContent();
+  if (store.mode() === 'uji') html = /<\/body>/i.test(html) ? html.replace(/<\/body>/i, UJI_BANNER + '</body>') : html + UJI_BANNER;
   const head = [
     '<meta charset="utf-8">',
     out.getTitle() && !/<title[\s>]/i.test(html) ? '<title>' + out.getTitle().replace(/</g, '&lt;') + '</title>' : '',
@@ -183,7 +186,7 @@ router.post('/app/rpc/:fn', requireUser, async (req, res) => {
     const reverted = await store.revertDirty();
     clearCache();
     console.warn(JSON.stringify({ ev: 'gas_readonly_block', fn: name, sheets: reverted }));
-    failed = new Error('Server baru masih dalam mode baca-saja. Simpan atau ubah data melalui aplikasi lama (Apps Script) dulu; data di sini diperbarui lewat menu Impor Data.');
+    failed = new Error('Server baru masih dalam mode baca. Simpan atau ubah data melalui aplikasi lama (Apps Script); data di sini mengikuti Google Sheets secara otomatis.');
   }
   try {
     await store.flush();
@@ -202,7 +205,7 @@ router.post('/app/rpc/:fn', requireUser, async (req, res) => {
   }
   if (failed) {
     const msg = String((failed && failed.message) || failed);
-    if (!/^(Sesi|Akun|Halaman|Fitur|Tidak ada|Data)/.test(msg)) {
+    if (!/^(Sesi|Akun|Halaman|Fitur|Tidak ada|Data|Server baru)/.test(msg)) {
       console.error(JSON.stringify({ ev: 'gas_error', fn: name, message: msg.slice(0, 300) }));
     }
     return res.json({ ok: false, error: msg });
