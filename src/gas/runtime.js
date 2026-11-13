@@ -48,6 +48,89 @@ const PORTAL_GROUPS_JS = `function pmoGroupedCards(items,b,card,esc,thumb){
 }
 `;
 
+/** Executive: pengelompokan Pengembangan / Rutin (disisipkan ke ExecutiveDashboard.html). */
+const EXEC_GROUPS_JS = `<script>
+function pmoExecGroups(data){
+  var G=(data.groups&&data.groups.map)||{},N=(data.groups&&data.groups.names)||{};
+  var type=function(id){return (G[id]&&G[id].type)||'PENGEMBANGAN'},par=function(id){return G[id]&&G[id].parent};
+  var esc=function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+  var nm=function(id){return typeof pmoProjName==='function'?pmoProjName(N[id]||id):(N[id]||id)};
+  if(!document.getElementById('pmoXgCss')){var st=document.createElement('style');st.id='pmoXgCss';st.textContent='.xg-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-top:14px}.xg-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r,14px);box-shadow:var(--shadow);padding:16px 18px}.xg-card h4{margin:0 0 2px;font-size:15px}.xg-card .xg-sub{font-size:12px;color:var(--muted);margin-bottom:12px}.xg-kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.xg-kv div{min-width:0}.xg-kv small{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}.xg-kv b{display:block;font-size:18px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.xg-kv em{font-style:normal;font-size:12px;color:var(--muted)}.xg-st{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.xg-st span{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--th)}.xg-st .g{color:#0f6b48}.xg-st .a{color:#8a5a00}.xg-st .r{color:#a52826}.xg-pos{color:#0f6b48}.xg-neg{color:#b42318}tr.xg-h td{text-align:left;background:var(--th);font-weight:700;font-size:13px;letter-spacing:.02em;padding:8px 12px}tr.xg-h td span{font-weight:500;color:var(--muted);margin-left:8px}tr.xg-sub-row td:first-child,tr.xg-sub-row td.xg-name{padding-left:28px}.xg-tag{display:block;font-size:11px;font-weight:600;color:var(--pri2);margin-bottom:2px}tr.xg-tot td{font-weight:700;background:rgba(127,160,190,.10)}@media (max-width:700px){.xg-kv{grid-template-columns:repeat(2,minmax(0,1fr))}}';document.head.appendChild(st)}
+
+  var projects=Array.isArray(data.projects)?data.projects:[];
+  var fin=data.financial,frows=fin&&Array.isArray(fin.rows)?fin.rows:[];
+  var finById={};frows.forEach(function(f){if(f.projectId)finById[f.projectId]=f});
+  // urutan: Pengembangan (induk lalu sub-proyeknya), lalu Rutin
+  var ids=projects.map(function(p){return p.projectId});
+  var subsOf={},present={};ids.forEach(function(id){present[id]=1});
+  ids.forEach(function(id){var pid=par(id);if(type(id)==='SUB'&&pid&&present[pid])(subsOf[pid]=subsOf[pid]||[]).push(id)});
+  var isNested=function(id){var pid=par(id);return type(id)==='SUB'&&pid&&present[pid]};
+  var order={PENGEMBANGAN:[],RUTIN:[]};
+  ids.forEach(function(id){if(isNested(id))return;var t=type(id)==='RUTIN'?'RUTIN':'PENGEMBANGAN';order[t].push(id);(subsOf[id]||[]).forEach(function(s){order[t].push(s)})});
+  var LABEL={PENGEMBANGAN:'Proyek Pengembangan',RUTIN:'Proyek Investasi Rutin'};
+  var groupsUsed=['PENGEMBANGAN','RUTIN'].filter(function(t){return order[t].length});
+
+  // ---------- tabel status proyek ----------
+  var pBody=document.getElementById('projectRows');
+  if(pBody&&projects.length&&pBody.children.length>=projects.length){
+    var trs=Array.prototype.slice.call(pBody.children,0,projects.length),byId={};
+    projects.forEach(function(p,i){byId[p.projectId]=trs[i]});
+    var cols=(trs[0]&&trs[0].children.length)||9;
+    var frag=document.createDocumentFragment();
+    groupsUsed.forEach(function(t){
+      var h=document.createElement('tr');h.className='xg-h';h.setAttribute('data-xg',t);h.innerHTML='<td colspan="'+cols+'">'+LABEL[t]+'<span>'+order[t].length+' proyek</span></td>';frag.appendChild(h);
+      order[t].forEach(function(id){var tr=byId[id];if(!tr)return;tr.setAttribute('data-xg',t);if(type(id)==='SUB'&&par(id)){if(isNested(id))tr.classList.add('xg-sub-row');var b=tr.querySelector('.proj');if(b&&!tr.querySelector('.xg-tag'))b.insertAdjacentHTML('beforebegin','<span class="xg-tag">Sub-proyek · '+esc(nm(par(id)))+'</span>')}frag.appendChild(tr)});
+    });
+    Array.prototype.slice.call(pBody.children).forEach(function(tr){if(tr.id==='stageEmpty')frag.appendChild(tr)});
+    pBody.innerHTML='';pBody.appendChild(frag);pmoXgHeaders();
+  }
+
+  // ---------- tabel keuangan ----------
+  var fBody=document.getElementById('financialRows');
+  if(fBody&&frows.length&&fBody.children.length>=frows.length&&frows.every(function(f){return f.projectId})){
+    var ftrs=Array.prototype.slice.call(fBody.children,0,frows.length),fById={};
+    frows.forEach(function(f,i){fById[f.projectId]=ftrs[i]});
+    var jt=function(v){if(v==null||v===''||!isFinite(Number(v))||Math.abs(Number(v))<0.05)return '—';return Number(v).toLocaleString('id-ID',{minimumFractionDigits:0,maximumFractionDigits:1})};
+    var pc=function(v){return v==null||!isFinite(Number(v))?'—':(Number(v)*100).toLocaleString('id-ID',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'};
+    var sum=function(list,k){var any=false,t=0;list.forEach(function(f){var v=f[k];if(v==null||v==='')return;any=true;t+=Number(v)});return any?t:null};
+    var ff=document.createDocumentFragment(),no=0;
+    groupsUsed.forEach(function(t){
+      var list=order[t].map(function(id){return finById[id]}).filter(Boolean);
+      var h=document.createElement('tr');h.className='xg-h';h.innerHTML='<td colspan="13">'+LABEL[t]+'<span>'+list.length+' proyek</span></td>';ff.appendChild(h);
+      order[t].forEach(function(id){var tr=fById[id];if(!tr)return;no++;if(tr.children[0])tr.children[0].textContent=no;if(type(id)==='SUB'&&par(id)){if(isNested(id))tr.classList.add('xg-sub-row');var c=tr.children[1];if(c&&!c.querySelector('.xg-tag')){c.classList.add('xg-name');c.insertAdjacentHTML('afterbegin','<span class="xg-tag">Sub-proyek · '+esc(nm(par(id)))+'</span>')}}ff.appendChild(tr)});
+      var T={investment:sum(list,'investment'),contract:sum(list,'contract'),weight:sum(list,'weight'),historical:sum(list,'historical'),monthActual:sum(list,'monthActual'),monthRkap:sum(list,'monthRkap'),actualToDate:sum(list,'actualToDate'),rkap2026:sum(list,'rkap2026'),totalToDate:sum(list,'totalToDate')};
+      var tot=document.createElement('tr');tot.className='xg-tot';
+      tot.innerHTML='<td></td><td>Subtotal '+LABEL[t].replace('Proyek ','')+'</td><td>'+jt(T.investment)+'</td><td>'+jt(T.contract)+'</td><td>'+pc(T.weight)+'</td><td>'+jt(T.historical)+'</td><td>'+jt(T.monthActual)+'</td><td>'+jt(T.monthRkap)+'</td><td>'+jt(T.actualToDate)+'</td><td>'+jt(T.rkap2026)+'</td><td>'+jt(T.totalToDate)+'</td><td>'+pc(T.rkap2026?T.actualToDate/T.rkap2026:null)+'</td><td>'+pc(T.investment?T.totalToDate/T.investment:null)+'</td>';
+      if(groupsUsed.length>1)ff.appendChild(tot);
+    });
+    fBody.innerHTML='';fBody.appendChild(ff);
+  }
+
+  // ---------- ringkasan per kelompok ----------
+  var box=document.getElementById('pmoGroupSummary');
+  if(box){
+    var cards=groupsUsed.map(function(t){
+      var list=order[t].map(function(id){return projects[ids.indexOf(id)]}).filter(function(p){return p&&(p.stage||'BERJALAN')==='BERJALAN'});
+      var c={g:0,a:0,r:0};list.forEach(function(p){var s=String(p.status||'');if(s==='On track')c.g++;else if(s==='At risk')c.a++;else if(s==='Critical')c.r++});
+      var wsum=0,aw=0,pw=0,any=false;
+      list.forEach(function(p){if(p.actual==null||p.plan==null||p.pending)return;var f=finById[p.projectId],w=f?Number(f.investment||f.contract||0):0;if(!fin)w=1;if(!(w>0))return;any=true;wsum+=w;aw+=w*Number(p.actual);pw+=w*Number(p.plan)});
+      var act=any?aw/wsum:null,plan=any?pw/wsum:null,dev=any?act-plan:null;
+      var fl=order[t].map(function(id){return finById[id]}).filter(Boolean);
+      var k='<div class="xg-kv"><div><small>Aktual tertimbang</small><b>'+pc(act)+'</b><em>Plan '+pc(plan)+'</em></div><div><small>Deviasi</small><b class="'+(dev==null?'':dev<0?'xg-neg':'xg-pos')+'">'+(dev==null?'—':(dev>0?'+':dev<0?'−':'')+(Math.abs(dev)*100).toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2})+' poin')+'</b><em>Bobot: '+(fin?'nilai investasi':'sama rata')+'</em></div>';
+      if(fin){var inv=sum(fl,'investment'),ttd=sum(fl,'totalToDate');k+='<div><small>Realisasi s.d. bulan ini</small><b>'+(ttd==null?'—':'Rp '+(ttd/1e3).toLocaleString('id-ID',{maximumFractionDigits:1})+' M')+'</b><em>'+pc(inv?ttd/inv:null)+' dari investasi</em></div>'}
+      k+='</div>';
+      return '<article class="xg-card"><h4>'+LABEL[t]+'</h4><div class="xg-sub">'+list.length+' proyek berjalan'+(t==='PENGEMBANGAN'&&order[t].some(function(id){return type(id)==='SUB'})?' · termasuk sub-proyek':'')+'</div>'+k+'<div class="xg-st"><span class="g">'+c.g+' on track</span><span class="a">'+c.a+' at risk</span><span class="r">'+c.r+' critical</span></div></article>';
+    });
+    box.innerHTML=cards.join('');box.hidden=!cards.length;
+  }
+}
+function pmoXgHeaders(){
+  var body=document.getElementById('projectRows');if(!body)return;
+  Array.prototype.forEach.call(body.querySelectorAll('tr.xg-h'),function(h){var t=h.getAttribute('data-xg');var vis=Array.prototype.some.call(body.querySelectorAll('tr[data-stage][data-xg="'+t+'"]'),function(tr){return !tr.hidden});h.hidden=!vis});
+}
+(function(){if(typeof applyStageFilter==='function'){var o=applyStageFilter;applyStageFilter=function(){o.apply(this,arguments);try{pmoXgHeaders()}catch(e){}}}})();
+</script>`;
+
 /** Tambah/Edit Proyek: perilaku isian kelompok proyek (disisipkan ke ProjectSetup.html). */
 const PROJECT_GROUP_JS = `<script>
 function pmoGrpRoutine(){var g=document.getElementById('fGroup');return !!g&&g.value!=='PENGEMBANGAN'}
@@ -136,6 +219,24 @@ const HTML_PATCHES = [
     replace: "const rt=pmoGrpRoutine(),pl=rt?pmoney($('fContract').value):pmoney($('fPlant').value),idc=rt?0:(pmoney($('fIdc').value)||0),pm=rt?0:(pmoney($('fPm').value)||0);",
   },
   { file: 'ProjectSetup', find: '</body>', replace: PROJECT_GROUP_JS + '</body>' },
+  // Executive: ringkasan per kelompok + tabel proyek & keuangan dikelompokkan.
+  {
+    file: 'ExecutiveDashboard',
+    find: '</section>\n\n      <section class="grid g-ov">',
+    replace: '</section>\n      <section class="xg-sum" id="pmoGroupSummary" hidden aria-label="Ringkasan per kelompok proyek"></section>\n\n      <section class="grid g-ov">',
+  },
+  {
+    file: 'ExecutiveDashboard',
+    find: "if(window.pmoIcons)pmoIcons(document.getElementById('reports'));\n}\ndocument.addEventListener('click',function(event){if(!event.target.closest('.period-control'))",
+    replace: "if(window.pmoIcons)pmoIcons(document.getElementById('reports'));\ntry{pmoExecGroups(data)}catch(e){console.warn('pmoExecGroups',e)}\n}\ndocument.addEventListener('click',function(event){if(!event.target.closest('.period-control'))",
+  },
+  { file: 'ExecutiveDashboard', find: "document.addEventListener('DOMContentLoaded',init);else init();\n})();\n</script>\n</body>", replace: "document.addEventListener('DOMContentLoaded',init);else init();\n})();\n</script>\n" + EXEC_GROUPS_JS + '</body>' },
+  // Tambah/Edit Proyek: label pilihan sub-proyek diperjelas.
+  {
+    file: 'ProjectSetup',
+    find: '<option value="SUB">Sub-proyek</option>',
+    replace: '<option value="SUB">Investasi rutin · sub-proyek dari proyek pengembangan</option>',
+  },
   // Panel "Permintaan Akun" lama tidak dipakai lagi: akun dikelola di /admin/akun.
   ...['Portal', 'ExecutiveDashboard'].map((file) => ({
     file,
@@ -234,6 +335,23 @@ ${RETIRED.map((n) => `  ${n} = function () { throw new Error('Akun kini dikelola
     }
     var r = __origSetupSave(token, payload);
     if (r && r.success !== false) __bridge.groupSet(id, type, parent);
+    return r;
+  };
+  // Executive: data kelompok proyek untuk pengelompokan tabel dan ringkasan per kelompok.
+  var __origExec = getExecutiveDashboardData;
+  getExecutiveDashboardData = function (token, requestedPeriod) {
+    var r = __origExec(token, requestedPeriod);
+    try {
+      if (!r || !r.success) return r;
+      var names = {};
+      (loadDb_().allProjects || []).forEach(function (p) { names[p.id] = p.name; });
+      var rows = Array.isArray(r.projects) ? r.projects : [];
+      var fin = r.financial;
+      if (fin && Array.isArray(fin.rows)) {
+        fin = Object.assign({}, fin, { rows: fin.rows.map(function (x, i) { return Object.assign({}, x, { projectId: rows[i] ? rows[i].projectId : '' }); }) });
+      }
+      r = Object.assign({}, r, { financial: fin, groups: { map: __bridge.groups(), names: names } });
+    } catch (e) { /* tanpa kelompok, Executive tampil seperti biasa */ }
     return r;
   };
   getLoginPageHtml = function () {
