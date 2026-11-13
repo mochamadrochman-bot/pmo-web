@@ -128,7 +128,7 @@ function pmoXgHeaders(){
 (function(){if(typeof applyStageFilter==='function'){var o=applyStageFilter;applyStageFilter=function(){o.apply(this,arguments);try{pmoXgHeaders()}catch(e){}}}})();
 /* Data dari cache browser bisa sudah tampil sebelum skrip ini dimuat: kelompokkan sekarang. */
 try{if(typeof currentReportData!=='undefined'&&currentReportData&&!document.querySelector('#projectRows tr.xg-h'))pmoExecGroups(currentReportData)}catch(e){console.warn('pmoExecGroups',e)}
-try{var __st=document.getElementById('exStories');if(__st&&!__st.children.length&&typeof renderExecStories==='function'&&window.pmoGallery)renderExecStories(typeof currentReportData!=='undefined'&&currentReportData?currentReportData.period:'')}catch(e){console.warn('stories',e)}
+try{var __st=document.getElementById('exStories');if(__st&&!__st.querySelector('.gl-st')&&typeof renderExecStories==='function'&&window.pmoGallery)renderExecStories(typeof currentReportData!=='undefined'&&currentReportData?currentReportData.period:'')}catch(e){console.warn('stories',e)}
 </script>`;
 
 /** Tambah/Edit Proyek: perilaku isian kelompok proyek (disisipkan ke ProjectSetup.html). */
