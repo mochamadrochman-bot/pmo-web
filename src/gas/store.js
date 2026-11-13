@@ -152,6 +152,7 @@ async function revertDirty() {
   const names = [];
   for (const b of state.books.values()) {
     for (const d of b.dirtySheets()) {
+      if (writableInReadOnly(d.name)) continue;
       const r = await db.query('select data from gas_sheets where spreadsheet_id = $1 and name = $2', [b.id, d.name]);
       if (r.rows.length) b.sheets.set(d.name, SheetData.fromJSON(r.rows[0].data));
       else b.sheets.delete(d.name);
@@ -164,8 +165,13 @@ async function revertDirty() {
   return names;
 }
 
+// Sheet catatan yang tetap boleh ditulis dalam mode baca-saja (tidak memengaruhi angka dashboard).
+// Isinya akan tertimpa saat sinkron berikutnya dari Google Sheets.
+const READONLY_WRITABLE = (process.env.GAS_READONLY_WRITABLE || 'AI_LOG').split(',').map((x) => x.trim()).filter(Boolean);
+function writableInReadOnly(name) { return READONLY_WRITABLE.includes(name); }
+
 function readOnly() {
   return process.env.GAS_READONLY !== '0';
 }
 
-module.exports = { state, load, flush, revertDirty, readOnly, book, replaceMain, lastImport, summary, MAIN_ID, ensureTables };
+module.exports = { state, load, flush, revertDirty, readOnly, writableInReadOnly, book, replaceMain, lastImport, summary, MAIN_ID, ensureTables };

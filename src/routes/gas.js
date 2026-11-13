@@ -124,7 +124,7 @@ function makeScope(req, res) {
 
 function hasSheetChanges() {
   for (const b of store.state.books.values()) {
-    if (b.deleted.size || b.dirtySheets().length) return true;
+    if (b.deleted.size || b.dirtySheets().some((d) => !store.writableInReadOnly(d.name))) return true;
   }
   return false;
 }
