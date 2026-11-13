@@ -89,3 +89,22 @@ pemeriksaan sebenarnya selalu di server.
 - Migrasi di `db/migrations/*.sql` dijalankan otomatis setiap start. `db/10-core-from-staging.sql`
   tidak ikut, karena mengosongkan data proyek; jalankan manual hanya saat pindah data,
   lalu restart aplikasi supaya cakupan proyek akun baru diterjemahkan.
+
+## Aplikasi lama di server baru (Tahap C)
+
+Halaman Apps Script lama (`legacy/`) dijalankan apa adanya di Node.js lewat lapisan kompatibilitas di `src/gas/`:
+
+| Berkas | Isi |
+|---|---|
+| `src/gas/sheets.js` | Pengganti `SpreadsheetApp` (Spreadsheet, Sheet, Range) |
+| `src/gas/services.js` | Pengganti `CacheService`, `PropertiesService`, `LockService`, `Utilities`, `HtmlService`, dll. |
+| `src/gas/store.js` | Isi spreadsheet disimpan di tabel `gas_sheets`, dimuat ke memori saat start |
+| `src/gas/runtime.js` | Menjalankan semua `.gs` per permintaan (variabel selalu baru, seperti Apps Script) |
+| `src/gas/xlsx-import.js` | Membaca unduhan `.xlsx` dari Google Sheets |
+| `src/routes/gas.js` | `GET /app?page=...` (doGet) dan `POST /app/rpc/:fungsi` (google.script.run) |
+
+- Data diisi lewat **Impor Data** (`/admin/data`): unggah `.xlsx` hasil *File → Download* dari Google Sheets.
+- **Mode baca-saja** aktif secara bawaan (`GAS_READONLY` selain `0`): perubahan data lewat halaman lama dibatalkan,
+  karena rumus spreadsheet belum dihitung ulang di server. Input tetap di aplikasi lama, lalu impor ulang.
+- Fitur yang memakai Google Drive, UrlFetch (Sena/AI), dan email menampilkan pesan "belum tersedia" sampai tahap berikutnya.
+- Untuk memperbarui kode lama: salin ulang berkas dari Apps Script ke `legacy/` (urutan berkas `.gs` ada di `legacy/order.json`).

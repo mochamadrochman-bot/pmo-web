@@ -1,0 +1,799 @@
+<script>
+/* ==========================================================================
+ * EngXlsx: penulis & pembaca .xlsx ringan (JSZip) + template engineering.
+ *   - XBook: menulis workbook (gaya, rumus, validasi, format bersyarat, proteksi)
+ *   - readXlsx: membaca nilai sel dari file .xlsx yang diunggah
+ *   - engBuildBaseline / engBuildRealisasi: template baseline & realisasi mingguan
+ *   - engParseBaseline / engParseRealisasi: membaca isian template
+ * ========================================================================== */
+(function (G) {
+  'use strict';
+  const XML_ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
+  const xe = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return XML_ESC[c]; }); };
+  const colL = function (n) { let s = ''; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
+  const colN = function (s) { let n = 0; for (let i = 0; i < s.length; i++) n = n * 26 + s.charCodeAt(i) - 64; return n; };
+  const ref = function (r, c) { return colL(c) + r; };
+  // tanggal ISO (yyyy-mm-dd) <-> serial Excel
+  const EPOCH = Date.UTC(1899, 11, 30);
+  const isoToSerial = function (iso) { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || '')); if (!m) return null; return (Date.UTC(+m[1], +m[2] - 1, +m[3]) - EPOCH) / 864e5; };
+  const serialToIso = function (n) { const d = new Date(EPOCH + Math.round(Number(n) * 864e5)); return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0'); };
+  const dtSerial = function (dt) { return (Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate(), dt.getHours(), dt.getMinutes()) - EPOCH) / 864e5; };
+
+  // ------------------------------------------------------------------ penulis
+  function XBook() {
+    this.sheets = []; this.fonts = ['<font><sz val="10"/><name val="Arial"/></font>']; this.fills = ['<fill><patternFill patternType="none"/></fill>', '<fill><patternFill patternType="gray125"/></fill>'];
+    this.borders = ['<border><left/><right/><top/><bottom/><diagonal/></border>']; this.numFmts = []; this.xfs = ['<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>']; this.xfKey = { '{}': 0 };
+    this.dxfs = []; this.active = 0;
+  }
+  XBook.prototype._idx = function (list, xml) { let i = list.indexOf(xml); if (i < 0) { list.push(xml); i = list.length - 1; } return i; };
+  /** o: {b,i,color,sz,fill,border,fmt,h,v,wrap,unlocked} */
+  XBook.prototype.style = function (o) {
+    o = o || {}; const key = JSON.stringify(o); if (this.xfKey[key] !== undefined) return this.xfKey[key];
+    const font = '<font>' + (o.b ? '<b/>' : '') + (o.i ? '<i/>' : '') + '<sz val="' + (o.sz || 10) + '"/>' + (o.color ? '<color rgb="FF' + o.color + '"/>' : '') + '<name val="Arial"/></font>';
+    const fontId = this._idx(this.fonts, font);
+    const fillId = o.fill ? this._idx(this.fills, '<fill><patternFill patternType="solid"><fgColor rgb="FF' + o.fill + '"/><bgColor indexed="64"/></patternFill></fill>') : 0;
+    const side = '<%s style="thin"><color rgb="FFD3DDE7"/></%s>';
+    const borderId = o.border ? this._idx(this.borders, '<border>' + ['left', 'right', 'top', 'bottom'].map(function (s) { return side.replace(/%s/g, s); }).join('') + '<diagonal/></border>') : 0;
+    let numFmtId = 0;
+    if (o.fmt) { const builtIn = { '0': 1, '0.00': 2, '@': 49 }; if (builtIn[o.fmt] !== undefined) numFmtId = builtIn[o.fmt]; else { let i = this.numFmts.indexOf(o.fmt); if (i < 0) { this.numFmts.push(o.fmt); i = this.numFmts.length - 1; } numFmtId = 164 + i; } }
+    const align = (o.h || o.v || o.wrap) ? '<alignment' + (o.h ? ' horizontal="' + o.h + '"' : '') + (o.v ? ' vertical="' + o.v + '"' : '') + (o.wrap ? ' wrapText="1"' : '') + '/>' : '';
+    const prot = o.unlocked ? '<protection locked="0"/>' : '';
+    const xf = '<xf numFmtId="' + numFmtId + '" fontId="' + fontId + '" fillId="' + fillId + '" borderId="' + borderId + '" xfId="0"' + (numFmtId ? ' applyNumberFormat="1"' : '') + (fontId ? ' applyFont="1"' : '') + (fillId ? ' applyFill="1"' : '') + (borderId ? ' applyBorder="1"' : '') + (align ? ' applyAlignment="1"' : '') + (prot ? ' applyProtection="1"' : '') + (align || prot ? '>' + align + prot + '</xf>' : '/>');
+    this.xfs.push(xf); this.xfKey[key] = this.xfs.length - 1; return this.xfs.length - 1;
+  };
+  /** dxf untuk format bersyarat: {color,b,fill} */
+  XBook.prototype.dxf = function (o) {
+    const xml = '<dxf>' + (o.color || o.b ? '<font>' + (o.b ? '<b/>' : '') + (o.color ? '<color rgb="FF' + o.color + '"/>' : '') + '</font>' : '') + (o.fill ? '<fill><patternFill patternType="solid"><fgColor rgb="FF' + o.fill + '"/><bgColor rgb="FF' + o.fill + '"/></patternFill></fill>' : '') + '</dxf>';
+    return this._idx(this.dxfs, xml);
+  };
+  XBook.prototype.sheet = function (name) { const s = new XSheet(this, name); this.sheets.push(s); return s; };
+
+  function XSheet(book, name) { this.book = book; this.name = name; this.rows = {}; this.cols = {}; this.heights = {}; this.merges = []; this.dvs = []; this.cfs = []; this.freeze = null; this.filter = null; this.protect = null; this.maxR = 0; this.maxC = 0; }
+  /** v: number | string | {f:'rumus tanpa ='} | {d:'yyyy-mm-dd'} | {dt:Date} | null */
+  XSheet.prototype.set = function (r, c, v, s) {
+    if (typeof c === 'string') c = colN(c);
+    (this.rows[r] = this.rows[r] || {})[c] = { v: v, s: s || 0 };
+    if (r > this.maxR) this.maxR = r; if (c > this.maxC) this.maxC = c; return this;
+  };
+  XSheet.prototype.styleRange = function (r1, c1, r2, c2, s) { for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++) { const row = this.rows[r] = this.rows[r] || {}; if (row[c]) row[c].s = s; else row[c] = { v: null, s: s }; if (r > this.maxR) this.maxR = r; if (c > this.maxC) this.maxC = c; } };
+  XSheet.prototype.width = function (c, w) { if (typeof c === 'string') c = colN(c); this.cols[c] = w; return this; };
+  XSheet.prototype.height = function (r, h) { this.heights[r] = h; return this; };
+  XSheet.prototype.merge = function (a) { this.merges.push(a); return this; };
+  XSheet.prototype.dv = function (o) { this.dvs.push(o); return this; };
+  XSheet.prototype.cf = function (sqref, formula, dxfId) { this.cfs.push({ sqref: sqref, formula: formula, dxf: dxfId }); return this; };
+  XSheet.prototype.xml = function (idx, active) {
+    const out = ['<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'];
+    out.push('<dimension ref="A1:' + ref(Math.max(1, this.maxR), Math.max(1, this.maxC)) + '"/>');
+    let pane = '';
+    if (this.freeze) { const fr = this.freeze.r - 1, fc = this.freeze.c - 1; pane = '<pane' + (fc ? ' xSplit="' + fc + '"' : '') + (fr ? ' ySplit="' + fr + '"' : '') + ' topLeftCell="' + ref(this.freeze.r, this.freeze.c) + '" activePane="' + (fr && fc ? 'bottomRight' : fr ? 'bottomLeft' : 'topRight') + '" state="frozen"/>'; }
+    out.push('<sheetViews><sheetView workbookViewId="0"' + (active ? ' tabSelected="1"' : '') + '>' + pane + '</sheetView></sheetViews><sheetFormatPr defaultRowHeight="13.2"/>');
+    const cs = Object.keys(this.cols).map(Number).sort(function (a, b) { return a - b; });
+    if (cs.length) out.push('<cols>' + cs.map(function (c) { return '<col min="' + c + '" max="' + c + '" width="' + this.cols[c] + '" customWidth="1"/>'; }, this).join('') + '</cols>');
+    out.push('<sheetData>');
+    const rs = Object.keys(this.rows).map(Number).sort(function (a, b) { return a - b; });
+    for (let k = 0; k < rs.length; k++) {
+      const r = rs[k], row = this.rows[r];
+      const h = this.heights[r];
+      let line = '<row r="' + r + '"' + (h ? ' ht="' + h + '" customHeight="1"' : '') + '>';
+      const cc = Object.keys(row).map(Number).sort(function (a, b) { return a - b; });
+      for (let j = 0; j < cc.length; j++) {
+        const c = cc[j], cell = row[c], v = cell.v, a = ref(r, c), s = cell.s ? ' s="' + cell.s + '"' : '';
+        if (v === null || v === undefined || v === '') line += '<c r="' + a + '"' + s + '/>';
+        else if (typeof v === 'number') line += isFinite(v) ? '<c r="' + a + '"' + s + '><v>' + v + '</v></c>' : '<c r="' + a + '"' + s + '/>';
+        else if (typeof v === 'object' && v.f) line += '<c r="' + a + '"' + s + '><f>' + xe(v.f) + '</f></c>';
+        else if (typeof v === 'object' && v.d !== undefined) { const n = isoToSerial(v.d); line += n === null ? '<c r="' + a + '"' + s + '/>' : '<c r="' + a + '"' + s + '><v>' + n + '</v></c>'; }
+        else if (typeof v === 'object' && v.dt) line += '<c r="' + a + '"' + s + '><v>' + dtSerial(v.dt) + '</v></c>';
+        else line += '<c r="' + a + '"' + s + ' t="inlineStr"><is><t xml:space="preserve">' + xe(v) + '</t></is></c>';
+      }
+      out.push(line + '</row>');
+    }
+    out.push('</sheetData>');
+    if (this.protect) { const p = this.protect; out.push('<sheetProtection sheet="1" objects="1" scenarios="1"' + (p.formatColumns ? ' formatColumns="0"' : '') + (p.formatRows ? ' formatRows="0"' : '') + (p.sort ? ' sort="0"' : '') + (p.autoFilter ? ' autoFilter="0"' : '') + '/>'); }
+    if (this.filter) out.push('<autoFilter ref="' + this.filter + '"/>');
+    if (this.merges.length) out.push('<mergeCells count="' + this.merges.length + '">' + this.merges.map(function (m) { return '<mergeCell ref="' + m + '"/>'; }).join('') + '</mergeCells>');
+    let prio = 1;
+    this.cfs.forEach(function (c) { out.push('<conditionalFormatting sqref="' + c.sqref + '"><cfRule type="expression" dxfId="' + c.dxf + '" priority="' + (prio++) + '"><formula>' + xe(c.formula) + '</formula></cfRule></conditionalFormatting>'); });
+    if (this.dvs.length) {
+      out.push('<dataValidations count="' + this.dvs.length + '">' + this.dvs.map(function (d) {
+        return '<dataValidation type="' + d.type + '"' + (d.operator ? ' operator="' + d.operator + '"' : '') + ' allowBlank="1" showInputMessage="1" showErrorMessage="1"' + (d.error ? ' errorTitle="Isian tidak valid" error="' + xe(d.error) + '"' : '') + ' sqref="' + d.sqref + '"><formula1>' + xe(d.f1) + '</formula1>' + (d.f2 !== undefined ? '<formula2>' + xe(d.f2) + '</formula2>' : '') + '</dataValidation>';
+      }).join('') + '</dataValidations>');
+    }
+    out.push('<pageMargins left="0.5" right="0.5" top="0.6" bottom="0.6" header="0.3" footer="0.3"/></worksheet>');
+    return out.join('');
+  };
+  XBook.prototype.files = function () {
+    const n = this.sheets.length, self = this;
+    const f = {};
+    f['[Content_Types].xml'] = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
+      this.sheets.map(function (s, i) { return '<Override PartName="/xl/worksheets/sheet' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'; }).join('') +
+      '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/></Types>';
+    f['_rels/.rels'] = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>';
+    const now = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
+    f['docProps/core.xml'] = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:creator>PMO Dashboard</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">' + now + '</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">' + now + '</dcterms:modified></cp:coreProperties>';
+    f['docProps/app.xml'] = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>Microsoft Excel</Application></Properties>';
+    const filters = [];
+    this.sheets.forEach(function (s, i) { if (s.filter) { const m = /^([A-Z]+)(\d+):([A-Z]+)(\d+)$/.exec(s.filter); filters.push('<definedName name="_xlnm._FilterDatabase" localSheetId="' + i + '" hidden="1">\'' + xe(s.name) + '\'!$' + m[1] + '$' + m[2] + ':$' + m[3] + '$' + m[4] + '</definedName>'); } });
+    f['xl/workbook.xml'] = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView activeTab="' + this.active + '"/></bookViews><sheets>' +
+      this.sheets.map(function (s, i) { return '<sheet name="' + xe(s.name) + '" sheetId="' + (i + 1) + '" r:id="rId' + (i + 1) + '"/>'; }).join('') + '</sheets>' + (filters.length ? '<definedNames>' + filters.join('') + '</definedNames>' : '') + '<calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>';
+    f['xl/_rels/workbook.xml.rels'] = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      this.sheets.map(function (s, i) { return '<Relationship Id="rId' + (i + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' + (i + 1) + '.xml"/>'; }).join('') +
+      '<Relationship Id="rId' + (n + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+    f['xl/styles.xml'] = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+      (this.numFmts.length ? '<numFmts count="' + this.numFmts.length + '">' + this.numFmts.map(function (x, i) { return '<numFmt numFmtId="' + (164 + i) + '" formatCode="' + xe(x) + '"/>'; }).join('') + '</numFmts>' : '') +
+      '<fonts count="' + this.fonts.length + '">' + this.fonts.join('') + '</fonts><fills count="' + this.fills.length + '">' + this.fills.join('') + '</fills><borders count="' + this.borders.length + '">' + this.borders.join('') + '</borders>' +
+      '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="' + this.xfs.length + '">' + this.xfs.join('') + '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>' +
+      '<dxfs count="' + this.dxfs.length + '">' + this.dxfs.join('') + '</dxfs></styleSheet>';
+    this.sheets.forEach(function (s, i) { f['xl/worksheets/sheet' + (i + 1) + '.xml'] = s.xml(i, i === self.active); });
+    return f;
+  };
+  /** type: 'blob' (browser) | 'nodebuffer' (uji) */
+  XBook.prototype.generate = function (JSZipLib, type) {
+    const zip = new JSZipLib(); const f = this.files();
+    Object.keys(f).forEach(function (k) { zip.file(k, f[k]); });
+    return zip.generateAsync({ type: type || 'blob', compression: 'DEFLATE', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  };
+
+  // ------------------------------------------------------------------ pembaca
+  const ENT = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
+  const unx = function (s) { return String(s).replace(/&(#x?[0-9a-fA-F]+|amp|lt|gt|quot|apos);/g, function (m, e) { if (e.charAt(0) === '#') return String.fromCodePoint(e.charAt(1) === 'x' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10)); return ENT[e]; }); };
+  const textOf = function (xml) { let t = ''; const re = /<t(?:\s[^>]*)?>([\s\S]*?)<\/t>|<t(?:\s[^>]*)?\/>/g; let m; while ((m = re.exec(xml))) t += m[1] ? unx(m[1]) : ''; return t; };
+  async function readXlsx(JSZipLib, data) {
+    const zip = await JSZipLib.loadAsync(data);
+    const get = async function (p) { const f = zip.file(p) || zip.file(p.replace(/^\//, '')); return f ? f.async('string') : null; };
+    const wb = await get('xl/workbook.xml'); if (!wb) throw new Error('File bukan workbook Excel (.xlsx).');
+    const rels = (await get('xl/_rels/workbook.xml.rels')) || '';
+    const relMap = {}; rels.replace(/<Relationship\b[^>]*>/g, function (tag) { const id = /\bId="([^"]+)"/.exec(tag), t = /\bTarget="([^"]+)"/.exec(tag); if (id && t) relMap[id[1]] = t[1]; return ''; });
+    const ssXml = await get('xl/sharedStrings.xml'); const shared = [];
+    if (ssXml) { const re = /<si>([\s\S]*?)<\/si>|<si\/>/g; let m; while ((m = re.exec(ssXml))) shared.push(m[1] ? textOf(m[1]) : ''); }
+    const out = {};
+    const sheetTags = wb.match(/<sheet\b[^>]*>/g) || [];
+    for (let i = 0; i < sheetTags.length; i++) {
+      const tag = sheetTags[i];
+      const name = unx((/\bname="([^"]*)"/.exec(tag) || [])[1] || ''); const rid = (/\br:id="([^"]+)"/.exec(tag) || /\bid="([^"]+)"/.exec(tag) || [])[1];
+      let target = relMap[rid]; if (!target) continue;
+      target = target.replace(/^\//, ''); if (target.indexOf('xl/') !== 0) target = 'xl/' + target;
+      const xml = await get(target); if (!xml) continue;
+      const cells = {};
+      const re = /<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g; let m;
+      while ((m = re.exec(xml))) {
+        const attrs = m[1], body = m[2] || '';
+        const r = (/\br="([A-Z]+\d+)"/.exec(attrs) || [])[1]; if (!r) continue;
+        const t = (/\bt="([^"]+)"/.exec(attrs) || [])[1] || 'n';
+        const vm = /<v>([\s\S]*?)<\/v>/.exec(body);
+        let v = null;
+        if (t === 's') v = vm ? shared[Number(vm[1])] : null;
+        else if (t === 'inlineStr') v = textOf(body);
+        else if (t === 'str') v = vm ? unx(vm[1]) : null;
+        else if (t === 'b') v = vm ? vm[1] === '1' : null;
+        else if (t === 'e') v = null;
+        else v = vm && vm[1] !== '' ? Number(vm[1]) : null;
+        if (v !== null && v !== '') cells[r] = v;
+      }
+      out[name] = cells;
+    }
+    return out;
+  }
+
+  // ------------------------------------------------------------------ template
+  const C = { NAVY: '0F2B46', INP: 'FFF7D6', CALC: 'EEF3F8', LOCK: 'E9EEF3', TITLE: '073B63', SUB: '5B7085', BLUE: '0000FF', RED: 'C0302F', GREY: 'D9DEE4' };
+  const DISC = ['SIPIL', 'MEKANIKAL', 'PIPING', 'ELEKTRIKAL', 'INSTRUMENTASI', 'PROSES', 'HSE', 'UMUM'];
+  const TYPES = ['DED / DRAWING', 'CALCULATION REPORT', 'DATA SHEET', 'MATERIAL REQUISITION', 'APPROVAL MATERIAL', 'PROSEDUR KERJA', 'PHDS', 'ITP', 'HSE PLAN', 'SPESIFIKASI TEKNIS', 'LAINNYA'];
+  const DEFAULT_PARAMS = { pola: { P1: [30, 40, 30, 0], P2: [0, 50, 50, 0], P3: [40, 0, 60, 0], P4: [0, 0, 0, 100], P5: [0, 0, 100, 0], P6: [25, 30, 35, 10] }, porsi: 50, durasi: 14,
+    codes: [[1, 'Disetujui (Approved)', 'YA', 'Tahap diakui 100%, dokumen lanjut ke tahap berikutnya.'], [2, 'Disetujui dengan catatan (Approved with comments)', 'YA', 'Tahap diakui 100%; catatan dimasukkan di tahap berikutnya.'],
+      [3, 'Revisi dan kirim ulang (Revise & resubmit)', 'TIDAK', 'Tetap di porsi terbit; kontraktor kirim ulang (KIRIM_KE naik).'], [4, 'Ditolak (Rejected)', 'TIDAK', 'Tetap di porsi terbit; dokumen disusun ulang dan dikirim ulang.']] };
+  const POLA_NAME = { P1: 'Review penuh (IFR → IFA → IFC)', P2: 'Tanpa IFR (IFA → IFC)', P3: 'Tanpa IFA (IFR → IFC)', P4: 'Informasi (IFI saja)', P5: 'Langsung IFC', P6: 'Review + informasi akhir (IFR → IFA → IFC → IFI)' };
+  const STG = ['IFR', 'IFA', 'IFC', 'IFI'], POLA_ROWS = 8; // PARAMETER: pola di baris 5–12
+  const PPOS = { porsi: 16, durasi: 17, code0: 21, code1: 26 };
+  function polaKeys(P) { return Object.keys(P.pola || {}).sort(function (a, b) { return Number(a.slice(1)) - Number(b.slice(1)); }).slice(0, POLA_ROWS); }
+  function polaName(P, k) { return (P.polaName && P.polaName[k]) || POLA_NAME[k] || k; }
+  function polaW(P, k) { const v = P.pola && P.pola[k]; return Array.isArray(v) && v.length === 4 ? v.map(Number) : [0, 0, 0, 0]; }
+  function polaUses(w) { return STG.filter(function (k, i) { return w[i] > 0; }).join(' → '); }
+  const EXAMPLES = [
+    { no: 'C-02-40-2340-26-01', name: 'Contoh: DED Layout Dermaga', disc: 'SIPIL', type: 'DED / DRAWING', wbs: '1.4 Desain Drawing', w: 0.5, pola: 'P1', m: '2024-12-16', p: ['2025-01-06', '2025-01-27', '2025-02-17', ''], note: 'Contoh baris, hapus sebelum dipakai' },
+    { no: 'G-00-40-2340-90-01', name: 'Contoh: Plot Plan Eksisting', disc: 'UMUM', type: 'DED / DRAWING', wbs: 'Umum', w: 0.1, pola: 'P4', m: '2025-01-03', p: ['', '', '', '2025-01-10'], note: 'Contoh dokumen informasi (IFI saja)' }];
+
+  function stylesFor(b) {
+    return {
+      title: b.style({ b: 1, sz: 14, color: C.TITLE }), sub: b.style({ color: C.SUB }), sec: b.style({ b: 1, sz: 11, color: C.TITLE }),
+      txt: b.style({}), bold: b.style({ b: 1 }), boldTop: b.style({ b: 1, v: 'top' }), wrap: b.style({ wrap: 1, v: 'top' }),
+      head: function (fill) { return b.style({ b: 1, color: 'FFFFFF', fill: fill || C.NAVY, h: 'center', v: 'center', wrap: 1, border: 1 }); },
+      inp: function (fmt, extra) { return b.style(Object.assign({ color: C.BLUE, fill: C.INP, border: 1, unlocked: 1, fmt: fmt }, extra || {})); },
+      calc: function (fmt, extra) { return b.style(Object.assign({ fill: C.CALC, border: 1, fmt: fmt }, extra || {})); },
+      lock: function (fmt, extra) { return b.style(Object.assign({ fill: C.LOCK, border: 1, fmt: fmt, h: 'left' }, extra || {})); }
+    };
+  }
+  function petunjuk(b, S, title, subtitle, rows, legendFills) {
+    const ws = b.sheet('PETUNJUK');
+    ws.set(1, 1, title, S.title); ws.set(2, 1, subtitle, S.sub);
+    let r = 4;
+    rows.forEach(function (x) {
+      if (x[1] === null) { r++; ws.set(r, 1, x[0], S.sec); }
+      else { ws.set(r, 1, x[0], S.boldTop); ws.set(r, 2, x[1], S.wrap); }
+      r++;
+    });
+    legendFills.forEach(function (lf, i) { const rr = r - legendFills.length + i; ws.set(rr, 1, rows[rows.length - legendFills.length + i][0], b.style({ b: 1, v: 'top', fill: lf })); });
+    ws.width(1, 24).width(2, 112);
+    return ws;
+  }
+  function infoSheet(b, S, title, subtitle, items) {
+    const wi = b.sheet('INFO');
+    wi.set(1, 1, title, S.title); wi.set(2, 1, subtitle, S.sub);
+    ['Isian', 'Nilai', 'Sumber'].forEach(function (h, j) { wi.set(3, j + 1, h, S.head()); });
+    wi.width(1, 30).width(2, 46).width(3, 64);
+    const rows = {}; let r = 4;
+    items.forEach(function (it) {
+      if (it.section) { wi.set(r, 1, it.section, S.sec); r++; return; }
+      wi.set(r, 1, it.k, S.bold); wi.set(r, 3, it.src || '', S.sub);
+      const fmt = it.fmt || (it.v && it.v.d !== undefined ? 'dd-mmm-yyyy' : it.v && it.v.dt ? 'dd-mmm-yyyy hh:mm' : undefined);
+      wi.set(r, 2, it.v === undefined ? null : it.v, it.input ? S.inp(fmt, { h: 'left', wrap: 1 }) : S.lock(fmt));
+      if (it.h) wi.height(r, it.h);
+      rows[it.k] = r; r++;
+    });
+    wi.protect = { formatColumns: 1 };
+    return { ws: wi, rows: rows, next: r };
+  }
+
+  /**
+   * ctx: { project:{id,fullName,team,start,finish,contractor,maxWeek}, rev, user, now:Date,
+   *        params (opsional, default DEFAULT_PARAMS), docs:[{no,name,disc,type,wbs,w,pola,m,p:[4],note}], examples:bool, note }
+   */
+  function engBuildBaseline(ctx) {
+    const b = new XBook(), S = stylesFor(b), P = ctx.params || DEFAULT_PARAMS;
+    const docs = ctx.docs && ctx.docs.length ? ctx.docs : (ctx.examples ? EXAMPLES : []);
+    const N = Math.max(2000, docs.length + 500);
+    const LAST = N + 1;
+    const weeks = Math.min(260, Math.max(60, (Number(ctx.project.maxWeek) || 0) + 12));
+
+    petunjuk(b, S, 'Template Baseline Kontrol Engineering', 'Diisi sekali di awal proyek (atau saat revisi baseline), lalu diunggah admin proyek di EPCC Control › Engineering › Setup.', [
+      ['Langkah', null],
+      ['1. INFO', 'Tidak perlu diisi. Data proyek dan nomor revisi diisi otomatis oleh dashboard saat template diunduh. Hanya CATATAN_REVISI yang diisi bila ini revisi baseline.'],
+      ['2. PARAMETER', '(a) Pola tahap (maks. 8, kode P1…P99): bobot IFR/IFA/IFC/IFI per pola, total 100; isi 0 untuk tahap yang tidak dipakai. Contoh bawaan: P1 review penuh, P2 tanpa IFR, P3 tanpa IFA, P4 informasi (IFI saja), P5 langsung IFC, P6 review + IFI. Boleh diubah, ditambah atau dihapus. (b) PORSI_TERBIT_% dan DURASI_REVIEW_HARI. (c) Kode status review owner dan apakah kode itu dianggap disetujui. Semua berlaku per proyek.'],
+      ['3. DOKUMEN', 'Daftar semua dokumen engineering: nomor, nama, disiplin, jenis, bobot dokumen, pola, rencana mulai, dan rencana tanggal terbit tiap tahap.'],
+      ['4. KURVA_S', 'Terhitung otomatis dari DOKUMEN. Periksa bentuk kurvanya sebelum diunggah.'],
+      ['5. Unggah', 'EPCC Control › Engineering › Setup › Unggah baseline. File hanya diterima di proyek yang sama dengan PROYEK_ID di sheet INFO. Untuk revisi, unduh "baseline aktif" agar daftar dokumen lama sudah terisi, ubah seperlunya, lalu unggah ulang.'],
+      ['Istilah tahap', null], ['IFR', 'Issued For Review: dokumen diajukan untuk direview owner.'], ['IFA', 'Issued For Approval: dokumen hasil review diajukan untuk disetujui.'],
+      ['IFC', 'Issued For Construction: dokumen final untuk pelaksanaan.'], ['IFI', 'Issued For Information: dokumen untuk informasi, tanpa proses persetujuan.'],
+      ['Aturan', null], ['BOBOT_DOK_%', 'Bobot dokumen terhadap total engineering. Jumlah semua dokumen = 100.'],
+      ['Bobot tahap', 'Diambil dari PARAMETER sesuai pola dokumen. Contoh: dokumen bobot 2% pola P1 (30/40/30) → IFR 0,6% · IFA 0,8% · IFC 0,6%. Tahap berikutnya baru dihitung setelah tahap sebelumnya (yang dipakai pola) disetujui.'],
+      ['Terbit vs disetujui', 'Tiap tahap IFR/IFA/IFC: saat terbit diakui PORSI_TERBIT_% dari bobot tahap (contoh 50% → IFR terbit = 0,3%); saat kode status = disetujui diakui 100% (0,6%) dan dokumen boleh lanjut ke tahap berikutnya. Kirim ulang tidak menambah progres. IFI diakui 100% saat terbit.'],
+      ['RENCANA_MULAI', 'Tanggal rencana dokumen mulai disusun. Wajib untuk semua dokumen dan tidak boleh setelah tanggal terbit pertama. Dipakai untuk memantau dokumen yang seharusnya sudah dikerjakan; tidak menambah progres.'],
+      ['Tanggal rencana terbit', 'RENCANA_IFR/IFA/IFC/IFI = tanggal dokumen diserahkan dengan status tersebut. Isi hanya tahap yang dipakai pola dokumen (bobot tahap > 0), urut IFR ≤ IFA ≤ IFC ≤ IFI; kolom tahap lain dikosongkan.'],
+      ['Progres mingguan', 'Realisasi diisi terpisah di template realisasi mingguan (tanggal terbit, kiriman ke-, kode status), yang dibuat otomatis oleh dashboard dari baseline ini.'],
+      ['Pemeriksaan saat unggah', null],
+      ['Ditolak', 'Nomor dokumen kosong/ganda · baris contoh belum dihapus · rencana mulai kosong atau setelah tanggal terbit pertama · bobot kosong · pola tidak ada di PARAMETER · total bobot dokumen ≠ 100 (±0,5) · total bobot tahap pola ≠ 100 · tanggal rencana kosong untuk tahap yang dipakai pola · tanggal diisi pada tahap yang tidak dipakai pola · urutan tanggal terbalik · CATATAN_REVISI kosong pada revisi ≥ 1.'],
+      ['Peringatan', 'Rencana sebelum tanggal mulai proyek · rencana terbit tahap berikutnya lebih awal dari rencana terbit + durasi review · IFR dan IFC direncanakan dalam 7 hari yang sama · disiplin atau jenis di luar daftar baku · rencana IFC terakhir melewati jadwal proyek.'],
+      ['Legenda', null], ['Kuning', 'Sel diisi tim proyek.'], ['Abu-abu', 'Sel hitung otomatis, jangan diubah.'], ['Abu-abu (INFO)', 'Diisi dashboard dari data proyek, terkunci.']], [C.INP, C.CALC, C.LOCK]);
+
+    const pj = ctx.project;
+    const info = infoSheet(b, S, 'Informasi baseline', 'Sheet ini diisi otomatis oleh dashboard saat template diunduh dari halaman Setup Engineering proyek. Tidak perlu diisi, kecuali CATATAN_REVISI.', [
+      { section: 'Data proyek' },
+      { k: 'PROYEK_ID', v: pj.id, src: 'Data proyek di dashboard (Tambah / Edit Proyek). Dipakai untuk mencocokkan file dengan proyek.' },
+      { k: 'NAMA_PROYEK', v: pj.fullName || pj.name, src: 'Data proyek di dashboard' }, { k: 'TIM', v: pj.team || '', src: 'Data proyek di dashboard' },
+      { k: 'TANGGAL_MULAI', v: { d: pj.start }, src: 'Data proyek: tanggal efektif mulai = awal WEEK 1' }, { k: 'TANGGAL_SELESAI', v: pj.finish ? { d: pj.finish } : '', src: 'Data proyek: tanggal efektif selesai' },
+      { k: 'KONTRAKTOR', v: pj.contractor || '', src: 'Data proyek di dashboard' }, { k: 'JUMLAH_WEEK', v: Number(pj.maxWeek) || '', src: 'Data proyek: durasi dalam minggu' },
+      { section: 'Revisi' },
+      { k: 'REVISI_BASELINE', v: ctx.rev, src: 'Ditentukan sistem: 0 untuk baseline pertama, naik 1 setiap unggah ulang' },
+      { k: 'DIUNDUH_OLEH', v: ctx.user || '', src: 'Akun yang mengunduh template' }, { k: 'DIUNDUH_PADA', v: { dt: ctx.now || new Date() }, src: 'Waktu template diunduh' },
+      { k: 'CATATAN_REVISI', v: ctx.note || '', input: 1, h: 30, src: 'DIISI ADMIN. Wajib bila revisi ≥ 1: alasan perubahan baseline.' }]);
+    const wi = info.ws, IR = info.rows, RS = info.next + 1;
+    wi.set(RS, 1, 'Ringkasan otomatis', S.sec);
+    const sum = [['Jumlah dokumen', 'COUNTA(DOKUMEN!B2:B' + LAST + ')', '0'], ['Total bobot dokumen (harus 100)', 'SUM(DOKUMEN!G2:G' + LAST + ')', '0.00'],
+      ['Cek total bobot', 'IF(ABS(B' + (RS + 2) + '-100)<=0.5,"OK","TIDAK 100")', '@'], ['Baris dengan catatan cek', 'SUMPRODUCT(--(LEN(DOKUMEN!S2:S' + LAST + ')>0))', '0'],
+      ['Rencana IFC terakhir', 'MAX(DOKUMEN!L2:L' + LAST + ')', 'dd-mmm-yyyy'], ['Week IFC terakhir', 'IF(B' + (RS + 5) + '=0,"",INT((B' + (RS + 5) + '-$B$' + IR.TANGGAL_MULAI + ')/7)+1)', '0'],
+      ['Cek terhadap jadwal proyek', 'IF(OR(B' + (RS + 6) + '="",B' + IR.JUMLAH_WEEK + '=""),"",IF(B' + (RS + 6) + '<=B' + IR.JUMLAH_WEEK + ',"OK","MELEWATI JUMLAH_WEEK"))', '@']];
+    sum.forEach(function (s, i) { wi.set(RS + 1 + i, 1, s[0], S.bold); wi.set(RS + 1 + i, 2, { f: s[1] }, S.calc(s[2], { h: 'left' })); });
+
+    // PARAMETER
+    const wp = b.sheet('PARAMETER');
+    wp.set(1, 1, 'Pola tahap, parameter progres & kode status', S.title); wp.set(2, 1, 'Bobot tahap dalam persen dari bobot dokumen. Isi 0 bila tahap tidak berlaku.', S.sub);
+    ['KODE_POLA', 'NAMA_POLA', 'IFR_%', 'IFA_%', 'IFC_%', 'IFI_%', 'TOTAL', 'CEK'].forEach(function (h, j) { wp.set(4, j + 1, h, S.head()); });
+    const PK = polaKeys(P);
+    for (let i = 0; i < POLA_ROWS; i++) {
+      const r = 5 + i, k = PK[i];
+      wp.set(r, 1, k || null, S.inp()); wp.set(r, 2, k ? polaName(P, k) : null, S.inp());
+      for (let j = 0; j < 4; j++) wp.set(r, 3 + j, k ? polaW(P, k)[j] : null, S.inp());
+      wp.set(r, 7, { f: 'IF(A' + r + '="","",SUM(C' + r + ':F' + r + '))' }, S.calc()); wp.set(r, 8, { f: 'IF(A' + r + '="","",IF(G' + r + '=100,"OK","TOTAL ≠ 100"))' }, S.calc());
+    }
+    wp.set(13, 1, 'Kode pola P1…P99. Isi 0 untuk tahap yang tidak dipakai; urutan selalu IFR → IFA → IFC → IFI. Baris kosong boleh diisi pola baru.', S.sub);
+    wp.cf('H5:H12', 'H5="TOTAL ≠ 100"', b.dxf({ color: C.RED, b: 1 }));
+    wp.set(15, 1, 'Parameter progres (per proyek)', S.sec);
+    [[PPOS.porsi, 'PORSI_TERBIT_%', P.porsi, 'Bagian bobot tahap yang diakui saat dokumen TERBIT (belum disetujui). Sisanya diakui saat kode status = disetujui. Berlaku untuk IFR, IFA dan IFC. IFI selalu 100% saat terbit.'],
+      [PPOS.durasi, 'DURASI_REVIEW_HARI', P.durasi, 'Durasi review owner standar (hari kalender). Rencana tanggal disetujui = rencana terbit + durasi ini. Dipakai untuk kurva rencana.']].forEach(function (x) {
+      wp.set(x[0], 1, x[1], S.bold); wp.set(x[0], 2, x[2], S.inp(undefined, { h: 'center' })); wp.merge('C' + x[0] + ':H' + x[0]); wp.set(x[0], 3, x[3], b.style({ color: C.SUB, wrap: 1, v: 'top' })); wp.height(x[0], 40);
+    });
+    wp.set(19, 1, 'Kode status review owner (per proyek)', S.sec);
+    ['KODE', 'ARTI', 'DISETUJUI?'].forEach(function (h, j) { wp.set(20, j + 1, h, S.head()); }); wp.merge('D20:H20'); wp.set(20, 4, 'PENGARUH KE PROGRES', S.head()); wp.styleRange(20, 5, 20, 8, S.head());
+    for (let i = 0; i < 6; i++) {
+      const r = PPOS.code0 + i, c = P.codes[i] || [];
+      wp.set(r, 1, c[0] === undefined ? null : c[0], S.inp()); wp.set(r, 2, c[1] || null, S.inp(undefined, { wrap: 1 })); wp.set(r, 3, c[2] || null, S.inp());
+      wp.merge('D' + r + ':H' + r); wp.set(r, 4, c[3] || null, S.inp(undefined, { wrap: 1 })); wp.styleRange(r, 5, r, 8, S.inp()); wp.height(r, 28);
+    }
+    wp.dv({ type: 'list', f1: '"YA,TIDAK"', sqref: 'C21:C26', error: 'Isi YA atau TIDAK.' });
+    wp.set(28, 1, 'Kode boleh disesuaikan dengan prosedur owner proyek (baris kosong boleh diisi). Kolom DISETUJUI? menentukan apakah kode itu menyelesaikan tahap.', S.sub);
+    [12, 40, 12, 9, 9, 9, 9, 14].forEach(function (w, j) { wp.width(j + 1, w); });
+
+    // DOKUMEN
+    const wk = b.sheet('DOKUMEN');
+    const cols = [['NO', 6, 'c'], ['NOMOR_DOKUMEN', 22, 'i'], ['NAMA_DOKUMEN', 44, 'i'], ['DISIPLIN', 15, 'i'], ['JENIS_DOKUMEN', 22, 'i'], ['PAKET_WBS', 26, 'i'], ['BOBOT_DOK_%', 11, 'i'], ['POLA', 8, 'i'],
+      ['RENCANA_MULAI', 13, 'i'], ['RENCANA_IFR', 13, 'i'], ['RENCANA_IFA', 13, 'i'], ['RENCANA_IFC', 13, 'i'], ['RENCANA_IFI', 13, 'i'], ['CATATAN', 26, 'i'], ['W_IFR', 9, 'c'], ['W_IFA', 9, 'c'], ['W_IFC', 9, 'c'], ['W_IFI', 9, 'c'], ['CEK', 38, 'c']];
+    cols.forEach(function (c, j) { wk.set(1, j + 1, c[0], S.head()); wk.width(j + 1, c[1]); });
+    wk.height(1, 30); wk.freeze = { r: 2, c: 4 };
+    const sI = { txt: S.inp(), num: S.inp('0.000'), date: S.inp('dd-mmm-yy'), ex: b.style({ color: C.BLUE, i: 1, fill: C.INP, border: 1, unlocked: 1 }), exNum: b.style({ color: C.BLUE, i: 1, fill: C.INP, border: 1, unlocked: 1, fmt: '0.000' }), exDate: b.style({ color: C.BLUE, i: 1, fill: C.INP, border: 1, unlocked: 1, fmt: 'dd-mmm-yy' }) };
+    const sC = S.calc(), sW = S.calc('0.000;-0.000;;');
+    const PR = 'PARAMETER!$A$5:$A$12';
+    for (let i = 0; i < N; i++) {
+      const r = i + 2, d = docs[i], ex = !ctx.docs || !ctx.docs.length;
+      const st = ex && d ? { t: sI.ex, n: sI.exNum, d: sI.exDate } : { t: sI.txt, n: sI.num, d: sI.date };
+      wk.set(r, 1, { f: 'IF(B' + r + '="","",ROW()-1)' }, sC);
+      const vals = d ? [d.no, d.name, d.disc, d.type, d.wbs, d.w, d.pola, d.m ? { d: d.m } : null].concat(d.p.map(function (x) { return x ? { d: x } : null; })).concat([d.note || null]) : [];
+      for (let j = 0; j < 13; j++) { const c = j + 2; const kind = c === 7 ? 'n' : (c >= 9 && c <= 13 ? 'd' : 't'); wk.set(r, c, vals[j] === undefined ? null : vals[j], st[kind]); }
+      ['C', 'D', 'E', 'F'].forEach(function (cp, j) { wk.set(r, 15 + j, { f: 'IF(OR(B' + r + '="",H' + r + '="",G' + r + '=""),0,IFERROR(G' + r + '*INDEX(PARAMETER!$' + cp + '$5:$' + cp + '$12,MATCH(H' + r + ',' + PR + ',0))/100,0))' }, sW); });
+      wk.set(r, 19, { f: 'IF(B' + r + '="","",TRIM(IF(G' + r + '="","Bobot kosong. ","")&IF(H' + r + '="","Pola kosong. ",IF(ISNA(MATCH(H' + r + ',' + PR + ',0)),"Pola tidak dikenal. ",""))&IF(COUNTIF($B$2:$B$' + LAST + ',B' + r + ')>1,"Nomor ganda. ","")' +
+        '&IF(I' + r + '="","Rencana mulai kosong. ",IF(AND(COUNT(J' + r + ':M' + r + ')>0,I' + r + '>MIN(J' + r + ':M' + r + ')),"Mulai setelah tanggal terbit. ",""))' +
+        '&IF(AND(O' + r + '>0,J' + r + '=""),"Rencana IFR kosong. ","")&IF(AND(P' + r + '>0,K' + r + '=""),"Rencana IFA kosong. ","")&IF(AND(Q' + r + '>0,L' + r + '=""),"Rencana IFC kosong. ","")&IF(AND(R' + r + '>0,M' + r + '=""),"Rencana IFI kosong. ","")' +
+        '&IF(AND(J' + r + '<>"",K' + r + '<>"",K' + r + '<J' + r + '),"IFA sebelum IFR. ","")&IF(AND(K' + r + '<>"",L' + r + '<>"",L' + r + '<K' + r + '),"IFC sebelum IFA. ","")&IF(AND(J' + r + '<>"",L' + r + '<>"",L' + r + '<J' + r + '),"IFC sebelum IFR. ","")' +
+        '&' + ['J', 'K', 'L', 'M'].map(function (dc, q) { return 'IF(AND(' + dc + r + '<>"",IFERROR(INDEX(PARAMETER!$' + 'CDEF'[q] + '$5:$' + 'CDEF'[q] + '$12,MATCH(H' + r + ',' + PR + ',0)),1)=0),"Pola tidak memakai ' + STG[q] + '. ","")'; }).join('&') + '))' }, sC);
+    }
+    wk.dv({ type: 'list', f1: 'DAFTAR!$A$2:$A$' + (DISC.length + 1), sqref: 'D2:D' + LAST, error: 'Pilih dari daftar DISIPLIN.' });
+    wk.dv({ type: 'list', f1: 'DAFTAR!$C$2:$C$' + (TYPES.length + 1), sqref: 'E2:E' + LAST, error: 'Pilih dari daftar JENIS_DOKUMEN.' });
+    wk.dv({ type: 'list', f1: 'PARAMETER!$A$5:$A$12', sqref: 'H2:H' + LAST, error: 'Pilih pola dari sheet PARAMETER.' });
+    wk.dv({ type: 'decimal', operator: 'between', f1: '0', f2: '100', sqref: 'G2:G' + LAST, error: 'Bobot 0–100.' });
+    wk.dv({ type: 'date', operator: 'between', f1: 'DATE(2015,1,1)', f2: 'DATE(2045,12,31)', sqref: 'I2:M' + LAST, error: 'Isi tanggal yang valid.' });
+    wk.cf('S2:S' + LAST, 'LEN(S2)>0', b.dxf({ color: C.RED, fill: 'FFE3DF' }));
+    wk.filter = 'A1:S' + LAST;
+
+    // KURVA_S
+    const wc = b.sheet('KURVA_S');
+    wc.set(1, 1, 'Kurva S baseline engineering (otomatis)', S.title);
+    wc.set(2, 1, 'Rencana kumulatif per minggu: porsi terbit diakui pada rencana terbit, sisanya pada rencana terbit + durasi review (sheet PARAMETER). IFI diakui penuh saat terbit. DOK_HARUS_MULAI = jumlah dokumen yang menurut rencana sudah mulai dikerjakan.', S.sub);
+    ['WEEK', 'AKHIR_MINGGU', 'RENCANA_MINGGU_%', 'RENCANA_KUMULATIF_%', 'DOK_HARUS_MULAI'].forEach(function (h, j) { wc.set(4, j + 1, h, S.head()); });
+    [8, 15, 18, 20, 17].forEach(function (w, j) { wc.width(j + 1, w); });
+    const rg = function (c) { return 'DOKUMEN!$' + c + '$2:$' + c + '$' + LAST; };
+    const sc = { n: S.calc(), d: S.calc('dd-mmm-yy'), p: S.calc('0.00'), c: S.calc('0') };
+    for (let w = 1; w <= weeks; w++) {
+      const r = 4 + w;
+      wc.set(r, 1, w, sc.n); wc.set(r, 2, { f: 'INFO!$B$' + IR.TANGGAL_MULAI + '+' + w + '*7-1' }, sc.d);
+      let t = [['J', 'O'], ['K', 'P'], ['L', 'Q']].map(function (x) { return 'PARAMETER!$B$16/100*SUMPRODUCT((' + rg(x[0]) + '<>"")*(' + rg(x[0]) + '<=B' + r + ')*' + rg(x[1]) + ')+(1-PARAMETER!$B$16/100)*SUMPRODUCT((' + rg(x[0]) + '<>"")*(' + rg(x[0]) + '+PARAMETER!$B$17<=B' + r + ')*' + rg(x[1]) + ')'; }).join('+');
+      t += '+SUMPRODUCT((' + rg('M') + '<>"")*(' + rg('M') + '<=B' + r + ')*' + rg('R') + ')';
+      wc.set(r, 4, { f: t }, sc.p);
+      wc.set(r, 3, { f: w > 1 ? 'D' + r + '-N(D' + (r - 1) + ')' : 'D' + r }, sc.p);
+      wc.set(r, 5, { f: 'SUMPRODUCT((' + rg('I') + '<>"")*(' + rg('I') + '<=B' + r + '))' }, sc.c);
+    }
+
+    // DAFTAR
+    const wd = b.sheet('DAFTAR');
+    wd.set(1, 1, 'DISIPLIN', S.head()); wd.set(1, 3, 'JENIS_DOKUMEN', S.head()); wd.width(1, 18).width(2, 3).width(3, 26);
+    DISC.forEach(function (d, i) { wd.set(i + 2, 1, d, S.txt); }); TYPES.forEach(function (d, i) { wd.set(i + 2, 3, d, S.txt); });
+    // urutan sheet: PETUNJUK, INFO, PARAMETER, DOKUMEN, KURVA_S, DAFTAR
+    b.active = 3;
+    return b;
+  }
+
+  /**
+   * ctx: { project:{id,fullName,contractor,start}, rev, week, cutoff(ISO), prevPct, user, now, params,
+   *        docs:[{no,name,disc,pola,w,m,p:[4]}], state:{no:{mulai,st:[[terbit,kirim,kode]x3],ifi,note}} }
+   */
+  function engBuildRealisasi(ctx) {
+    const b = new XBook(), S = stylesFor(b), P = ctx.params;
+    const docs = ctx.docs, N = docs.length, LR = N + 2;
+    const w = polaW(P, 'P1').some(function (x) { return x > 0; }) ? polaW(P, 'P1') : polaW(P, polaKeys(P)[0]);
+    petunjuk(b, S, 'Template Realisasi Mingguan Kontrol Engineering', 'Dibuat otomatis oleh dashboard dari baseline aktif. Diisi kontraktor setiap minggu, lalu diunggah admin proyek.', [
+      ['Langkah', null],
+      ['1. Unduh', 'Admin mengunduh template minggu berjalan dari EPCC Control › Engineering › Realisasi mingguan. Daftar dokumen, rencana, parameter dan isian terakhir sudah terisi.'],
+      ['2. Isi', 'Kontraktor memperbarui kolom kuning di sheet REALISASI: tanggal mulai aktual, tanggal terbit, kiriman ke- dan kode status owner tiap tahap. Hanya ubah baris yang berubah sejak unggahan terakhir.'],
+      ['3. Periksa', 'Lihat kolom CEK (merah) dan sheet RINGKASAN. Perbaiki semua baris yang ditandai.'],
+      ['4. Unggah', 'Admin mengunggah file. Sistem menghitung ulang progres dengan rumus yang sama, menyimpan riwayat, lalu (mode Otomatis) mengisi progres Engineering di Input Progres minggu tersebut.'],
+      ['Cara pengisian per tahap', null],
+      ['MULAI_AKTUAL', 'Tanggal dokumen mulai disusun. Opsional, tetapi dipakai untuk memantau dokumen yang terlambat mulai. Tidak menambah progres.'],
+      ['*_TERBIT', 'Tanggal dokumen diserahkan ke owner dengan status tahap tersebut (IFR / IFA / IFC). Bila dikirim ulang, isi tanggal kiriman TERAKHIR.'],
+      ['*_KIRIM_KE', 'Kiriman ke berapa untuk tahap tersebut (1 = kiriman pertama, 2 = kiriman ulang pertama, dst). Tidak menambah progres; dipakai untuk memantau dokumen yang bolak-balik revisi.'],
+      ['*_KODE', 'Kode status review owner atas kiriman terakhir (lihat sheet PARAMETER). Kosongkan bila owner belum memberi status.'],
+      ['IFI_TERBIT', 'Untuk dokumen yang polanya memakai IFI: tanggal diserahkan untuk informasi. Tidak ada kode status.'],
+      ['Tahap abu-abu', 'Tahap yang tidak dipakai pola dokumen (lihat sheet PARAMETER) dikunci abu-abu dan tidak perlu diisi.'],
+      ['Perhitungan progres', null],
+      ['Terbit', 'Diakui ' + P.porsi + '% dari bobot tahap (PORSI_TERBIT_%).'],
+      ['Disetujui', 'Kode dengan DISETUJUI? = YA: diakui 100% dari bobot tahap, dokumen boleh lanjut ke tahap berikutnya.'],
+      ['Kirim ulang / ditolak', 'Kode dengan DISETUJUI? = TIDAK: tetap di porsi terbit sampai disetujui. Tidak ada pengurangan progres.'],
+      ['Urutan', 'Tahap mengikuti pola dokumen (urut IFR → IFA → IFC → IFI). Tahap berikutnya baru dihitung setelah tahap sebelumnya disetujui (IFI: sudah terbit). Tahap yang terbit lebih dulu ditandai di CEK dan belum dihitung.'],
+      ['Contoh', 'Dokumen bobot 2%, P1 (IFR ' + w[0] + ' / IFA ' + w[1] + ' / IFC ' + w[2] + ', porsi terbit ' + P.porsi + '%): IFR terbit → IFR disetujui → IFA terbit → IFA disetujui → IFC terbit → IFC disetujui = 2%.'],
+      ['Pemeriksaan saat unggah', null],
+      ['Ditolak', 'Nomor dokumen diubah/ditambah/dihapus · kode tidak dikenal · kode diisi tanpa tanggal terbit · tanggal setelah CUT_OFF · tahap diisi padahal tidak dipakai pola dokumen · file bukan untuk proyek/revisi baseline yang aktif · minggu lebih lama dari unggahan terakhir.'],
+      ['Peringatan', 'Tahap terbit sebelum tahap sebelumnya disetujui · tanggal terbit sebelum MULAI_AKTUAL · progres dokumen turun dibanding unggahan terakhir.'],
+      ['Legenda', null], ['Kuning', 'Diisi kontraktor.'], ['Abu-abu', 'Dari baseline / dihitung otomatis, terkunci.']], [C.INP, C.CALC]);
+
+    const pj = ctx.project;
+    const info = infoSheet(b, S, 'Informasi realisasi', 'Diisi otomatis oleh dashboard saat template diunduh. Hanya DIISI_OLEH dan CATATAN_MINGGUAN yang diisi.', [
+      { k: 'PROYEK_ID', v: pj.id, src: 'Data proyek di dashboard' }, { k: 'NAMA_PROYEK', v: pj.fullName || pj.name, src: 'Data proyek di dashboard' },
+      { k: 'KONTRAKTOR', v: pj.contractor || '', src: 'Data proyek di dashboard' }, { k: 'TANGGAL_MULAI', v: { d: pj.start }, src: 'Data proyek: awal WEEK 1' },
+      { k: 'REVISI_BASELINE', v: ctx.rev, src: 'Baseline aktif yang dipakai template ini' },
+      { k: 'MINGGU_KE', v: ctx.week, src: 'Minggu laporan' }, { k: 'CUT_OFF', v: { d: ctx.cutoff }, src: 'Akhir minggu laporan; tanggal terbit tidak boleh melewati tanggal ini' },
+      { k: 'PROGRES_MINGGU_LALU_%', v: Math.round((ctx.prevPct || 0) * 10000) / 10000, fmt: '0.00', src: 'Progres engineering kumulatif tersimpan sebelum minggu ini' },
+      { k: 'DIUNDUH_OLEH', v: ctx.user || '', src: 'Akun yang mengunduh' }, { k: 'DIUNDUH_PADA', v: { dt: ctx.now || new Date() }, src: 'Waktu unduh' },
+      { k: 'DIISI_OLEH', v: ctx.filledBy || '', input: 1, src: 'DIISI KONTRAKTOR: nama / jabatan pengisi' },
+      { k: 'CATATAN_MINGGUAN', v: ctx.weekNote || '', input: 1, h: 30, src: 'DIISI KONTRAKTOR: catatan umum minggu ini (opsional)' }]);
+    const IR = info.rows, CUT = 'INFO!$B$' + IR.CUT_OFF;
+
+    // PARAMETER (terkunci)
+    const wp = b.sheet('PARAMETER');
+    wp.set(1, 1, 'Parameter dari baseline aktif (terkunci)', S.title); wp.set(2, 1, 'Diubah lewat unggah ulang baseline, bukan di file ini.', S.sub);
+    ['KODE_POLA', 'NAMA_POLA', 'IFR_%', 'IFA_%', 'IFC_%', 'IFI_%'].forEach(function (h, j) { wp.set(4, j + 1, h, S.head()); });
+    polaKeys(P).forEach(function (k, i) { [k, polaName(P, k)].concat(polaW(P, k)).forEach(function (v, j) { wp.set(5 + i, j + 1, v, S.lock()); }); });
+    wp.set(15, 1, 'Parameter progres', S.sec);
+    [[PPOS.porsi, 'PORSI_TERBIT_%', P.porsi], [PPOS.durasi, 'DURASI_REVIEW_HARI', P.durasi]].forEach(function (x) { wp.set(x[0], 1, x[1], S.bold); wp.set(x[0], 2, x[2], S.lock(undefined, { h: 'center' })); });
+    wp.set(19, 1, 'Kode status review owner', S.sec);
+    ['KODE', 'ARTI', 'DISETUJUI?', 'PENGARUH KE PROGRES'].forEach(function (h, j) { wp.set(20, j + 1, h, S.head()); });
+    for (let i = 0; i < 6; i++) { const c = P.codes[i] || []; for (let j = 0; j < 4; j++) wp.set(PPOS.code0 + i, j + 1, c[j] === undefined ? null : c[j], S.lock(undefined, { wrap: 1 })); }
+    [16, 46, 12, 64, 8, 8].forEach(function (x, j) { wp.width(j + 1, x); });
+    wp.protect = { formatColumns: 1 };
+
+    // REALISASI
+    const wr = b.sheet('REALISASI');
+    const GRP = { base: '5B7085', ifr: '2F6FA8', ifa: '1F5C8F', ifc: '16875D', ifi: '7B3F99', calc: C.NAVY };
+    const cols = [['NO', 5, 'base', 'b'], ['NOMOR_DOKUMEN', 21, 'base', 'b'], ['NAMA_DOKUMEN', 40, 'base', 'b'], ['DISIPLIN', 13, 'base', 'b'], ['POLA', 6, 'base', 'b'],
+      ['BOBOT_DOK_%', 9, 'base', 'b'], ['RENCANA_MULAI', 11, 'base', 'b'], ['RENCANA_IFR', 11, 'base', 'b'], ['RENCANA_IFA', 11, 'base', 'b'], ['RENCANA_IFC', 11, 'base', 'b'], ['RENCANA_IFI', 11, 'base', 'b'],
+      ['MULAI_AKTUAL', 11, 'base', 'i'], ['IFR_TERBIT', 11, 'ifr', 'i'], ['IFR_KIRIM_KE', 7, 'ifr', 'i'], ['IFR_KODE', 7, 'ifr', 'i'], ['IFA_TERBIT', 11, 'ifa', 'i'], ['IFA_KIRIM_KE', 7, 'ifa', 'i'], ['IFA_KODE', 7, 'ifa', 'i'],
+      ['IFC_TERBIT', 11, 'ifc', 'i'], ['IFC_KIRIM_KE', 7, 'ifc', 'i'], ['IFC_KODE', 7, 'ifc', 'i'], ['IFI_TERBIT', 11, 'ifi', 'i'], ['CATATAN_KONTRAKTOR', 26, 'base', 'i'],
+      ['IFR_OK', 6, 'calc', 'c'], ['IFA_OK', 6, 'calc', 'c'], ['IFC_OK', 6, 'calc', 'c'], ['PROGRES_DOK_%', 9, 'calc', 'c'], ['REALISASI_%', 9, 'calc', 'c'], ['RENCANA_%', 9, 'calc', 'c'], ['STATUS', 30, 'calc', 'c'], ['CEK', 40, 'calc', 'c']];
+    const L = {}; cols.forEach(function (c, i) { L[c[0]] = colL(i + 1); });
+    [['base', 'DARI BASELINE (terkunci)', 'NO', 'RENCANA_IFI'], ['base', 'MULAI', 'MULAI_AKTUAL', 'MULAI_AKTUAL'], ['ifr', 'IFR', 'IFR_TERBIT', 'IFR_KODE'], ['ifa', 'IFA', 'IFA_TERBIT', 'IFA_KODE'],
+      ['ifc', 'IFC', 'IFC_TERBIT', 'IFC_KODE'], ['ifi', 'IFI', 'IFI_TERBIT', 'IFI_TERBIT'], ['base', '', 'CATATAN_KONTRAKTOR', 'CATATAN_KONTRAKTOR'], ['calc', 'DIHITUNG OTOMATIS (terkunci)', 'IFR_OK', 'CEK']].forEach(function (g) {
+      const a = colN(L[g[2]]), z = colN(L[g[3]]); const st = S.head(GRP[g[0]]);
+      if (a !== z) wr.merge(L[g[2]] + '1:' + L[g[3]] + '1');
+      wr.set(1, a, g[1], st); if (z > a) wr.styleRange(1, a + 1, 1, z, st);
+    });
+    cols.forEach(function (c, j) { wr.set(2, j + 1, c[3] === 'i' ? c[0].replace(/_/g, ' ') : c[0], S.head(c[3] === 'i' ? GRP[c[2]] : C.NAVY)); wr.width(j + 1, c[1]); });
+    wr.height(2, 32); wr.freeze = { r: 3, c: 4 };
+    const P_ = 'PARAMETER!$B$' + PPOS.porsi + '/100', D_ = 'PARAMETER!$B$' + PPOS.durasi, CK = 'PARAMETER!$A$' + PPOS.code0 + ':$A$' + PPOS.code1, CY = 'PARAMETER!$C$' + PPOS.code0 + ':$C$' + PPOS.code1;
+    const sb = { t: S.lock(), n: S.lock('0.000', { h: 'right' }), d: S.lock('dd-mmm-yy', { h: 'right' }), c: S.lock(undefined, { h: 'center' }) };
+    const si = { t: S.inp(), d: S.inp('dd-mmm-yy'), c: S.inp(undefined, { h: 'center' }) };
+    const sc = { t: S.calc(), c: S.calc(undefined, { h: 'center' }), p1: S.calc('0.0'), p3: S.calc('0.000;-0.000;;') };
+    const iso = function (x) { return x ? { d: x } : null; };
+    docs.forEach(function (d, i) {
+      const r = i + 3, s = (ctx.state && ctx.state[d.no]) || { st: [[], [], []] };
+      [i + 1, d.no, d.name, d.disc, d.pola, d.w, iso(d.m), iso(d.p[0]), iso(d.p[1]), iso(d.p[2]), iso(d.p[3])].forEach(function (v, j) { wr.set(r, j + 1, v, j === 5 ? sb.n : j >= 6 ? sb.d : j === 4 || j === 0 ? sb.c : sb.t); });
+      const pw = polaW(P, d.pola), sg = { t: S.lock(undefined, { fill: C.GREY }), c: S.lock(undefined, { h: 'center', fill: C.GREY }) };
+      wr.set(r, 12, iso(s.mulai), si.d);
+      ['IFR', 'IFA', 'IFC'].forEach(function (k, q) {
+        const x = s.st[q] || [], use = pw[q] > 0;
+        wr.set(r, colN(L[k + '_TERBIT']), use ? iso(x[0]) : null, use ? si.d : sg.t); wr.set(r, colN(L[k + '_KIRIM_KE']), use && x[0] ? (x[1] || 1) : null, use ? si.c : sg.c); wr.set(r, colN(L[k + '_KODE']), use && !(x[2] === undefined || x[2] === '') ? x[2] : null, use ? si.c : sg.c);
+      });
+      wr.set(r, colN(L.IFI_TERBIT), pw[3] > 0 ? iso(s.ifi) : null, pw[3] > 0 ? si.d : sg.t); wr.set(r, colN(L.CATATAN_KONTRAKTOR), s.note || null, si.t);
+      const Fw = '$F' + r, T = {}, K = {}, OK = {};
+      ['IFR', 'IFA', 'IFC'].forEach(function (k) { T[k] = '$' + L[k + '_TERBIT'] + r; K[k] = '$' + L[k + '_KODE'] + r; OK[k] = '$' + L[k + '_OK'] + r; });
+      ['IFR', 'IFA', 'IFC'].forEach(function (k) { wr.set(r, colN(L[k + '_OK']), { f: 'IF(AND(' + T[k] + '<>"",' + K[k] + '<>"",COUNTIFS(' + CK + ',' + K[k] + ',' + CY + ',"YA")>0),"YA","")' }, sc.c); });
+      const IFI = '$' + L.IFI_TERBIT + r, MUL = '$' + L.MULAI_AKTUAL + r;
+      T.IFI = IFI;
+      const done = function (k) { return k === 'IFI' ? IFI + '<>""' : OK[k] + '="YA"'; };
+      const seq = STG.filter(function (k, i) { return pw[i] > 0; });
+      // progres: tahap dihitung bila semua tahap sebelumnya (dalam pola) selesai
+      const terms = seq.map(function (k, j) {
+        const prev = seq.slice(0, j).map(done), wq = pw[STG.indexOf(k)];
+        const f = k === 'IFI' ? 'IF(' + IFI + '<>"",1,0)' : 'IF(' + T[k] + '="",0,IF(' + OK[k] + '="YA",1,' + P_ + '))';
+        return wq + '*' + (prev.length ? 'IF(AND(' + prev.join(',') + '),' + f + ',0)' : f);
+      });
+      wr.set(r, colN(L['PROGRES_DOK_%']), { f: 'IF($B' + r + '="","",' + (terms.length ? terms.join('+') : '0') + ')' }, sc.p1);
+      wr.set(r, colN(L['REALISASI_%']), { f: 'IF($B' + r + '="","",' + Fw + '*$' + L['PROGRES_DOK_%'] + r + '/100)' }, sc.p3);
+      const pl = function (c) { return 'IF(' + c + '="",0,' + P_ + '*(' + c + '<=' + CUT + ')+(1-' + P_ + ')*(' + c + '+' + D_ + '<=' + CUT + '))'; };
+      const PC = { IFR: '$H' + r, IFA: '$I' + r, IFC: '$J' + r, IFI: '$K' + r };
+      const plan = seq.map(function (k) { const wq = pw[STG.indexOf(k)]; return wq + '*' + (k === 'IFI' ? 'IF(AND(' + PC.IFI + '<>"",' + PC.IFI + '<=' + CUT + '),1,0)' : pl(PC[k])); });
+      wr.set(r, colN(L['RENCANA_%']), { f: 'IF($B' + r + '="","",' + Fw + '/100*(' + (plan.length ? plan.join('+') : '0') + '))' }, sc.p3);
+      const wait = function (k) { return 'IF(' + K[k] + '="","' + k + ' menunggu review ("&(' + CUT + '-' + T[k] + ')&" hari)","' + k + ' kirim ulang (kode "&' + K[k] + '&", kiriman ke-"&N($' + L[k + '_KIRIM_KE'] + r + ')&")")'; };
+      // status: sama dengan perhitungan di server
+      let stf;
+      if (!seq.length) stf = '"Pola tidak dikenal"';
+      else {
+        const f0 = seq[0];
+        stf = f0 === 'IFI' ? 'IF(AND($K' + r + '<>"",$K' + r + '<' + CUT + '),"IFI terlambat terbit","Belum terbit")'
+          : 'IF(' + T[f0] + '<>"",' + wait(f0) + ',IF(' + MUL + '<>"","Sedang disusun",IF(AND($G' + r + '<>"",$G' + r + '<=' + CUT + '),"Terlambat mulai","Belum mulai")))';
+        for (let j = 1; j < seq.length; j++) {
+          const k = seq[j], pv = seq[j - 1];
+          stf = k === 'IFI' ? 'IF(' + done(pv) + ',"' + pv + ' disetujui · siap IFI",' + stf + ')'
+            : 'IF(AND(' + done(pv) + ',' + T[k] + '<>""),' + wait(k) + ',IF(' + done(pv) + ',"' + pv + ' disetujui · siap ' + k + '",' + stf + '))';
+        }
+        const lk = seq[seq.length - 1];
+        stf = 'IF(' + done(lk) + ',"Selesai (' + lk + (lk === 'IFI' ? ' terbit' : ' disetujui') + ')",' + stf + ')';
+      }
+      wr.set(r, colN(L.STATUS), { f: 'IF($B' + r + '="","",' + stf + ')' }, sc.t);
+      const kodeBad = ['IFR', 'IFA', 'IFC'].map(function (k) { return 'IF(AND(' + K[k] + '<>"",COUNTIF(' + CK + ',' + K[k] + ')=0),"Kode ' + k + ' tidak dikenal. ","")&IF(AND(' + K[k] + '<>"",' + T[k] + '=""),"Kode ' + k + ' tanpa tanggal terbit. ","")'; }).join('&');
+      const late = [['IFR', T.IFR], ['IFA', T.IFA], ['IFC', T.IFC], ['IFI', IFI], ['Mulai', MUL]].map(function (x) { return 'IF(AND(' + x[1] + '<>"",' + x[1] + '>' + CUT + '),"' + x[0] + ' setelah cut-off. ","")'; }).join('&');
+      const seqChk = seq.slice(1).map(function (k, j) { return 'IF(AND(' + T[k] + '<>"",NOT(' + done(seq[j]) + ')),"' + k + ' terbit sebelum ' + seq[j] + ' disetujui. ","")'; });
+      const unused = STG.filter(function (k, i) { return !(pw[i] > 0); }).map(function (k) { return 'IF(' + T[k] + '<>"","Pola ' + d.pola + ' tidak memakai ' + k + '. ","")'; });
+      const firstT = seq.filter(function (k) { return k === 'IFR' || k === 'IFA' || k === 'IFC' || k === 'IFI'; }).map(function (k) { return T[k]; });
+      const pre = firstT.length ? '&IF(AND(' + MUL + '<>"",COUNT(' + firstT.join(',') + ')>0,' + MUL + '>MIN(' + firstT.join(',') + ')),"Terbit sebelum mulai. ","")' : '';
+      wr.set(r, colN(L.CEK), { f: 'IF($B' + r + '="","",TRIM(' + kodeBad + '&' + late + [''].concat(seqChk).concat(unused).join('&') + pre + '))' }, sc.t);
+    });
+    const rr = function (n) { return L[n] + '3:' + L[n] + LR; };
+    wr.dv({ type: 'date', operator: 'between', f1: 'DATE(2015,1,1)', f2: 'DATE(2045,12,31)', sqref: ['MULAI_AKTUAL', 'IFR_TERBIT', 'IFA_TERBIT', 'IFC_TERBIT', 'IFI_TERBIT'].map(rr).join(' '), error: 'Isi tanggal yang valid.' });
+    wr.dv({ type: 'whole', operator: 'between', f1: '1', f2: '20', sqref: ['IFR_KIRIM_KE', 'IFA_KIRIM_KE', 'IFC_KIRIM_KE'].map(rr).join(' '), error: 'Kiriman ke: angka 1–20.' });
+    wr.dv({ type: 'list', f1: 'PARAMETER!$A$' + PPOS.code0 + ':$A$' + PPOS.code1, sqref: ['IFR_KODE', 'IFA_KODE', 'IFC_KODE'].map(rr).join(' '), error: 'Pilih kode dari sheet PARAMETER.' });
+    wr.cf(rr('CEK'), 'LEN(' + L.CEK + '3)>0', b.dxf({ color: C.RED, fill: 'FFE3DF' }));
+    [['Selesai', '16875D'], ['Terlambat', C.RED], ['kirim ulang', 'B45309'], ['menunggu', '1F5C8F']].forEach(function (x) { wr.cf(rr('STATUS'), 'ISNUMBER(SEARCH("' + x[0] + '",' + L.STATUS + '3))', b.dxf({ color: x[1], b: 1 })); });
+    wr.filter = 'A2:' + L.CEK + LR;
+    wr.protect = { autoFilter: 1, sort: 1, formatColumns: 1 };
+
+    // RINGKASAN
+    const ws = b.sheet('RINGKASAN');
+    ws.set(1, 1, 'Ringkasan realisasi engineering (otomatis)', S.title); ws.set(2, 1, 'Nilai di sini dihitung ulang oleh sistem saat unggah dengan rumus yang sama.', S.sub);
+    const R = function (n) { return 'REALISASI!$' + L[n] + '$3:$' + L[n] + '$' + LR; };
+    const waitLong = ['IFR', 'IFA', 'IFC'].map(function (k) { return 'SUMPRODUCT((' + R(k + '_TERBIT') + '<>"")*(' + R(k + '_KODE') + '="")*(' + CUT + '-' + R(k + '_TERBIT') + '>PARAMETER!$B$' + PPOS.durasi + ')*ISNUMBER(SEARCH("' + k + ' menunggu",' + R('STATUS') + ')))'; }).join('+');
+    const rows = [['Progres engineering'], ['Realisasi kumulatif s.d. cut-off (%)', 'SUM(' + R('REALISASI_%') + ')', '0.00'], ['Rencana kumulatif s.d. cut-off (%)', 'SUM(' + R('RENCANA_%') + ')', '0.00'],
+      ['Deviasi (%)', 'B4-B5', '+0.00;-0.00;0.00'], ['Realisasi sebelum minggu ini (%)', 'INFO!$B$' + IR['PROGRES_MINGGU_LALU_%'], '0.00'], ['Progres minggu ini (%) → masuk Input Progres', 'B4-B7', '+0.00;-0.00;0.00'],
+      ['Status dokumen'], ['Selesai', 'COUNTIF(' + R('STATUS') + ',"Selesai*")', '0'], ['Menunggu review owner', 'COUNTIF(' + R('STATUS') + ',"*menunggu review*")', '0'],
+      ['  …lebih dari DURASI_REVIEW_HARI', waitLong, '0'], ['Kirim ulang (kode tidak disetujui)', 'COUNTIF(' + R('STATUS') + ',"*kirim ulang*")', '0'], ['Siap tahap berikutnya', 'COUNTIF(' + R('STATUS') + ',"*siap*")', '0'],
+      ['Sedang disusun', 'COUNTIF(' + R('STATUS') + ',"Sedang disusun")', '0'], ['Terlambat mulai / terlambat terbit', 'COUNTIF(' + R('STATUS') + ',"*terlambat*")', '0'], ['Belum mulai (sesuai jadwal)', 'COUNTIF(' + R('STATUS') + ',"Belum*")', '0'],
+      ['Baris dengan catatan CEK', 'SUMPRODUCT(--(LEN(' + R('CEK') + ')>0))', '0']];
+    let r = 3;
+    rows.forEach(function (x) { if (x.length === 1) { ws.set(r, 1, x[0], S.sec); r++; return; } ws.set(r, 1, x[0], x[0].indexOf('  ') === 0 ? S.txt : S.bold); ws.set(r, 2, { f: x[1] }, S.calc(x[2], { h: 'right' })); r++; });
+    r++; ws.set(r, 1, 'Per disiplin', S.sec); r++;
+    ['DISIPLIN', 'DOKUMEN', 'BOBOT_%', 'RENCANA_%', 'REALISASI_%', 'DEVIASI_%', 'SELESAI'].forEach(function (h, j) { ws.set(r, j + 1, h, S.head()); });
+    const Dr = 'REALISASI!$D$3:$D$' + LR, first = r + 1;
+    DISC.forEach(function (dn, i) {
+      const q = r + 1 + i;
+      ws.set(q, 1, dn, S.bold);
+      [['COUNTIF(' + Dr + ',A' + q + ')', '0'], ['SUMIF(' + Dr + ',A' + q + ',REALISASI!$F$3:$F$' + LR + ')', '0.00'], ['SUMIF(' + Dr + ',A' + q + ',' + R('RENCANA_%') + ')', '0.00'],
+        ['SUMIF(' + Dr + ',A' + q + ',' + R('REALISASI_%') + ')', '0.00'], ['E' + q + '-D' + q, '+0.00;-0.00;0.00'], ['COUNTIFS(' + Dr + ',A' + q + ',' + R('STATUS') + ',"Selesai*")', '0']].forEach(function (x, j) { ws.set(q, j + 2, { f: x[0] }, S.calc(x[1], { h: 'right' })); });
+    });
+    ws.cf('B6', 'B6<0', b.dxf({ color: C.RED, b: 1 }));
+    ws.cf('F' + first + ':F' + (first + DISC.length - 1), 'F' + first + '<0', b.dxf({ color: C.RED, b: 1 }));
+    [44, 12, 12, 12, 13, 12, 10].forEach(function (x, j) { ws.width(j + 1, x); });
+    ws.protect = { formatColumns: 1 };
+    // urutan: PETUNJUK, INFO, PARAMETER, REALISASI, RINGKASAN → pindahkan PARAMETER ke akhir
+    b.sheets = [b.sheets[0], b.sheets[1], b.sheets[3], b.sheets[4], b.sheets[2]];
+    b.active = 2;
+    return b;
+  }
+
+  /**
+   * Template link lampiran massal. ctx: { project, rev, user, now, docs:[{no,name,disc,pola}], status:{no:text}, files:[{no,stage,kind,src,url}] }
+   */
+  const LINK_COLS = [['IFR', 'TERBIT'], ['IFR', 'PERSETUJUAN'], ['IFA', 'TERBIT'], ['IFA', 'PERSETUJUAN'], ['IFC', 'TERBIT'], ['IFC', 'PERSETUJUAN'], ['IFI', 'TERBIT']];
+  function engBuildLinks(ctx) {
+    const b = new XBook(), S = stylesFor(b), docs = ctx.docs, LR = docs.length + 2;
+    petunjuk(b, S, 'Template Link Lampiran Dokumen Engineering', 'Untuk menempel link scan dokumen yang sudah tersimpan di Google Drive tim proyek (atau penyimpanan lain) sekaligus untuk banyak dokumen.', [
+      ['Langkah', null],
+      ['1. Isi link', 'Di sheet LINK, tempel link pada kolom kuning sesuai tahap: dokumen terbit dan lembar persetujuan/komentar untuk IFR, IFA, IFC; IFI untuk dokumen yang polanya memakai IFI. Tahap yang tidak dipakai pola dokumen dikunci abu-abu. Satu sel = satu link.'],
+      ['2. Unggah', 'EPCC Control › Engineering › Dokumen › Link massal › Unggah template. Sistem menampilkan link baru, link yang diganti, dan isian yang ditolak sebelum disimpan.'],
+      ['Aturan', null],
+      ['Link', 'Harus diawali https:// (mis. link "Bagikan" dari Google Drive: https://drive.google.com/file/d/…). Pastikan file bisa dibuka oleh pengguna dashboard.'],
+      ['Sel terisi', 'Link baru MENGGANTI link lama untuk dokumen, tahap dan jenis yang sama. File yang diunggah langsung lewat dashboard tidak ikut terganti.'],
+      ['Sel kosong', 'Tidak mengubah apa pun (link lama tetap ada). Untuk menghapus link, gunakan tombol Hapus di panel dokumen.'],
+      ['Sudah terisi', 'Template diunduh berisi link yang sudah tercatat, jadi sel yang tidak diubah tidak akan dianggap perubahan.'],
+      ['Pemeriksaan', null],
+      ['Ditolak', 'Nomor dokumen diubah / tidak ada di baseline aktif · link tidak diawali https:// · link diisi pada tahap yang tidak berlaku untuk pola dokumen · file untuk proyek lain.'],
+      ['Legenda', null], ['Kuning', 'Diisi tim proyek.'], ['Abu-abu', 'Dari dashboard, terkunci. Abu-abu gelap = tahap tidak berlaku.']], [C.INP, C.CALC]);
+    const pj = ctx.project;
+    infoSheet(b, S, 'Informasi template link', 'Diisi otomatis oleh dashboard.', [
+      { k: 'PROYEK_ID', v: pj.id, src: 'Data proyek di dashboard' }, { k: 'NAMA_PROYEK', v: pj.fullName || pj.name, src: 'Data proyek di dashboard' },
+      { k: 'REVISI_BASELINE', v: ctx.rev, src: 'Baseline aktif' }, { k: 'JUMLAH_DOKUMEN', v: docs.length, src: 'Dokumen di baseline aktif' },
+      { k: 'DIUNDUH_OLEH', v: ctx.user || '', src: 'Akun yang mengunduh' }, { k: 'DIUNDUH_PADA', v: { dt: ctx.now || new Date() }, src: 'Waktu unduh' }]);
+    const ws = b.sheet('LINK');
+    const GRP = { base: '5B7085', IFR: '2F6FA8', IFA: '1F5C8F', IFC: '16875D', IFI: '7B3F99', calc: C.NAVY };
+    const cols = [['NO', 5, 'base', 'b'], ['NOMOR_DOKUMEN', 21, 'base', 'b'], ['NAMA_DOKUMEN', 42, 'base', 'b'], ['DISIPLIN', 13, 'base', 'b'], ['POLA', 6, 'base', 'b'], ['STATUS', 24, 'base', 'b'], ['LAMPIRAN_ADA', 9, 'base', 'b']]
+      .concat(LINK_COLS.map(function (x) { return [x[0] + '_' + x[1], 34, x[0], 'i']; })).concat([['CEK', 34, 'calc', 'c']]);
+    [['base', 'DARI DASHBOARD (terkunci)', 1, 7], ['IFR', 'IFR', 8, 9], ['IFA', 'IFA', 10, 11], ['IFC', 'IFC', 12, 13], ['IFI', 'IFI', 14, 14], ['calc', 'CEK', 15, 15]].forEach(function (g) {
+      const st = S.head(GRP[g[0]]); if (g[3] > g[2]) ws.merge(colL(g[2]) + '1:' + colL(g[3]) + '1'); ws.set(1, g[2], g[1], st); if (g[3] > g[2]) ws.styleRange(1, g[2] + 1, 1, g[3], st);
+    });
+    cols.forEach(function (c, j) { ws.set(2, j + 1, c[3] === 'i' ? c[0].replace(/_/g, ' ') : c[0], S.head(c[3] === 'i' ? GRP[c[2]] : C.NAVY)); ws.width(j + 1, c[1]); });
+    ws.height(2, 30); ws.freeze = { r: 3, c: 3 };
+    const sb = { t: S.lock(), c: S.lock(undefined, { h: 'center' }) }, si = S.inp(), sc = S.calc();
+    const cur = {};
+    (ctx.files || []).forEach(function (f) { if (f.src === 'LINK') cur[f.no + '|' + f.stage + '|' + f.kind] = f.url; });
+    const cnt = {}; (ctx.files || []).forEach(function (f) { cnt[f.no] = (cnt[f.no] || 0) + 1; });
+    docs.forEach(function (d, i) {
+      const r = i + 3;
+      [i + 1, d.no, d.name, d.disc, d.pola, (ctx.status && ctx.status[d.no]) || '', cnt[d.no] || 0].forEach(function (v, j) { ws.set(r, j + 1, v, j === 0 || j === 4 || j === 6 ? sb.c : sb.t); });
+      const pw = d.pw || (d.pola === 'P4' ? [0, 0, 0, 100] : [1, 1, 1, 0]), sg = S.lock(undefined, { fill: C.GREY });
+      LINK_COLS.forEach(function (x, j) { const use = pw[STG.indexOf(x[0])] > 0; ws.set(r, 8 + j, use ? (cur[d.no + '|' + x[0] + '|' + x[1]] || null) : null, use ? si : sg); });
+      const bad = ['H', 'I', 'J', 'K', 'L', 'M', 'N'].map(function (c) { return 'IF(AND(' + c + r + '<>"",LEFT(' + c + r + ',8)<>"https://"),1,0)'; }).join('+');
+      const un = LINK_COLS.map(function (x, j) { return pw[STG.indexOf(x[0])] > 0 ? '' : colL(8 + j) + r; }).filter(Boolean);
+      ws.set(r, 15, { f: 'IF($B' + r + '="","",TRIM(IF(' + bad + '>0,"Link harus diawali https://. ","")' + (un.length ? '&IF(COUNTA(' + un.join(',') + ')>0,"Tahap tidak dipakai pola ' + d.pola + '. ","")' : '') + '))' }, sc);
+    });
+    ws.cf('O3:O' + LR, 'LEN(O3)>0', b.dxf({ color: C.RED, fill: 'FFE3DF' }));
+    ws.filter = 'A2:O' + LR; ws.protect = { autoFilter: 1, sort: 1, formatColumns: 1 };
+    b.active = 2;
+    return b;
+  }
+  function engParseLinks(book) {
+    const errs = [];
+    ['INFO', 'LINK'].forEach(function (n) { if (!book[n]) errs.push('Sheet ' + n + ' tidak ditemukan. Gunakan template link dari dashboard.'); });
+    if (errs.length) return { parseErrors: errs };
+    const I = infoMap(book.INFO), W = book.LINK, H = headerMap(W, 2);
+    const keys = LINK_COLS.map(function (x) { return x[0] + x[1]; });
+    if (!H.NOMORDOKUMEN) errs.push('Kolom NOMOR_DOKUMEN tidak ditemukan di sheet LINK.');
+    keys.forEach(function (k) { if (!H[k]) errs.push('Kolom ' + k + ' tidak ditemukan di sheet LINK.'); });
+    if (errs.length) return { parseErrors: errs };
+    const rows = [], n = lastRow(W);
+    for (let r = 3; r <= n; r++) {
+      const no = String(W[H.NOMORDOKUMEN + r] || '').trim(); if (!no) continue;
+      const links = {};
+      LINK_COLS.forEach(function (x) { const v = W[H[x[0] + x[1]] + r]; if (v !== undefined && String(v).trim() !== '') links[x[0] + '_' + x[1]] = String(v).trim(); });
+      rows.push({ row: r, no: no, links: links });
+    }
+    return { parseErrors: errs, info: { projectId: String(I.PROYEKID || '').trim(), rev: I.REVISIBASELINE }, rows: rows };
+  }
+
+  /**
+   * Template setup proyek (bobot + plan mingguan + plan bulanan).
+   * ctx: { project:{id,name,start,finish,maxWeek}, cutoffDay, user, now, bobot:{Engineering:..}, weekly:[[e,p,c,co]]|null,
+   *        months:[{key,label,cut:'yyyy-mm-dd',week,plan,milestone,formula:bool}], lockWeekly, lockMonthly }
+   */
+  const SETUP_F = ['Engineering', 'Procurement', 'Construction', 'Commissioning'];
+  function setupBuild(ctx) {
+    const b = new XBook(), S = stylesFor(b), pj = ctx.project, MW = Number(pj.maxWeek), LW = MW + 1, NM = ctx.months.length, LM = NM + 1;
+    petunjuk(b, S, 'Template Setup Plan Proyek', 'Bobot bidang, plan kumulatif mingguan per bidang dan rencana bulanan. Diisi tim proyek lalu diunggah di Tambah / Edit Proyek.', [
+      ['Langkah', null],
+      ['1. BOBOT', 'Isi bobot keempat bidang (Engineering, Procurement, Construction, Commissioning) dalam persen. Total harus 100.'],
+      ['2. PLAN_MINGGUAN', 'Isi persen KUMULATIF tiap bidang untuk WEEK 1 sampai WEEK ' + MW + '. Nilai tidak boleh turun dan bidang yang berbobot harus 100 di minggu terakhir. Kolom OVERALL dihitung otomatis dari bobot.'],
+      ['3. PLAN_BULANAN', 'WEEK_CUT_OFF = minggu yang dipakai untuk bulan itu (awal dari tanggal cut-off atau tautan yang sedang dipakai; boleh dikoreksi). PLAN_KUMULATIF_% terisi otomatis dari plan mingguan pada WEEK_CUT_OFF dan boleh ditimpa. Isi MILESTONE_FISIK tiap bulan.'],
+      ['4. Unggah', 'Tambah / Edit Proyek › Template plan proyek › Unggah template. Isian dibaca dan diperiksa, lalu bagian 3 dan 4 di form terisi. Simpan proyek seperti biasa.'],
+      ['Aturan', null],
+      ['Jadwal', 'Template dibuat untuk tanggal mulai ' + pj.start + ' dan ' + MW + ' minggu. Bila tanggal atau MAX_WEEK di form diubah, unduh template baru.'],
+      ['Angka', 'Persen ditulis 0–100 (mis. 2,5 berarti 2,5%), bukan pecahan 0,025.'],
+      ['Cut-off bulanan', 'Tanggal ' + (ctx.cutoffDay || 25) + ' tiap bulan. WEEK_DARI_TANGGAL = minggu terakhir yang selesai sebelum tanggal cut-off (acuan). WEEK_CUT_OFF boleh berbeda, tetapi tidak boleh turun dari bulan sebelumnya. Week ini juga dipakai untuk mengambil realisasi bulanan dari realisasi mingguan.'],
+      ['Ditolak saat unggah', 'PROYEK_ID / tanggal mulai / MAX_WEEK berbeda dengan form · bobot kosong atau total ≠ 100 · plan mingguan kosong, di luar 0–100, turun, atau bidang berbobot belum 100 di minggu terakhir · WEEK_CUT_OFF di luar 1–MAX_WEEK atau turun · plan bulanan kosong, turun, atau bulan terakhir ≠ 100.'],
+      ['Peringatan', 'Plan bulanan berselisih lebih dari 0,5% dengan plan mingguan pada WEEK_CUT_OFF · WEEK_CUT_OFF berbeda lebih dari 2 minggu dari WEEK_DARI_TANGGAL · dua bulan memakai week yang sama.'],
+      ['Legenda', null], ['Kuning', 'Sel diisi tim proyek.'], ['Abu-abu', 'Sel hitung otomatis atau dari dashboard, terkunci.']], [C.INP, C.CALC]);
+    infoSheet(b, S, 'Informasi template', 'Diisi otomatis oleh dashboard dari form Tambah / Edit Proyek.', [
+      { k: 'PROYEK_ID', v: pj.id, src: 'Kode proyek' }, { k: 'NAMA_PROYEK', v: pj.name || '', src: 'Nama proyek' },
+      { k: 'TANGGAL_MULAI', v: { d: pj.start }, src: 'Efektif date mulai = awal WEEK 1' }, { k: 'TANGGAL_SELESAI', v: { d: pj.finish }, src: 'Efektif date selesai' },
+      { k: 'MAX_WEEK', v: MW, src: 'Jumlah minggu proyek' }, { k: 'CUT_OFF_BULANAN', v: ctx.cutoffDay || 25, src: 'Tanggal cut-off laporan bulanan' },
+      { k: 'DIUNDUH_OLEH', v: ctx.user || '', src: 'Akun yang mengunduh' }, { k: 'DIUNDUH_PADA', v: { dt: ctx.now || new Date() }, src: 'Waktu unduh' }]);
+    // BOBOT
+    const wb = b.sheet('BOBOT');
+    wb.set(1, 1, 'Bobot bidang', S.title); wb.set(2, 1, 'Persen terhadap total proyek. Total harus 100.', S.sub);
+    ['BIDANG', 'BOBOT_%', 'CEK'].forEach(function (h, j) { wb.set(3, j + 1, h, S.head()); });
+    const bi = S.inp('0.00'), bl = S.lock(), bc = S.calc('0.00', { b: 1 });
+    SETUP_F.forEach(function (f, i) { wb.set(4 + i, 1, f, bl); const v = ctx.bobot ? ctx.bobot[f] : null; wb.set(4 + i, 2, v == null ? null : v, bi); });
+    wb.set(8, 1, 'TOTAL', S.lock(undefined, { b: 1 })); wb.set(8, 2, { f: 'SUM(B4:B7)' }, bc);
+    wb.set(8, 3, { f: 'IF(COUNT(B4:B7)<4,"Lengkapi bobot",IF(ABS(B8-100)>0.01,"Total harus 100","OK"))' }, S.calc());
+    wb.cf('C8', 'C8<>"OK"', b.dxf({ color: C.RED, fill: 'FFE3DF' }));
+    wb.dv({ type: 'decimal', operator: 'between', f1: '0', f2: '100', sqref: 'B4:B7', error: 'Bobot 0–100.' });
+    wb.width(1, 22).width(2, 14).width(3, 22); wb.protect = { formatColumns: 1 };
+    // PLAN_MINGGUAN
+    const ww = b.sheet('PLAN_MINGGUAN');
+    ['WEEK', 'AKHIR_MINGGU', 'ENGINEERING_%', 'PROCUREMENT_%', 'CONSTRUCTION_%', 'COMMISSIONING_%', 'OVERALL_%', 'CEK'].forEach(function (h, j) { ww.set(1, j + 1, h, S.head(j >= 2 && j <= 5 ? '2F6FA8' : C.NAVY)); });
+    ww.height(1, 30); ww.freeze = { r: 2, c: 3 };
+    const wi = ctx.lockWeekly ? S.lock('0.00', { h: 'right' }) : S.inp('0.00'), wc = S.calc('0.00'), wl = S.lock(undefined, { h: 'center' }), wd = S.lock('dd-mmm-yy', { h: 'center' });
+    const st = isoToSerial(pj.start);
+    for (let w = 1; w <= MW; w++) {
+      const r = w + 1, row = ctx.weekly && ctx.weekly[w - 1];
+      ww.set(r, 1, 'WEEK ' + w, wl); ww.set(r, 2, st + 7 * w - 1, wd);
+      for (let k = 0; k < 4; k++) ww.set(r, 3 + k, row && row[k] != null ? Math.round(row[k] * 10000) / 10000 : null, wi);
+      ww.set(r, 7, { f: 'IF(COUNT(C' + r + ':F' + r + ')<4,"",(C' + r + '*BOBOT!$B$4+D' + r + '*BOBOT!$B$5+E' + r + '*BOBOT!$B$6+F' + r + '*BOBOT!$B$7)/100)' }, wc);
+      const prev = r > 2 ? '+(C' + r + '<C' + (r - 1) + ')+(D' + r + '<D' + (r - 1) + ')+(E' + r + '<E' + (r - 1) + ')+(F' + r + '<F' + (r - 1) + ')' : '';
+      const out = '(MIN(C' + r + ':F' + r + ')<0)+(MAX(C' + r + ':F' + r + ')>100)';
+      let f = 'IF(COUNT(C' + r + ':F' + r + ')<4,"Belum lengkap",IF(' + out + '>0,"Di luar 0–100",' + (prev ? 'IF(' + prev + '>0,"Turun dari minggu lalu",' : '');
+      if (w === MW) f += 'IF((BOBOT!$B$4>0)*(ABS(C' + r + '-100)>0.01)+(BOBOT!$B$5>0)*(ABS(D' + r + '-100)>0.01)+(BOBOT!$B$6>0)*(ABS(E' + r + '-100)>0.01)+(BOBOT!$B$7>0)*(ABS(F' + r + '-100)>0.01)>0,"Minggu terakhir harus 100","")';
+      else f += '""';
+      f += (prev ? ')' : '') + '))';
+      ww.set(r, 8, { f: f }, S.calc());
+    }
+    ww.cf('H2:H' + LW, 'LEN(H2)>0', b.dxf({ color: C.RED, fill: 'FFE3DF' }));
+    if (!ctx.lockWeekly) ww.dv({ type: 'decimal', operator: 'between', f1: '0', f2: '100', sqref: 'C2:F' + LW, error: 'Persen kumulatif 0–100.' });
+    [10, 13, 16, 16, 17, 17, 12, 26].forEach(function (w, j) { ww.width(j + 1, w); });
+    ww.protect = { formatColumns: 1 };
+    // PLAN_BULANAN
+    const wm = b.sheet('PLAN_BULANAN');
+    ['BULAN', 'KODE_BULAN', 'CUT_OFF', 'WEEK_CUT_OFF', 'PLAN_KUMULATIF_%', 'MILESTONE_FISIK', 'PLAN_DARI_MINGGUAN_%', 'SELISIH_%', 'WEEK_DARI_TANGGAL'].forEach(function (h, j) { wm.set(1, j + 1, h, S.head(j >= 3 && j <= 5 ? '2F6FA8' : C.NAVY)); });
+    wm.height(1, 30); wm.freeze = { r: 2, c: 2 };
+    const mi = ctx.lockMonthly ? S.lock('0.00', { h: 'right' }) : S.inp('0.00'), mt = S.inp(undefined, { wrap: 1 }), mw = S.inp('0', { h: 'center' });
+    ctx.months.forEach(function (m, i) {
+      const r = i + 2, last = i === NM - 1;
+      const fromW = 'IF(D' + r + '="","",IF(D' + r + '<1,0,IFERROR(INDEX(PLAN_MINGGUAN!$G$2:$G$' + LW + ',D' + r + '),"")))';
+      wm.set(r, 1, m.label, S.lock()); wm.set(r, 2, m.key, S.lock(undefined, { h: 'center' })); wm.set(r, 3, { d: m.cut }, wd); wm.set(r, 4, m.week, mw);
+      const planV = m.plan == null ? (last ? 100 : null) : Math.round(m.plan * 100) / 100;
+      wm.set(r, 5, m.formula && !ctx.lockMonthly && !last ? { f: fromW } : planV, mi);
+      wm.set(r, 6, m.milestone || null, mt);
+      wm.set(r, 7, { f: fromW }, S.calc('0.00'));
+      wm.set(r, 8, { f: 'IF(OR(E' + r + '="",G' + r + '=""),"",E' + r + '-G' + r + ')' }, S.calc('0.00'));
+      wm.set(r, 9, m.dateWeek, wl);
+    });
+    wm.cf('H2:H' + LM, 'AND(ISNUMBER(H2),ABS(H2)>0.5)', b.dxf({ color: 'B26A00', fill: 'FFF1D6' }));
+    wm.cf('D2:D' + LM, 'OR(AND(ISNUMBER(D2),ABS(D2-I2)>2),AND(ROW(D2)>2,ISNUMBER(D1),D2<D1))', b.dxf({ color: 'B26A00', b: 1, fill: 'FFE7B8' }));
+    wm.dv({ type: 'whole', operator: 'between', f1: '1', f2: String(MW), sqref: 'D2:D' + LM, error: 'Week 1–' + MW + '.' });
+    if (!ctx.lockMonthly) wm.dv({ type: 'decimal', operator: 'between', f1: '0', f2: '100', sqref: 'E2:E' + LM, error: 'Persen kumulatif 0–100.' });
+    [18, 12, 12, 13, 17, 44, 20, 11, 13].forEach(function (w, j) { wm.width(j + 1, w); });
+    wm.protect = { formatColumns: 1 };
+    b.active = 2;
+    return b;
+  }
+  /** Baca template setup. Hasil: { parseErrors, info:{projectId,start,maxWeek}, bobot:{..}|null, weekly:[[4]] (null = sel kosong), months:[{key,plan,planCalc,milestone}] } */
+  function setupParse(book) {
+    const errs = [];
+    ['INFO', 'BOBOT', 'PLAN_MINGGUAN', 'PLAN_BULANAN'].forEach(function (n) { if (!book[n]) errs.push('Sheet ' + n + ' tidak ditemukan. Gunakan template setup dari dashboard.'); });
+    if (errs.length) return { parseErrors: errs };
+    const I = infoMap(book.INFO);
+    const num = function (v) { if (v === undefined || v === null || v === '') return null; if (typeof v === 'number') return v; const t = String(v).trim().replace('%', '').replace(/\s/g, ''); if (t === '') return null; const n = Number(/,\d{1,}$/.test(t) && t.indexOf('.') >= 0 ? t.replace(/\./g, '').replace(',', '.') : t.replace(',', '.')); return isNaN(n) ? NaN : n; };
+    const B = book.BOBOT, bobot = {};
+    SETUP_F.forEach(function (f, i) { const r = 4 + i; if (norm(B['A' + r]) !== norm(f)) errs.push('Sheet BOBOT baris ' + r + ' harus ' + f + '.'); bobot[f] = num(B['B' + r]); });
+    const W = book.PLAN_MINGGUAN, HW = headerMap(W, 1), wcols = ['ENGINEERING%', 'PROCUREMENT%', 'CONSTRUCTION%', 'COMMISSIONING%'];
+    wcols.forEach(function (k) { if (!HW[k]) errs.push('Kolom ' + k.replace('%', '_%') + ' tidak ditemukan di PLAN_MINGGUAN.'); });
+    const M = book.PLAN_BULANAN, HM = headerMap(M, 1);
+    ['KODEBULAN', 'PLANKUMULATIF%', 'MILESTONEFISIK'].forEach(function (k) { if (!HM[k]) errs.push('Kolom ' + k + ' tidak ditemukan di PLAN_BULANAN.'); });
+    if (errs.length) return { parseErrors: errs };
+    const weekly = [], nW = lastRow(W);
+    for (let r = 2; r <= nW; r++) { if (!/^WEEK\s*\d+/i.test(String(W['A' + r] || ''))) continue; weekly.push(wcols.map(function (k) { return num(W[HW[k] + r]); })); }
+    const months = [], nM = lastRow(M);
+    for (let r = 2; r <= nM; r++) { const key = String(M[HM.KODEBULAN + r] || '').trim(); if (!key) continue; months.push({ key: key, plan: num(M[HM['PLANKUMULATIF%'] + r]), planCalc: HM['PLANDARIMINGGUAN%'] ? num(M[HM['PLANDARIMINGGUAN%'] + r]) : null, milestone: String(M[HM.MILESTONEFISIK + r] == null ? '' : M[HM.MILESTONEFISIK + r]).trim(), week: num(M[(HM.WEEKCUTOFF || 'D') + r]) }); }
+    const st = I.TANGGALMULAI;
+    return { parseErrors: errs, info: { projectId: String(I.PROYEKID || '').trim(), start: typeof st === 'number' ? serialToIso(st) : String(st || '').slice(0, 10), maxWeek: Number(I.MAXWEEK) }, bobot: bobot, weekly: weekly, months: months };
+  }
+
+  // ------------------------------------------------------------------ parser isian
+  const norm = function (s) { return String(s == null ? '' : s).toUpperCase().replace(/[^A-Z0-9%?]+/g, ''); };
+  function headerMap(cells, row) {
+    const map = {};
+    Object.keys(cells).forEach(function (a) { const m = /^([A-Z]+)(\d+)$/.exec(a); if (m && +m[2] === row) map[norm(cells[a])] = m[1]; });
+    return map;
+  }
+  function lastRow(cells) { let n = 0; Object.keys(cells).forEach(function (a) { const r = +(/\d+$/.exec(a)[0]); if (r > n) n = r; }); return n; }
+  function dateVal(v, errs, where) {
+    if (v === null || v === undefined || v === '') return '';
+    if (typeof v === 'number') return serialToIso(v);
+    const s = String(v).trim(); let m;
+    if ((m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s))) return m[1] + '-' + m[2].padStart(2, '0') + '-' + m[3].padStart(2, '0');
+    if ((m = /^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/.exec(s))) return m[3] + '-' + m[2].padStart(2, '0') + '-' + m[1].padStart(2, '0');
+    const MON = { JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, MEI: 5, JUN: 6, JUL: 7, AUG: 8, AGU: 8, AGS: 8, SEP: 9, OCT: 10, OKT: 10, NOV: 11, DEC: 12, DES: 12 };
+    if ((m = /^(\d{1,2})[\s\-]([A-Za-z]{3})[A-Za-z]*[\s\-](\d{2,4})$/.exec(s)) && MON[m[2].toUpperCase()]) { let y = +m[3]; if (y < 100) y += 2000; return y + '-' + String(MON[m[2].toUpperCase()]).padStart(2, '0') + '-' + m[1].padStart(2, '0'); }
+    errs.push(where + ': tanggal "' + s + '" tidak dikenali.'); return '';
+  }
+  function infoMap(cells) { const o = {}; for (let r = 1; r <= 60; r++) { const k = cells['A' + r]; if (k) o[norm(k)] = cells['B' + r]; } return o; }
+  function engParseBaseline(book) {
+    const errs = [];
+    ['INFO', 'PARAMETER', 'DOKUMEN'].forEach(function (n) { if (!book[n]) errs.push('Sheet ' + n + ' tidak ditemukan. Gunakan template baseline dari dashboard.'); });
+    if (errs.length) return { parseErrors: errs };
+    const I = infoMap(book.INFO), Pm = book.PARAMETER, Dk = book.DOKUMEN;
+    const pola = {}, polaName = {};
+    // posisi dicari dari label agar template lama (P1/P4, parameter di baris 11–12) tetap terbaca
+    const rowOf = function (label, from) { for (let r = from || 1; r <= 60; r++) if (String(Pm['A' + r] || '').trim().toUpperCase() === label) return r; return 0; };
+    const rPorsi = rowOf('PORSI_TERBIT_%'), rDur = rowOf('DURASI_REVIEW_HARI'), rKode = rowOf('KODE', Math.max(rPorsi, rDur, 13));
+    const endPola = Math.max(5, (rPorsi || 13) - 1);
+    for (let r = 5; r <= endPola; r++) { const k = String(Pm['A' + r] || '').trim().toUpperCase(); if (/^P\d{1,2}$/.test(k)) { pola[k] = ['C', 'D', 'E', 'F'].map(function (c) { return Number(Pm[c + r] || 0); }); polaName[k] = String(Pm['B' + r] || '').trim(); } }
+    const codes = [];
+    if (rKode) for (let r = rKode + 1; r <= rKode + 6; r++) { if (Pm['A' + r] === undefined || Pm['A' + r] === '') continue; codes.push([Pm['A' + r], String(Pm['B' + r] || ''), String(Pm['C' + r] || '').trim().toUpperCase(), String(Pm['D' + r] || '')]); }
+    const H = headerMap(Dk, 1), need = ['NOMORDOKUMEN', 'NAMADOKUMEN', 'DISIPLIN', 'JENISDOKUMEN', 'PAKETWBS', 'BOBOTDOK%', 'POLA', 'RENCANAMULAI', 'RENCANAIFR', 'RENCANAIFA', 'RENCANAIFC', 'RENCANAIFI', 'CATATAN'];
+    need.forEach(function (k) { if (!H[k]) errs.push('Kolom ' + k + ' tidak ditemukan di sheet DOKUMEN.'); });
+    if (errs.length) return { parseErrors: errs };
+    const g = function (k, r) { const v = Dk[H[k] + r]; return v === undefined ? '' : v; };
+    const docs = [], n = lastRow(Dk);
+    for (let r = 2; r <= n; r++) {
+      const no = String(g('NOMORDOKUMEN', r)).trim(), name = String(g('NAMADOKUMEN', r)).trim();
+      const any = need.some(function (k) { return String(g(k, r)).trim() !== ''; });
+      if (!any) continue;
+      const where = 'Baris ' + r;
+      const wv = g('BOBOTDOK%', r);
+      docs.push({ row: r, no: no, name: name, disc: String(g('DISIPLIN', r)).trim().toUpperCase(), type: String(g('JENISDOKUMEN', r)).trim().toUpperCase(), wbs: String(g('PAKETWBS', r)).trim(),
+        w: wv === '' ? null : Number(wv), pola: String(g('POLA', r)).trim().toUpperCase(), m: dateVal(g('RENCANAMULAI', r), errs, where),
+        p: ['RENCANAIFR', 'RENCANAIFA', 'RENCANAIFC', 'RENCANAIFI'].map(function (k) { return dateVal(g(k, r), errs, where); }), note: String(g('CATATAN', r)).trim() });
+    }
+    return { parseErrors: errs, info: { projectId: String(I.PROYEKID || '').trim(), rev: I.REVISIBASELINE, note: String(I.CATATANREVISI || '').trim() },
+      params: { pola: pola, polaName: polaName, porsi: rPorsi ? Number(Pm['B' + rPorsi]) : NaN, durasi: rDur ? Number(Pm['B' + rDur]) : NaN, codes: codes }, docs: docs };
+  }
+  function engParseRealisasi(book) {
+    const errs = [];
+    ['INFO', 'REALISASI'].forEach(function (n) { if (!book[n]) errs.push('Sheet ' + n + ' tidak ditemukan. Gunakan template realisasi dari dashboard.'); });
+    if (errs.length) return { parseErrors: errs };
+    const I = infoMap(book.INFO), Rs = book.REALISASI;
+    const H = headerMap(Rs, 2);
+    const need = ['NOMORDOKUMEN', 'MULAIAKTUAL', 'IFRTERBIT', 'IFRKIRIMKE', 'IFRKODE', 'IFATERBIT', 'IFAKIRIMKE', 'IFAKODE', 'IFCTERBIT', 'IFCKIRIMKE', 'IFCKODE', 'IFITERBIT', 'CATATANKONTRAKTOR'];
+    need.forEach(function (k) { if (!H[k]) errs.push('Kolom ' + k + ' tidak ditemukan di sheet REALISASI.'); });
+    if (errs.length) return { parseErrors: errs };
+    const g = function (k, r) { const v = Rs[H[k] + r]; return v === undefined ? '' : v; };
+    const num = function (v) { return v === '' || v === null ? '' : (isFinite(Number(v)) ? Number(v) : String(v).trim()); };
+    const rows = [], n = lastRow(Rs);
+    for (let r = 3; r <= n; r++) {
+      const no = String(g('NOMORDOKUMEN', r)).trim(); if (!no) continue;
+      const where = 'Baris ' + r + ' (' + no + ')';
+      rows.push({ row: r, no: no, mulai: dateVal(g('MULAIAKTUAL', r), errs, where),
+        st: ['IFR', 'IFA', 'IFC'].map(function (k) { return [dateVal(g(k + 'TERBIT', r), errs, where), num(g(k + 'KIRIMKE', r)), num(g(k + 'KODE', r))]; }),
+        ifi: dateVal(g('IFITERBIT', r), errs, where), note: String(g('CATATANKONTRAKTOR', r)).trim() });
+    }
+    const cut = I.CUTOFF;
+    return { parseErrors: errs, info: { projectId: String(I.PROYEKID || '').trim(), rev: I.REVISIBASELINE, week: Number(I.MINGGUKE), cutoff: typeof cut === 'number' ? serialToIso(cut) : dateVal(cut, errs, 'INFO CUT_OFF'),
+      filledBy: String(I.DIISIOLEH || '').trim(), note: String(I.CATATANMINGGUAN || '').trim() }, rows: rows };
+  }
+
+  G.EngXlsx = { XBook: XBook, readXlsx: readXlsx, engBuildBaseline: engBuildBaseline, engBuildRealisasi: engBuildRealisasi, engParseBaseline: engParseBaseline, engParseRealisasi: engParseRealisasi, engBuildLinks: engBuildLinks, engParseLinks: engParseLinks, setupBuild: setupBuild, setupParse: setupParse,
+    DEFAULT_PARAMS: DEFAULT_PARAMS, DISC: DISC, TYPES: TYPES, isoToSerial: isoToSerial, serialToIso: serialToIso, EXAMPLES: EXAMPLES };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>

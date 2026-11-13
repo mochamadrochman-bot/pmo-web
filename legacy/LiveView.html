@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="id">
+<head>
+<?!= include('PmoCore') ?>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Live View Lapangan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+:root{
+  --r:16px;color-scheme:light
+}
+:root[data-theme="dark"]{color-scheme:dark
+}
+*{box-sizing:border-box}html,body{margin:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 Inter,"Segoe UI",system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+.ic{display:inline-grid;width:20px;height:20px;flex:none}.ic svg{width:100%;height:100%}
+.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;padding:12px 28px;background:var(--topbar);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.back{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--pri-ink);font-weight:600}
+.top .t{flex:1;min-width:0}.top .t small{display:block;font-size:12px;color:var(--muted)}.top .t b{display:block;font-size:18px;color:var(--navy)}
+.icon-btn{width:40px;height:40px;border:1px solid var(--line);border-radius:10px;background:var(--card);display:grid;place-items:center;color:var(--muted)}
+.av{width:36px;height:36px;border-radius:50%;background:var(--pri);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700;flex:none}
+.wrap{max-width:1380px;margin:0 auto;padding:18px 28px 40px}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;flex:1;min-width:0}
+.chips button{flex:none;min-height:40px;padding:0 14px;border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--muted);font-size:13px;font-weight:600;white-space:nowrap}
+.chips button.on{background:var(--pri);border-color:var(--pri);color:#fff}
+.chips button small{opacity:.8;font-weight:600;margin-left:4px}
+.btn{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font-weight:600;font-size:13px}
+.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff}
+.btn.danger{border-color:var(--bad-line);background:var(--bad-bg);color:var(--bad)}
+.btn .ic{width:16px;height:16px}
+a.btn{text-decoration:none}
+.lv{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(280px,1fr);gap:14px;align-items:start}
+.stage{position:relative;border-radius:var(--r);overflow:hidden;background:#0b1825;aspect-ratio:16/9;box-shadow:var(--shadow)}
+.stage video,.stage iframe,.stage img{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#000}
+.stage img{object-fit:contain}
+.ov{position:absolute;left:0;right:0;top:0;z-index:2;display:flex;align-items:center;gap:8px;padding:10px 12px;color:#fff;background:linear-gradient(180deg,rgba(0,0,0,.55),transparent);pointer-events:none}
+.live{font-size:11px;font-weight:800;background:#d6332f;padding:2px 8px;border-radius:6px}
+.live.demo{background:#8a5cf6}
+.ov b{font-size:14px;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.ov .tm{margin-left:auto;font-size:12px;font-variant-numeric:tabular-nums;opacity:.9}
+.msg{position:absolute;inset:0;z-index:1;display:grid;place-items:center;text-align:center;color:#c7d6e3;padding:24px;font-size:14px;line-height:1.5}
+.msg b{display:block;color:#fff;font-size:16px;margin-bottom:4px}
+.msg a,.msg button{display:inline-flex;align-items:center;gap:6px;margin-top:12px;min-height:44px;padding:0 18px;border-radius:10px;background:#fff;color:#073b63;font-weight:700;text-decoration:none;border:0}
+.under{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:10px;color:var(--muted);font-size:13px}
+.under b{color:var(--ink)}
+.under .sp{flex:1}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px}
+.panel h3{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:14px;color:var(--navy)}
+.panel h3 .n{margin-left:auto;font-size:12px;color:var(--muted);font-weight:600}
+.cams{display:grid;gap:8px}
+.cam{display:flex;align-items:center;gap:10px;width:100%;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--tint);text-align:left;min-height:60px}
+.cam:hover{border-color:var(--pri)}
+.cam.on{border-color:var(--pri);background:var(--soft)}
+.cam .ci{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:var(--card);color:var(--pri-ink);flex:none}
+.cam b{display:block;font-size:13px;line-height:1.3}.cam small{display:block;font-size:12px;color:var(--muted)}
+.cam .ty{margin-left:auto;flex:none;font-size:10px;font-weight:700;letter-spacing:.04em;padding:2px 7px;border-radius:6px;border:1px solid var(--line);color:var(--muted);background:var(--card)}
+.empty{padding:22px 10px;text-align:center;color:var(--muted);font-size:13px;line-height:1.55}
+.note{margin-top:12px;padding:10px 12px;border-radius:10px;font-size:12px;line-height:1.5;background:var(--tint);border:1px solid var(--line);color:var(--muted)}
+.note.demo{background:#efe8fc;border-color:#d6c6f7;color:#5b2fb0}
+:root[data-theme="dark"] .note.demo{background:#2b2150;border-color:#46377a;color:#c4a7ff}
+.error{margin:0 0 14px;padding:12px 14px;background:var(--bad-bg);border:1px solid var(--bad-line);border-radius:10px;color:var(--bad);font-size:13px}
+.loading{padding:40px;text-align:center;color:var(--muted)}
+/* kelola */
+.modal{position:fixed;inset:0;z-index:80;background:rgba(7,20,36,.55);display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow:auto}
+.dialog{width:min(860px,100%);background:var(--card);color:var(--ink);border-radius:18px;box-shadow:0 20px 60px rgba(7,20,36,.4)}
+.dh{display:flex;align-items:center;gap:10px;padding:18px 20px;border-bottom:1px solid var(--line)}
+.dh h2{margin:0;font-size:17px;color:var(--navy);flex:1}
+.db{padding:16px 20px 20px}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.f{display:grid;gap:5px;min-width:0}
+.f.full{grid-column:1/-1}
+.f>span{font-size:12px;font-weight:600;color:var(--muted)}
+.f>span em{color:var(--bad);font-style:normal}
+.inp{width:100%;min-height:42px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+textarea.inp{min-height:64px;resize:vertical}
+.hint{font-size:12px;color:var(--muted);line-height:1.45}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px}
+.row .sp{flex:1}
+.chk{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:13px}
+.chk input{width:18px;height:18px}
+.tbl{width:100%;border-collapse:collapse;margin-top:6px;font-size:13px}
+.tbl th{text-align:left;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding:8px;border-bottom:1px solid var(--line)}
+.tbl td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl td .u{display:block;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:12px}
+.tbl .act{white-space:nowrap;text-align:right}
+.tbl .act button{min-height:34px;padding:0 10px;margin-left:4px;border:1px solid var(--line);border-radius:8px;background:var(--card);font-size:12px;font-weight:600;color:var(--pri-ink)}
+.tbl .act button.del{color:var(--bad)}
+.off{opacity:.55}
+.sec-h{margin:20px 0 4px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:95;max-width:calc(100vw - 32px);background:var(--navy);color:var(--card);padding:12px 18px;border-radius:12px;font-size:14px;font-weight:600;box-shadow:0 14px 40px rgba(0,0,0,.3)}
+@media (max-width:980px){.lv{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){
+  .top{padding:10px 12px;gap:8px}.top .t small{display:none}.top .t b{font-size:16px}.back span{display:none}
+  .wrap{padding:12px 12px 32px}
+  .form{grid-template-columns:minmax(0,1fr)}
+  .tbl thead{display:none}.tbl tr{display:block;padding:10px 0;border-bottom:1px solid var(--line)}.tbl td{display:block;border:0;padding:2px 0}.tbl .act{text-align:left;padding-top:6px}.tbl .act button{margin:0 6px 0 0;min-height:40px}
+  .stage{border-radius:12px}
+}
+:root[data-theme="dark"] select option,:root[data-theme="dark"] select optgroup{background:#152435;color:#e3ecf4}
+</style>
+</head>
+<body>
+<script>try{if(localStorage.getItem('pmoExecutiveTheme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<header class="top">
+  <button type="button" class="back" onclick="go('portal')"><i class="ic" data-ic="left"></i><span>Portal</span></button>
+  <div class="t"><small>PMO Infrastruktur &amp; Process Plant</small><b>Live View Lapangan</b></div>
+  <button type="button" class="btn" id="manageBtn" hidden onclick="openManage()"><i class="ic" data-ic="gear"></i>Kelola kamera</button>
+  <button type="button" class="icon-btn" id="themeBtn" aria-label="Ganti tema terang/gelap" title="Ganti tema" onclick="toggleTheme()"><i class="ic" data-ic="moon"></i></button>
+  <span class="av" id="userAv" title="">–</span>
+</header>
+
+<main class="wrap">
+  <div id="error" class="error" hidden></div>
+  <div id="loading" class="loading">Memuat daftar kamera…</div>
+  <div id="content" hidden>
+    <div class="bar"><div class="chips" id="projChips" role="tablist" aria-label="Pilih proyek"></div></div>
+    <div class="lv">
+      <div>
+        <div class="stage" id="stage"><div class="msg">Pilih kamera</div></div>
+        <div class="under" id="under"></div>
+        <div id="camNote"></div>
+      </div>
+      <aside class="panel">
+        <h3><i class="ic" data-ic="cam"></i>Kamera <span class="n" id="camCount"></span></h3>
+        <div class="cams" id="camList"></div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<div class="modal" id="manage" hidden role="dialog" aria-modal="true" aria-labelledby="mgTitle">
+  <div class="dialog">
+    <div class="dh"><h2 id="mgTitle">Kelola kamera CCTV</h2><button type="button" class="icon-btn" aria-label="Tutup" onclick="closeManage()"><i class="ic" data-ic="x"></i></button></div>
+    <div class="db">
+      <div class="sec-h" id="formTitle" style="margin-top:0">Tambah kamera</div>
+      <div class="form">
+        <label class="f"><span>Proyek <em>*</em></span><select class="inp" id="fProject"></select></label>
+        <label class="f"><span>Nama kamera <em>*</em></span><input class="inp" id="fName" placeholder="mis. CAM-01 · Trestle"></label>
+        <label class="f"><span>Lokasi / area</span><input class="inp" id="fLoc" placeholder="mis. Jetty head sisi utara"></label>
+        <label class="f"><span>Jenis <em>*</em></span><select class="inp" id="fType"></select></label>
+        <label class="f full"><span>Alamat (URL) <em>*</em></span><input class="inp" id="fUrl" inputmode="url" placeholder="https://…"><small class="hint" id="typeHint"></small></label>
+        <label class="f"><span>Urutan tampil</span><input class="inp" id="fOrder" inputmode="numeric" placeholder="1"></label>
+        <label class="f" style="align-content:end"><span class="chk"><input type="checkbox" id="fActive" checked>Kamera aktif (tampil di Live View)</span></label>
+        <label class="f full"><span>Catatan</span><textarea class="inp" id="fNote" placeholder="mis. kamera PTZ, terhubung ke NVR gudang"></textarea></label>
+      </div>
+      <div class="row"><button type="button" class="btn" id="fReset" onclick="resetForm()">Batal ubah</button><span class="sp"></span><button type="button" class="btn" onclick="testCam()"><i class="ic" data-ic="play"></i>Coba tampilkan</button><button type="button" class="btn pri" id="fSave" onclick="saveCam()"><i class="ic" data-ic="check"></i>Simpan kamera</button></div>
+      <div class="sec-h">Daftar kamera</div>
+      <table class="tbl"><thead><tr><th>Proyek</th><th>Kamera</th><th>Jenis</th><th></th></tr></thead><tbody id="mgRows"></tbody></table>
+      <div class="row"><button type="button" class="btn" onclick="addDemo()"><i class="ic" data-ic="plus"></i>Tambahkan contoh kamera demo</button><span class="hint">Siaran uji publik untuk presentasi, ditandai DEMO. Bisa dihapus kapan saja.</span></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.17/hls.min.js"></script>
+<script>
+const initialSessionToken=<?!= JSON.stringify(initialSessionToken || '') ?>;
+const appUrl=<?!= JSON.stringify(appUrl || '') ?>;
+const initialProjectName=<?!= JSON.stringify(initialProjectName || '') ?>;
+if(initialSessionToken)sessionStorage.setItem('pmoSessionToken',initialSessionToken);
+const token=initialSessionToken||sessionStorage.getItem('pmoSessionToken');
+const TYPE_INFO={HLS:['HLS','Alamat siaran .m3u8 dari server streaming (HTTPS, CORS diizinkan untuk domain dashboard).'],YOUTUBE:['YouTube','Tautan video atau siaran langsung YouTube, mis. https://www.youtube.com/watch?v=… atau https://youtu.be/…'],EMBED:['Embed','Halaman pemutar yang mengizinkan disematkan (iframe), mis. pemutar web dari server streaming.'],GAMBAR:['Foto','Alamat gambar snapshot kamera (JPG/PNG). Dimuat ulang tiap 30 detik.'],TAUTAN:['Tautan','Halaman kamera yang tidak bisa disematkan. Dibuka di tab baru.']};
+let D=null,curProject='',curCam=null,hls=null,imgTimer=null,clockTimer=null,editId='';
+
+const P={left:'<path d="M15 6l-6 6 6 6"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/>',moon:'<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',cam:'<path d="M3 7h11a2 2 0 012 2v6a2 2 0 01-2 2H3z"/><path d="M16 11l5-3v8l-5-3"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',play:'<circle cx="12" cy="12" r="9"/><path d="M10 8.5l5 3.5-5 3.5z"/>',check:'<path d="M5 12l5 5L20 7"/>',plus:'<path d="M12 5v14M5 12h14"/>',ext:'<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/>',img:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/>',yt:'<rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9l5 3-5 3z"/>',full:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'};
+function paint(root){(root||document).querySelectorAll('[data-ic]').forEach(function(el){const p=P[el.getAttribute('data-ic')];if(p)el.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>'})}
+paint();
+function $(id){return document.getElementById(id)}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function go(page){window.top.location.href=appUrl+'?page='+page}
+function toast(msg){let t=$('toast');if(!t){t=document.createElement('div');t.id='toast';t.className='toast';t.setAttribute('role','status');document.body.appendChild(t)}t.textContent=msg;t.hidden=false;clearTimeout(window.__tt);window.__tt=setTimeout(function(){t.hidden=true},2800)}
+function toggleTheme(){const dark=document.documentElement.getAttribute('data-theme')!=='dark';document.documentElement.setAttribute('data-theme',dark?'dark':'light');try{localStorage.setItem('pmoExecutiveTheme',dark?'dark':'light')}catch(e){}$('themeBtn').firstElementChild.setAttribute('data-ic',dark?'sun':'moon');paint($('themeBtn'))}
+(function(){const dark=document.documentElement.getAttribute('data-theme')==='dark';$('themeBtn').firstElementChild.setAttribute('data-ic',dark?'sun':'moon');paint($('themeBtn'))})();
+function sessionExpired_(msg){if(!/sesi (login )?(tidak valid|tidak ditemukan|telah berakhir|berakhir)|silakan login kembali/i.test(String(msg||'')))return false;goLogin_();return true}
+function goLogin_(){if(window.__goingLogin)return;window.__goingLogin=true;try{sessionStorage.removeItem('pmoSessionToken');sessionStorage.removeItem('pmoUser')}catch(e){}const o=document.createElement('div');o.setAttribute('role','alert');o.style.cssText='position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:rgba(8,30,51,.78);color:#fff;font:600 15px/1.5 Inter,system-ui,sans-serif;text-align:center;padding:24px';o.innerHTML='<div><div style="font-size:18px;margin-bottom:4px">Sesi Anda telah berakhir</div><div style="font-weight:500;opacity:.85">Membuka halaman login…</div><a id="goLoginLink" target="_top" style="display:inline-block;margin-top:16px;padding:10px 18px;border-radius:10px;background:#fff;color:#073b63;font-weight:700;text-decoration:none">Buka halaman login</a></div>';document.body.appendChild(o);$('goLoginLink').href=appUrl||String(window.location.href).split('?')[0];try{google.script.run.withSuccessHandler(function(html){if(!html)return;document.open();document.write(html);document.close()}).withFailureHandler(function(){}).getLoginPageHtml()}catch(e){}}
+function showError(msg){if(sessionExpired_(msg))return;const e=$('error');e.hidden=false;e.textContent=msg;$('loading').hidden=true}
+function run(fn,args,ok,fail){const r=google.script.run.withSuccessHandler(ok).withFailureHandler(function(e){if(fail)fail(e);const m=e&&e.message?e.message:String(e);if(!sessionExpired_(m))toast(m)});r[fn].apply(r,args)}
+
+/* ---------- data ---------- */
+function projName(id){if(id===D.demoId)return 'Contoh / demo';const p=D.projects.find(function(x){return x.id===id});return p?p.name:id}
+function visibleCams(pid){return D.cameras.filter(function(c){return c.projectId===pid&&c.active})}
+function init(){
+  if(!token){goLogin_();return}
+  run('getLiveViewData',[token],function(d){
+    D=d;$('loading').hidden=true;$('content').hidden=false;
+    const u=d.user||{};const nm=u.name||u.username||'Pengguna';$('userAv').textContent=nm.trim().split(/\s+/).slice(0,2).map(function(p){return p.charAt(0)}).join('').toUpperCase();$('userAv').title=nm+(u.role?' · '+u.role:'');
+    $('manageBtn').hidden=!d.canManage;
+    const key=function(v){return String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'')};
+    let pid='';
+    if(initialProjectName){const p=d.projects.find(function(x){return key(x.id)===key(initialProjectName)||key(x.name)===key(initialProjectName)});if(p)pid=p.id}
+    if(!pid){const withCam=d.projects.find(function(p){return visibleCams(p.id).length});pid=withCam?withCam.id:(visibleCams(d.demoId).length?d.demoId:(d.projects[0]||{}).id||d.demoId)}
+    renderChips();selectProject(pid);
+  },function(e){showError(e&&e.message?e.message:String(e))});
+}
+function renderChips(){
+  const ids=D.projects.filter(function(p){return p.id===curProject||visibleCams(p.id).length}).map(function(p){return p.id});if(visibleCams(D.demoId).length||curProject===D.demoId)ids.push(D.demoId);
+  $('projChips').innerHTML=ids.map(function(id){const n=visibleCams(id).length;return '<button type="button" role="tab" aria-selected="'+(id===curProject)+'" class="'+(id===curProject?'on':'')+'" data-id="'+esc(id)+'">'+esc(projName(id))+'<small>'+n+'</small></button>'}).join('');
+  $('projChips').querySelectorAll('button').forEach(function(b){b.onclick=function(){selectProject(b.getAttribute('data-id'))}});
+}
+function selectProject(pid){
+  curProject=pid;renderChips();
+  const cams=visibleCams(pid);$('camCount').textContent=cams.length+' kamera';
+  $('camList').innerHTML=cams.length?cams.map(function(c){const ic=c.type==='YOUTUBE'?'yt':c.type==='GAMBAR'?'img':c.type==='TAUTAN'?'ext':'cam';return '<button type="button" class="cam" data-id="'+esc(c.id)+'"><span class="ci"><i class="ic" data-ic="'+ic+'"></i></span><span><b>'+esc(c.name)+'</b><small>'+esc(c.location||'—')+'</small></span><span class="ty">'+esc((TYPE_INFO[c.type]||[c.type])[0])+'</span></button>'}).join(''):'<div class="empty">Belum ada kamera untuk proyek ini.'+(D.canManage?'<br>Tambahkan lewat tombol <b>Kelola kamera</b>.':'<br>Kamera akan tampil setelah didaftarkan oleh admin.')+'</div>';
+  paint($('camList'));
+  $('camList').querySelectorAll('.cam').forEach(function(b){b.onclick=function(){play(D.cameras.find(function(c){return c.id===b.getAttribute('data-id')}))}});
+  if(cams.length)play(cams[0]);else{stop();$('stage').innerHTML='<div class="msg"><div><b>Belum ada kamera</b>'+esc(projName(pid))+'</div></div>';$('under').innerHTML='';$('camNote').innerHTML=''}
+}
+
+/* ---------- pemutar ---------- */
+function stop(){if(hls){try{hls.destroy()}catch(e){}hls=null}clearInterval(imgTimer);clearInterval(clockTimer);const v=$('stage').querySelector('video');if(v){try{v.pause();v.removeAttribute('src');v.load()}catch(e){}}}
+function overlay(c){const demo=c.projectId===D.demoId;return '<div class="ov"><span class="live'+(demo?' demo':'')+'">'+(demo?'DEMO':c.type==='GAMBAR'?'FOTO':'LIVE')+'</span><b>'+esc(c.name)+'</b><span class="tm" id="clock"></span></div>'}
+function tick(){const el=$('clock');if(el)el.textContent=new Date().toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+function failMsg(c,why){$('stage').innerHTML=overlay(c)+'<div class="msg"><div><b>Tayangan tidak dapat dimuat</b>'+esc(why)+(c.url?'<br><a href="'+esc(c.url)+'" target="_blank" rel="noopener">Buka alamat kamera</a>':'')+'</div></div>';tick()}
+function play(c,preview){
+  if(!c)return;stop();curCam=c;
+  if(!preview)document.querySelectorAll('#camList .cam').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-id')===c.id)});
+  const st=$('stage');
+  if(c.type==='HLS'){
+    st.innerHTML=overlay(c)+'<video id="vid" muted autoplay playsinline controls></video><div class="msg" id="vmsg">Menghubungkan ke siaran…</div>';
+    const v=$('vid');const ok=function(){const m=$('vmsg');if(m)m.remove()};v.addEventListener('playing',ok);
+    if(window.Hls&&Hls.isSupported()){hls=new Hls({liveDurationInfinity:true});hls.on(Hls.Events.ERROR,function(_,data){if(data&&data.fatal)failMsg(c,'Server siaran tidak merespons atau memblokir akses (CORS).')});hls.loadSource(c.url);hls.attachMedia(v);hls.on(Hls.Events.MANIFEST_PARSED,function(){v.play().catch(function(){})})}
+    else if(v.canPlayType('application/vnd.apple.mpegurl')){v.src=c.url;v.addEventListener('error',function(){failMsg(c,'Server siaran tidak merespons.')});v.play().catch(function(){})}
+    else failMsg(c,'Browser ini tidak mendukung siaran HLS.');
+  }else if(c.type==='YOUTUBE'){
+    const id=c.youtubeId||((c.url.match(/(?:youtu\.be\/|v=|embed\/|live\/|shorts\/)([A-Za-z0-9_-]{11})/)||[])[1]);
+    if(!id){failMsg(c,'Tautan YouTube tidak dikenali.');return}
+    st.innerHTML=overlay(c)+'<iframe src="https://www.youtube.com/embed/'+id+'?autoplay=1&mute=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="'+esc(c.name)+'"></iframe>';
+  }else if(c.type==='EMBED'){
+    st.innerHTML=overlay(c)+'<iframe src="'+esc(c.url)+'" allow="autoplay; fullscreen" allowfullscreen title="'+esc(c.name)+'"></iframe>';
+  }else if(c.type==='GAMBAR'){
+    const load=function(){const sep=c.url.indexOf('?')<0?'?':'&';const img=$('snap');if(img)img.src=c.url+sep+'t='+Date.now()};
+    st.innerHTML=overlay(c)+'<img id="snap" alt="Foto kamera '+esc(c.name)+'">';$('snap').onerror=function(){failMsg(c,'Gambar kamera tidak dapat dimuat.')};load();imgTimer=setInterval(load,30000);
+  }else{
+    st.innerHTML=overlay(c)+'<div class="msg"><div><b>'+esc(c.name)+'</b>Kamera ini dibuka di halaman penyedianya.<br><a href="'+esc(c.url)+'" target="_blank" rel="noopener">Buka tayangan</a></div></div>';
+  }
+  tick();clockTimer=setInterval(tick,1000);
+  if(preview)return;
+  $('under').innerHTML='<span><b>'+esc(projName(c.projectId))+'</b> · '+esc(c.location||'—')+'</span><span class="sp"></span>'+(c.type!=='TAUTAN'?'<button type="button" class="btn" onclick="fullscreen()"><i class="ic" data-ic="full"></i>Layar penuh</button>':'')+'<a class="btn" href="'+esc(c.url)+'" target="_blank" rel="noopener"><i class="ic" data-ic="ext"></i>Buka sumber</a>';
+  paint($('under'));
+  $('camNote').innerHTML=(c.projectId===D.demoId?'<div class="note demo">Tayangan contoh untuk demonstrasi, bukan kamera lokasi proyek. Ganti dengan kamera proyek setelah server streaming IT siap.</div>':'')+(c.note?'<div class="note">'+esc(c.note)+'</div>':'');
+}
+function fullscreen(){const s=$('stage');const v=s.querySelector('video');const el=v&&v.webkitEnterFullscreen&&!s.requestFullscreen?v:s;try{if(el.requestFullscreen)el.requestFullscreen();else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();else if(el.webkitEnterFullscreen)el.webkitEnterFullscreen()}catch(e){}}
+
+/* ---------- kelola (ADMIN) ---------- */
+function openManage(){
+  $('fProject').innerHTML=D.projects.map(function(p){return '<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>'}).join('')+'<option value="'+esc(D.demoId)+'">Contoh / demo</option>';
+  const TL={HLS:'HLS (server streaming)',YOUTUBE:'YouTube',EMBED:'Embed (pemutar web)',GAMBAR:'Foto snapshot',TAUTAN:'Tautan (buka tab baru)'};$('fType').innerHTML=D.types.map(function(t){return '<option value="'+t+'">'+esc(TL[t]||t)+'</option>'}).join('');
+  $('fType').onchange=function(){$('typeHint').textContent=(TYPE_INFO[this.value]||['',''])[1]};
+  resetForm();renderRows();$('manage').hidden=false;document.body.style.overflow='hidden';
+}
+function closeManage(){const keep=curCam&&curCam.id;$('manage').hidden=true;document.body.style.overflow='';selectProject(curProject);const c=D.cameras.find(function(x){return x.id===keep});if(c&&c.active&&c.projectId===curProject)play(c)}
+function resetForm(){editId='';$('formTitle').textContent='Tambah kamera';$('fProject').value=curProject&&curProject!==''?curProject:(D.projects[0]||{}).id;$('fName').value='';$('fLoc').value='';$('fType').value='HLS';$('fUrl').value='';$('fOrder').value='';$('fActive').checked=true;$('fNote').value='';$('fType').onchange();$('fReset').hidden=true}
+function editCam(id){const c=D.cameras.find(function(x){return x.id===id});if(!c)return;editId=id;$('formTitle').textContent='Ubah kamera · '+c.name;$('fProject').value=c.projectId;$('fName').value=c.name;$('fLoc').value=c.location;$('fType').value=c.type;$('fUrl').value=c.url;$('fOrder').value=c.order==null?'':c.order;$('fActive').checked=c.active;$('fNote').value=c.note;$('fType').onchange();$('fReset').hidden=false;$('fName').focus()}
+function formCam(){return{id:editId,projectId:$('fProject').value,name:$('fName').value.trim(),location:$('fLoc').value.trim(),type:$('fType').value,url:$('fUrl').value.trim(),order:$('fOrder').value.trim(),active:$('fActive').checked,note:$('fNote').value.trim()}}
+function testCam(){const c=formCam();if(!/^https:\/\//i.test(c.url)){toast('Isi alamat https:// dulu.');return}c.id='__test';closeManageQuiet();play(c,true);toast('Pratinjau di layar utama. Buka lagi Kelola kamera untuk menyimpan.')}
+function closeManageQuiet(){$('manage').hidden=true;document.body.style.overflow=''}
+function saveCam(){const c=formCam();const b=$('fSave');b.disabled=true;run('saveCamera',[token,c],function(r){b.disabled=false;D.cameras=r.cameras;toast(editId?'Kamera diperbarui.':'Kamera ditambahkan.');resetForm();renderRows();renderChips()},function(){b.disabled=false})}
+function delCam(id){const c=D.cameras.find(function(x){return x.id===id});if(!c)return;const tr=document.querySelector('#mgRows tr[data-id="'+id+'"]');const btn=tr&&tr.querySelector('.del');if(btn&&btn.getAttribute('data-sure')!=='1'){btn.setAttribute('data-sure','1');btn.textContent='Yakin hapus?';setTimeout(function(){if(btn.isConnected){btn.removeAttribute('data-sure');btn.textContent='Hapus'}},3500);return}run('deleteCamera',[token,id],function(r){D.cameras=r.cameras;toast('Kamera dihapus.');if(editId===id)resetForm();renderRows();renderChips()})}
+function addDemo(){run('addDemoCameras',[token],function(r){D.cameras=r.cameras;toast('Kamera contoh ditambahkan ke grup "Contoh / demo".');renderRows();renderChips()})}
+function renderRows(){
+  $('mgRows').innerHTML=D.cameras.length?D.cameras.map(function(c){return '<tr data-id="'+esc(c.id)+'" class="'+(c.active?'':'off')+'"><td>'+esc(projName(c.projectId))+'</td><td><b>'+esc(c.name)+'</b>'+(c.active?'':' (nonaktif)')+'<span class="u" title="'+esc(c.url)+'">'+esc(c.url)+'</span></td><td>'+esc((TYPE_INFO[c.type]||[c.type])[0])+'</td><td class="act"><button type="button" onclick="editCam(\''+esc(c.id)+'\')">Ubah</button><button type="button" class="del" onclick="delCam(\''+esc(c.id)+'\')">Hapus</button></td></tr>'}).join(''):'<tr><td colspan="4" class="empty">Belum ada kamera terdaftar.</td></tr>';
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('manage').hidden)closeManage()});
+init();
+</script>
+<script>window.pmoAiPage='live';</script>
+<?!= include('AccountMenu') ?>
+<?!= include('AiWidget') ?>
+</body>
+</html>

@@ -196,4 +196,48 @@ router.get('/api/admin/audit', onlyAdmin, async (req, res, next) => {
   }
 });
 
+// --- Impor data spreadsheet (.xlsx) -------------------------------------------
+const gasStore = require('../gas/store');
+const { parseWorkbook } = require('../gas/xlsx-import');
+const { clearCache } = require('../gas/services');
+
+router.get('/admin/data', onlyAdmin, async (req, res, next) => {
+  try {
+    const book = gasStore.book();
+    const sheets = book ? book.list().map((d) => ({ name: d.name, rows: d.lastRow(), cols: d.lastCol() })) : [];
+    renderPage(res, 'pages/admin-data', {
+      title: 'Impor Data', user: req.user, sheets, last: await gasStore.lastImport(),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/api/admin/import-xlsx',
+  onlyAdmin,
+  express.raw({ type: 'application/octet-stream', limit: '80mb' }),
+  async (req, res, next) => {
+    try {
+      if (!Buffer.isBuffer(req.body) || req.body.length < 100) return bad(res, 'Berkas kosong atau tidak terbaca.');
+      if (req.body.slice(0, 2).toString() !== 'PK') return bad(res, 'Berkas harus berformat .xlsx (Microsoft Excel).');
+      const fileName = String(req.get('x-file-name') || '').slice(0, 200);
+      let sheets;
+      try {
+        sheets = parseWorkbook(req.body);
+      } catch (e) {
+        return bad(res, 'Berkas .xlsx tidak bisa dibaca: ' + e.message);
+      }
+      const names = sheets.map((d) => d.name);
+      const required = ['DATA MINGGUAN PROYEK', 'DATA BULANAN'];
+      const missing = required.filter((n) => !names.includes(n));
+      if (missing.length) return bad(res, 'Sheet wajib tidak ditemukan: ' + missing.join(', ') + '. Pastikan yang diunggah adalah spreadsheet PMO DASHBOARD.');
+      await gasStore.replaceMain(sheets, req.user.username, fileName);
+      clearCache();
+      await audit(req.user, 'data_import', 'spreadsheet', fileName, { sheets: sheets.length });
+      res.json({ ok: true, data: { sheets: sheets.length, names } });
+    } catch (err) {
+      next(err);
+    }
+  });
+
 module.exports = router;

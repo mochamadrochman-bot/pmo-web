@@ -8,6 +8,9 @@ RUN npm ci --omit=dev || npm install --omit=dev --no-audit --no-fund
 # ---- runtime
 FROM node:22-alpine
 ENV NODE_ENV=production
+# Zona waktu sama dengan spreadsheet dan Apps Script lama.
+RUN apk add --no-cache tzdata
+ENV TZ=Asia/Bangkok
 WORKDIR /app
 
 # wget dipakai healthcheck, sudah ada di busybox
@@ -15,6 +18,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY src ./src
 COPY views ./views
 COPY db ./db
+COPY legacy ./legacy
 COPY package.json ./
 
 USER node

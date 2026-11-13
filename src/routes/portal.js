@@ -64,7 +64,11 @@ function textMap(rows) {
 }
 
 // --- Portal ---------------------------------------------------------------
-router.get('/', requireUser, async (req, res, next) => {
+// Halaman utama = Portal aplikasi lama (tampilan sama seperti Apps Script).
+// Portal ringkas versi baru tetap tersedia di /portal-ringkas.
+router.get('/', requireUser, (req, res) => res.redirect('/app?page=portal'));
+
+router.get('/portal-ringkas', requireUser, async (req, res, next) => {
   try {
     const all = await db.query('select id, name from projects order by name');
     const projects = { rows: access.visibleProjects(req.user, all.rows) };

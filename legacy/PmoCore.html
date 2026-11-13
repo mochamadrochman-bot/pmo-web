@@ -1,0 +1,223 @@
+<style>
+/* ===== PMO tokens: satu sumber warna & ukuran untuk semua halaman =====
+   - Dibungkus :where() (specificity 0): nilai yang masih ditulis di halaman selalu menang,
+     jadi halaman dengan warna khusus tidak berubah. Halaman cukup menulis token yang memang berbeda.
+   - Ubah warna status / latar / teks di SINI, bukan di tiap halaman.
+   - Skala huruf, jarak, dan sudut (--t-*, --sp-*, --r-*) dipakai bertahap saat halaman disentuh. */
+:where(:root){
+  --bg:#f2f5f9;
+  --card:#fff;
+  --ink:#132b43;
+  --muted:#5b7085;
+  --line:#e0e8f0;
+  --pri:#0f5fa8;
+  --pri-ink:#0f5fa8;
+  --navy:#073b63;
+  --soft:#e8f3fb;
+  --tint:#f4f8fc;
+  --ok:#14724f;
+  --ok-bg:#dcf5e9;
+  --ok-line:#a9e2c7;
+  --warn:#8f6100;
+  --warn-bg:#fff0bd;
+  --warn-line:#f0d577;
+  --bad:#c0302f;
+  --bad-bg:#ffe3df;
+  --bad-line:#f5b4ad;
+  --shadow:0 1px 2px rgba(13,49,79,.05),0 8px 22px rgba(13,49,79,.06);
+  --topbar:rgba(255,255,255,.94);
+  /* skala huruf */
+  --t-2xl:26px;--t-xl:20px;--t-lg:17px;--t-md:15px;--t-sm:13.5px;--t-xs:12px;
+  /* jarak (kelipatan 4) */
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;--sp-8:32px;
+  /* sudut */
+  --r-sm:8px;--r-md:12px;--r-lg:16px;--r-pill:99px;
+  --font-ui:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-num:tabular-nums;
+}
+:where(:root[data-theme="dark"]){
+  --bg:#0e1a27;
+  --card:#152435;
+  --ink:#e3ecf4;
+  --muted:#9bb0c3;
+  --line:#263b4f;
+  --pri:#1f6db3;
+  --pri-ink:#8fcaf6;
+  --navy:#d9ecfa;
+  --soft:#1b3550;
+  --tint:#1a2c3f;
+  --ok:#4fd1a0;
+  --ok-bg:#12372b;
+  --ok-line:#1f5c47;
+  --warn:#f0c35a;
+  --warn-bg:#3a2f12;
+  --warn-line:#5c4a1b;
+  --bad:#ff8c86;
+  --bad-bg:#3d1d20;
+  --bad-line:#6a2f33;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 22px rgba(0,0,0,.25);
+  --topbar:rgba(21,36,53,.94);
+}
+</style>
+<style>
+/* ===== UI tahap 4: tabel jadi kartu di HP (layar <= 760px atau mode HP). Tandai tabel dengan class="pmo-cards";
+   label tiap sel diambil otomatis dari judul kolom (data-card-title="N" = kolom judul kartu, bawaan 0). ===== */
+@media (max-width:760px){table.pmo-cards{min-width:0!important;width:100%!important}table.pmo-cards>thead{display:none}table.pmo-cards,table.pmo-cards>tbody{display:block}table.pmo-cards>tbody>tr{display:block;margin:0 0 10px;padding:4px 0;border:1px solid var(--line);border-radius:12px;background:var(--card)}table.pmo-cards>tbody>tr>td{display:grid;grid-template-columns:minmax(84px,36%) minmax(0,1fr);gap:10px;align-items:start;padding:6px 12px!important;border:0!important;text-align:left!important;white-space:normal!important;width:auto!important;min-width:0!important}table.pmo-cards>tbody>tr>td::before{content:attr(data-label);color:var(--muted);font-size:12px;font-weight:600}table.pmo-cards>tbody>tr>td.pmo-card-title{grid-template-columns:minmax(0,1fr);font-weight:700;border-bottom:1px solid var(--line)!important;padding-bottom:8px!important}table.pmo-cards>tbody>tr>td.pmo-card-title::before,table.pmo-cards>tbody>tr>td.pmo-card-full::before,table.pmo-cards>tbody>tr>td[data-label=""]::before{display:none}table.pmo-cards>tbody>tr>td.pmo-card-full,table.pmo-cards>tbody>tr>td[data-label=""]{grid-template-columns:minmax(0,1fr)}body.portfolio table.pmo-cards>tbody>tr>td.finance-only{display:grid}}
+:where(html.m-mode) table.pmo-cards{min-width:0!important;width:100%!important}
+:where(html.m-mode) table.pmo-cards>thead{display:none}
+:where(html.m-mode) table.pmo-cards,:where(html.m-mode) table.pmo-cards>tbody{display:block}
+:where(html.m-mode) table.pmo-cards>tbody>tr{display:block;margin:0 0 10px;padding:4px 0;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+:where(html.m-mode) table.pmo-cards>tbody>tr>td{display:grid;grid-template-columns:minmax(84px,36%) minmax(0,1fr);gap:10px;align-items:start;padding:6px 12px!important;border:0!important;text-align:left!important;white-space:normal!important;width:auto!important;min-width:0!important}
+:where(html.m-mode) table.pmo-cards>tbody>tr>td::before{content:attr(data-label);color:var(--muted);font-size:12px;font-weight:600}
+:where(html.m-mode) table.pmo-cards>tbody>tr>td.pmo-card-title{grid-template-columns:minmax(0,1fr);font-weight:700;border-bottom:1px solid var(--line)!important;padding-bottom:8px!important}
+:where(html.m-mode) table.pmo-cards>tbody>tr>td.pmo-card-title::before,:where(html.m-mode) table.pmo-cards>tbody>tr>td.pmo-card-full::before,:where(html.m-mode) table.pmo-cards>tbody>tr>td[data-label=""]::before{display:none}
+:where(html.m-mode) table.pmo-cards>tbody>tr>td.pmo-card-full,:where(html.m-mode) table.pmo-cards>tbody>tr>td[data-label=""]{grid-template-columns:minmax(0,1fr)}
+:where(html.m-mode) body.portfolio table.pmo-cards>tbody>tr>td.finance-only{display:grid}
+</style>
+<style>
+/* ===== UI tahap 3a: ukuran badge status seragam di semua halaman =====
+   Hanya bentuk & ukuran (warna tetap dari halaman). Awalan "html " membuat aturan ini menang atas aturan dasar
+   halaman (.st{...}) tetapi kalah dari aturan konteks (mis. .project-item .tag) dan varian warna (.st.ok). */
+html .st,html .ar-st,html .vw-badge,html .kpi-badge,html .pst-chip,html .dev-pill,html .badge,html .kj-st,html .pp-st{padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700;line-height:1.5;letter-spacing:0}
+/* ===== UI tahap 3b: ukuran tombol seragam (warna tetap dari halaman). Layar sentuh: tinggi minimum 44px. ===== */
+html .btn{min-height:40px;height:auto;padding:0 16px;border-radius:10px;font-size:13px;font-weight:600}
+html .btn.sm{min-height:32px;padding:0 10px;font-size:12.5px}
+@media (pointer:coarse){html .btn{min-height:44px}html .btn.sm{min-height:36px}}
+/* ===== UI tahap 3c: sudut kartu/panel seragam 14px di semua halaman (menimpa --r di tiap halaman). ===== */
+:root:root{--r:14px}
+</style>
+<script>
+/* ===== PMO core: dimuat paling awal di setiap halaman (setelah <head>) =====
+   1. PMO_BUILD  : nomor versi aplikasi. NAIKKAN setiap kali ada perubahan kode yang di-deploy,
+                   agar data lama di cache browser (pmoSwr) otomatis dibuang.
+   2. pmoSwr     : muat cepat (tampilkan data terakhir dari cache browser, perbarui di belakang).
+                   Satu definisi untuk semua halaman; definisi lama di halaman otomatis dilewati.
+   3. Batas waktu panggilan server (google.script.run):
+        - baca data   : 30 detik (60 detik untuk data jadwal besar) -> dianggap gagal, pesan "server tidak merespons".
+        - simpan data : tidak dibatalkan; setelah 30 detik muncul pesan "masih memproses".
+        - proses lama : impor, unggah, buat PDF/Excel/PPT, Sena -> tanpa batas waktu. */
+(function(){
+  if(window.__pmoCore)return;window.__pmoCore=true;
+  var BUILD=window.PMO_BUILD='2026-11-12.8';
+
+  /* ---------- 1. buang cache lama bila versi berubah ---------- */
+  try{
+    if(localStorage.getItem('pmoBuild')!==BUILD){
+      Object.keys(localStorage).forEach(function(k){if(k.indexOf('pmoSwr')===0)localStorage.removeItem(k)});
+      localStorage.setItem('pmoBuild',BUILD);
+    }
+  }catch(e){}
+
+  /* ---------- 2. muat cepat ---------- */
+  window.pmoSwr=window.pmoSwr||(function(){
+    var P='pmoSwr:'+BUILD+':',MAX=7*864e5,pill=null,tm=null;
+    function get(k){try{var r=JSON.parse(localStorage.getItem(P+k)||'null');return r&&r.d&&Date.now()-r.t<MAX?r:null}catch(e){return null}}
+    function sig(d){try{return JSON.stringify(d,function(k,v){return k==='serverMs'||k==='cached'?undefined:v})}catch(e){return ''}}
+    function set(k,d){var v;try{v=JSON.stringify({t:Date.now(),d:d})}catch(e){return}try{localStorage.setItem(P+k,v)}catch(e){try{Object.keys(localStorage).forEach(function(x){if(x.indexOf('pmoSwr')===0)localStorage.removeItem(x)});localStorage.setItem(P+k,v)}catch(_){}}}
+    function busy(state,text){
+      if(!document.body)return;
+      if(!pill){pill=document.createElement('div');pill.setAttribute('role','status');pill.style.cssText='position:fixed;left:16px;bottom:16px;z-index:150;display:none;align-items:center;gap:8px;padding:8px 14px;border-radius:99px;background:rgba(7,40,70,.92);color:#fff;font:600 12.5px/1.2 Inter,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.2)';pill.innerHTML='<span style="width:12px;height:12px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:pmoSpin .8s linear infinite"></span><span></span>';var st=document.createElement('style');st.textContent='@keyframes pmoSpin{to{transform:rotate(360deg)}}';document.head.appendChild(st);document.body.appendChild(pill)}
+      clearTimeout(tm);
+      if(state===true){pill.firstChild.style.display='';pill.lastChild.textContent=text||'Memperbarui data\u2026';pill.style.display='flex'}
+      else if(typeof state==='string'){pill.firstChild.style.display='none';pill.lastChild.textContent=state;pill.style.display='flex';tm=setTimeout(function(){pill.style.display='none'},4000)}
+      else pill.style.display='none';
+    }
+    function log(page,t0,d){try{console.info('[PMO perf] '+page+': data '+Math.round(performance.now()-t0)+' ms (server '+(d&&d.serverMs!=null?d.serverMs+' ms':'-')+(d&&d.cached?', cache':'')+'), sejak halaman dibuka '+Math.round(performance.now())+' ms')}catch(e){}}
+    return {get:get,set:set,sig:sig,busy:busy,log:log};
+  })();
+
+  /* ---------- 4. tabel jadi kartu di HP: isi label sel dari judul kolom (UI tahap 4) ---------- */
+  function pmoCardLabel(t){
+    var hr=t.tHead&&t.tHead.rows.length?t.tHead.rows[t.tHead.rows.length-1]:null;if(!hr)return;
+    var heads=[].map.call(hr.cells,function(c){return (c.textContent||'').replace(/\s+/g,' ').trim()});
+    var ti=Number(t.getAttribute('data-card-title')||0);
+    [].forEach.call(t.tBodies,function(b){[].forEach.call(b.rows,function(r){
+      if(r.cells.length===1||(r.cells[0]&&r.cells[0].colSpan>1&&r.cells.length<3)){[].forEach.call(r.cells,function(c){c.classList.add('pmo-card-full')});return}
+      var i=0;[].forEach.call(r.cells,function(c){if(!c.hasAttribute('data-label'))c.setAttribute('data-label',heads[i]||'');if(i===ti)c.classList.add('pmo-card-title');i+=c.colSpan||1});
+    })});
+  }
+  function pmoCardsInit(){
+    [].forEach.call(document.querySelectorAll('table.pmo-cards'),function(t){
+      pmoCardLabel(t);
+      if(window.MutationObserver&&!t.__pmoObs){t.__pmoObs=new MutationObserver(function(){pmoCardLabel(t)});t.__pmoObs.observe(t,{childList:true,subtree:true})}
+    });
+  }
+  window.pmoCards=pmoCardsInit;
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',pmoCardsInit);else pmoCardsInit();
+
+  /* ---------- 3. batas waktu panggilan server ---------- */
+  var LONG=/import|chunk|commit|upload|unggah|pdf|xlsx|excel|ppt|docx|report|laporan|^ai|sena|ask|chat|export|ekspor|generate|build|print|zip|thumb|video|intro|backup|sync|baseline/i;
+  var READ=/^(get|list|load|read|fetch|search|cari|find|peek|preview|auth(Get|Check|Signup))/i;
+  var HEAVY=/^(getMsCpm|getMasterSchedule|getExecutiveLookAhead|getExecutiveMasterSchedule)/;
+  var READ_MS=30000,HEAVY_MS=60000,WRITE_NOTE_MS=30000;
+  var toastEl=null,toastN=0;
+  function toast(on,text){
+    if(!document.body)return;
+    if(!toastEl){toastEl=document.createElement('div');toastEl.setAttribute('role','status');toastEl.style.cssText='position:fixed;right:16px;bottom:16px;z-index:2147483000;max-width:min(420px,calc(100vw - 32px));display:none;padding:10px 14px;border-radius:12px;background:#7a4b00;color:#fff;font:600 13px/1.4 Inter,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25)';document.body.appendChild(toastEl)}
+    if(on){toastN++;toastEl.textContent=text;toastEl.style.display='block'}
+    else{toastN=Math.max(0,toastN-1);if(!toastN)toastEl.style.display='none'}
+  }
+  window.pmoRpcToast=toast;
+  try{
+    if(window.google&&google.script&&google.script.run&&!google.script.__pmoTimeout){
+      var real=google.script.run;
+      /* satu panggilan server dengan batas waktu (baca) / pesan "masih memproses" (simpan) */
+      var invoke=function(name,args,s,f,u,hasU){
+        var done=false,timer=0,noted=false,r=real;
+        var isLong=LONG.test(name),isRead=!isLong&&READ.test(name);
+        var finish=function(){done=true;clearTimeout(timer);if(noted){noted=false;toast(false)}};
+        r=r.withSuccessHandler(function(){if(done)return;finish();if(s)return s.apply(this,arguments)});
+        r=r.withFailureHandler(function(e){if(done)return;finish();if(f)return f.apply(this,arguments);if(window.console)console.error(e)});
+        if(hasU)r=r.withUserObject(u);
+        if(isRead){
+          timer=setTimeout(function(){
+            if(done)return;done=true;
+            var err=new Error('Server tidak merespons dalam '+Math.round((HEAVY.test(name)?HEAVY_MS:READ_MS)/1000)+' detik. Periksa koneksi, lalu muat ulang atau coba lagi.');err.timeout=true;
+            try{console.warn(JSON.stringify({ev:'rpc_timeout',fn:name}))}catch(_){}
+            if(f){try{f.call(null,err,u)}catch(x){if(window.console)console.error(x)}}
+            else{toast(true,err.message);setTimeout(function(){toast(false)},6000)}
+          },HEAVY.test(name)?HEAVY_MS:READ_MS);
+        }else if(!isLong){
+          timer=setTimeout(function(){if(done)return;noted=true;toast(true,'Masih memproses di server\u2026 Jangan tutup atau muat ulang halaman ini.')},WRITE_NOTE_MS);
+        }
+        return r[name].apply(r,args);
+      };
+      /* C4: panggilan baca identik yang terjadi bersamaan digabung jadi satu (mis. authGetSession dari halaman, menu akun, panel admin).
+         Hasil sesi/notifikasi dipakai ulang 10 detik; dibuang saat logout. */
+      var SHARE=/^(authGetSession|getAiStatus|getNotifications|getInputAccess)$/,SHARE_KEEP_MS=10000,shareFly={},shareKeep={};
+      var clone=function(v){try{return v===undefined?v:JSON.parse(JSON.stringify(v))}catch(e){return v}};
+      var shared=function(name,args,s,f,u,hasU){
+        if(name==='authLogout')shareKeep={};
+        if(!SHARE.test(name))return invoke(name,args,s,f,u,hasU);
+        var key;try{key=name+'|'+JSON.stringify(Array.prototype.slice.call(args))}catch(e){return invoke(name,args,s,f,u,hasU)}
+        var kept=shareKeep[key];
+        if(kept&&Date.now()-kept.t<SHARE_KEEP_MS){setTimeout(function(){if(s)try{s.call(null,clone(kept.v),u)}catch(e){if(window.console)console.error(e)}},0);return}
+        var me={s:s,f:f,u:u};
+        if(shareFly[key]){shareFly[key].push(me);return}
+        shareFly[key]=[me];
+        invoke(name,args,function(v){
+          var l=shareFly[key]||[];delete shareFly[key];
+          if(v&&v.success!==false)shareKeep[key]={t:Date.now(),v:clone(v)};
+          l.forEach(function(c,i){if(c.s)try{c.s.call(null,i?clone(v):v,c.u)}catch(e){if(window.console)console.error(e)}});
+        },function(e){
+          var l=shareFly[key]||[];delete shareFly[key];
+          l.forEach(function(c){if(c.f)try{c.f.call(null,e,c.u)}catch(x){if(window.console)console.error(x)}else if(window.console)console.error(e)});
+        },null,false);
+      };
+      var chain=function(s,f,u,hasU){
+        return new Proxy({},{get:function(_,k){
+          if(k==='withSuccessHandler')return function(fn){return chain(fn,f,u,hasU)};
+          if(k==='withFailureHandler')return function(fn){return chain(s,fn,u,hasU)};
+          if(k==='withUserObject')return function(o){return chain(s,f,o,true)};
+          if(typeof k!=='string'||typeof real[k]!=='function')return real[k];
+          return function(){return shared(k,arguments,s,f,u,hasU)};
+        }});
+      };
+      var root=chain(null,null,null,false);
+      Object.defineProperty(google.script,'run',{configurable:true,enumerable:true,get:function(){return root}});
+      google.script.__pmoTimeout=true;
+    }
+  }catch(e){}
+})();
+</script>
+ 

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <base target="_top">
+  <?!= include('Styles'); ?>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <style>
+  body,.login-card input,.login-card select,.login-card  button{font-family:Inter,system-ui,sans-serif}
+  .login-card{--pri:#0f5fa8;--navy:#073b63;--ok:#14724f;--warn:#8f6100;--bad:#c0302f;border-radius:20px}
+  #loginButton{background:var(--pri);border-radius:10px;letter-spacing:.02em}#loginButton:hover{background:#0b4e8c}#loginButton:disabled{opacity:.75;cursor:wait}
+  .pmo-login-steps{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:0;margin:18px 0 4px;font:500 11px/1.45 Inter,system-ui,sans-serif}
+  .pmo-login-steps li{border-top:3px solid var(--border,#d5dde3);padding-top:9px;text-align:center;color:var(--muted,#6b7c8a)}.pmo-login-steps b{display:block;font-size:12px;margin-bottom:3px}.pmo-login-steps li.is-active{color:var(--pri);border-color:var(--pri)}.pmo-login-steps li.is-done{color:var(--ok);border-color:var(--ok)}.pmo-login-steps li.is-error{color:var(--bad);border-color:var(--bad)}
+  :root[data-theme="dark"] .login-card{--navy:#dceaf5;--text:#dceaf5;--muted:#a4bbce;--border:#30495d;--ok:#47d5a2;--bad:#ff8884;background:#162838;color:var(--text);border-color:var(--border)}
+  :root[data-theme="dark"] .login-card input:not([type=checkbox]),:root[data-theme="dark"] .login-card select{background:#102232;color:#dceaf5;border-color:#30495d}
+  :root[data-theme="dark"] .login-card h2,:root[data-theme="dark"] .login-card label{color:#dceaf5}:root[data-theme="dark"] .signup-note,:root[data-theme="dark"] .signup-shortcut{color:#a4bbce}
+  :root[data-theme="dark"] .pmo-login-steps li.is-active{color:#8fcaf6;border-color:#8fcaf6}
+  @media(max-width:480px){.pmo-login-steps{gap:5px;font-size:11px}}
+  </style>
+
+  <style>
+    .signup-shortcut{text-align:center;margin:16px 0 4px;color:#6B7C8A;font-size:13px}
+    .signup-link{width:auto;margin:0;padding:0;background:none;border:0;color:#2F75B5;font:inherit;font-weight:700;letter-spacing:normal;text-decoration:underline;cursor:pointer}
+    #signupPanel[hidden]{display:none}
+    #signupPanel{margin-top:8px;text-align:left}
+    #signupPanel h2{margin:10px 0 4px;color:#0F2B46;font-size:19px;text-align:center}
+    .signup-note{margin:0 0 14px;color:#6B7C8A;font-size:12px;line-height:1.5;text-align:center}
+    #signupForm label{display:block;margin:10px 0 5px;color:#263746;font-size:13px;font-weight:600}
+    #signupForm input,#signupForm select{display:block;width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #D5DDE3;border-radius:8px;background:#fff;color:#263746;font:inherit}
+    #signupForm button[type=submit]{width:100%;margin-top:16px;padding:11px;border:0;border-radius:8px;background:#0F2B46;color:#fff;font-weight:700;cursor:pointer}
+    #signupForm button[disabled]{opacity:.65;cursor:wait}
+    #signupMessage{min-height:20px;margin-top:10px;font-size:12px;line-height:1.5}
+    .forgot-row{text-align:right;margin:8px 0 0}
+    #resetPanel[hidden]{display:none}
+    #resetPanel{margin-top:8px;text-align:left}
+    #resetPanel h2{margin:10px 0 4px;color:#0F2B46;font-size:19px;text-align:center}
+    .rs-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:10px 0 6px;padding:4px;border-radius:10px;background:#EEF3F7}
+    .rs-tabs button{margin:0;padding:9px 6px;border:0;border-radius:8px;background:transparent;color:#3F647D;font:inherit;font-size:13px;font-weight:700;letter-spacing:normal;cursor:pointer}
+    .rs-tabs button.on{background:#fff;color:#0F2B46;box-shadow:0 1px 3px rgba(15,43,70,.15)}
+    #resetPanel form label{display:block;margin:10px 0 5px;color:#263746;font-size:13px;font-weight:600}
+    #resetPanel form input{display:block;width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #D5DDE3;border-radius:8px;background:#fff;color:#263746;font:inherit}
+    #rsCode{text-transform:uppercase;letter-spacing:.12em;font-weight:700}
+    #resetPanel form button[type=submit]{width:100%;margin-top:16px;padding:11px;border:0;border-radius:8px;background:#0F2B46;color:#fff;font-weight:700;cursor:pointer}
+    #resetPanel form button[disabled]{opacity:.65;cursor:wait}
+    .rs-msg{min-height:20px;margin-top:10px;font-size:12px;line-height:1.5}
+    #backFromReset{display:block;width:auto;margin:12px auto 0;padding:0;background:none;border:0;color:#2F75B5;font:inherit;letter-spacing:normal;text-decoration:underline;cursor:pointer}
+    #backToLogin{display:block;width:auto;margin:12px auto 0;padding:0;background:none;border:0;color:#2F75B5;font:inherit;letter-spacing:normal;text-decoration:underline;cursor:pointer}
+  </style>
+  <script>try{var pmoT=localStorage.getItem('pmoExecutiveTheme');if(!pmoT&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)pmoT='dark';document.documentElement.setAttribute('data-theme',pmoT==='dark'?'dark':'light');}catch(e){}</script>
+  <style>
+    /* ===== Tema terang / gelap halaman login ===== */
+    :root{--msg-ok:#3F647D;--msg-bad:#B42318}
+    .theme-switch{position:fixed;top:18px;right:20px;z-index:20;display:flex;gap:2px;padding:4px;border-radius:999px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.38);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+    .theme-switch button{width:auto;margin:0;display:flex;align-items:center;gap:6px;padding:7px 12px;border:0;border-radius:999px;background:transparent;color:#fff;font:600 12.5px Inter,system-ui,sans-serif;letter-spacing:normal;cursor:pointer;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+    .theme-switch button:hover{background:rgba(255,255,255,.16)}
+    .theme-switch button[aria-pressed="true"]{background:#fff;color:#0F2B46;text-shadow:none;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+    .theme-switch svg{width:15px;height:15px;flex:none}
+    #loginPortalLink{display:block;margin-top:16px;padding:11px 16px;border-radius:10px;background:var(--pri,#0f5fa8);color:#fff;text-align:center;font-weight:700;font-size:13px;letter-spacing:.02em;text-decoration:none}
+    #loginPortalLink:hover{filter:brightness(1.08)}
+    :root[data-theme="dark"]{--msg-ok:#a4bbce;--msg-bad:#ff8884;color-scheme:dark}
+    :root[data-theme="dark"] body{background:#07131f}
+    :root[data-theme="dark"] .login-wrapper{background-color:#061424;background-image:linear-gradient(180deg,rgba(3,12,22,.72),rgba(3,12,22,.55) 50%,rgba(3,12,22,.8)),url("https://drive.google.com/thumbnail?id=1W4smcs4NnfWWq4ruAub6SifsfyF4unC6&sz=w2000")}
+    :root[data-theme="dark"] .theme-switch{background:rgba(10,24,38,.55);border-color:rgba(255,255,255,.18)}
+    :root[data-theme="dark"] .theme-switch button[aria-pressed="true"]{background:#2f8be0;color:#fff}
+    :root[data-theme="dark"] .login-card{--pri:#2f8be0;background:rgba(13,27,41,.94);border-color:#2b4357;color:#dceaf5;box-shadow:0 24px 70px rgba(0,0,0,.6)}
+    :root[data-theme="dark"] .brand-mark{width:max-content;max-width:100%;margin-left:auto;margin-right:auto;padding:8px 10px;border-radius:16px;background:#f3f7fa}
+    :root[data-theme="dark"] .login-card h1,:root[data-theme="dark"] .login-card h2,:root[data-theme="dark"] .login-card label,:root[data-theme="dark"] #signupPanel h2,:root[data-theme="dark"] #resetPanel h2,:root[data-theme="dark"] #signupForm label,:root[data-theme="dark"] #resetPanel form label{color:#e6f0f8}
+    :root[data-theme="dark"] .subtitle,:root[data-theme="dark"] .signup-note,:root[data-theme="dark"] .signup-shortcut,:root[data-theme="dark"] .login-footer,:root[data-theme="dark"] .pmo-login-steps li{color:#9fb5c8}
+    :root[data-theme="dark"] .divider{background:#2b4357}:root[data-theme="dark"] .login-footer{border-top-color:#2b4357}
+    :root[data-theme="dark"] .login-card input:not([type=checkbox]),:root[data-theme="dark"] .login-card select,:root[data-theme="dark"] #signupForm input,:root[data-theme="dark"] #signupForm select,:root[data-theme="dark"] #resetPanel form input{background:#0f2233;color:#dceaf5;border-color:#2b4357}
+    :root[data-theme="dark"] .login-card input::placeholder{color:#7f95a8}
+    :root[data-theme="dark"] .login-card input:focus{border-color:#2f8be0;box-shadow:0 0 0 3px rgba(47,139,224,.22)}
+    :root[data-theme="dark"] #loginButton{background:#2f8be0}:root[data-theme="dark"] #loginButton:hover{background:#2479c7}
+    :root[data-theme="dark"] #signupForm button[type=submit],:root[data-theme="dark"] #resetPanel form button[type=submit]{background:#2f8be0}
+    :root[data-theme="dark"] .signup-link,:root[data-theme="dark"] #backToLogin,:root[data-theme="dark"] #backFromReset{color:#7cc0ff}
+    :root[data-theme="dark"] .rs-tabs{background:#0f2233}:root[data-theme="dark"] .rs-tabs button{color:#9fb5c8}:root[data-theme="dark"] .rs-tabs button.on{background:#1d3850;color:#e6f0f8;box-shadow:none}
+    :root[data-theme="dark"] .pmo-login-steps li{border-color:#2b4357}
+    :root[data-theme="dark"] .brand-mark .company-logo{width:min(220px,62vw)}
+    @media(max-width:480px){.theme-switch{top:10px;right:10px}.theme-switch button span{display:none}.theme-switch button{padding:7px 9px}}
+  </style>
+</head>
+<body>
+  <main class="login-wrapper">
+    <div class="theme-switch" role="group" aria-label="Tema tampilan">
+      <button type="button" data-theme-set="light" aria-pressed="false" title="Tema terang"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span>Terang</span></button>
+      <button type="button" data-theme-set="dark" aria-pressed="false" title="Tema gelap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg><span>Gelap</span></button>
+    </div>
+    <section class="login-card">
+      <div class="brand-mark">
+        <img src="https://drive.google.com/thumbnail?id=1JP0hqePxcaiFN0aZ2dv6WJ6qCNwrRLxf&sz=w800" alt="Logo PT Petrokimia Gresik" class="company-logo">
+      </div>
+      <h1>DASHBOARD</h1>
+      <p class="subtitle">PROJECT MONITORING</p>
+      <div class="divider"></div>
+      <form id="loginForm">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Masukkan username" autocomplete="username" required>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Masukkan password" autocomplete="current-password" required>
+        <label for="showPassword" style="display:flex;align-items:center;gap:8px;margin:8px 0 0;font-size:13px;cursor:pointer"><input type="checkbox" id="showPassword" style="width:auto;margin:0;cursor:pointer"> Tampilkan password</label>
+        <div class="forgot-row"><button type="button" class="signup-link" id="showResetButton">Lupa password?</button></div>
+        <button type="submit" id="loginButton">LOGIN</button>
+        <ol class="pmo-login-steps" id="pmoLoginSteps" aria-label="Tahapan login"><li><b>1</b><span>Cek Akun</span></li><li><b>2</b><span id="pmoProofLabel">Enkripsi PBKDF2</span></li><li><b>3</b><span>Buka Portal</span></li></ol>
+        <div id="message" role="status"></div>
+      </form>
+      <div class="signup-shortcut" id="signupIntro">Belum mempunyai akun? <button type="button" class="signup-link" id="showSignupButton">Buat akun</button></div>
+      <section id="signupPanel" hidden>
+        <h2>Buat Akun</h2>
+        <p class="signup-note">Akun dapat digunakan setelah disetujui admin.</p>
+        <form id="signupForm">
+          <label for="signupName">Jabatan</label>
+          <input type="text" id="signupName" maxlength="80" autocomplete="name" required>
+
+          <label for="signupTeam">Tim proyek</label>
+          <select id="signupTeam" required><option value="">Memuat tim proyek...</option></select>
+          <label for="signupProject">Proyek</label>
+          <select id="signupProject" required><option value="">Pilih tim terlebih dahulu</option></select>
+          <p id="signupAllHint" class="signup-note" style="text-align:left;margin:8px 0 0" hidden>Akun ALL dapat melihat seluruh proyek dan halaman dashboard sebagai pengguna (USER), tanpa hak input atau PIC.</p>
+
+          <label for="signupUsername">Username</label>
+          <input type="text" id="signupUsername" minlength="4" maxlength="32" pattern="[A-Za-z0-9._-]{4,32}" autocomplete="username" required>
+          <label for="signupPassword">Password (minimal 12 karakter)</label>
+          <input type="password" id="signupPassword" minlength="12" maxlength="128" autocomplete="new-password" required>
+          <label for="signupConfirmPassword">Konfirmasi password</label>
+          <input type="password" id="signupConfirmPassword" minlength="12" maxlength="128" autocomplete="new-password" required>
+          <button type="submit" id="signupButton">AJUKAN AKUN</button>
+          <div id="signupMessage" role="status" aria-live="polite"></div>
+        </form>
+        <button type="button" id="backToLogin">Kembali ke login</button>
+      </section>
+      <section id="resetPanel" hidden>
+        <h2>Reset Password</h2>
+        <p class="signup-note">Kode reset diberikan langsung oleh admin PMO setelah identitas Anda dipastikan.</p>
+        <div class="rs-tabs" role="tablist"><button type="button" class="on" data-rs="ask">Minta reset</button><button type="button" data-rs="code">Saya punya kode</button></div>
+        <form id="rsAskForm">
+          <label for="rsAskUser">Username</label>
+          <input type="text" id="rsAskUser" maxlength="32" autocomplete="username" required>
+          <button type="submit" id="rsAskBtn">KIRIM PERMINTAAN</button>
+          <div class="rs-msg" id="rsAskMsg" role="status" aria-live="polite"></div>
+        </form>
+        <form id="rsCodeForm" hidden>
+          <label for="rsUser">Username</label>
+          <input type="text" id="rsUser" maxlength="32" autocomplete="username" required>
+          <label for="rsCode">Kode reset dari admin</label>
+          <input type="text" id="rsCode" maxlength="9" placeholder="XXXX-XXXX" autocomplete="one-time-code" required>
+          <label for="rsPass">Password baru (minimal 12 karakter)</label>
+          <input type="password" id="rsPass" minlength="12" maxlength="128" autocomplete="new-password" required>
+          <label for="rsPass2">Konfirmasi password baru</label>
+          <input type="password" id="rsPass2" minlength="12" maxlength="128" autocomplete="new-password" required>
+          <button type="submit" id="rsCodeBtn">SIMPAN PASSWORD BARU</button>
+          <div class="rs-msg" id="rsCodeMsg" role="status" aria-live="polite"></div>
+        </form>
+        <button type="button" id="backFromReset">Kembali ke login</button>
+      </section>
+      <div class="login-footer">Project Management Office<br>PT Petrokimia Gresik</div>
+    </section>
+  </main>
+  <script>
+  (function(){
+    (function(){
+      const btns=Array.prototype.slice.call(document.querySelectorAll('[data-theme-set]'));
+      const sync=function(){const cur=document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';btns.forEach(function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-theme-set')===cur))});};
+      btns.forEach(function(b){b.addEventListener('click',function(){const t=b.getAttribute('data-theme-set');document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem('pmoExecutiveTheme',t)}catch(e){}sync();});});
+      sync();
+    })();
+    const loginForm = document.getElementById('loginForm');
+    const loginButton = document.getElementById('loginButton');
+    document.getElementById('showPassword').addEventListener('change', function() {
+      document.getElementById('password').type = this.checked ? 'text' : 'password';
+    });
+    const message = document.getElementById('message');
+    const signupPanel = document.getElementById('signupPanel');
+    const signupForm = document.getElementById('signupForm');
+    const signupButton = document.getElementById('signupButton');
+    const signupMessage = document.getElementById('signupMessage');
+    let signupProjects = [];
+    const signupTeam = document.getElementById('signupTeam'), signupProject = document.getElementById('signupProject');
+    function setOptions(el, placeholder, values) {
+      el.replaceChildren(new Option(placeholder, ''));
+      values.forEach(function(v){ el.add(new Option(v.label, v.value)); });
+    }
+    signupTeam.addEventListener('change', function(){
+      const all=signupTeam.value==='ALL',hint=document.getElementById('signupAllHint');
+      if(all){setOptions(signupProject, 'Pilih proyek', [{label:'ALL · Semua proyek',value:'ALL'}]);signupProject.value='ALL';}
+      else setOptions(signupProject, 'Pilih proyek', signupProjects.filter(function(p){return p.team === signupTeam.value;}).map(function(p){return {label:p.name+' ('+p.id+')',value:p.id};}));
+      if(hint)hint.hidden=!all;
+    });
+    google.script.run.withSuccessHandler(function(projects){
+      signupProjects = projects || [];
+      const teams = Array.from(new Set(signupProjects.map(function(p){return p.team;}))).sort();
+      setOptions(signupTeam, 'Pilih tim proyek', [{label:'ALL · Semua tim',value:'ALL'}].concat(teams.map(function(team){return {label:team,value:team};})));
+    }).withFailureHandler(function(){setOptions(signupTeam, 'Daftar tim gagal dimuat', []);}).authSignupProjects();
+    document.getElementById('showSignupButton').addEventListener('click', function() {
+      loginForm.hidden = true;
+      document.getElementById('signupIntro').hidden = true;
+      signupPanel.hidden = false;
+      document.getElementById('signupName').focus();
+    });
+    document.getElementById('backToLogin').addEventListener('click', function() {
+      signupPanel.hidden = true;
+      loginForm.hidden = false;
+      document.getElementById('signupIntro').hidden = false;
+      signupMessage.textContent = '';
+    });
+    function showSignupMessage(text, isError) {
+      signupMessage.textContent = text;
+      signupMessage.style.color = isError ? 'var(--msg-bad)' : 'var(--msg-ok)';
+    }
+    function showMessage(text, isError) {
+      message.textContent = text;
+      message.style.color = isError ? 'var(--msg-bad)' : 'var(--msg-ok)';
+    }
+    function bytesToHex(bytes) {
+      return Array.from(new Uint8Array(bytes), function(value) { return value.toString(16).padStart(2, '0'); }).join('');
+    }
+    async function makeProof(password, challenge) {
+      if (!window.crypto || !window.crypto.subtle) throw new Error('Browser ini tidak mendukung verifikasi aman. Silakan gunakan Chrome atau Edge terbaru.');
+      const encoder = new TextEncoder();
+      let keyBytes;
+      if (challenge.algorithm === 'SHA256_LEGACY') {
+        keyBytes = await window.crypto.subtle.digest('SHA-256', encoder.encode(challenge.salt + password));
+      } else {
+        const passwordKey = await window.crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']);
+        keyBytes = await window.crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: encoder.encode(challenge.salt), iterations: challenge.iterations }, passwordKey, 256);
+      }
+      const hmacKey = await window.crypto.subtle.importKey('raw', keyBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+      return bytesToHex(await window.crypto.subtle.sign('HMAC', hmacKey, encoder.encode(challenge.nonce)));
+    }
+    /* Halaman sebelumnya (sesi habis / logout) meninggalkan variabel global di jendela ini, sehingga skrip halaman
+       baru gagal dijalankan ulang ("sudah dideklarasikan") dan Portal berhenti di "Memeriksa sesi…".
+       Pada kondisi itu halaman baru dimuat di bingkai bersih; google.script.run tetap milik jendela utama. */
+    function pmoStaleWindow(){
+      try{if(window.__goingLogin||window.__pmoHostFrame||(window.parent!==window&&window.parent.__pmoHostFrame))return true}catch(e){}
+      return false;
+    }
+    function mountFresh(html){
+      let host=window;
+      try{if(window.parent!==window&&window.parent.__pmoHostFrame&&window.parent.document)host=window.parent}catch(e){host=window}
+      const inj='<script>try{(function(){var g=parent.google;window.google=Object.create(g);window.google.script=Object.create(g.script)})()}catch(e){try{window.google=parent.google}catch(x){}}<\/script>';
+      const m=/<head[^>]*>/i.exec(html),src=m?html.slice(0,m.index+m[0].length)+inj+html.slice(m.index+m[0].length):inj+html;
+      const d=host.document,f=d.createElement('iframe');
+      f.title='PMO Dashboard';f.setAttribute('allow','fullscreen; clipboard-read; clipboard-write; camera; microphone; geolocation');f.setAttribute('allowfullscreen','');
+      f.style.cssText='position:fixed;inset:0;width:100%;height:100%;border:0;background:#0e1a27;z-index:2147483000';
+      f.srcdoc=src;
+      host.__pmoHostFrame=true;
+      const old=Array.prototype.slice.call(d.querySelectorAll('iframe[data-pmo-page]'));
+      f.setAttribute('data-pmo-page','1');
+      if(host===window){
+        d.head.innerHTML='<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;height:100%;overflow:hidden;background:#0e1a27}</style>';
+        d.body.innerHTML='';d.body.appendChild(f);
+      }else{
+        d.body.appendChild(f);
+        /* bingkai lama (tempat skrip ini berjalan) dilepas setelah bingkai baru terpasang */
+        host.setTimeout(function(){old.forEach(function(o){try{o.remove()}catch(e){}})},0);
+      }
+    }
+    /* Ganti isi halaman tanpa document.open(): document.open menghapus listener jendela milik google.script.run
+       sehingga RPC halaman baru (Portal) tidak pernah menerima balasan. */
+    async function replacePage(html){
+      if(pmoStaleWindow()){mountFresh(html);return;}
+      const doc=new DOMParser().parseFromString(html,'text/html'),list=[];
+      doc.querySelectorAll('script').forEach(function(s){const ph=doc.createElement('template');ph.setAttribute('data-pmo-s',String(list.length));list.push(s);s.replaceWith(ph);});
+      Array.prototype.forEach.call(doc.documentElement.attributes,function(a){if(a.name!=='data-theme')document.documentElement.setAttribute(a.name,a.value);});
+      document.head.innerHTML=doc.head.innerHTML;
+      Array.prototype.slice.call(document.body.attributes).forEach(function(a){document.body.removeAttribute(a.name);});
+      Array.prototype.forEach.call(doc.body.attributes,function(a){document.body.setAttribute(a.name,a.value);});
+      document.body.innerHTML=doc.body.innerHTML;window.scrollTo(0,0);
+      for(let i=0;i<list.length;i++){
+        const ph=document.querySelector('template[data-pmo-s="'+i+'"]');if(!ph)continue;
+        const old=list[i],s=document.createElement('script');
+        Array.prototype.forEach.call(old.attributes,function(a){s.setAttribute(a.name,a.value);});
+        if(old.src){s.async=false;await new Promise(function(res){s.onload=s.onerror=res;ph.replaceWith(s);});}
+        else{s.textContent=old.textContent;ph.replaceWith(s);}
+      }
+      document.dispatchEvent(new Event('DOMContentLoaded',{bubbles:true}));window.dispatchEvent(new Event('load'));
+    }
+    let signupBusy=false;
+    async function signupHash(password,challenge){
+      if(!window.crypto||!window.crypto.subtle)throw new Error('Browser belum mendukung pendaftaran aman. Gunakan Chrome, Edge, atau Safari terbaru.');
+      if(challenge.algorithm!=='PBKDF2_SHA256'||challenge.iterations!==120000)throw new Error('Konfigurasi pendaftaran tidak valid. Muat ulang halaman.');
+      const encoder=new TextEncoder();
+      const key=await window.crypto.subtle.importKey('raw',encoder.encode(password),'PBKDF2',false,['deriveBits']);
+      const bits=await window.crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:encoder.encode(challenge.salt),iterations:120000},key,256);
+      return bytesToHex(bits);
+    }
+    function beginSignup(name,username,projectId){return new Promise(function(resolve,reject){google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).authBeginSignup(name,username,projectId)});}
+    function completeSignup(id,credential){return new Promise(function(resolve,reject){google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).authCompleteSignup(id,credential)});}
+    signupForm.addEventListener('submit',async function(event){
+      event.preventDefault();if(signupBusy)return;
+      const name=document.getElementById('signupName').value.trim(),username=document.getElementById('signupUsername').value.trim(),projectId=signupProject.value;
+      let password=document.getElementById('signupPassword').value;
+      const confirmation=document.getElementById('signupConfirmPassword').value;
+      if(password!==confirmation){showSignupMessage('Konfirmasi password belum sama.',true);return;}
+      if(password.length<12||password.length>128){showSignupMessage('Password harus berisi 12–128 karakter.',true);return;}
+      if(!signupTeam.value||!projectId){showSignupMessage('Pilih tim dan proyek terlebih dahulu.',true);return;}
+      if(!window.crypto||!window.crypto.subtle){showSignupMessage('Gunakan browser terbaru yang mendukung pendaftaran aman.',true);return;}
+      signupBusy=true;let sending=false;
+      const fields=Array.from(signupForm.querySelectorAll('input,select,button'));fields.forEach(function(f){f.disabled=true});document.getElementById('backToLogin').disabled=true;
+      const timer=setTimeout(function(){showSignupMessage('Proses masih berjalan. Tunggu hasilnya agar permintaan tidak dikirim berulang.',false)},25000);
+      try {
+        signupButton.textContent='MEMERIKSA…';showSignupMessage('Memeriksa username dan proyek…',false);
+        const challenge=await beginSignup(name,username,projectId);
+        if(!challenge||!challenge.success)throw new Error(challenge&&challenge.message||'Permintaan belum dapat diproses.');
+        signupButton.textContent='MENGAMANKAN…';showSignupMessage('Mengamankan password di perangkat Anda…',false);
+        const length=password.length,hash=await signupHash(password,challenge);password='';
+        document.getElementById('signupPassword').value='';document.getElementById('signupConfirmPassword').value='';
+        signupButton.textContent='MENYIMPAN…';showSignupMessage('Menyimpan permintaan dan mengirim notifikasi admin…',false);sending=true;
+        const result=await completeSignup(challenge.challengeId,{hash:hash,passwordLength:length});sending=false;
+        if(!result||!result.success)throw new Error(result&&result.message||'Permintaan belum dapat diproses.');
+        signupForm.reset();setOptions(signupProject,'Pilih tim terlebih dahulu',[]);document.getElementById('signupAllHint').hidden=true;showSignupMessage(result.message,false);
+      } catch(e) {
+        const detail=(e&&e.message)||'Koneksi terputus.';
+        showSignupMessage(sending?'Konfirmasi penyimpanan belum diterima. Permintaan mungkin sudah tersimpan; periksa dengan admin sebelum mendaftar ulang. '+detail:detail,true);
+      } finally {
+        clearTimeout(timer);password='';document.getElementById('signupPassword').value='';document.getElementById('signupConfirmPassword').value='';
+        fields.forEach(function(f){f.disabled=false});document.getElementById('backToLogin').disabled=false;signupButton.textContent='AJUKAN AKUN';signupBusy=false;
+      }
+    });
+
+    /* ===== Lupa password: minta reset & pakai kode dari admin ===== */
+    (function(){
+      const panel=document.getElementById('resetPanel'),ask=document.getElementById('rsAskForm'),cf=document.getElementById('rsCodeForm');
+      const say=function(el,t,bad){el.textContent=t;el.style.color=bad?'var(--msg-bad)':'var(--msg-ok)'};
+      const mode=function(m){panel.querySelectorAll('[data-rs]').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-rs')===m)});ask.hidden=m!=='ask';cf.hidden=m!=='code';(m==='ask'?document.getElementById('rsAskUser'):document.getElementById('rsUser')).focus()};
+      panel.querySelectorAll('[data-rs]').forEach(function(b){b.onclick=function(){mode(b.getAttribute('data-rs'))}});
+      document.getElementById('showResetButton').onclick=function(){const u=document.getElementById('username').value.trim();loginForm.hidden=true;document.getElementById('signupIntro').hidden=true;signupPanel.hidden=true;panel.hidden=false;document.getElementById('rsAskUser').value=u;document.getElementById('rsUser').value=u;mode('ask')};
+      document.getElementById('backFromReset').onclick=function(){panel.hidden=true;loginForm.hidden=false;document.getElementById('signupIntro').hidden=false};
+      const run=function(fn,args){return new Promise(function(res,rej){const r=google.script.run.withSuccessHandler(res).withFailureHandler(rej);r[fn].apply(r,args)})};
+      ask.addEventListener('submit',async function(e){e.preventDefault();const b=document.getElementById('rsAskBtn'),m=document.getElementById('rsAskMsg'),u=document.getElementById('rsAskUser').value.trim();
+        if(!/^[A-Za-z0-9._-]{4,32}$/.test(u)){say(m,'Username tidak valid.',true);return}
+        b.disabled=true;say(m,'Mengirim permintaan…');
+        try{const r=await run('authRequestReset',[u]);say(m,r.message,!r.success);if(r.success){document.getElementById('rsUser').value=u}}catch(err){say(m,(err&&err.message)||'Permintaan gagal dikirim.',true)}finally{b.disabled=false}});
+      document.getElementById('rsCode').addEventListener('input',function(){let v=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);this.value=v.length>4?v.slice(0,4)+'-'+v.slice(4):v});
+      cf.addEventListener('submit',async function(e){e.preventDefault();const b=document.getElementById('rsCodeBtn'),m=document.getElementById('rsCodeMsg');
+        const u=document.getElementById('rsUser').value.trim(),code=document.getElementById('rsCode').value;let p1=document.getElementById('rsPass').value;const p2=document.getElementById('rsPass2').value;
+        if(p1!==p2){say(m,'Konfirmasi password belum sama.',true);return}
+        if(p1.length<12||p1.length>128){say(m,'Password harus berisi 12–128 karakter.',true);return}
+        if(!window.crypto||!window.crypto.subtle){say(m,'Gunakan browser terbaru (Chrome, Edge, atau Safari).',true);return}
+        const fields=Array.from(cf.querySelectorAll('input,button'));fields.forEach(function(f){f.disabled=true});
+        try{
+          say(m,'Memeriksa kode…');const ch=await run('authBeginReset',[u,code]);
+          if(!ch||!ch.success)throw new Error(ch&&ch.message||'Kode tidak cocok.');
+          say(m,'Mengamankan password di perangkat Anda…');const len=p1.length,hash=await signupHash(p1,ch);p1='';
+          say(m,'Menyimpan password baru…');const r=await run('authCompleteReset',[ch.challengeId,{hash:hash,passwordLength:len}]);
+          if(!r||!r.success)throw new Error(r&&r.message||'Password belum tersimpan.');
+          cf.reset();panel.hidden=true;loginForm.hidden=false;document.getElementById('signupIntro').hidden=false;document.getElementById('username').value=u;document.getElementById('password').focus();showMessage(r.message,false);
+        }catch(err){say(m,(err&&err.message)||'Reset gagal. Coba lagi.',true)}
+        finally{p1='';document.getElementById('rsPass').value='';document.getElementById('rsPass2').value='';fields.forEach(function(f){f.disabled=false})}});
+    })();
+
+    // Visual state only; proof, session and RPC arguments remain unchanged.
+    function pmoLoginStep(step,error,legacy){
+      var box=document.getElementById('pmoLoginSteps');if(!box)return;
+      if(step===1)document.getElementById('pmoProofLabel').textContent='Enkripsi PBKDF2';
+      if(step===2)document.getElementById('pmoProofLabel').textContent=legacy?'Verifikasi sandi':'Enkripsi PBKDF2';
+      if(step)box.dataset.step=step;var current=Number(box.dataset.step||1);
+      Array.prototype.forEach.call(box.children,function(li,i){li.className=i+1<current?'is-done':i+1===current?(error?'is-error':'is-active'):'';if(i+1===current)li.setAttribute('aria-current','step');else li.removeAttribute('aria-current')});
+    }
+    let loginBusy=false;
+    loginForm.addEventListener('submit',async function(event){
+      event.preventDefault();if(loginBusy)return;
+      const username=document.getElementById('username').value.trim();
+      let password=document.getElementById('password').value;
+      if(!username||!password){showMessage('Username dan password wajib diisi.',true);return;}
+      loginBusy=true;loginButton.disabled=true;loginButton.textContent='MEMERIKSA…';pmoLoginStep(1);
+      const previousLink=document.getElementById('loginPortalLink');if(previousLink)previousLink.remove();
+      const start=performance.now();let preparedAt=0,proofAt=0;
+      const timer=setTimeout(function(){showMessage('Verifikasi masih berjalan. Tunggu hasilnya; Anda tidak perlu menekan LOGIN berulang.',false)},20000);
+      function fail(error){
+        pmoLoginStep(0,true);
+        const oldLink=document.getElementById('loginPortalLink');if(oldLink)oldLink.remove();loginButton.hidden=false;
+        clearTimeout(timer);loginBusy=false;loginButton.disabled=false;loginButton.textContent='LOGIN';password='';
+        document.getElementById('password').value='';
+        showMessage(error&&error.message?error.message:'Login belum berhasil. Silakan coba lagi.',true);
+      }
+      showMessage('Memeriksa akun…',false);
+      google.script.run.withSuccessHandler(async function(challenge){
+        if(!challenge||!challenge.success){fail({message:challenge&&challenge.message||'Username atau password salah.'});return;}
+        document.getElementById('password').value='';preparedAt=performance.now();
+        try {
+          pmoLoginStep(2,false,challenge.algorithm==='SHA256_LEGACY');
+          showMessage('Memverifikasi password…',false);
+          const proof=await makeProof(password,challenge);password='';proofAt=performance.now();
+          showMessage('Menyiapkan sesi login…',false);
+          google.script.run.withSuccessHandler(function(result){
+            if(!result||!result.success||!result.token){fail({message:result&&result.message||'Verifikasi gagal. Silakan coba lagi.'});return;}
+            try {
+              try {
+                sessionStorage.setItem('pmoSessionToken',result.token);
+                sessionStorage.setItem('pmoUser',JSON.stringify(result.user));
+              } catch(storageError) {
+                throw new Error('Browser tidak dapat menyimpan sesi. Izinkan penyimpanan situs atau gunakan tab browser biasa, lalu login kembali.');
+              }
+              pmoLoginStep(3);
+              clearTimeout(timer);loginButton.textContent='LOGIN BERHASIL';
+              const portalUrl=new URL('<?= appUrl ?>');portalUrl.searchParams.set('page',String(result.user&&result.user.role||'').toUpperCase()==='KONTRAKTOR'?'engineering':'portal');
+              const link=document.createElement('a');link.id='loginPortalLink';link.href=portalUrl.toString();link.target='_top';link.textContent='Buka Portal';
+              link.textContent='BUKA PORTAL';
+              loginButton.insertAdjacentElement('afterend',link);loginButton.hidden=true;
+              showMessage('Login berhasil. Membuka Portal…',false);
+              console.info('PMO login timing ms',{prepare:Math.round(preparedAt-start),password:Math.round(proofAt-preparedAt),complete:Math.round(performance.now()-proofAt),total:Math.round(performance.now()-start)});
+              // Portal dimuat langsung di halaman ini; tautan tetap tersedia sebagai cadangan.
+              const fallback=function(){showMessage('Login berhasil. Klik Buka Portal untuk melanjutkan.',false);};
+              google.script.run.withSuccessHandler(function(r){if(r&&r.success&&r.html)replacePage(r.html).catch(fallback);else fallback();}).withFailureHandler(fallback).getLandingPageHtml(result.token);
+            } catch(error) {fail(error);}
+          }).withFailureHandler(fail).authCompleteLogin(username,challenge.challengeId,proof);
+        } catch(error) {fail(error);}
+      }).withFailureHandler(fail).authBeginLogin(username);
+    });
+  })();
+  </script>
+</body>
+</html> 

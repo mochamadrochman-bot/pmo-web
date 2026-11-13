@@ -14,6 +14,9 @@ const authRoutes = require('./routes/auth');
 const projectRoutes = require('./routes/projects');
 const portalRoutes = require('./routes/portal');
 const adminRoutes = require('./routes/admin');
+const gasRoutes = require('./routes/gas');
+const gasStore = require('./gas/store');
+const gasRuntime = require('./gas/runtime');
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
@@ -27,7 +30,10 @@ app.set('views', path.join(__dirname, '..', 'views'));
 // CSP dimatikan pada tahap awal karena halaman lama memakai style dan script inline.
 // Nyalakan setelah aset dipisah ke /assets (lihat B5).
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(express.json({ limit: '1mb' }));
+// Halaman lama mengirim berkas lewat google.script.run (base64), jadi batasnya lebih besar di /app/rpc.
+const jsonSmall = express.json({ limit: '1mb' });
+const jsonLarge = express.json({ limit: '40mb' });
+app.use((req, res, next) => (req.path.startsWith('/app/rpc/') ? jsonLarge : jsonSmall)(req, res, next));
 app.use(express.urlencoded({ extended: false, limit: '1mb' }));
 
 // Parser cookie ringan, cukup untuk satu cookie sesi.
@@ -75,6 +81,7 @@ app.get('/akun/password', requireUser, (req, res) => {
   });
 });
 app.use('/', adminRoutes);
+app.use('/', gasRoutes);
 app.use('/api', projectRoutes);
 app.use('/', portalRoutes);
 
@@ -106,6 +113,9 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
 async function start() {
   try {
     await migrate();
+    const info = await gasStore.load();
+    const rt = gasRuntime.load();
+    console.log(JSON.stringify({ ev: 'gas_ready', sheets: info.sheets, functions: rt.functions, html: rt.html }));
   } catch (err) {
     console.error(JSON.stringify({ ev: 'migrate_fail', message: String(err.message || err) }));
     process.exit(1);

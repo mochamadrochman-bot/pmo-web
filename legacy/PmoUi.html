@@ -1,0 +1,92 @@
+<style>
+/* Presentation only. No RPC, session, cache or data lifecycle changes. */
+.pmo-skeleton-host{box-sizing:border-box;min-width:0;text-align:left!important}
+.pmo-skeleton-host.pmo-sk-full{background:transparent!important;border:0!important;padding:12px 0!important;grid-column:1/-1}
+.pmo-sk-label{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important}
+.pmo-sk-visual{display:block;width:100%;box-sizing:border-box;pointer-events:none}
+.pmo-sk-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.pmo-sk-card{display:block;padding:18px;border:1px solid var(--line,#dce6ef);border-radius:12px;background:var(--card,var(--paper,#fff))}
+.pmo-sk-line{display:block;height:13px;margin:0 0 12px;border-radius:5px;background:linear-gradient(100deg,var(--soft,#e8f3fb) 20%,var(--tint,#f4f8fc) 45%,var(--soft,#e8f3fb) 70%);background-size:230% 100%;animation:pmoUiShimmer 1.5s ease-in-out infinite}
+.pmo-sk-line:last-child{margin-bottom:0}.pmo-sk-short{width:48%}.pmo-sk-value{width:64%;height:30px}.pmo-sk-table{display:block;margin-top:14px;padding:18px;border:1px solid var(--line,#dce6ef);border-radius:12px;background:var(--card,var(--paper,#fff))}.pmo-sk-table .pmo-sk-line{height:28px}.pmo-sk-compact .pmo-sk-line{max-width:100%;margin:10px 0}.pmo-sk-compact .pmo-sk-line:nth-child(2){width:78%}
+:root[data-theme="dark"] .pmo-sk-line{background-image:linear-gradient(100deg,var(--soft,#1b3550) 20%,var(--tint,#253c50) 45%,var(--soft,#1b3550) 70%)}
+@keyframes pmoUiShimmer{from{background-position:170% 0}to{background-position:-50% 0}}
+.pmo-qs-trigger{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:none;width:auto;margin:0;min-height:36px;padding:7px 10px;border:1px solid var(--line,#dce6ef);border-radius:9px;background:var(--card,var(--paper,#fff));color:var(--ink,#18344d);font:500 12px/1.4 Inter,system-ui,sans-serif;cursor:pointer;letter-spacing:normal}
+.pmo-qs-trigger kbd{font:inherit;padding:1px 4px;border:1px solid var(--line,#dce6ef);border-radius:4px;color:var(--muted,#587188)}
+.pmo-qs-dialog{box-sizing:border-box;width:min(570px,calc(100vw - 28px));max-height:80dvh;padding:0;border:1px solid var(--line,#dce6ef);border-radius:16px;background:var(--card,var(--paper,#fff));color:var(--ink,#18344d);box-shadow:0 22px 65px #0005;font:14px/1.5 Inter,system-ui,sans-serif;z-index:9999}
+.pmo-qs-dialog::backdrop{background:rgba(5,20,35,.62)}.pmo-qs-dialog:not([open]){display:none}
+.pmo-qs-head{display:flex;gap:10px;align-items:center;padding:14px;border-bottom:1px solid var(--line,#dce6ef)}
+.pmo-qs-head input{box-sizing:border-box;flex:1;min-width:0;width:100%;padding:10px;border:0;background:transparent;color:inherit;font:inherit;font-size:16px;outline-offset:2px}
+.pmo-qs-dialog button{width:auto;min-height:40px;margin:0;padding:8px 12px;border:1px solid var(--line,#dce6ef);border-radius:8px;background:var(--card,var(--paper,#fff));color:inherit;font:inherit;letter-spacing:normal;cursor:pointer}
+.pmo-qs-results{max-height:50dvh;overflow-y:auto;padding:8px}.pmo-qs-results button{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;text-align:left;border-color:transparent;min-height:46px;margin:2px 0;overflow-wrap:anywhere}
+.pmo-qs-results button small{font-size:11px;color:var(--muted,#587188);flex:none}.pmo-qs-results button.pmo-qs-active{background:var(--soft,#e8f3fb);color:var(--pri-ink,var(--pri,#0f5fa8));border-color:var(--pri,#0f5fa8)}
+.pmo-qs-foot{padding:10px 18px;border-top:1px solid var(--line,#dce6ef);color:var(--muted,#587188);font-size:12px}.pmo-qs-empty{padding:20px;color:var(--muted,#587188)}
+.pmo-qs-trigger:focus-visible,.pmo-qs-dialog button:focus-visible{outline:2px solid var(--pri,#0f5fa8);outline-offset:2px}
+@media(max-width:760px){.pmo-sk-grid{grid-template-columns:minmax(0,1fr);gap:10px}.pmo-sk-card{padding:14px}.pmo-sk-card:nth-child(n+3){display:none}.pmo-qs-trigger{width:36px;height:36px;min-height:36px;padding:0}.pmo-qs-trigger .pmo-qs-word,.pmo-qs-trigger kbd{display:none}.pmo-qs-dialog{max-height:85dvh}.pmo-qs-results{max-height:55dvh}}
+html.m-mode .pmo-sk-grid{grid-template-columns:minmax(0,1fr)}html.m-mode .pmo-qs-trigger{width:36px;height:36px;padding:0}html.m-mode .pmo-qs-trigger .pmo-qs-word,html.m-mode .pmo-qs-trigger kbd{display:none}
+@media(prefers-reduced-motion:reduce){.pmo-sk-line{animation:none}}
+@media print{.pmo-sk-visual,.pmo-qs-trigger,.pmo-qs-dialog{display:none!important}}
+</style>
+<script>
+(function(){
+  if(window.__pmoUiReady)return;window.__pmoUiReady=true;
+  var SELECT='.loading,#loading,#status,.exec-la-note,.gl-empty-note,.empty',frame=0,dialog=null,search=null,list=null,entries=[],shown=[],active=0,returnFocus=null;
+  function line(c){var x=document.createElement('span');x.className='pmo-sk-line'+(c?' '+c:'');return x}
+  function skeleton(el){
+    if(el.closest('.pmo-qs-dialog')||el.querySelector('.pmo-sk-visual'))return;
+    var text=String(el.textContent||'').trim();
+    if(!/^(Memuat\b|Menyiapkan data|Menyusun baseline)/i.test(text)||text.length>180||el.querySelector('button,a,input,select,textarea,table,iframe')){el.classList.remove('pmo-skeleton-host','pmo-sk-full');return}
+    // The original lifecycle still hides, replaces or updates the same host.
+    var full=el.id==='loading'||el.classList.contains('loading');
+    var caption=document.createElement('span');caption.className='pmo-sk-label';caption.textContent=text;
+    var visual=document.createElement('span');visual.className='pmo-sk-visual';visual.setAttribute('aria-hidden','true');
+    if(full){var grid=document.createElement('span');grid.className='pmo-sk-grid';for(var i=0;i<3;i++){var card=document.createElement('span');card.className='pmo-sk-card';card.append(line('pmo-sk-short'),line('pmo-sk-value'),line());grid.appendChild(card)}var table=document.createElement('span');table.className='pmo-sk-table';for(var j=0;j<3;j++)table.appendChild(line());visual.append(grid,table)}else{visual.classList.add('pmo-sk-compact');visual.append(line(),line(),line('pmo-sk-short'))}
+    el.replaceChildren(caption,visual);el.classList.add('pmo-skeleton-host');if(full)el.classList.add('pmo-sk-full');
+  }
+  function scan(){frame=0;document.querySelectorAll(SELECT).forEach(skeleton);mount()}
+  function queue(){if(!frame)frame=requestAnimationFrame(scan)}
+  function permitted(el){
+    if(!el||!el.isConnected||el.disabled||el.getAttribute('aria-disabled')==='true'||el.closest('[hidden]'))return false;
+    // Collapsed sidebar groups are navigation presentation, not permissions.
+    for(var p=el;p&&p!==document.body;p=p.parentElement){if(p.style.display==='none')return false}
+    return true;
+  }
+  function label(el){return String(el.getAttribute('title')||el.textContent||'').replace(/\s+/g,' ').trim()}
+  function collect(){
+    entries=[];var used={};function add(name,type,node,fn,key){if(!name)return;key=type+'|'+(key||name).toLowerCase();if(used[key])return;used[key]=1;entries.push({name:name,type:type,node:node,run:fn})}
+    var names={portal:'Portal',executive:'Executive Dashboard',weekly:'Weekly Progress',master:'Master Schedule',engineering:'Engineering',documents:'Document Control',report:'Management Report · Pelaporan Manajemen',weeklyprint:'Buat Laporan Weekly',input:'Input Progress',monthly:'Laporan Bulanan',live:'Live View',project:'Tambah / Edit Proyek'},fields={ENG:'Engineering',PROC:'Procurement',CONS:'Construction',COM:'Commissioning'};
+    document.querySelectorAll('button[onclick],a[href],button[data-field]').forEach(function(el){
+      if(el.closest('.pmo-qs-dialog')||!permitted(el))return;
+      var code=el.getAttribute('onclick')||'',href=el.getAttribute('href')||'',route=(code.match(/\b(?:go|goProj)\(\s*['"]([^'"]+)['"]/)||[])[1]||'',name='';
+      if(!route&&href.indexOf('?page=')>=0){try{var u=new URL(href,location.href);route=u.searchParams.get('page')||'';if(u.searchParams.get('field'))route+='&field='+u.searchParams.get('field')}catch(e){}}
+      if(/pmoGoMaster\(/.test(code))route='master';
+      var field=el.getAttribute('data-field')||(route.match(/field=(ENG|PROC|CONS|COM)/)||[])[1];
+      if(field)name=fields[field]||'';else name=names[route]||'';
+      if(name)add(name,'Modul',el,function(){el.click()},name);
+    });
+    document.querySelectorAll('select#projSel,select#project,select#projectSelect').forEach(function(sel){
+      if(sel.disabled)return;Array.prototype.forEach.call(sel.options,function(o){var name=o.textContent.trim();if(!o.value||o.disabled||/^(Pilih|Memuat|Semua)\b/i.test(name))return;add(name,'Proyek',sel,function(){if(sel.disabled||!Array.prototype.some.call(sel.options,function(x){return x.value===o.value&&!x.disabled}))return;if(sel.value!==o.value){sel.value=o.value;sel.dispatchEvent(new Event('change',{bubbles:true}))}},name)})
+    });
+    document.querySelectorAll('#projectNav .project-item,#weeklyProjectList .project-item,#pulse .pc[data-name]').forEach(function(el){if(el.disabled)return;var name=el.getAttribute('data-project')||el.getAttribute('data-name')||label(el);add(name,'Proyek',el,function(){el.click()},name)});
+  }
+  function paint(){
+    var q=search.value.trim().toLocaleLowerCase('id');shown=entries.filter(function(x){return (x.name+' '+x.type).toLocaleLowerCase('id').includes(q)});active=Math.min(active,Math.max(0,shown.length-1));list.replaceChildren();
+    if(!shown.length){var empty=document.createElement('div');empty.className='pmo-qs-empty';empty.textContent=entries.length?'Tidak ditemukan. Coba nama proyek atau modul lainnya.':'Daftar navigasi belum tersedia. Tunggu data halaman selesai dimuat.';list.appendChild(empty);return}
+    shown.forEach(function(x,i){var b=document.createElement('button');b.type='button';b.className=i===active?'pmo-qs-active':'';b.setAttribute('role','option');b.setAttribute('aria-selected',String(i===active));b.id='pmoQuickResult'+i;var name=document.createElement('span');name.textContent=x.name;var type=document.createElement('small');type.textContent=x.type;b.append(name,type);b.onclick=function(){choose(i)};list.appendChild(b)});search.setAttribute('aria-activedescendant','pmoQuickResult'+active);
+  }
+  function choose(i){var x=shown[i];if(!x||!x.node.isConnected||x.node.disabled)return;if(x.type==='Modul'&&!permitted(x.node)){collect();paint();return}dialog.close();x.run()}
+  function open(){if(!dialog)return;collect();returnFocus=document.activeElement;search.value='';active=0;paint();dialog.showModal();search.focus()}
+  function mount(){
+    if(document.getElementById('pmoQuickTrigger'))return;
+    var ref=document.querySelector('header .account-wrap,header .acm-wrap,header .userchip,header #userAv,header #theme');var header=document.querySelector('header.top,header.bar,body>header');if(!ref&&!header)return;
+    var trigger=document.createElement('button');trigger.type='button';trigger.id='pmoQuickTrigger';trigger.className='pmo-qs-trigger';trigger.setAttribute('aria-label','Cari proyek atau modul (Ctrl+K)');trigger.setAttribute('aria-haspopup','dialog');trigger.innerHTML='<span aria-hidden="true">⌕</span><span class="pmo-qs-word">Cari</span><kbd>Ctrl K</kbd>';
+    if(ref)ref.parentNode.insertBefore(trigger,ref);else header.appendChild(trigger);
+    dialog=document.createElement('dialog');dialog.className='pmo-qs-dialog';dialog.id='pmoQuickDialog';dialog.setAttribute('aria-label','Pindah proyek atau modul');
+    var head=document.createElement('div');head.className='pmo-qs-head';search=document.createElement('input');search.type='search';search.placeholder='Cari proyek atau modul…';search.setAttribute('aria-label','Cari proyek atau modul');search.setAttribute('role','combobox');search.setAttribute('aria-controls','pmoQuickResults');search.setAttribute('aria-expanded','true');search.setAttribute('autocomplete','off');var close=document.createElement('button');close.type='button';close.textContent='Esc';close.setAttribute('aria-label','Tutup pencarian');close.onclick=function(){dialog.close()};head.append(search,close);list=document.createElement('div');list.className='pmo-qs-results';list.id='pmoQuickResults';list.setAttribute('role','listbox');var foot=document.createElement('div');foot.className='pmo-qs-foot';foot.textContent='↑ ↓ Pilih · Enter Buka · Esc Tutup · Mengikuti menu dan proyek akun Anda';dialog.append(head,list,foot);document.body.appendChild(dialog);
+    trigger.onclick=open;search.oninput=function(){active=0;paint()};dialog.addEventListener('close',function(){if(returnFocus&&returnFocus.isConnected)returnFocus.focus()});dialog.addEventListener('click',function(e){if(e.target===dialog){var r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}});
+    search.addEventListener('keydown',function(e){if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();active=(active+(e.key==='ArrowDown'?1:-1)+shown.length)%Math.max(1,shown.length);paint();var b=list.children[active];if(b)b.scrollIntoView({block:'nearest'})}else if(e.key==='Enter'){e.preventDefault();choose(active)}});
+    document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&!e.altKey){e.preventDefault();if(dialog.open)dialog.close();else open()}});
+  }
+  function start(){scan();new MutationObserver(queue).observe(document.body,{childList:true,subtree:true,characterData:true});}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+})();
+</script>

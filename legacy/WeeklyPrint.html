@@ -1,0 +1,475 @@
+<!doctype html><html lang="id"><head>
+<?!= include('PmoCore') ?><base target="_top"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Buat Laporan Weekly</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+:root{--bg:#f2f5f9;--paper:#fff;--ink:#132b43;--muted:#5b7085;--line:#d6e1ec;--accent:#1265aa;--soft:#e7f1fa;color-scheme:light}html[data-theme=dark]{--bg:#0e1b28;--paper:#172a3b;--ink:#e0edf7;--muted:#a2b8cc;--line:#2e4559;--soft:#203b52;color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,Arial,sans-serif}[hidden]{display:none!important}button,input,select{font:inherit;color:inherit}button,a{touch-action:manipulation}button{cursor:pointer}.wrap button{border:1px solid var(--line);background:var(--paper);border-radius:8px;min-height:42px;padding:9px 14px}.wrap button:disabled{opacity:.5;cursor:wait}.wrap button.active,.wrap .primary{background:var(--accent);border-color:var(--accent);color:#fff}a{color:var(--accent)}.muted{color:var(--muted)}h1{font-size:21px;margin:0}h2{font-size:18px;margin:0 0 12px}.wrap{max-width:1600px;margin:auto;padding:22px}.toolbar,.tabs{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:18px}label{display:grid;gap:5px}input,select{border:1px solid var(--line);border-radius:7px;padding:10px;background:var(--paper);max-width:100%;width:100%}select{min-width:160px}.toolbar label:first-child{flex:1;min-width:220px}details{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px;margin:16px 0}summary{cursor:pointer;font-weight:600}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:16px 0}.note{padding:12px 15px;background:var(--soft);border-left:3px solid var(--accent);margin:12px 0}.error{background:#ffe9e5;color:#9c2321;border-color:#bc2f2b}.paper{background:white;color:#172932;border:1px solid #b6c5d2;padding:24px}.dochead{display:grid;grid-template-columns:90px 1fr 90px;gap:12px;align-items:center;text-align:center;border-bottom:2px solid #274258;padding-bottom:16px}.dochead img{max-width:85px;max-height:80px;object-fit:contain}.dochead h2{margin:0}.docmeta{display:flex;gap:18px;justify-content:space-between;flex-wrap:wrap;font-size:12px;margin:16px 0}.docmeta strong{display:block}.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font:12px/1.4 'Arial Narrow',Arial,sans-serif;font-variant-numeric:tabular-nums}th,td{border:1px solid #a7b8c6;padding:8px 6px;text-align:right}th{text-align:center;background:#e6edf3}.desc{text-align:left;min-width:230px}.id{text-align:left;min-width:90px}.late{color:#bf2424!important}.add{background:#fff092!important}.group td{text-align:left;background:#eef3f7;font-weight:bold}.detail{min-width:2100px}.legend{font-size:12px;color:#476077;margin:14px 0}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:30px;text-align:center;margin-top:35px;font-size:12px}.signname{margin-top:60px;text-decoration:underline;font-weight:bold}.docfoot{font-size:11px;color:#4c6475;margin-top:20px;border-top:1px solid #c5d0d9;padding-top:10px}.curve{width:100%;height:auto}.curve text{font:12px Arial,sans-serif;fill:#2c4759}.printsection{break-before:page}.printsection:first-child{break-before:auto}.logoempty{font-size:11px;color:#597185}.cover{padding:70px 20px;text-align:center}.cover h1{font-size:28px}.cover .project{font-size:23px;margin:25px 0}.summarytable{min-width:850px}.total{font-weight:bold;background:#eaf0f6}.phasetype{display:block;color:#526e83;font-size:10px}.savebar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}#status{margin:10px 0}#printArea{display:none}
+@media(max-width:650px){.top{padding:10px 12px}.wrap{padding:12px}.fields{grid-template-columns:1fr}.toolbar label{width:100%}.paper{padding:12px}.dochead{grid-template-columns:55px 1fr 55px;gap:8px}.dochead img{max-width:52px}.dochead h2{font-size:14px}.tabs button{flex:1}.signatures{gap:12px}input,select{font-size:16px}}
+@page{size:A4 landscape;margin:9mm}
+@media print{html,body{background:#fff!important;color:#000!important;margin:0;padding:0}body>*:not(#printArea){display:none!important}#printArea{display:block!important}.paper{border:0;padding:0}.dochead{padding-bottom:8px;grid-template-columns:20mm 1fr 20mm}.dochead img{max-height:17mm}.dochead h2{font-size:12pt}.docmeta{font-size:8pt;margin:8px 0}.paper table{min-width:0!important;table-layout:fixed;width:100%;font-size:5.5pt}.paper .summarytable{font-size:8pt}.paper th,.paper td{padding:3px 1px;overflow-wrap:anywhere}.paper .desc{min-width:0;width:16%}.paper .id{min-width:0;width:7%}.paper thead{display:table-header-group}.paper tr{break-inside:avoid}.paper .group{break-after:avoid}.paper .tablewrap{overflow:visible}.paper .signatures{break-inside:avoid;margin-top:15px;font-size:8pt}.paper .signname{margin-top:20mm}.paper .docfoot,.paper .legend{font-size:7pt}.paper .phasetype{font-size:5pt}.paper .dochead,.paper .signatures,.paper .docmeta{color:#000}.paper *{-webkit-print-color-adjust:exact;print-color-adjust:exact}.cover{padding-top:30mm}.curve{max-height:140mm}.note{background:white;border:1px solid #bccbd7;color:#263d50;font-size:8pt}}
+/* ===== Laporan weekly: tampilan dokumen (layar & cetak) ===== */
+.paper{font-family:Arial,Helvetica,sans-serif}
+.rh{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;border-bottom:2px solid #1f3864;padding-bottom:12px;margin-bottom:14px}
+.rh-logo{display:flex;gap:12px;align-items:center}.rh-logo img{max-height:58px;max-width:120px;object-fit:contain}
+.rh-title{text-align:center}.rh-title b{display:block;font-size:16px;letter-spacing:.12em;color:#1f3864}.rh-title span{display:block;margin-top:6px;font-size:11.5px;font-weight:600;color:#1f3864}
+.rh-meta{border-collapse:collapse;font:10.5px/1.35 Arial,sans-serif;width:auto!important;min-width:0!important}.rh-meta th,.rh-meta td{border:0!important;padding:1px 4px!important;text-align:left!important;background:none!important;white-space:nowrap}.rh-meta th{font-weight:700;color:#1f3864}
+.paper table.sum,.paper table.det{border-collapse:collapse;width:100%;font:11px/1.3 Arial,sans-serif;font-variant-numeric:tabular-nums}
+.paper .sum th,.paper .det th{background:#1f3864;color:#fff;border:1px solid #7f96ab;padding:5px 4px;font-weight:700;text-align:center}
+.paper .sum th.sub{background:#d9e2f3;color:#1f3864;font-weight:600}.paper .sum thead tr:last-child th,.paper .det thead tr:nth-child(n+2) th{background:#d9e2f3;color:#1f3864}
+.paper .sum td,.paper .det td{border:1px solid #9fb2c4;padding:4px 5px;text-align:right;white-space:nowrap}
+.paper .sum td.desc,.paper .det td.desc{text-align:left;white-space:normal}.paper .det td.desc{min-width:220px}.paper td.ind{padding-left:22px;font-style:italic}
+.paper td.c-no,.paper td.c-code{text-align:center}.paper .det td.c-code{text-align:left}.paper td.c-ket{text-align:center;white-space:normal;font-size:10px}
+.paper .sum tr.ov td{background:#f2f2f2}.paper .sum tr.f td.desc{font-weight:700}
+.paper tr.grp td{background:#edf2f9;font-weight:700}.paper tr.total td{background:#d9e2f3;font-weight:700}
+.paper td.chg{background:#ffff00!important}
+.memo{margin:12px 0 0;font-size:11px;color:#1d2e3c}.memo ol{margin:4px 0 0;padding-left:18px}
+.legend{margin:10px 0 0;font-size:11px;color:#1d2e3c}.legend .sw{display:inline-block;padding:1px 6px;border:1px solid #9fb2c4;font-weight:700;margin-right:4px}.legend .red{color:#c00000}.legend .yel{background:#ffff00}
+.signatures{display:grid;grid-template-columns:1fr 1fr;gap:30px;text-align:center;margin-top:26px;font-size:12px;break-inside:avoid}.signname{margin-top:64px;text-decoration:underline;font-weight:bold;min-height:1.2em}
+.chart svg{width:100%;height:auto;display:block}.facts{border-collapse:collapse;margin:12px auto 0;font:11.5px Arial,sans-serif;width:auto!important;min-width:0!important}.facts th{background:#1f3864;color:#fff;padding:5px 12px;border:1px solid #7f96ab}.facts td{border:1px solid #9fb2c4;padding:5px 12px;text-align:center}
+.toc{border-collapse:collapse;width:100%;font:12.5px Arial,sans-serif}.toc td{padding:9px 6px;border:0;border-bottom:1px dotted #9fb2c4;text-align:left}.toc td.c-no{width:40px;text-align:center}
+.empty{font-style:italic;color:#5c6f80;margin:20px 0}
+.cv{text-align:center;padding:40px 10px 10px;font-family:Arial,sans-serif;color:#13263a}.cv h1{font-size:30px;letter-spacing:.06em;margin:0 0 28px}.cv-proj{font-size:20px;font-weight:700;margin-bottom:22px}.cv-doc{font-size:15px;font-weight:700;margin:6px 0}.cv-sub{font-size:13px;margin:6px 0}.cv-week{font-size:26px;font-weight:800;letter-spacing:.12em;margin:44px 0 10px}
+.cv-parties{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:60px}.cv-parties small{display:block;font-weight:700;font-size:12px;margin-bottom:10px}.cv-parties img{display:block;margin:0 auto 10px;max-height:90px;max-width:200px;object-fit:contain}.cv-parties b{font-size:13px}
+@media print{
+ .paper .rh{padding-bottom:6px;margin-bottom:8px}.paper .rh-logo img{max-height:15mm;max-width:30mm}.paper .rh-title b{font-size:11pt}.paper .rh-title span{font-size:8pt}.paper .rh-meta{font-size:7pt}
+ .paper table.sum{table-layout:auto;font-size:8pt}.paper table.det{table-layout:auto;font-size:5.6pt}.paper .det th,.paper .det td{padding:2px 2px}.paper .det td.desc{min-width:38mm;width:auto;max-width:52mm}.paper td.c-ket{font-size:5.4pt;min-width:15mm}.paper .det th,.paper .det td,.paper .sum th,.paper .sum td{overflow-wrap:normal;word-break:normal}.paper .det th{hyphens:none}
+ .paper .sum th,.paper .sum td{padding:3px 3px}.paper tr{break-inside:avoid}.paper thead{display:table-header-group}
+ .paper .signatures{font-size:9pt;margin-top:10mm}.paper .signname{margin-top:18mm}.paper .memo,.paper .legend{font-size:7.5pt}
+ .paper table.toc{font-size:10pt}.paper table.toc td{padding:6px}.paper table.facts{font-size:8.5pt;table-layout:auto}.paper .chart svg{max-height:135mm}.cv{padding-top:14mm}.cv h1{font-size:22pt}.cv-week{margin-top:18mm}.cv-parties{margin-top:18mm}
+}
+.paper .sum th .thd{display:block;font-weight:500;font-size:.88em;margin-top:2px;opacity:.9}.paper .res td.desc{min-width:160px}
+/* ===== Tampilan halaman selaras dengan halaman dashboard lain ===== */
+.wrap{max-width:1500px;padding:20px 24px 28px}
+.wrap button{min-height:40px;padding:0 16px;border-radius:10px;font-size:13.5px;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--ink);display:inline-flex;align-items:center;gap:8px;transition:background .15s,border-color .15s}
+.wrap button:hover:not(:disabled){background:var(--soft)}
+.wrap button.primary,.wrap button.active{background:var(--pri);border-color:var(--pri);color:#fff}.wrap button.primary:hover:not(:disabled){background:var(--pri);filter:brightness(1.08)}
+.toolbar{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px;gap:12px;box-shadow:0 1px 2px rgba(16,40,70,.05)}
+.toolbar label,.fields label{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.01em;gap:6px;align-content:start}
+.toolbar select,.fields input:not([type=file]){height:40px;padding:0 12px;border-radius:10px;font-size:14px;font-weight:500;color:var(--ink);background:var(--card)}
+.toolbar select:focus,.fields input:focus{outline:2px solid var(--pri);outline-offset:-1px;border-color:var(--pri)}
+#status{display:flex;align-items:center;gap:8px;margin:0 2px 14px;font-size:13px;color:var(--muted)}#status::before{content:"";width:8px;height:8px;border-radius:50%;background:#36a278;flex:none}
+details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:0;margin:0 0 14px;box-shadow:0 1px 2px rgba(16,40,70,.05);overflow:hidden}
+details>summary{list-style:none;display:flex;align-items:center;gap:12px;padding:14px 16px;font-weight:600}details>summary::-webkit-details-marker{display:none}
+details>summary:hover{background:var(--tint)}
+details>summary .pi{width:36px;height:36px;border-radius:10px;background:var(--soft);color:var(--pri-ink);display:grid;place-items:center;flex:none}details>summary .pi .ic{width:18px;height:18px}
+details>summary .st{flex:1;min-width:0}details>summary .st b{display:block;font-size:14.5px;color:var(--navy)}details>summary .st small{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-top:2px}
+details>summary .chev{width:18px;height:18px;color:var(--muted);transition:transform .15s}details[open]>summary .chev{transform:rotate(90deg)}
+details[open]>summary{border-bottom:1px solid var(--line)}
+details>.fields,details>.savebar,details>p,details>.dbody{margin-left:16px;margin-right:16px}details>.fields{margin-top:16px}details>.savebar{margin-bottom:16px;font-size:12.5px}
+#notices details>summary{font-size:13px;color:var(--muted)}#notices details>div{padding:4px 16px;font-size:12.5px;color:var(--muted)}#notices details>div:last-child{padding-bottom:12px}
+.filepick{position:relative;display:flex!important;align-items:center;gap:10px;min-height:40px;padding:4px 4px 4px 4px;border:1px dashed var(--line);border-radius:10px;background:var(--tint);cursor:pointer}
+.filepick input[type=file]{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.filepick .fp-btn{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:8px;background:var(--card);border:1px solid var(--line);font-size:12.5px;font-weight:600;color:var(--pri-ink);flex:none}
+.filepick .fp-name{font-size:12.5px;font-weight:500;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.filepick:hover{border-color:var(--pri)}
+.fields .filepick{margin-top:0}#logoStatus{font-weight:500;font-size:12px}
+.tabs{gap:6px;margin:4px 0 14px;padding:4px;background:var(--card);border:1px solid var(--line);border-radius:12px;width:max-content;max-width:100%}
+.tabs button{min-height:34px;padding:0 14px;border:0;border-radius:8px;background:transparent;font-size:13px;color:var(--muted)}.tabs button.active{background:var(--pri);color:#fff}
+.savebar .muted{flex:1;min-width:220px}
+#screenArea .paper{border-radius:12px;box-shadow:0 1px 3px rgba(16,40,70,.08)}
+html[data-theme=dark] #screenArea .paper{border-color:#2e4559}
+@media(max-width:650px){.wrap{padding:12px}.toolbar{padding:12px}.tabs{width:100%;overflow-x:auto;flex-wrap:nowrap}.tabs button{flex:none}}
+/* ===== Sidebar navigasi (sama dengan halaman lain; dimodularkan oleh AccountMenu) ===== */
+:root{--card:var(--paper);--pri:var(--accent);--pri-ink:var(--accent);--navy:#073b63;--tint:#f4f8fc;--topbar:rgba(255,255,255,.94)}
+html[data-theme=dark]{--pri:#1f6db3;--pri-ink:#8fcaf6;--navy:#d9ecfa;--tint:#1a2c3f;--topbar:rgba(23,42,59,.94)}
+body{font-family:Inter,"Segoe UI",system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.ic{display:inline-grid;width:20px;height:20px;flex:none}.ic svg{width:100%;height:100%}
+.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;padding:12px 24px;background:var(--topbar);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .t{flex:1;min-width:0}.top .t small{display:block;font-size:12px;color:var(--muted)}.top .t b{display:block;font-size:18px;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon-btn{width:40px;height:40px;border:1px solid var(--line);border-radius:10px;background:var(--card);display:grid;place-items:center;color:var(--muted);padding:0}
+.av{width:36px;height:36px;border-radius:50%;background:var(--pri);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700;flex:none}
+.tbtn{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 13px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font-weight:600;font-size:12.5px;white-space:nowrap}.tbtn:hover{background:var(--soft)}.tbtn .ic{width:15px;height:15px}
+.app{display:grid;grid-template-columns:var(--sw,268px) minmax(0,1fr);min-height:100vh;transition:grid-template-columns .2s ease}
+.main{min-width:0}
+.side{position:sticky;top:0;align-self:start;height:100vh;background:var(--card);border-right:1px solid var(--line);display:flex;flex-direction:column;z-index:40;overflow:hidden}
+.side-head{display:flex;align-items:center;gap:10px;padding:16px 14px 12px 18px;min-height:76px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.brand img{height:60px;max-width:100%;object-fit:contain;flex:none;display:block}.brand .brand-petro{width:90px}.brand .brand-pmo{width:80px}
+.sbtn{width:36px;height:36px;border:0;border-radius:10px;background:transparent;color:var(--muted);display:grid;place-items:center;flex:none;padding:0}.sbtn:hover{background:var(--soft);color:var(--pri-ink)}
+.side nav{flex:1;overflow-y:auto;padding:2px 12px 12px}
+.sec{display:flex;align-items:center;gap:10px;margin:20px 6px 8px;color:#8697a8;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase}
+.sec::after{content:"";flex:1;border-top:1px solid var(--line)}
+.nav{display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;margin:2px 0;border:0;border-radius:10px;background:transparent;color:var(--ink);font-size:14px;font-weight:500;text-align:left;white-space:nowrap}
+.nav span{overflow:hidden;text-overflow:ellipsis}
+.nav:hover{background:var(--soft)}.nav.active{background:var(--pri);color:#fff}
+.nav.sub{padding:9px 12px;font-size:13px;color:var(--muted)}.nav.sub:hover{color:var(--pri-ink)}.nav.sub.on{background:var(--soft);color:var(--pri-ink);font-weight:600}
+.side-foot{padding:12px 14px 16px;border-top:1px solid var(--line)}
+.pj{display:flex;align-items:center;gap:12px;width:100%;padding:8px;border:0;border-radius:12px;background:var(--tint);text-align:left}
+.pj .pjic{width:36px;height:36px;border-radius:10px;background:var(--soft);color:var(--pri-ink);display:grid;place-items:center;flex:none}
+.pj small{display:block;font-size:11px;color:var(--muted);line-height:1.2}.pj b{display:block;font-size:14px;color:var(--navy);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.scrim{display:none}.hamb{display:none}
+.sec-t{cursor:pointer;user-select:none;border-radius:8px}.sec-t:hover{color:var(--pri)}
+.sec-t .sg-c{width:14px;height:14px;margin-left:auto;transform:rotate(90deg);transition:transform .15s}.sgrp.min .sec-t .sg-c{transform:none}
+.sec-t .sg-n{font-style:normal;font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:0}
+.app:not(.collapsed) .sgrp.min .nav:not(.on):not(.active){display:none}
+.app.collapsed .sec-t .sg-c,.app.collapsed .sec-t .sg-n{display:none}
+html[data-theme=dark] .sec{color:#7f95aa}
+html[data-theme=dark] .brand{flex:0 1 auto;width:auto;background:#fff;border-radius:12px;padding:6px 10px;box-shadow:0 1px 3px rgba(0,0,0,.35)}html[data-theme=dark] .brand img{height:52px}
+@media (min-width:901px){
+  .app.collapsed{--sw:76px}
+  .collapsed .nav span,.collapsed .sec span,.collapsed .pj>div:last-child,.collapsed .brand .brand-petro{display:none}
+  .collapsed .side-head{flex-direction:column;justify-content:center;gap:2px;padding:8px 0;min-height:92px}
+  .collapsed .brand{justify-content:center;flex:none}.collapsed .brand .brand-pmo{width:56px;height:48px}
+  html[data-theme=dark] .collapsed .brand{padding:4px 5px;border-radius:10px}
+  .collapsed .nav{justify-content:center;padding:11px 0}.collapsed .sec{margin:16px 18px 10px}
+  .collapsed .side-foot{padding:12px 10px 16px}.collapsed .pj{justify-content:center;padding:6px}
+  .collapsed [data-toggle-nav] .ic svg{transform:rotate(180deg)}
+}
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;inset:0 auto 0 0;width:min(300px,86vw);height:100%;transform:translateX(-100%);transition:transform .2s ease;box-shadow:0 0 40px rgba(7,20,36,.3)}
+  .app.nav-open .side{transform:none}
+  .app.nav-open .scrim{display:block;position:fixed;inset:0;background:rgba(7,20,36,.45);z-index:35}
+  .hamb{display:grid}
+}
+@media (max-width:650px){.top .tbtn span{display:none}}
+@media (prefers-reduced-motion:reduce){.app,.side{transition:none}}</style></head><body>
+<div class="app" id="app">
+<aside class="side" id="side" aria-label="Menu utama">
+  <div class="side-head">
+    <div class="brand">
+      <img src="https://drive.google.com/thumbnail?id=1LZynEU1SZ27JmRMPdv2D5CTxcd4cKp84&sz=w800" alt="PT Petrokimia Gresik" class="brand-petro" onerror="this.style.display='none'">
+      <img src="https://drive.google.com/thumbnail?id=1JP0hqePxcaiFN0aZ2dv6WJ6qCNwrRLxf&sz=w800" alt="PMO Infrastruktur &amp; Process Plant" class="brand-pmo" onerror="this.style.display='none'">
+    </div>
+    <button type="button" class="sbtn" data-toggle-nav aria-label="Sembunyikan atau tampilkan menu" aria-expanded="true" title="Sembunyikan atau tampilkan menu"><i class="ic" data-ic="chevl"></i></button>
+  </div>
+  <nav aria-label="Navigasi halaman">
+    <button type="button" class="nav" onclick="go('portal')" title="Portal proyek"><i class="ic" data-ic="home"></i><span>Portal proyek</span></button>
+    <button type="button" class="nav" onclick="go('executive')" title="Executive Dashboard"><i class="ic" data-ic="grid"></i><span>Executive Dashboard</span></button>
+    <button type="button" class="nav master-monitoring-link" onclick="goProj('master')" title="Master Schedule"><i class="ic" data-ic="gantt"></i><span>Master Schedule</span></button>
+    <button type="button" class="nav" onclick="goProj('weekly')" title="Weekly Progress"><i class="ic" data-ic="trend"></i><span>Weekly Progress</span></button>
+    <button type="button" class="nav" onclick="goProj('engineering')" title="EPCC Control"><i class="ic" data-ic="layers"></i><span>EPCC Control</span></button>
+    <button type="button" class="nav" onclick="goProj('documents')" title="Document Control"><i class="ic" data-ic="folder"></i><span>Document Control</span></button>
+    <button type="button" class="nav" data-mr hidden onclick="goProj('report')" title="Pelaporan Manajemen"><i class="ic" data-ic="slides"></i><span>Pelaporan Manajemen</span></button>
+    <button type="button" class="nav active" aria-current="page" title="Buat Laporan Weekly"><i class="ic" data-ic="printer"></i><span>Cetak Laporan Weekly</span></button>
+    <button type="button" class="nav" data-role="input" hidden onclick="goProj('input')" title="Input Progress"><i class="ic" data-ic="edit"></i><span>Input Progress</span></button>
+    <button type="button" class="nav" data-role="input" hidden onclick="goProj('monthly')" title="Laporan Bulanan"><i class="ic" data-ic="cal"></i><span>Laporan Bulanan</span></button>
+    <button type="button" class="nav" data-role="admin" hidden onclick="go('project')" title="Tambah / Edit Proyek"><i class="ic" data-ic="plusc"></i><span>Tambah / Edit Proyek</span></button>
+    <button type="button" class="nav sub" data-goto="settingsBox" title="Logo &amp; identitas pengesahan"><i class="ic" data-ic="info"></i><span>Identitas &amp; logo</span></button>
+    <button type="button" class="nav sub" data-goto="archiveBox" title="Impor arsip minggu lalu"><i class="ic" data-ic="folder"></i><span>Impor arsip minggu lalu</span></button>
+    <button type="button" class="nav sub" data-goto="tabs" title="Pratinjau laporan"><i class="ic" data-ic="list"></i><span>Pratinjau laporan</span></button>
+  </nav>
+  <div class="side-foot"><button type="button" class="pj" id="pjBtn" title="Ganti proyek"><span class="pjic"><i class="ic" data-ic="building"></i></span><div><small>Proyek aktif</small><b id="pjName">–</b></div></button></div>
+</aside>
+<div class="scrim" id="scrim"></div>
+<div class="main">
+<header class="top">
+  <button type="button" class="icon-btn hamb" data-toggle-nav aria-label="Buka menu" aria-expanded="false"><i class="ic" data-ic="menu"></i></button>
+  <div class="t"><small>Modul 5 · Pelaporan Manajemen</small><b>Buat Laporan Weekly</b></div>
+  <button type="button" class="tbtn" onclick="goProj('report')" title="Presentasi bulanan"><i class="ic" data-ic="slides"></i><span>Presentasi bulanan</span></button>
+  <button type="button" class="icon-btn" id="themeBtn" aria-label="Ganti tema terang/gelap" title="Ganti tema"><i class="ic" data-ic="moon"></i></button>
+  <span class="av" id="userAv">–</span>
+</header>
+<main class="wrap"><div class="toolbar"><label>Proyek<select id="project" disabled></select></label><label>Week laporan<select id="week" disabled></select></label><button id="reload">Muat ulang</button><button class="primary" id="print" disabled>Cetak / Simpan PDF</button><button class="primary" id="xlsx" disabled>Unduh Excel</button></div><div id="status" role="status" aria-live="polite">Memuat daftar proyek…</div><div id="error" role="alert" class="note error" hidden></div>
+<details id="settingsBox"><summary><span class="pi"><i class="ic" data-ic="info"></i></span><span class="st"><b>Logo &amp; identitas pengesahan</b><small>Disimpan per proyek · dipakai pada cover, kop, dan blok tanda tangan</small></span><i class="ic chev" data-ic="chevr"></i></summary><div class="fields"><label>Nama kontraktor<input id="company" maxlength="200"></label><label>Logo kontraktor · JPG/PNG, maksimal 2 MB<span class="filepick"><input id="logo" type="file" accept="image/png,image/jpeg"><span class="fp-btn">Pilih logo</span><span class="fp-name">Belum ada file dipilih</span></span><span id="logoStatus" class="muted"></span></label><label>Diajukan oleh · nama<input id="submitter" maxlength="200"></label><label>Jabatan kontraktor<input id="submitRole" maxlength="200"></label><label>Disetujui oleh · nama<input id="approver" maxlength="200"></label><label>Jabatan PT Petrokimia Gresik<input id="approveRole" maxlength="200"></label><label>Lokasi proyek<input id="location" maxlength="200"></label><label>Nomor pekerjaan / kontrak<input id="contractNo" maxlength="200"></label><label>Nomor dokumen laporan (awalan, minggu ditambahkan otomatis)<input id="docNo" maxlength="200" placeholder="contoh: G-88-40-2340-90"></label></div><div class="savebar"><button class="primary" id="save" disabled>Simpan identitas proyek</button><span class="muted">Logo dan nama digunakan kembali pada laporan berikutnya. Nama pejabat bukan persetujuan elektronik.</span></div></details><details id="archiveBox"><summary><span class="pi"><i class="ic" data-ic="folder"></i></span><span class="st"><b>Impor arsip minggu lalu</b><small>Procurement, Construction, Commissioning · dari Template Realisasi EPCC</small></span><i class="ic chev" data-ic="chevr"></i></summary><p class="muted" style="margin:14px 16px;font-size:13px">Dipakai bila kolom <b>Sampai Dengan Minggu Lalu</b> kosong karena data minggu tersebut sudah tertimpa input minggu berikutnya. Unggah <b>Template Realisasi EPCC</b> (file yang sama dengan input mingguan) yang berisi WEEK minggu lalu. Isi file hanya disimpan ke arsip laporan; data minggu berjalan, baseline, dan angka dashboard tidak berubah. Engineering dihitung otomatis dari tanggal terbit tiap tahap.</p><div class="savebar"><label class="filepick" style="flex:0 1 420px"><input id="arcFile" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"><span class="fp-btn">Pilih template</span><span class="fp-name">Belum ada file dipilih</span></label><button class="primary" id="arcImport" disabled>Impor ke arsip</button><span id="arcStatus" class="muted"></span></div></details>
+<div class="tabs" id="tabs"></div><div id="notices"></div><div id="screenArea"></div></main></div></div><div id="printArea"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<?!= include('EngXlsx') ?>
+<script>
+const appUrl=<?!= JSON.stringify(appUrl || '') ?>,initialProjectName=<?!= JSON.stringify(initialProjectName || '') ?>;
+const initialSessionToken=<?!= JSON.stringify(initialSessionToken || '') ?>;
+if(initialSessionToken)sessionStorage.setItem('pmoSessionToken',initialSessionToken);
+const token=initialSessionToken||sessionStorage.getItem('pmoSessionToken');
+let D=null,selected='summary',pendingLogo=null,dirty=false,busy=false,requestNo=0;
+const $=id=>document.getElementById(id),keys=['company','submitter','submitRole','approver','approveRole','location','contractNo','docNo'];
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=(v,d=2)=>v===null||v===undefined||!Number.isFinite(Number(v))?'—':(Math.abs(Number(v))<0.5/Math.pow(10,d)?0:Number(v)).toLocaleString('id-ID',{minimumFractionDigits:d,maximumFractionDigits:d});
+function go(page){if(dirty&&!confirm('Identitas belum disimpan. Tinggalkan perubahan?'))return;dirty=false;window.top.location.href=appUrl+'?page='+page;}
+function goProj(page){if(dirty&&!confirm('Identitas belum disimpan. Tinggalkan perubahan?'))return;dirty=false;window.top.location.href=appUrl+'?page='+page+(D&&D.project?'&project='+encodeURIComponent(D.project.name):'');}
+function rpc(name,args){return new Promise((resolve,reject)=>google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[name](...args));}
+function fail(e){$('error').hidden=false;$('error').textContent=e&&e.message||String(e);}
+function setBusy(v,message){busy=v;['project','week','reload','save','print','xlsx','arcFile','arcImport',...keys,'logo'].forEach(id=>$(id).disabled=v||(!D&&id!=='project'&&id!=='reload'));if(message)$('status').textContent=message;}
+function date(s){if(!s)return '—';const p=s.split('-');return Number(p[2])+' '+['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][Number(p[1])-1]+' '+p[0];}
+function form(){const s={};keys.forEach(k=>s[k]=$(k).value.trim());return s;}
+function markDirty(){dirty=true;$('status').textContent='Identitas disunting · simpan agar digunakan pada laporan berikutnya.';render();}
+keys.forEach(k=>$(k).addEventListener('input',markDirty));
+function themeIcon(){const b=$('themeBtn');if(!b)return;b.firstElementChild.setAttribute('data-ic',document.documentElement.dataset.theme==='dark'?'sun':'moon');paint(b);}
+$('themeBtn').onclick=()=>{const v=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=v;try{localStorage.setItem('pmoExecutiveTheme',v);}catch(e){}themeIcon();};
+try{document.documentElement.dataset.theme=localStorage.getItem('pmoExecutiveTheme')||'light';}catch(e){}
+/* ===================== LAPORAN WEEKLY: model data bersama (PDF & Excel) ===================== */
+const OWNER='PT PETROKIMIA GRESIK',OWNER_T='PT Petrokimia Gresik';
+const MONS=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],MONL=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const fin=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
+function isoAdd(iso,days){const p=String(iso).split('-').map(Number);return new Date(Date.UTC(p[0],p[1]-1,p[2]+days)).toISOString().slice(0,10);}
+function dLong(s){if(!s)return '-';const p=s.split('-');return Number(p[2])+' '+MONL[Number(p[1])-1]+' '+p[0];}
+function dShort(s){if(!s)return '-';const p=s.split('-');return Number(p[2])+' '+MONS[Number(p[1])-1]+' '+p[0];}
+function weekEnd(w){return isoAdd(D.finish,(w-D.week)*7);}
+/** format laporan: negatif dalam kurung, nol / kosong = "-" */
+function fx(v,d){d=d==null?3:d;if(!fin(v))return '-';v=Number(v);if(Math.abs(v)<0.5/Math.pow(10,d))return '-';const s=Math.abs(v).toLocaleString('id-ID',{minimumFractionDigits:d,maximumFractionDigits:d});return v<0?'('+s+')':s;}
+const isNeg=(v,d)=>fin(v)&&Number(v)<=-0.5/Math.pow(10,d==null?3:d);
+function ident(){const s=form();return {company:s.company||D.project.contractor||'',submitter:s.submitter,submitRole:s.submitRole,approver:s.approver,approveRole:s.approveRole,location:s.location,contractNo:s.contractNo,docNo:s.docNo?s.docNo+'-W'+D.week:''};}
+function verdict(dev){if(!fin(dev))return '-';if(dev<-0.0005)return 'Terlambat '+fx(-dev)+'%';if(dev>0.0005)return 'Lebih cepat '+fx(dev)+'%';return 'Sesuai rencana';}
+function fieldCurve(f){if(!f.curve||!f.curve.length)return [];const s=f.summary||{};let last=0;return f.curve.map(c=>{let a=null;if(c.week<=D.week){if(c.week===D.week&&fin(s.actual))a=Number(s.actual);else if(c.week===D.week-1&&fin(s.prevActual))a=Number(s.prevActual);else if(fin(c.actual))a=Number(c.actual);else a=last;last=a;}return {week:c.week,plan:fin(c.plan)?Number(c.plan):null,actual:a};});}
+function allCurve(){const fs=D.fields.filter(f=>f.curve&&f.curve.length&&fin(f.weight));if(!fs.length)return [];const cs=fs.map(fieldCurve),max=Math.max(D.week,...cs.map(c=>c.length)),out=[];
+  for(let w=1;w<=max;w++){let p=0,a=0,ok=true;fs.forEach((f,i)=>{const c=cs[i],pt=c[w-1]||c[c.length-1];if(!pt||!fin(pt.plan))ok=false;else p+=f.weight*pt.plan/100;if(w<=D.week){a+=f.weight*(pt&&fin(pt.actual)?pt.actual:0)/100;}});out.push({week:w,plan:ok?p:null,actual:w<=D.week?a:null});}
+  return out;}
+function nextPlan(f){const c=fieldCurve(f);if(!c.length)return null;const p=c.find(x=>x.week===D.week+1);if(p&&fin(p.plan))return p.plan;const k=c.filter(x=>fin(x.plan));return k.length?k[k.length-1].plan:null;}
+function summaryModel(){
+  const tri=(p,a)=>[fin(p)?Number(p):null,fin(a)?Number(a):null,fin(p)&&fin(a)?a-p:null];
+  const rows=D.fields.map(f=>{const s=f.summary||{},w=fin(f.weight)?Number(f.weight):null,nx=nextPlan(f),sc=v=>fin(v)&&w!=null?v*w/100:null;
+    const pct={prev:tri(s.prevPlan,s.prevActual),week:tri(s.addedPlan,s.addedActual),cum:tri(s.plan,s.actual),next:nx};
+    return {key:f.key,name:f.name,weight:w,pct,ov:{prev:pct.prev.map(sc),week:pct.week.map(sc),cum:pct.cum.map(sc),next:sc(nx)},note:f.notice?'Baseline belum tersedia':verdict(pct.cum[2])};});
+  const add=sel=>rows.length&&rows.every(r=>fin(sel(r)))?rows.reduce((a,r)=>a+sel(r),0):null,T={weight:add(r=>r.weight)};
+  ['prev','week','cum'].forEach(k=>T[k]=[0,1,2].map(i=>add(r=>r.ov[k][i])));T.next=add(r=>r.ov.next);T.note=verdict(T.cum[2]);
+  return {rows,total:T};}
+const BLOCKS=[['previous','Sampai Dengan Minggu Lalu (%)'],['added','Minggu Ini (%)'],['current','Sampai Dengan Minggu Ini (%)']];
+function detailModel(f){
+  const stages=f.stages.map((n,i)=>({n,i})).filter(s=>f.rows.some(r=>r.ms[s.i]>0));
+  const items=f.rows.map(r=>{const blk={};BLOCKS.forEach(([k])=>{const b=r[k];blk[k]={st:stages.map(s=>{let pg=b.stages?b.stages[s.i]:null;if(r.ms[s.i]===0)pg=null;return {pg:fin(pg)?Number(pg):null,w:fin(pg)?r.fieldWeight*r.ms[s.i]*pg/10000:null};}),total:fin(b.total)?b.total:null,contract:fin(b.contract)?b.contract:null,plan:fin(b.plan)?b.plan:null};});
+    const cur=blk.current,dev=fin(cur.total)&&fin(cur.plan)?cur.total-cur.plan:null,late=fin(r.dev)&&r.dev< -1e-6,changed=!!r.changed,prog=r.actual;
+    // sel yang berubah minggu ini: tahap dengan tambahan > 0 (blok minggu ini & s.d. minggu ini) serta total/bobot kontrak
+    const hl=stages.map((s,j)=>changed&&fin(blk.added.st[j].pg)&&blk.added.st[j].pg>1e-8);
+    const ket=fin(prog)&&prog>=99.999?'SELESAI':late?'TERLAMBAT':(fin(prog)&&prog>0)?'ON PROGRESS':(fin(r.plan)&&r.plan>0)?'BELUM MULAI':'-';
+    return {code:r.code,name:r.name,group:r.group||'',groupName:r.groupName||'',weight:r.weight,fw:r.fieldWeight,blk,dev,late,changed,hl,ket};});
+  const sum=(list,sel)=>list.length&&list.every(x=>fin(sel(x)))?list.reduce((a,x)=>a+Number(sel(x)),0):null;
+  const agg=list=>{const o={weight:sum(list,x=>x.weight),fw:sum(list,x=>x.fw),dev:sum(list,x=>x.dev),blk:{}};BLOCKS.forEach(([k])=>o.blk[k]={total:sum(list,x=>x.blk[k].total),contract:sum(list,x=>x.blk[k].contract),plan:sum(list,x=>x.blk[k].plan)});return o;};
+  const rows=[];let cur=null;items.forEach(it=>{const g=it.group+'|'+it.groupName;if((it.group||it.groupName)&&(!cur||cur.key!==g)){cur={type:'group',key:g,code:it.group,name:it.groupName&&it.groupName!==it.group?it.groupName:it.group,items:[]};rows.push(cur);}if(cur&&cur.key===g)cur.items.push(it);rows.push(Object.assign({type:'item'},it));});
+  rows.forEach(r=>{if(r.type==='group')Object.assign(r,agg(r.items));});
+  return {stages,rows,total:agg(items),count:items.length};}
+
+/** resume per bidang: grup WBS, nilai dalam % terhadap total proyek (100%), bukan terhadap bidang */
+function resumeModel(f){const M=detailModel(f),w=fin(f.weight)?Number(f.weight):null,sc=v=>fin(v)&&w!=null?v*w/100:null;
+  const groups=M.rows.filter(r=>r.type==='group'),loose=M.rows.filter(r=>r.type==='item'&&!r.group&&!r.groupName);
+  const list=groups.map(g=>({code:g.code,name:g.name,fw:g.fw,blk:g.blk}));
+  if(loose.length){const sum=sel=>loose.every(x=>fin(sel(x)))?loose.reduce((a,x)=>a+Number(sel(x)),0):null,blk={};BLOCKS.forEach(([k])=>blk[k]={total:sum(x=>x.blk[k].total),plan:sum(x=>x.blk[k].plan)});list.push({code:'',name:'Lain-lain',fw:sum(x=>x.fw),blk});}
+  const row=g=>{const o={code:g.code,name:g.name,weight:sc(g.fw)};BLOCKS.forEach(([k])=>o[k]=[sc(g.blk[k].plan),sc(g.blk[k].total)]);o.contrib=fin(g.blk.current.total)&&fin(g.fw)&&g.fw>0?g.blk.current.total/g.fw*100:null;o.dev=fin(o.current[0])&&fin(o.current[1])?o.current[1]-o.current[0]:null;return o;};
+  const rows=list.map(row),T=row({code:'',name:'JUMLAH',fw:M.total.fw,blk:M.total.blk});return {weight:w,rows,total:T};}
+const RES_HEAD=[['previous','PROGRES SAMPAI DENGAN PERIODE LALU'],['added','PROGRES PERIODE SEKARANG'],['current','PROGRES SAMPAI DENGAN PERIODE SEKARANG']];
+function resumeReport(f,no){const M=resumeModel(f),ph=periodHeads();
+  let h=head('SUMMARY '+f.name.toUpperCase()+' PROGRESS')+'<table class="sum res"><thead><tr><th rowspan="3" class="c-no">No</th><th rowspan="3" class="desc">Uraian Pekerjaan</th><th rowspan="3">Bobot (%)</th>'+RES_HEAD.map((x,i)=>'<th colspan="2">'+x[1]+'<span class="thd">'+ph[i][1]+'</span></th>').join('')+'<th rowspan="2">KONTRIBUSI</th><th rowspan="2">DEVIASI</th></tr><tr>'+Array(3).fill('<th>Rencana</th><th>Aktual</th>').join('')+'</tr><tr>'+Array(6).fill('<th>Bobot (%)</th>').join('')+'<th>%</th><th>%</th></tr></thead><tbody>';
+  h+='<tr class="grp"><td class="c-no">'+no+'</td><td class="desc">'+esc(f.name.toUpperCase())+'</td>'+tdn(M.weight)+'<td colspan="8"></td></tr>';
+  const line=(r,cls,num)=>'<tr'+(cls?' class="'+cls+'"':'')+'><td class="c-no">'+(num||'')+'</td><td class="desc">'+esc(r.name)+'</td>'+tdn(r.weight)+BLOCKS.map(([k])=>tdn(r[k][0])+tdn(r[k][1])).join('')+tdn(r.contrib)+tdn(r.dev)+'</tr>';
+  M.rows.forEach((r,i)=>h+=line(r,'',r.code||(no+'.'+(i+1))));h+=line(M.total,'total','');
+  return h+'</tbody></table><div class="memo"><b>Catatan :</b> Bobot, rencana, aktual, dan deviasi dinyatakan dalam % terhadap total proyek (100%). Kontribusi = aktual s.d. periode sekarang dibandingkan bobot uraian pekerjaan.</div>'+signs();}
+/* ===================== LAPORAN: tampilan cetak (PDF) ===================== */
+function logoImg(src,alt){return src?'<img src="'+esc(src)+'" alt="'+esc(alt)+'">':'';}
+function ktrLogo(){return pendingLogo?'data:'+pendingLogo.mime+';base64,'+pendingLogo.base64:D.logo||'';}
+function head(title){const s=ident();return '<div class="rh"><div class="rh-logo">'+logoImg(D.ownerLogo,OWNER_T)+logoImg(ktrLogo(),s.company)+'</div><div class="rh-title"><b>'+esc(title)+'</b><span>MINGGU KE-'+D.week+' &nbsp;·&nbsp; PERIODE : '+dLong(D.start)+' s.d. '+dLong(D.finish)+'</span></div><table class="rh-meta"><tr><th>PROJECT</th><td>: '+esc(D.project.name)+'</td></tr><tr><th>LOCATION</th><td>: '+esc(s.location||'-')+'</td></tr><tr><th>OWNER</th><td>: '+OWNER+'</td></tr><tr><th>CONTRACTOR</th><td>: '+esc((s.company||'-').toUpperCase())+'</td></tr>'+(s.contractNo?'<tr><th>NO. PEKERJAAN</th><td>: '+esc(s.contractNo)+'</td></tr>':'')+'</table></div>';}
+function signs(){const s=ident(),line=v=>v?esc(v):'&nbsp;';return '<div class="signatures"><div>Diajukan oleh,<br><b>'+esc((s.company||'Kontraktor').toUpperCase())+'</b><div class="signname">'+line(s.submitter)+'</div>'+line(s.submitRole)+'</div><div>Disetujui oleh,<br><b>'+OWNER+'</b><div class="signname">'+line(s.approver)+'</div>'+line(s.approveRole)+'</div></div>';}
+const tdn=(v,d,cls)=>'<td'+(cls?' class="'+cls+'"':'')+'>'+fx(v,d)+'</td>';
+function periodHeads(){return [['Sampai Dengan Minggu Lalu','s.d. '+dShort(weekEnd(D.week-1))],['Minggu Ini',dShort(D.start)+' – '+dShort(D.finish)],['Sampai Dengan Minggu Ini','s.d. '+dShort(D.finish)]];}
+function summaryReport(){const M=summaryModel(),ph=periodHeads();
+  let h=head('SUMMARY WEEKLY PROGRESS REPORT')+'<table class="sum"><thead><tr><th rowspan="4" class="c-no">No</th><th rowspan="4" class="desc">Tahapan</th><th rowspan="4">Bobot (%) Overall</th><th colspan="9">Laporan Mingguan Ke-'+D.week+' (%)</th><th rowspan="4">Rencana Minggu Depan (%)</th><th rowspan="4" class="c-ket">Keterangan</th></tr><tr>'+ph.map(p=>'<th colspan="3">'+p[0]+'</th>').join('')+'</tr><tr>'+ph.map(p=>'<th colspan="3" class="sub">'+p[1]+'</th>').join('')+'</tr><tr>'+Array(3).fill('<th>Rencana</th><th>Tercapai</th><th>Deviasi</th>').join('')+'</tr></thead><tbody>';
+  const vals=(o,next,bold)=>['prev','week','cum'].map(k=>tdn(o[k][0])+tdn(o[k][1])+tdn(o[k][2])).join('')+tdn(next,3,bold?'b':'');
+  M.rows.forEach((r,i)=>{const late=isNeg(r.pct.cum[2]);h+='<tr class="f"><td rowspan="2" class="c-no">'+(i+1)+'</td><td class="desc">'+esc(r.name)+'</td><td rowspan="2">'+(fin(r.weight)?fx(r.weight,2)+'%':'-')+'</td>'+vals(r.pct,r.pct.next)+'<td rowspan="2" class="c-ket">'+esc(r.note)+'</td></tr><tr class="ov"><td class="desc ind">Overall</td>'+vals(r.ov,r.ov.next)+'</tr>';});
+  const T=M.total;h+='<tr class="total"><td></td><td class="desc">TOTAL EPCC</td><td>'+(fin(T.weight)?fx(T.weight,2)+'%':'-')+'</td>'+vals(T,T.next,true)+'<td class="c-ket">'+esc(T.note)+'</td></tr></tbody></table>';
+  h+='<div class="memo"><b>Catatan :</b><ol><li>Kolom Keterangan menunjukkan bidang yang terlambat atau lebih cepat dari rencana.</li><li>Baris "Overall" adalah kontribusi bidang terhadap progres total proyek sesuai bobotnya.</li><li>Rencana minggu depan mengacu pada kurva S baseline aktif.</li></ol></div>';
+  return h+signs();}
+function detailReport(f){if(f.notice)return head('WBS WEEKLY PROGRESS '+f.name.toUpperCase())+'<p class="empty">Baseline aktif bidang ini belum tersedia.</p>';
+  const M=detailModel(f),S=M.stages,n=S.length*2+3;
+  let h=head(f.name.toUpperCase()+' WORK BREAKDOWN PROGRESS REPORT')+'<div class="tablewrap"><table class="det"><thead><tr><th rowspan="3" class="c-code">No / Kode</th><th rowspan="3" class="desc">Deskripsi Pekerjaan</th><th rowspan="3">Bobot Overall (%)</th><th rowspan="3">Bobot '+esc(f.name)+' (%)</th>'+BLOCKS.map(b=>'<th colspan="'+n+'">'+b[1]+'</th>').join('')+'<th rowspan="3">Deviasi</th><th rowspan="3" class="c-ket">Keterangan</th></tr><tr>';
+  for(let g=0;g<3;g++)h+=S.map(s=>'<th colspan="2">'+esc(s.n)+'</th>').join('')+'<th rowspan="2">Total</th><th rowspan="2">Bobot Kontrak</th><th rowspan="2">Rencana Kurva S</th>';
+  h+='</tr><tr>'+Array(3).fill(S.map(()=>'<th>Progress</th><th>Bobot</th>').join('')).join('')+'</tr></thead><tbody>';
+  M.rows.forEach(r=>{if(r.type==='group'){h+='<tr class="grp"><td class="c-code">'+esc(r.code)+'</td><td class="desc">'+esc(r.name)+'</td>'+tdn(r.weight,4)+tdn(r.fw,4)+BLOCKS.map(([k])=>'<td colspan="'+(S.length*2)+'"></td>'+tdn(r.blk[k].total,4)+tdn(r.blk[k].contract,4)+tdn(r.blk[k].plan,4)).join('')+tdn(r.dev,4)+'<td></td></tr>';return;}
+    const y=c=>c?' chg':'';h+='<tr class="it"><td class="c-code'+y(r.changed)+'">'+esc(r.code)+'</td><td class="desc'+y(r.changed)+'">'+esc(r.name)+'</td>'+tdn(r.weight,4)+tdn(r.fw,4);
+    BLOCKS.forEach(([k])=>{const b=r.blk[k],mark=k!=='previous';b.st.forEach((s,j)=>{const c=mark&&r.hl[j]?'chg':'';h+=tdn(s.pg,2,c)+tdn(s.w,4,c);});const c=mark&&r.changed?'chg':'';h+=tdn(b.total,4,c)+tdn(b.contract,4,c)+tdn(b.plan,4);});
+    h+=tdn(r.dev,4)+'<td class="c-ket">'+esc(r.ket)+'</td></tr>';});
+  const T=M.total;h+='<tr class="total"><td></td><td class="desc">TOTAL '+esc(f.name.toUpperCase())+'</td>'+tdn(T.weight,4)+tdn(T.fw,4)+BLOCKS.map(([k])=>'<td colspan="'+(S.length*2)+'"></td>'+tdn(T.blk[k].total,4)+tdn(T.blk[k].contract,4)+tdn(T.blk[k].plan,4)).join('')+tdn(T.dev,4)+'<td></td></tr></tbody></table></div>';
+  return h+'<div class="legend"><span class="sw yel">Sel kuning</span> berubah pada minggu ini &nbsp;·&nbsp; Keterangan TERLAMBAT = progres item di bawah rencana</div>'+signs();}
+/** grafik kurva S (SVG) — dipakai di PDF dan diubah ke PNG untuk Excel */
+function curveSvg(curve,W,H){W=W||1000;H=H||420;const pts=curve.filter(p=>fin(p.plan)||fin(p.actual));if(!pts.length)return '';const max=Math.max(2,...pts.map(p=>p.week)),L=58,R=18,T=46,B=48,x=w=>L+(w-1)/(max-1)*(W-L-R),y=v=>T+(100-v)/100*(H-T-B);
+  let s='<svg xmlns="http://www.w3.org/2000/svg" class="curve" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" font-family="Arial,sans-serif"><rect width="'+W+'" height="'+H+'" fill="#fff"/>';
+  for(let v=0;v<=100;v+=10)s+='<line x1="'+L+'" y1="'+y(v)+'" x2="'+(W-R)+'" y2="'+y(v)+'" stroke="'+(v%50?'#e3e9ef':'#c7d3de')+'"/><text x="'+(L-8)+'" y="'+(y(v)+4)+'" font-size="12" fill="#3b5266" text-anchor="end">'+v+'%</text>';
+  const step=Math.max(1,Math.ceil(max/20));for(let w=1;w<=max;w+=step)s+='<text x="'+x(w)+'" y="'+(H-B+18)+'" font-size="11" fill="#3b5266" text-anchor="middle">W'+w+'</text>';
+  s+='<text x="'+((L+W-R)/2)+'" y="'+(H-8)+'" font-size="12" fill="#3b5266" text-anchor="middle">Minggu ke-</text>';
+  if(D.week<=max){s+='<line x1="'+x(D.week)+'" y1="'+T+'" x2="'+x(D.week)+'" y2="'+(H-B)+'" stroke="#9aa9b6" stroke-dasharray="5 4"/><text x="'+(x(D.week)+5)+'" y="'+(T+12)+'" font-size="11" fill="#4b6172">Cut-off W'+D.week+'</text>';}
+  const line=(k,col,wd,dash)=>{let d='',prev=0;curve.forEach(p=>{if(!fin(p[k])){prev=0;return;}d+=(prev&&p.week===prev+1?' L':' M')+x(p.week).toFixed(1)+','+y(p[k]).toFixed(1);prev=p.week;});return d?'<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="'+wd+'"'+(dash?' stroke-dasharray="'+dash+'"':'')+' stroke-linejoin="round"/>':'';};
+  s+=line('plan','#2e75b6',2.4)+line('actual','#c55a11',2.8);
+  const cur=curve.find(p=>p.week===D.week);if(cur){if(fin(cur.plan))s+='<circle cx="'+x(D.week)+'" cy="'+y(cur.plan)+'" r="4" fill="#2e75b6"/>';if(fin(cur.actual))s+='<circle cx="'+x(D.week)+'" cy="'+y(cur.actual)+'" r="4" fill="#c55a11"/>';}
+  s+='<line x1="'+L+'" y1="20" x2="'+(L+28)+'" y2="20" stroke="#2e75b6" stroke-width="3"/><text x="'+(L+34)+'" y="24" font-size="12.5" fill="#1d3448">Rencana kumulatif (baseline aktif)</text><line x1="'+(L+270)+'" y1="20" x2="'+(L+298)+'" y2="20" stroke="#c55a11" stroke-width="3"/><text x="'+(L+304)+'" y="24" font-size="12.5" fill="#1d3448">Aktual kumulatif</text>';
+  return s+'</svg>';}
+function curveFacts(curve){const at=w=>curve.find(p=>p.week===w)||{},c=at(D.week),n=at(D.week+1),dev=fin(c.plan)&&fin(c.actual)?c.actual-c.plan:null;return {plan:c.plan,actual:c.actual,dev:dev,next:fin(n.plan)?n.plan:c.plan};}
+function curveBlock(title,curve){const F=curveFacts(curve),svg=curveSvg(curve);return head(title)+(svg?'<div class="chart">'+svg+'</div>':'<p class="empty">Data kurva S belum tersedia.</p>')+'<table class="facts"><tr><th>Rencana kumulatif s.d. W'+D.week+'</th><th>Aktual kumulatif s.d. W'+D.week+'</th><th>Deviasi</th><th>Rencana kumulatif W'+(D.week+1)+'</th></tr><tr>'+tdn(F.plan)+tdn(F.actual)+tdn(F.dev)+tdn(F.next)+'</tr></table>';}
+function curveReport(f){return curveBlock('S-CURVE '+f.name.toUpperCase()+' WEEKLY PROGRESS REPORT',fieldCurve(f));}
+function curveAllReport(){return curveBlock('S-CURVE GENERAL WEEKLY PROGRESS REPORT',allCurve());}
+function sections(){const out=[{id:'summary',t:'Summary Weekly Progress',html:summaryReport}];D.fields.forEach((f,i)=>{if(!f.notice)out.push({id:'r'+f.key,t:'Summary '+f.name+' Progress',html:()=>resumeReport(f,i+1)});out.push({id:f.key,t:'WBS Weekly Progress '+f.name,html:()=>detailReport(f)});if(!f.notice)out.push({id:'c'+f.key,t:'S-Curve Weekly Progress '+f.name,html:()=>curveReport(f)});});out.push({id:'call',t:'S-Curve Weekly General',html:curveAllReport});return out;}
+function cover(){const s=ident();return '<div class="cv"><h1>L A P O R A N &nbsp; M I N G G U A N</h1><div class="cv-proj">'+esc(String(D.project.name).toUpperCase())+'</div>'+(s.docNo?'<div class="cv-doc">Nomor Dokumen : '+esc(s.docNo)+'</div>':'')+(s.contractNo?'<div class="cv-sub">NOMOR PEKERJAAN : '+esc(s.contractNo)+'</div>':'')+'<div class="cv-week">MINGGU KE - '+D.week+'</div><div class="cv-sub">Periode : '+dLong(D.start)+' s.d. '+dLong(D.finish)+'</div><div class="cv-parties"><div><small>PEMBERI KERJA</small>'+logoImg(D.ownerLogo,OWNER_T)+'<b>'+OWNER_T+'</b></div><div><small>KONTRAKTOR</small>'+logoImg(ktrLogo(),s.company)+'<b>'+esc(s.company||'-')+'</b></div></div></div>';}
+function toc(){const list=sections();return head('DAFTAR ISI')+'<table class="toc">'+list.map((x,i)=>'<tr><td class="c-no">'+(i+1)+'</td><td>'+esc(x.t.toUpperCase())+'</td></tr>').join('')+'</table>';}
+function notices(){return D.fields.flatMap(f=>f.notice?[f.name+': '+f.notice]:(f.notices||[]).map(n=>f.name+': '+n));}
+function render(){if(!D)return;const titles=[['cover','Cover'],['summary','Summary'],...D.fields.map(f=>[f.key,f.name]),['curves','Kurva S']];$('tabs').innerHTML=titles.map(t=>'<button class="'+(selected===t[0]?'active':'')+'" data-tab="'+t[0]+'">'+t[1]+'</button>').join('');$('tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{selected=b.dataset.tab;render();});
+  const nn=notices();$('notices').innerHTML=nn.length?'<details><summary>Kelengkapan data (tidak ikut dicetak) · '+nn.length+' catatan</summary>'+nn.map(n=>'<div>'+esc(n)+'</div>').join('')+'</details>':'';
+  const f=D.fields.find(x=>x.key===selected);let html;
+  if(selected==='cover')html=cover();else if(selected==='summary')html=summaryReport();else if(selected==='curves')html=D.fields.filter(x=>!x.notice).map(curveReport).concat([curveAllReport()]).join('<hr>');else if(f)html=(f.notice?'':resumeReport(f,D.fields.indexOf(f)+1)+'<hr>')+detailReport(f);else html=summaryReport();
+  $('screenArea').innerHTML='<section class="paper">'+html+'</section>';}
+
+/* ===================== LAPORAN: Excel (.xlsx, tanpa pustaka tambahan selain JSZip) ===================== */
+const XE={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'},xe=s=>String(s).replace(/[&<>"]/g,c=>XE[c]);
+const colL=n=>{let s='';while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26);}return s;},A=(r,c)=>colL(c)+r;
+function XW(){this.sheets=[];this.fonts=['<font><sz val="9"/><name val="Arial"/></font>'];this.fills=['<fill><patternFill patternType="none"/></fill>','<fill><patternFill patternType="gray125"/></fill>'];this.borders=['<border><left/><right/><top/><bottom/><diagonal/></border>'];this.fmts=[];this.xfs=['<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'];this.key={};this.media=[];}
+XW.prototype.ix=function(a,x){let i=a.indexOf(x);if(i<0){a.push(x);i=a.length-1;}return i;};
+XW.prototype.st=function(o){o=o||{};const k=JSON.stringify(o);if(this.key[k]!=null)return this.key[k];
+  const fi=this.ix(this.fonts,'<font>'+(o.b?'<b/>':'')+(o.i?'<i/>':'')+(o.u?'<u/>':'')+'<sz val="'+(o.sz||9)+'"/>'+(o.color?'<color rgb="FF'+o.color+'"/>':'')+'<name val="Arial"/></font>');
+  const fl=o.fill?this.ix(this.fills,'<fill><patternFill patternType="solid"><fgColor rgb="FF'+o.fill+'"/><bgColor indexed="64"/></patternFill></fill>'):0;
+  const side=t=>t?' style="'+t+'"><color rgb="FF7F96AB"/>':'>',bd=o.bd?this.ix(this.borders,'<border><left'+side(o.bd)+'</left><right'+side(o.bd)+'</right><top'+side(o.bd)+'</top><bottom'+side(o.bd)+'</bottom><diagonal/></border>'):o.bb?this.ix(this.borders,'<border><left/><right/><top/><bottom'+side(o.bb)+'</bottom><diagonal/></border>'):0;
+  const nf=o.fmt?164+this.ix(this.fmts,o.fmt):0,al=(o.h||o.v||o.wrap||o.ind)?'<alignment'+(o.h?' horizontal="'+o.h+'"':'')+(o.v?' vertical="'+o.v+'"':'')+(o.wrap?' wrapText="1"':'')+(o.ind?' indent="'+o.ind+'"':'')+'/>':'';
+  this.xfs.push('<xf numFmtId="'+nf+'" fontId="'+fi+'" fillId="'+fl+'" borderId="'+bd+'" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"'+(al?' applyAlignment="1">'+al+'</xf>':'/>'));return this.key[k]=this.xfs.length-1;};
+XW.prototype.sheet=function(name,orient){const s=new XS(this,name,orient);this.sheets.push(s);return s;};
+XW.prototype.addMedia=function(img){if(!img)return null;this.media.push(img);return this.media.length;};
+function XS(b,name,orient){this.b=b;this.name=name;this.orient=orient||'landscape';this.rows={};this.cols={};this.hts={};this.merges=[];this.links=[];this.imgs=[];this.maxR=1;this.maxC=1;this.freeze=null;this.titles=null;}
+XS.prototype.set=function(r,c,v,s){(this.rows[r]=this.rows[r]||{})[c]={v:v,s:s||0};if(r>this.maxR)this.maxR=r;if(c>this.maxC)this.maxC=c;return this;};
+XS.prototype.box=function(r1,c1,r2,c2,s){for(let r=r1;r<=r2;r++)for(let c=c1;c<=c2;c++){const row=this.rows[r]=this.rows[r]||{};if(row[c])row[c].s=s;else row[c]={v:null,s:s};}if(r2>this.maxR)this.maxR=r2;if(c2>this.maxC)this.maxC=c2;};
+XS.prototype.mg=function(r1,c1,r2,c2,v,s){this.box(r1,c1,r2,c2,s);this.set(r1,c1,v,s);if(r1!==r2||c1!==c2)this.merges.push(A(r1,c1)+':'+A(r2,c2));};
+XS.prototype.img=function(m,r,c,w,h,dx,dy){if(m)this.imgs.push({m:m,r:r,c:c,w:Math.round(w),h:Math.round(h),dx:Math.round(dx||0),dy:Math.round(dy||0)});};
+XS.prototype.pxAt=function(px){let c=1;while(true){const w=Math.round((this.cols[c]||8.43)*7+5);if(px<w)return {c:c,dx:px};px-=w;c++;}};
+XS.prototype.xml=function(){const o=['<'+'?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><dimension ref="A1:'+A(this.maxR,this.maxC)+'"/>'];
+  let pane='';if(this.freeze){const fr=this.freeze.r-1,fc=this.freeze.c-1;pane='<pane'+(fc?' xSplit="'+fc+'"':'')+(fr?' ySplit="'+fr+'"':'')+' topLeftCell="'+A(this.freeze.r,this.freeze.c)+'" activePane="'+(fr&&fc?'bottomRight':fr?'bottomLeft':'topRight')+'" state="frozen"/>';}
+  o.push('<sheetViews><sheetView showGridLines="0" workbookViewId="0" zoomScale="90">'+pane+'</sheetView></sheetViews><sheetFormatPr defaultRowHeight="13.5"/>');
+  const cs=Object.keys(this.cols).map(Number).sort((a,b)=>a-b);if(cs.length)o.push('<cols>'+cs.map(c=>'<col min="'+c+'" max="'+c+'" width="'+this.cols[c]+'" customWidth="1"/>').join('')+'</cols>');
+  o.push('<sheetData>');Object.keys(this.rows).map(Number).sort((a,b)=>a-b).forEach(r=>{const row=this.rows[r],h=this.hts[r];let l='<row r="'+r+'"'+(h?' ht="'+h+'" customHeight="1"':'')+'>';
+    Object.keys(row).map(Number).sort((a,b)=>a-b).forEach(c=>{const x=row[c],v=x.v,a=A(r,c),s=x.s?' s="'+x.s+'"':'';
+      if(v===null||v===undefined||v==='')l+='<c r="'+a+'"'+s+'/>';else if(typeof v==='number')l+=isFinite(v)?'<c r="'+a+'"'+s+'><v>'+v+'</v></c>':'<c r="'+a+'"'+s+'/>';else l+='<c r="'+a+'"'+s+' t="inlineStr"><is><t xml:space="preserve">'+xe(v)+'</t></is></c>';});o.push(l+'</row>');});
+  o.push('</sheetData>');if(this.merges.length)o.push('<mergeCells count="'+this.merges.length+'">'+this.merges.map(m=>'<mergeCell ref="'+m+'"/>').join('')+'</mergeCells>');
+  if(this.links.length)o.push('<hyperlinks>'+this.links.map(l=>'<hyperlink ref="'+l.ref+'" location="'+xe(l.loc)+'" display="'+xe(l.text)+'"/>').join('')+'</hyperlinks>');
+  o.push('<printOptions horizontalCentered="1"/><pageMargins left="0.3" right="0.3" top="0.4" bottom="0.55" header="0.2" footer="0.25"/><pageSetup paperSize="9" orientation="'+this.orient+'" fitToWidth="1" fitToHeight="0"/><headerFooter><oddFooter>'+xe('&L&8'+String(this.foot||'').replace(/&/g,'&&')+'&R&8Halaman &P dari &N')+'</oddFooter></headerFooter>');
+  if(this.imgs.length)o.push('<drawing r:id="rId1"/>');return o.join('')+'</worksheet>';};
+XS.prototype.drawing=function(){return '<'+'?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'+this.imgs.map((g,i)=>{const cx=g.w*9525,cy=g.h*9525;return '<xdr:oneCellAnchor><xdr:from><xdr:col>'+(g.c-1)+'</xdr:col><xdr:colOff>'+g.dx*9525+'</xdr:colOff><xdr:row>'+(g.r-1)+'</xdr:row><xdr:rowOff>'+g.dy*9525+'</xdr:rowOff></xdr:from><xdr:ext cx="'+cx+'" cy="'+cy+'"/><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="'+(i+2)+'" name="Gambar '+(i+1)+'"/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="rId'+(i+1)+'"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:oneCellAnchor>';}).join('')+'</xdr:wsDr>';};
+XW.prototype.zip=function(JSZipLib){const z=new JSZipLib(),S=this.sheets,M=this.media,R='http://schemas.openxmlformats.org/officeDocument/2006/relationships',PR='http://schemas.openxmlformats.org/package/2006/relationships',hd='<'+'?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
+  let ndr=0;const drawOf=S.map(s=>s.imgs.length?++ndr:0);
+  z.file('[Content_Types].xml',hd+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Default Extension="jpeg" ContentType="image/jpeg"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+S.map((s,i)=>'<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join('')+drawOf.filter(Boolean).map(d=>'<Override PartName="/xl/drawings/drawing'+d+'.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>').join('')+'<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/></Types>');
+  z.file('_rels/.rels',hd+'<Relationships xmlns="'+PR+'"><Relationship Id="rId1" Type="'+R+'/officeDocument" Target="xl/workbook.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="'+R+'/extended-properties" Target="docProps/app.xml"/></Relationships>');
+  const now=new Date().toISOString().replace(/\.\d+Z$/,'Z');z.file('docProps/core.xml',hd+'<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>'+xe(this.title||'Laporan Mingguan')+'</dc:title><dc:creator>PMO Dashboard</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">'+now+'</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">'+now+'</dcterms:modified></cp:coreProperties>');
+  z.file('docProps/app.xml',hd+'<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>Microsoft Excel</Application></Properties>');
+  const dn=[];S.forEach((s,i)=>{if(s.titles)dn.push('<definedName name="_xlnm.Print_Titles" localSheetId="'+i+'">\''+xe(s.name)+'\'!$'+s.titles[0]+':$'+s.titles[1]+'</definedName>');});
+  z.file('xl/workbook.xml',hd+'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="'+R+'"><bookViews><workbookView activeTab="0"/></bookViews><sheets>'+S.map((s,i)=>'<sheet name="'+xe(s.name)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>').join('')+'</sheets>'+(dn.length?'<definedNames>'+dn.join('')+'</definedNames>':'')+'<calcPr calcId="191029"/></workbook>');
+  z.file('xl/_rels/workbook.xml.rels',hd+'<Relationships xmlns="'+PR+'">'+S.map((s,i)=>'<Relationship Id="rId'+(i+1)+'" Type="'+R+'/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>').join('')+'<Relationship Id="rId'+(S.length+1)+'" Type="'+R+'/styles" Target="styles.xml"/></Relationships>');
+  z.file('xl/styles.xml',hd+'<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+(this.fmts.length?'<numFmts count="'+this.fmts.length+'">'+this.fmts.map((x,i)=>'<numFmt numFmtId="'+(164+i)+'" formatCode="'+xe(x)+'"/>').join('')+'</numFmts>':'')+'<fonts count="'+this.fonts.length+'">'+this.fonts.join('')+'</fonts><fills count="'+this.fills.length+'">'+this.fills.join('')+'</fills><borders count="'+this.borders.length+'">'+this.borders.join('')+'</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="'+this.xfs.length+'">'+this.xfs.join('')+'</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>');
+  M.forEach((m,i)=>z.file('xl/media/image'+(i+1)+'.'+m.ext,m.b64,{base64:true}));
+  S.forEach((s,i)=>{z.file('xl/worksheets/sheet'+(i+1)+'.xml',s.xml());const d=drawOf[i];if(d){z.file('xl/worksheets/_rels/sheet'+(i+1)+'.xml.rels',hd+'<Relationships xmlns="'+PR+'"><Relationship Id="rId1" Type="'+R+'/drawing" Target="../drawings/drawing'+d+'.xml"/></Relationships>');z.file('xl/drawings/drawing'+d+'.xml',s.drawing());z.file('xl/drawings/_rels/drawing'+d+'.xml.rels',hd+'<Relationships xmlns="'+PR+'">'+s.imgs.map((g,k)=>'<Relationship Id="rId'+(k+1)+'" Type="'+R+'/image" Target="../media/image'+g.m+'.'+M[g.m-1].ext+'"/>').join('')+'</Relationships>');}});
+  return z;};
+/** gambar data-URL / SVG -> {b64,ext,w,h} */
+function loadImg(src){return new Promise(res=>{if(!src)return res(null);const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=src;});}
+async function mediaOf(src){if(!src)return null;const m=/^data:image\/(png|jpe?g);base64,(.+)$/.exec(src);const im=await loadImg(src);if(!im)return null;if(m)return {b64:m[2],ext:m[1]==='png'?'png':'jpeg',w:im.naturalWidth,h:im.naturalHeight};
+  const cv=document.createElement('canvas');cv.width=im.naturalWidth;cv.height=im.naturalHeight;cv.getContext('2d').drawImage(im,0,0);return {b64:cv.toDataURL('image/png').split(',')[1],ext:'png',w:cv.width,h:cv.height};}
+async function svgPng(svg,scale){const im=await loadImg('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg));if(!im)return null;scale=scale||2;const W=im.naturalWidth||1000,H=im.naturalHeight||420,cv=document.createElement('canvas');cv.width=W*scale;cv.height=H*scale;const g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,cv.width,cv.height);g.drawImage(im,0,0,cv.width,cv.height);return {b64:cv.toDataURL('image/png').split(',')[1],ext:'png',w:W,h:H};}
+async function buildWorkbook(){
+  const b=new XW(),I=ident(),NF3='#,##0.000;(#,##0.000);"-"',NF4='#,##0.0000;(#,##0.0000);"-"',NF2='#,##0.00;(#,##0.00);"-"',NAVY='1F3864',HEAD='D9E2F3',GRP='EDF2F9',YEL='FFFF00',RED=null;
+  b.title='Laporan Mingguan '+D.project.name+' W'+D.week;
+  const S={},st=o=>b.st(o);
+  S.th=st({b:1,color:'FFFFFF',fill:NAVY,bd:'thin',h:'center',v:'center',wrap:1,sz:8.5});S.th2=st({b:1,fill:HEAD,bd:'thin',h:'center',v:'center',wrap:1,sz:8.5});
+  const cell=(o)=>st(Object.assign({bd:'thin',v:'center'},o));
+  const own=await mediaOf(D.ownerLogo),ktr=await mediaOf(ktrLogo()),mo=own?b.addMedia(own):null,mk=ktr?b.addMedia(ktr):null;
+  const fitH=(m,h,maxW)=>{if(!m)return [0,0];let w=m.w*h/m.h;if(w>maxW){h=h*maxW/w;w=maxW;}return [w,h];};
+  const foot='Laporan Mingguan W'+D.week+' · '+D.project.name;
+  function header(ws,title,last){ws.foot=foot;ws.hts[1]=22;ws.hts[2]=22;ws.hts[3]=18;
+    let x=4;if(mo){const [w,h]=fitH(own,50,120),p=ws.pxAt(x);ws.img(mo,1,p.c,w,h,p.dx,4);x+=w+14;}if(mk){const [w,h]=fitH(ktr,50,120),p=ws.pxAt(x);ws.img(mk,1,p.c,w,h,p.dx,4);}
+    const narrow=last<10,tr=narrow?4:1,c0=narrow?1:3,per='MINGGU KE-'+D.week+'   ·   PERIODE : '+dLong(D.start)+' s.d. '+dLong(D.finish);
+    if(narrow){ws.hts[4]=22;ws.mg(4,1,4,last,title,st({b:1,sz:13,h:'center',v:'center'}));ws.mg(5,1,5,last,per,st({b:1,sz:9.5,h:'center',v:'center',color:'1F3864'}));}
+    else{ws.mg(1,c0,2,last,title,st({b:1,sz:13,h:'center',v:'center'}));ws.mg(3,c0,3,last,per,st({b:1,sz:9.5,h:'center',v:'center',color:'1F3864'}));}
+    const m0=narrow?7:5;
+    const L=[['PROJECT',D.project.name],['LOCATION',I.location||'-'],['OWNER',OWNER]],Rr=[['CONTRACTOR',(I.company||'-').toUpperCase()],['NO. PEKERJAAN',I.contractNo||'-'],['NO. DOKUMEN',I.docNo||'-']],mid=Math.max(2,Math.ceil(last/2)+1),ms=st({sz:8.5,b:1});
+    if(narrow){L.concat(Rr).forEach((p,i)=>ws.set(m0+i,1,p[0]+' : '+p[1],ms));ws.box(m0+6,1,m0+6,last,st({bb:'medium'}));return m0+8;}L.forEach((p,i)=>ws.set(m0+i,1,p[0]+' : '+p[1],ms));Rr.forEach((p,i)=>ws.set(m0+i,mid,p[0]+' : '+p[1],ms));ws.box(m0+3,1,m0+3,last,st({bb:'medium'}));return m0+5;}
+  function signBlock(ws,r,c1,c2,c3,c4){const t=st({h:'center',sz:9}),bt=st({h:'center',b:1,sz:9}),nm=st({h:'center',b:1,u:1,sz:9});
+    ws.mg(r,c1,r,c2,'Diajukan oleh,',t);ws.mg(r,c3,r,c4,'Disetujui oleh,',t);ws.mg(r+1,c1,r+1,c2,(I.company||'Kontraktor').toUpperCase(),bt);ws.mg(r+1,c3,r+1,c4,OWNER,bt);
+    ws.mg(r+6,c1,r+6,c2,I.submitter||'',nm);ws.mg(r+6,c3,r+6,c4,I.approver||'',nm);ws.mg(r+7,c1,r+7,c2,I.submitRole||'',t);ws.mg(r+7,c3,r+7,c4,I.approveRole||'',t);return r+8;}
+  // ---- Cover
+  {const ws=b.sheet('Cover','portrait');ws.foot=foot;for(let c=1;c<=10;c++)ws.cols[c]=9.5;const big=st({b:1,sz:20,h:'center',v:'center'}),mid=st({b:1,sz:13,h:'center',v:'center',wrap:1}),sm=st({sz:10,h:'center',v:'center'});
+    ws.hts[4]=34;ws.mg(4,1,4,10,'L A P O R A N   M I N G G U A N',big);ws.hts[7]=40;ws.mg(7,1,7,10,String(D.project.name).toUpperCase(),mid);
+    if(I.docNo)ws.mg(10,1,10,10,'Nomor Dokumen : '+I.docNo,st({b:1,sz:11,h:'center'}));if(I.contractNo)ws.mg(11,1,11,10,'NOMOR PEKERJAAN : '+I.contractNo,sm);
+    ws.hts[16]=30;ws.mg(16,1,16,10,'MINGGU KE - '+D.week,st({b:1,sz:18,h:'center',v:'center'}));ws.mg(18,1,18,10,'Periode : '+dLong(D.start)+' s.d. '+dLong(D.finish),sm);
+    ws.mg(25,1,25,5,'PEMBERI KERJA',st({b:1,sz:10,h:'center'}));ws.mg(25,6,25,10,'KONTRAKTOR',st({b:1,sz:10,h:'center'}));const colPx=Math.round(9.5*7+5)*5;
+    if(mo){const [w,h]=fitH(own,80,170),p=ws.pxAt((colPx-w)/2);ws.img(mo,26,p.c,w,h,p.dx,6);}if(mk){const [w,h]=fitH(ktr,80,170),p=ws.pxAt(colPx+(colPx-w)/2);ws.img(mk,26,p.c,w,h,p.dx,6);}
+    ws.mg(32,1,32,5,OWNER_T,st({b:1,sz:10,h:'center'}));ws.mg(32,6,32,10,I.company||'-',st({b:1,sz:10,h:'center'}));}
+  // ---- Daftar isi
+  const secs=[{n:'Summary',t:'Summary Weekly Progress'}];D.fields.forEach(f=>{if(!f.notice)secs.push({n:'Resume '+f.name,t:'Summary '+f.name+' Progress'});secs.push({n:'WBS '+f.name,t:'WBS Weekly Progress '+f.name});if(!f.notice)secs.push({n:'S-Curve '+f.name,t:'S-Curve Weekly Progress '+f.name});});secs.push({n:'S-Curve All',t:'S-Curve Weekly General'});
+  {const ws=b.sheet('Daftar Isi','portrait');ws.cols[1]=6;ws.cols[2]=48;ws.cols[3]=22;ws.cols[4]=10;const r0=header(ws,'DAFTAR ISI',4),lk=st({color:'1F4E9C',u:1,sz:10}),nr=st({sz:10,h:'center'});
+    secs.forEach((x,i)=>{const r=r0+1+i*2;ws.hts[r]=18;ws.set(r,1,i+1,nr);ws.set(r,2,x.t.toUpperCase(),lk);ws.set(r,3,'Lembar "'+x.n+'"',st({sz:9,color:'5A6B7B'}));ws.links.push({ref:A(r,2),loc:"'"+x.n+"'!A1",text:x.t});});}
+  // ---- Summary
+  {const M=summaryModel(),ws=b.sheet('Summary');[5,26,10,10,10,10,10,10,10,10,10,10,12,24].forEach((w,i)=>ws.cols[i+1]=w);const r0=header(ws,'SUMMARY WEEKLY PROGRESS REPORT',14),ph=periodHeads();
+    ws.mg(r0,1,r0+3,1,'No',S.th);ws.mg(r0,2,r0+3,2,'Tahapan',S.th);ws.mg(r0,3,r0+3,3,'Bobot (%) Overall',S.th);ws.mg(r0,4,r0,12,'Laporan Mingguan Ke-'+D.week+' (%)',S.th);ws.mg(r0,13,r0+3,13,'Rencana Minggu Depan (%)',S.th);ws.mg(r0,14,r0+3,14,'Keterangan',S.th);
+    ph.forEach((p,i)=>{ws.mg(r0+1,4+i*3,r0+1,6+i*3,p[0],S.th);ws.mg(r0+2,4+i*3,r0+2,6+i*3,p[1],S.th2);['Rencana','Tercapai','Deviasi'].forEach((t,k)=>ws.set(r0+3,4+i*3+k,t,S.th2));});ws.hts[r0+1]=16;
+    let r=r0+4;const put=(row,o,next,late,bold,fill)=>{['prev','week','cum'].forEach((k,i)=>o[k].forEach((v,j)=>ws.set(row,4+i*3+j,fin(v)?v:null,cell({fmt:NF3,color:late?RED:null,b:bold?1:0,fill:fill}))));ws.set(row,13,fin(next)?next:null,cell({fmt:NF3,color:late?RED:null,b:bold?1:0,fill:fill}));};
+    M.rows.forEach((x,i)=>{const late=isNeg(x.pct.cum[2]);ws.mg(r,1,r+1,1,i+1,cell({h:'center'}));ws.set(r,2,x.name,cell({b:1,color:late?RED:null}));ws.set(r+1,2,'Overall',cell({ind:2,color:late?RED:null,i:1}));ws.mg(r,3,r+1,3,fin(x.weight)?x.weight/100:null,cell({fmt:'0.00%',h:'center'}));put(r,x.pct,x.pct.next,late);put(r+1,x.ov,x.ov.next,late,0,'F2F2F2');ws.mg(r,14,r+1,14,x.note,cell({wrap:1,color:late?RED:null}));r+=2;});
+    const T=M.total,tl=isNeg(T.cum[2]);ws.set(r,1,'',cell({fill:HEAD}));ws.set(r,2,'TOTAL EPCC',cell({b:1,fill:HEAD,color:tl?RED:null}));ws.set(r,3,fin(T.weight)?T.weight/100:null,cell({fmt:'0.00%',h:'center',b:1,fill:HEAD}));put(r,T,T.next,tl,1,HEAD);ws.set(r,14,T.note,cell({b:1,fill:HEAD,wrap:1,color:tl?RED:null}));ws.hts[r]=18;
+    r+=2;const nt=st({sz:8.5});ws.set(r,1,'Catatan :',st({b:1,sz:8.5}));['1. Kolom Keterangan menunjukkan bidang yang terlambat atau lebih cepat dari rencana.','2. Baris "Overall" adalah kontribusi bidang terhadap progres total proyek sesuai bobotnya.','3. Rencana minggu depan mengacu pada kurva S baseline aktif.'].forEach((t,i)=>ws.set(r+1+i,2,t,nt));
+    signBlock(ws,r+5,2,5,10,14);ws.freeze={r:r0+4,c:3};ws.titles=[r0,r0+3];}
+  // ---- WBS & S-Curve per bidang
+  const curveSheet=async(name,title,curve)=>{const ws=b.sheet(name);[10,16,14,14,14,14,14].forEach((w,i)=>ws.cols[i+1]=w);const r0=header(ws,title,7),svg=curveSvg(curve,900,400);
+    if(svg){const png=await svgPng(svg,2);if(png){const id=b.addMedia(png);let tw=0;for(let c=1;c<=7;c++)tw+=Math.round(ws.cols[c]*7+5);const iw=tw-8;ws.img(id,r0,1,iw,iw*400/900,4,2);}}let r=r0+25;
+    ['Minggu ke-','Tanggal cut-off','Rencana mingguan (%)','Rencana kumulatif (%)','Aktual mingguan (%)','Aktual kumulatif (%)','Deviasi kumulatif (%)'].forEach((t,i)=>ws.set(r,i+1,t,S.th));ws.hts[r]=30;ws.titles=[r,r];
+    let pp=0,pa=0;curve.forEach(p=>{r++;const cur=p.week===D.week,dev=fin(p.plan)&&fin(p.actual)?p.actual-p.plan:null,late=isNeg(dev),f=cur?'DDEBF7':null,o=x=>cell(Object.assign({fill:f,b:cur?1:0,color:late?RED:null},x));
+      ws.set(r,1,'W'+p.week,o({h:'center'}));ws.set(r,2,dShort(weekEnd(p.week)),o({h:'center'}));ws.set(r,3,fin(p.plan)?p.plan-pp:null,o({fmt:NF3}));ws.set(r,4,p.plan,o({fmt:NF3}));ws.set(r,5,fin(p.actual)?p.actual-pa:null,o({fmt:NF3}));ws.set(r,6,p.actual,o({fmt:NF3}));ws.set(r,7,dev,o({fmt:NF3}));if(fin(p.plan))pp=p.plan;if(fin(p.actual))pa=p.actual;});};
+  const resumeSheet=(f,no)=>{const M=resumeModel(f),ws=b.sheet('Resume '+f.name),ph=periodHeads();[7,34,11,12,12,12,12,12,12,13,12].forEach((w,i)=>ws.cols[i+1]=w);const r0=header(ws,'SUMMARY '+f.name.toUpperCase()+' PROGRESS',11);
+    ws.mg(r0,1,r0+2,1,'No',S.th);ws.mg(r0,2,r0+2,2,'Uraian Pekerjaan',S.th);ws.mg(r0,3,r0+2,3,'Bobot (%)',S.th);RES_HEAD.forEach((x,i)=>{ws.mg(r0,4+i*2,r0,5+i*2,x[1]+'\n'+ph[i][1],S.th);ws.set(r0+1,4+i*2,'Rencana',S.th2);ws.set(r0+1,5+i*2,'Aktual',S.th2);ws.set(r0+2,4+i*2,'Bobot (%)',S.th2);ws.set(r0+2,5+i*2,'Bobot (%)',S.th2);});
+    ws.mg(r0,10,r0+1,10,'KONTRIBUSI',S.th);ws.mg(r0,11,r0+1,11,'DEVIASI',S.th);ws.set(r0+2,10,'%',S.th2);ws.set(r0+2,11,'%',S.th2);ws.hts[r0]=54;ws.cols[1]=9;
+    let r=r0+3;const g=o=>cell(Object.assign({b:1,fill:GRP},o));ws.set(r,1,no,g({h:'center'}));ws.set(r,2,f.name.toUpperCase(),g({}));ws.set(r,3,M.weight,g({fmt:NF3}));for(let c=4;c<=11;c++)ws.set(r,c,null,g({}));r++;
+    const put=(x,num,tot)=>{const o=e=>cell(Object.assign(tot?{b:1,fill:HEAD}:{},e));ws.set(r,1,num,o({h:'center'}));ws.set(r,2,x.name,o(tot?{h:'right'}:{}));ws.set(r,3,x.weight,o({fmt:NF3}));BLOCKS.forEach(([k],i)=>{ws.set(r,4+i*2,x[k][0],o({fmt:NF3}));ws.set(r,5+i*2,x[k][1],o({fmt:NF3}));});ws.set(r,10,x.contrib,o({fmt:NF3}));ws.set(r,11,x.dev,o({fmt:NF3}));ws.hts[r]=17;r++;};
+    M.rows.forEach((x,i)=>put(x,x.code||(no+'.'+(i+1))));put(M.total,'',true);
+    r+=1;ws.set(r,1,'Catatan :',st({b:1,sz:8.5}));ws.set(r,2,'Bobot, rencana, aktual, dan deviasi dalam % terhadap total proyek (100%). Kontribusi = aktual s.d. periode sekarang dibandingkan bobot uraian pekerjaan.',st({sz:8.5}));
+    signBlock(ws,r+3,2,3,8,11);ws.titles=[r0,r0+2];};
+  let fno=0;
+  for(const f of D.fields){fno++;if(!f.notice)resumeSheet(f,fno);const ws=b.sheet('WBS '+f.name);
+    if(f.notice){ws.cols[1]=12;ws.cols[2]=60;const r0=header(ws,f.name.toUpperCase()+' WORK BREAKDOWN PROGRESS REPORT',6);ws.set(r0,1,'Baseline aktif bidang ini belum tersedia.',st({i:1}));continue;}
+    const M=detailModel(f),SG=M.stages,nb=SG.length*2+3,last=4+3*nb+2;ws.cols[1]=12;ws.cols[2]=46;ws.cols[3]=9;ws.cols[4]=9;for(let c=5;c<last-1;c++)ws.cols[c]=8.5;ws.cols[last-1]=9;ws.cols[last]=17;
+    const r0=header(ws,f.name.toUpperCase()+' WORK BREAKDOWN PROGRESS REPORT',last);
+    ws.mg(r0,1,r0+3,1,'No / Kode',S.th);ws.mg(r0,2,r0+3,2,'Deskripsi Pekerjaan',S.th);ws.mg(r0,3,r0+3,3,'Bobot Overall (%)',S.th);ws.mg(r0,4,r0+3,4,'Bobot '+f.name+' (%)',S.th);ws.mg(r0,5,r0,4+3*nb,'Tahapan '+f.name,S.th);ws.mg(r0,last-1,r0+3,last-1,'Deviasi',S.th);ws.mg(r0,last,r0+3,last,'Keterangan',S.th);
+    BLOCKS.forEach(([k,t],g)=>{const c=5+g*nb;ws.mg(r0+1,c,r0+1,c+nb-1,t,S.th);SG.forEach((s,j)=>{ws.mg(r0+2,c+j*2,r0+2,c+j*2+1,s.n,S.th2);ws.set(r0+3,c+j*2,'Progress',S.th2);ws.set(r0+3,c+j*2+1,'Bobot',S.th2);});const c2=c+SG.length*2;ws.mg(r0+2,c2,r0+3,c2,'Total',S.th2);ws.mg(r0+2,c2+1,r0+3,c2+1,'Bobot Kontrak',S.th2);ws.mg(r0+2,c2+2,r0+3,c2+2,'Rencana Kurva S',S.th2);});
+    ws.hts[r0+2]=24;let r=r0+4;
+    M.rows.forEach(x=>{if(x.type==='group'){const g=o=>cell(Object.assign({b:1,fill:GRP},o));ws.set(r,1,x.code,g({}));ws.set(r,2,x.name,g({wrap:1}));ws.set(r,3,x.weight,g({fmt:NF4}));ws.set(r,4,x.fw,g({fmt:NF4}));
+        BLOCKS.forEach(([k],gi)=>{const c=5+gi*nb;for(let j=0;j<SG.length*2;j++)ws.set(r,c+j,null,g({}));const c2=c+SG.length*2;ws.set(r,c2,x.blk[k].total,g({fmt:NF4}));ws.set(r,c2+1,x.blk[k].contract,g({fmt:NF4}));ws.set(r,c2+2,x.blk[k].plan,g({fmt:NF4}));});ws.set(r,last-1,x.dev,g({fmt:NF4}));ws.set(r,last,null,g({}));r++;return;}
+      const red=x.late?RED:null,o=(y,extra)=>cell(Object.assign({color:red,fill:y?YEL:null},extra));
+      ws.set(r,1,x.code,o(x.changed,{}));ws.set(r,2,x.name,o(x.changed,{wrap:1,ind:1}));ws.set(r,3,x.weight,o(0,{fmt:NF4}));ws.set(r,4,x.fw,o(0,{fmt:NF4}));
+      BLOCKS.forEach(([k],gi)=>{const c=5+gi*nb,bk=x.blk[k],mark=k!=='previous';bk.st.forEach((s,j)=>{const y=mark&&x.hl[j];ws.set(r,c+j*2,s.pg,o(y,{fmt:NF2}));ws.set(r,c+j*2+1,s.w,o(y,{fmt:NF4}));});const c2=c+SG.length*2,y=mark&&x.changed;ws.set(r,c2,bk.total,o(y,{fmt:NF4}));ws.set(r,c2+1,bk.contract,o(y,{fmt:NF4}));ws.set(r,c2+2,bk.plan,o(0,{fmt:NF4}));});
+      ws.set(r,last-1,x.dev,o(0,{fmt:NF4}));ws.set(r,last,x.ket,o(0,{h:'center',sz:8}));r++;});
+    const T=M.total,t=o=>cell(Object.assign({b:1,fill:HEAD},o));ws.set(r,1,'',t({}));ws.set(r,2,'TOTAL '+f.name.toUpperCase(),t({}));ws.set(r,3,T.weight,t({fmt:NF4}));ws.set(r,4,T.fw,t({fmt:NF4}));
+    BLOCKS.forEach(([k],gi)=>{const c=5+gi*nb;for(let j=0;j<SG.length*2;j++)ws.set(r,c+j,null,t({}));const c2=c+SG.length*2;ws.set(r,c2,T.blk[k].total,t({fmt:NF4}));ws.set(r,c2+1,T.blk[k].contract,t({fmt:NF4}));ws.set(r,c2+2,T.blk[k].plan,t({fmt:NF4}));});ws.set(r,last-1,T.dev,t({fmt:NF4}));ws.set(r,last,null,t({}));
+    r+=2;ws.set(r,1,'Keterangan :',st({b:1,sz:8.5}));ws.set(r,2,'Sel kuning',st({sz:8.5,fill:YEL,b:1,bd:'thin'}));ws.set(r,3,'berubah pada minggu ini',st({sz:8.5}));ws.set(r+1,2,'TERLAMBAT',st({sz:8.5,b:1,bd:'thin',h:'center'}));ws.set(r+1,3,'progres item di bawah rencana (kolom Keterangan)',st({sz:8.5}));
+    const q=Math.floor(last/4);signBlock(ws,r+3,2,2,Math.max(5,last-q*2),last);ws.freeze={r:r0+4,c:3};ws.titles=[r0,r0+3];
+    await curveSheet('S-Curve '+f.name,'S-CURVE '+f.name.toUpperCase()+' WEEKLY PROGRESS REPORT',fieldCurve(f));}
+  await curveSheet('S-Curve All','S-CURVE GENERAL WEEKLY PROGRESS REPORT',allCurve());
+  return b;}
+async function downloadExcel(){if(typeof JSZip==='undefined')throw new Error('Pustaka ZIP belum termuat. Muat ulang halaman lalu coba lagi.');const b=await buildWorkbook(),blob=await b.zip(JSZip).generateAsync({type:'blob',compression:'DEFLATE',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Laporan_Mingguan_'+String(D.project.id).replace(/[^\w-]+/g,'_')+'_W'+D.week+'.xlsx';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);return blob;}
+function readyToIssue(){const missing=['company','submitter','submitRole','approver','approveRole'].filter(k=>!$(k).value.trim());if(missing.length){fail(new Error('Lengkapi nama kontraktor dan pejabat pengesahan sebelum mencetak atau mengunduh.'));$('settingsBox').open=true;return false;}if(dirty){fail(new Error('Simpan identitas proyek sebelum mencetak atau mengunduh.'));return false;}$('error').hidden=true;return true;}
+
+async function load(pid,week){const id=++requestNo;setBusy(true,'Menyusun baseline dan aktual mingguan…');$('error').hidden=true;try{const d=await rpc('getWeeklyPrintReport',[token,pid,week]);if(id!==requestNo)return;D=d;if($('pjName'))$('pjName').textContent=d.project.name;pendingLogo=null;dirty=false;keys.forEach(k=>$(k).value=d.settings[k]||(k==='company'?d.project.contractor:''));$('logo').value='';fpSync();$('logoStatus').textContent=d.logo?'Logo tersimpan · otomatis dipakai kembali.':'Belum ada logo tersimpan.';$('week').innerHTML=d.weeks.slice().reverse().map(w=>'<option value="'+w+'"'+(w===d.week?' selected':'')+'>W'+w+'</option>').join('');render();$('status').textContent='W'+d.week+' · '+date(d.start)+' – '+date(d.finish)+' · '+d.fields.reduce((a,f)=>a+f.rows.length,0)+' item baseline aktif.';}catch(e){D=null;$('screenArea').innerHTML='';$('tabs').innerHTML='';fail(e);$('status').textContent='Laporan belum dapat dimuat.';}finally{if(id===requestNo)setBusy(false);}}
+function guard(){return !dirty||confirm('Identitas belum disimpan. Pindah tanpa menyimpan?');}
+$('project').onchange=function(){if(guard())load(this.value,null);else if(D)this.value=D.project.id;};$('week').onchange=function(){if(guard())load($('project').value,Number(this.value));else if(D)this.value=D.week;};$('reload').onclick=()=>{if(guard())load($('project').value,D?D.week:null);};
+$('logo').onchange=async function(){const file=this.files[0];if(!file)return;if(file.size>2*1024*1024||!['image/png','image/jpeg'].includes(file.type)){fail(new Error('Gunakan logo JPG/PNG maksimal 2 MB.'));this.value='';return;}const rd=new FileReader();rd.onload=()=>{pendingLogo={mime:file.type,base64:String(rd.result).split(',')[1]};markDirty();$('logoStatus').textContent='Logo baru dipilih · belum disimpan.';};rd.readAsDataURL(file);};
+$('save').onclick=async()=>{if(!D||busy)return;setBusy(true,'Menyimpan identitas dan logo per proyek…');$('error').hidden=true;try{const s=await rpc('saveWeeklyPrintSettings',[token,D.project.id,form(),pendingLogo]);D.settings=s.settings;if(pendingLogo)D.logo='data:'+pendingLogo.mime+';base64,'+pendingLogo.base64;pendingLogo=null;dirty=false;$('logoStatus').textContent=D.logo?'Logo tersimpan · otomatis dipakai kembali.':'Belum ada logo.';$('status').textContent='Identitas proyek berhasil disimpan.';render();}catch(e){fail(e);}finally{setBusy(false);}};
+$('print').onclick=()=>{if(!D||busy||!readyToIssue())return;const pages=[cover(),toc(),...sections().map(x=>x.html())];$('printArea').innerHTML=pages.map(h=>'<section class="paper printsection">'+h+'</section>').join('');document.title='Laporan Mingguan '+D.project.id+' W'+D.week;window.print();};
+$('xlsx').onclick=async()=>{if(!D||busy||!readyToIssue())return;setBusy(true,'Menyusun file Excel laporan mingguan…');try{await downloadExcel();$('status').textContent='File Excel W'+D.week+' berhasil dibuat.';}catch(e){fail(e);}finally{setBusy(false);}};
+/* ===================== Impor arsip minggu lalu (Template Realisasi EPCC) — hanya menulis arsip laporan ===================== */
+const ARC_SH={PROC:'PROCUREMENT',CONS:'CONSTRUCTION',COM:'COMMISSIONING'},ARC_MS={PROC:['FAT_%','FOB_%','MOS_IMPOR_%','MOS_LOKAL_%'],CONS:['PREP_%','FAB_%','INS_%','FIN_%'],COM:['TAHAP_1_%','TAHAP_2_%','TAHAP_3_%']};
+function arcParse(book){const c=book.INFO;if(!c)throw new Error('Sheet INFO tidak ditemukan. Gunakan Template Realisasi EPCC yang diunduh dari dashboard.');const inf={},rev={};
+  for(let r=1;r<=40;r++){const k=String(c['A'+r]==null?'':c['A'+r]).trim();if(k)inf[k]=c['B'+r];const f=String(c['B'+r]==null?'':c['B'+r]).trim();if(ARC_SH[f]&&c['C'+r]!=null&&c['C'+r]!=='')rev[f]=Number(c['C'+r]);}
+  if(String(inf.KODE_TEMPLATE||'').trim()!=='EPCC-REALISASI-1')throw new Error('File ini bukan Template Realisasi EPCC (KODE_TEMPLATE tidak sesuai). Laporan Excel kontraktor tidak dapat dipakai untuk arsip.');
+  const out={pid:String(inf.PROYEK_ID||'').trim(),week:Math.round(Number(inf.WEEK)),fields:{}};
+  Object.keys(ARC_SH).forEach(F=>{const s=book[ARC_SH[F]];if(!s)return;const hd={};for(let j=1;j<=30;j++){const h=String(s[colL(j)+'5']==null?'':s[colL(j)+'5']).trim();if(h)hd[h.replace(/ W\d+$/,'')]=j;}
+    if(!hd.ID||!hd.JENIS){out.fields[F]={err:'Header sheet '+ARC_SH[F]+' tidak dikenali.'};return;}
+    const L=ARC_MS[F],mc=L.map(x=>hd[x]||0),rows=[],bad=[];
+    for(let r=6;r<=20000;r++){const id=s[colL(hd.ID)+r];if(id==null||id===''){if(s[colL(hd.ID)+(r+1)]==null&&s[colL(hd.ID)+(r+2)]==null)break;continue;}
+      if(String(s[colL(hd.JENIS)+r]||'').trim()!=='ITEM')continue;const m=[0,0,0,0];
+      mc.forEach((cc,k)=>{if(!cc)return;const v=s[colL(cc)+r];if(v==null||v==='')return;const n=Number(String(v).replace(',','.'));if(!isFinite(n)||n<-0.0001||n>100.0001)bad.push(String(id)+' '+L[k]+' = '+v);else m[k]=Math.max(0,Math.min(100,n));});
+      rows.push({id:String(id),m:m});}
+    out.fields[F]={rev:rev[F],rows:rows,bad:bad};});
+  return out;}
+$('arcImport').onclick=async()=>{if(!D||busy)return;const file=$('arcFile').files[0];if(!file){fail(new Error('Pilih file Template Realisasi EPCC minggu lalu terlebih dahulu.'));return;}
+  if(typeof JSZip==='undefined'||typeof EngXlsx==='undefined'){fail(new Error('Pustaka pembaca Excel belum termuat. Muat ulang halaman.'));return;}
+  $('error').hidden=true;let reload=false;setBusy(true,'Membaca template '+file.name+'…');
+  try{const book=await EngXlsx.readXlsx(JSZip,await file.arrayBuffer()),t=arcParse(book);
+    if(t.pid!==D.project.id)throw new Error('Template untuk proyek '+(t.pid||'?')+', bukan '+D.project.id+'.');
+    if(!(t.week>=1))throw new Error('WEEK pada sheet INFO tidak valid.');
+    const fs=Object.keys(t.fields);if(!fs.length)throw new Error('Tidak ada sheet PROCUREMENT / CONSTRUCTION / COMMISSIONING di file.');
+    const errs=fs.flatMap(F=>t.fields[F].err?[t.fields[F].err]:t.fields[F].bad.length?[ARC_SH[F]+': '+t.fields[F].bad.length+' sel di luar 0–100 ('+t.fields[F].bad.slice(0,3).join('; ')+')']:[]);if(errs.length)throw new Error(errs.join('\n'));
+    if(!confirm('Simpan isi template sebagai arsip realisasi W'+t.week+' ('+fs.map(F=>ARC_SH[F].toLowerCase()).join(', ')+')?\n\nData minggu berjalan, baseline, dan angka dashboard tidak berubah.'))return;
+    setBusy(true,'Menyimpan arsip W'+t.week+'…');
+    const r=await rpc('importWeeklyArchive',[token,D.project.id,t,file.name]);
+    if(!r.success)throw new Error((r.errors||['Arsip belum tersimpan.']).join('\n'));
+    $('arcFile').value='';fpSync();$('arcStatus').textContent='Arsip W'+r.week+' tersimpan · '+r.done.map(x=>x.field+' '+x.matched+'/'+x.items+' item').join(' · ');reload=true;
+  }catch(e){fail(e);$('status').textContent='Arsip belum tersimpan.';}finally{setBusy(false);if(reload)load(D.project.id,D.week);}};
+function fpSync(){document.querySelectorAll('.filepick').forEach(function(w){const i=w.querySelector('input'),n=w.querySelector('.fp-name');if(i&&n)n.textContent=i.files&&i.files[0]?i.files[0].name:'Belum ada file dipilih';});}
+document.querySelectorAll('.filepick input').forEach(function(i){i.addEventListener('change',fpSync);});
+/* ===== Sidebar: ikon, isi halaman, ringkas/buka (pola sama dengan halaman lain) ===== */
+const P={home:'<path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/>',grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',trend:'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',layers:'<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',folder:'<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>',cal:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',plusc:'<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',chevl:'<path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/>',chevr:'<path d="M9 6l6 6-6 6"/>',building:'<path d="M4 21V5a1 1 0 011-1h9a1 1 0 011 1v16M15 9h4a1 1 0 011 1v11M3 21h18M8 8h3M8 12h3M8 16h3"/>',moon:'<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',slides:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M7 9h6M7 12h10"/>',gantt:'<path d="M4 4v16h16"/><rect x="7" y="6" width="8" height="3" rx="1"/><rect x="10" y="11" width="9" height="3" rx="1"/><rect x="8" y="16" width="5" height="2.5" rx="1"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>',printer:'<path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/>'};
+function paint(root){(root||document).querySelectorAll('[data-ic]').forEach(function(el){const p=P[el.getAttribute('data-ic')];if(p)el.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>'})}
+paint();themeIcon();
+document.querySelectorAll('.nav.sub').forEach(function(b){b.onclick=function(){const t=$(b.getAttribute('data-goto'));if(t){if(t.tagName==='DETAILS')t.open=true;window.scrollTo({top:Math.max(0,t.getBoundingClientRect().top+window.scrollY-80),behavior:'smooth'});}document.querySelectorAll('.nav.sub').forEach(function(x){x.classList.toggle('on',x===b)});$('app').classList.remove('nav-open')}});
+(function(){const app=$('app'),mq=window.matchMedia('(max-width:900px)'),btns=Array.prototype.slice.call(document.querySelectorAll('[data-toggle-nav]'));
+  try{if(localStorage.getItem('pmoWeeklyNav')==='collapsed')app.classList.add('collapsed')}catch(e){}
+  const sync=function(){const open=mq.matches?app.classList.contains('nav-open'):!app.classList.contains('collapsed');btns.forEach(function(b){b.setAttribute('aria-expanded',String(open))})};
+  btns.forEach(function(b){b.addEventListener('click',function(){if(mq.matches)app.classList.toggle('nav-open');else{const c=app.classList.toggle('collapsed');try{localStorage.setItem('pmoWeeklyNav',c?'collapsed':'open')}catch(e){}}sync()})});
+  $('scrim').addEventListener('click',function(){app.classList.remove('nav-open');sync()});
+  if(mq.addEventListener)mq.addEventListener('change',function(){app.classList.remove('nav-open');sync()});sync();
+  $('pjBtn').onclick=function(){const s=$('project');if(!s||s.disabled||s.options.length<2)return;app.classList.remove('nav-open');s.focus();try{s.showPicker()}catch(e){s.click()}};
+})();window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
+(async()=>{if(!token){$('status').textContent='Sesi dashboard belum tersedia. Silakan masuk kembali.';const a=document.createElement('a');a.href=appUrl;a.target='_top';a.textContent='Masuk dashboard';$('status').appendChild(document.createElement('br'));$('status').appendChild(a);return;}try{const l=await rpc('getWeeklyPrintList',[token]);if(!l.projects.length)throw new Error('Akun Anda belum memiliki akses input proyek.');$('project').innerHTML=l.projects.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>').join('');const want=l.projects.find(p=>p.id===initialProjectName||p.name===initialProjectName)||l.projects[0];$('project').value=want.id;document.querySelectorAll('[data-role],[data-mr]').forEach(b=>b.hidden=false);load(want.id,null);}catch(e){fail(e);$('status').textContent='';}})();
+</script><?!= include('AccountMenu') ?><?!= include('PmoUi') ?>
+</body></html>

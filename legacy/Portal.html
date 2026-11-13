@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="id">
+<head>
+<?!= include('PmoCore') ?>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portal Proyek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+:root{--amber:#d6a014;
+  --pu-bg:#efe8fc;--pu-ink:#7a3fd1;--cy-bg:#dcf5fb;--cy-ink:#0a7590;--am-bg:#fff1c7;--am-ink:#7d5500;--gr-bg:#dcf5e9;--gr-ink:#14724f;--rd-bg:#ffe3df;--rd-ink:#c0302f;--bl-bg:#e8f3fb;--bl-ink:#0f5fa8;--gy-bg:#eaf1f7;--gy-ink:#35566f;
+  --r:16px;color-scheme:light
+}
+:root[data-theme="dark"]{
+  --pu-bg:#2b2150;--pu-ink:#c4a7ff;--cy-bg:#12384a;--cy-ink:#6fd6ee;--am-bg:#3d3112;--am-ink:#f0c35a;--gr-bg:#12372b;--gr-ink:#4fd1a0;--rd-bg:#3d1d20;--rd-ink:#ff8c86;--bl-bg:#1b3550;--bl-ink:#8fcaf6;--gy-bg:#20364a;--gy-ink:#a9c3d8;color-scheme:dark
+}
+*{box-sizing:border-box}html,body{margin:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 Inter,"Segoe UI",system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+.ic{display:inline-grid;width:20px;height:20px;flex:none}.ic svg{width:100%;height:100%}
+/* topbar */
+.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:14px;padding:12px 28px;background:var(--topbar);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px;border-radius:12px;flex:none}
+:root[data-theme="dark"] .brand{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35)}
+.brand img{height:46px;width:auto;max-width:96px;object-fit:contain;display:block}
+.top .t{flex:1;min-width:0}.top .t small{display:block;font-size:12px;color:var(--muted)}.top .t b{display:block;font-size:18px;color:var(--navy)}
+.account-wrap{position:relative}
+.chip{display:flex;align-items:center;gap:10px;padding:5px 12px 5px 5px;border:1px solid var(--line);border-radius:99px;background:var(--card);text-align:left}
+.chip:hover{background:var(--tint)}
+.av{width:34px;height:34px;border-radius:50%;background:var(--pri);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700;flex:none}
+.chip b{display:block;font-size:13px;line-height:1.2;max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chip small{display:block;font-size:11px;color:var(--muted)}
+.chip .caret{width:14px;height:14px;color:var(--muted)}
+.pop{position:absolute;right:0;top:calc(100% + 8px);z-index:60;width:min(268px,calc(100vw - 24px));background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px rgba(5,15,30,.28);padding:14px}
+.access-info{padding:0 2px 12px;border-bottom:1px solid var(--line);font-size:13px;font-weight:600}
+.access-info small{display:block;font-weight:500;color:var(--muted);margin-top:2px}
+.theme-label{margin:12px 2px 8px;color:var(--muted);font-size:12px;font-weight:600}
+.theme-switch{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--tint)}
+.theme-switch button{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border:0;border-radius:8px;background:transparent;color:var(--muted);font-weight:600;font-size:13px}
+.theme-switch button .ic{width:16px;height:16px}
+.theme-switch button.selected{background:var(--card);color:var(--pri-ink);box-shadow:var(--shadow)}
+.logout-btn{display:flex;align-items:center;gap:8px;width:100%;margin-top:12px;padding:10px 12px;border:1px solid var(--bad-line);border-radius:10px;background:var(--bad-bg);color:var(--bad);font-weight:700;font-size:13px}
+.logout-btn .ic{width:16px;height:16px}
+/* layout */
+.wrap{max-width:1320px;margin:0 auto;padding:24px 28px 48px}
+.hello{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 16px}
+.hello h1{margin:0;font-size:clamp(23px,2.6vw,32px);line-height:1.15;color:var(--navy);letter-spacing:-.01em}
+.hello p{margin:6px 0 0;color:var(--muted);max-width:64ch}
+.stamp{font-size:12px;color:var(--muted);text-align:right;line-height:1.6}
+.stamp b{color:var(--ink);font-weight:600}
+.grp{margin-top:26px}
+.grp h2{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.grp h2::after{content:"";flex:1;border-top:1px solid var(--line)}
+.tiles{display:grid;gap:14px}
+.c-main{grid-template-columns:minmax(0,2.1fr) minmax(0,1fr)}
+.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
+#tileDash{grid-row:span 2}
+.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.tile{position:relative;display:flex;flex-direction:column;gap:12px;padding:18px;border-radius:var(--r);background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);text-align:left;min-width:0}
+button.tile{transition:transform .12s,border-color .12s}
+button.tile:hover{transform:translateY(-2px);border-color:var(--pri)}
+
+.tile .h{display:flex;align-items:flex-start;gap:12px}
+.tile .ico{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;flex:none}
+.tile .ico .ic{width:23px;height:23px}
+.tile h3{margin:0;font-size:17px;line-height:1.25;color:var(--navy)}
+.tile .no{display:block;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.05em}
+.tile>p,.tile .desc{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
+.tag{margin-left:auto;flex:none;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;border:1px solid}
+.tag.ok{background:var(--ok-bg);border-color:var(--ok-line);color:var(--ok)}
+.tag.next{background:var(--soft);border-color:var(--line);color:var(--pri-ink)}
+.tag.idea{background:var(--tint);border-color:var(--line);color:var(--muted)}
+.subs{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.subs span,.subs button{padding:6px 11px;border-radius:9px;background:var(--tint);border:1px solid var(--line);font-size:12px;font-weight:600;color:var(--ink)}
+.subs button{min-height:40px;padding:0 14px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.subs button:hover{border-color:var(--pri);color:var(--pri-ink)}
+.subs button.pri{background:var(--tint);border-color:var(--line);color:var(--ink)}
+.subs button:hover,.subs button.pri:hover{border-color:var(--pri-ink);color:var(--pri-ink);background:var(--soft)}
+.subs button{transition:border-color .15s,color .15s,background .15s}
+.subs .ic{width:16px;height:16px}
+/* Akun KONTRAKTOR: Portal hanya proyeknya, modul yang bisa dibuka hanya Modul 3 EPCC Control */
+html.is-ktr #tileDash,html.is-ktr #tileInput,html.is-ktr #tileLive,html.is-ktr #tileDoc,html.is-ktr #tileMr{display:none!important}
+.c-bl{background:var(--bl-bg);color:var(--bl-ink)}.c-pu{background:var(--pu-bg);color:var(--pu-ink)}.c-cy{background:var(--cy-bg);color:var(--cy-ink)}.c-am{background:var(--am-bg);color:var(--am-ink)}.c-gr{background:var(--gr-bg);color:var(--gr-ink)}.c-rd{background:var(--rd-bg);color:var(--rd-ink)}.c-gy{background:var(--gy-bg);color:var(--gy-ink)}
+/* ringkasan eksekutif di kartu dashboard */
+.brief{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card)}
+.bf-head{padding:14px 16px;border-left:4px solid var(--pri)}
+.bf-eye{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.bf-headline{margin:6px 0 0;font-size:16px;line-height:1.5;font-weight:500;color:var(--ink);text-wrap:pretty}
+.bf-headline b{color:var(--navy);font-weight:700;font-variant-numeric:tabular-nums}
+.bf-headline .neg{color:var(--bad)}.bf-headline .pos{color:var(--ok)}
+.bf-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--line)}
+.bm{padding:12px 16px;min-width:0}
+.bm+.bm{border-left:1px solid var(--line)}
+.bm small{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.bm .big{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-top:2px;font-size:22px;line-height:1.2;font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums}
+.bm .big span{font-size:12px;font-weight:600;color:var(--muted)}
+.bm p{margin:4px 0 0;font-size:12px;color:var(--muted);line-height:1.45}
+.bm p b{color:var(--ink);font-weight:600}
+.neg{color:var(--bad)!important}.pos{color:var(--ok)!important}.wrn{color:var(--warn)!important}
+.hbar{display:flex;height:8px;margin-top:8px;border-radius:99px;overflow:hidden;background:var(--line);gap:2px}
+.hbar i{display:block;height:100%}.hbar .g{background:var(--ok)}.hbar .a{background:var(--amber)}.hbar .r{background:var(--bad)}
+.bf-attn{border-top:1px solid var(--line);background:var(--tint);padding:12px 16px}
+.bf-attn h4{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.05em}
+.cnt{min-width:22px;height:22px;padding:0 7px;border-radius:99px;display:inline-grid;place-items:center;background:var(--bad);color:#fff;font-size:12px;letter-spacing:0}
+.cnt.zero{background:var(--ok)}
+.bf-attn ul{list-style:none;margin:0;padding:0}
+.at{display:grid;grid-template-columns:10px minmax(140px,260px) minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 0;border-top:1px dashed var(--line)}
+.at:first-child{border-top:0}
+.at .sd{width:9px;height:9px;border-radius:50%}
+.at.critical .sd{background:var(--bad)}.at.risk .sd{background:var(--amber)}.at.info .sd{background:var(--muted)}
+.at .nm{font-weight:600;color:var(--navy);line-height:1.35;font-size:13px}
+.at .rs{display:flex;flex-wrap:wrap;gap:5px}
+.rsn{padding:1px 8px;border-radius:7px;font-size:11px;font-weight:600;border:1px solid}
+.rsn.critical{background:var(--bad-bg);border-color:var(--bad-line);color:var(--bad)}
+.rsn.risk{background:var(--warn-bg);border-color:var(--warn-line);color:var(--warn)}
+.rsn.info{background:var(--card);border-color:var(--line);color:var(--muted)}
+.at .go{border:0;background:transparent;color:var(--pri-ink);font-weight:600;font-size:12px;padding:6px 8px;border-radius:8px;white-space:nowrap}
+.at .go:hover{background:var(--soft)}
+#tileInput .subs{flex-direction:column;margin-top:4px}#tileInput .subs button{justify-content:flex-start;min-height:52px;font-size:14px;width:100%}
+.at-ok{color:var(--ok);font-weight:600;font-size:13px}
+.at-more{margin-top:4px;border:0;background:transparent;color:var(--pri-ink);font-weight:600;font-size:12px;padding:4px 0}
+.loading{padding:22px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px}
+.error{margin-top:14px;padding:12px 14px;background:var(--bad-bg);border:1px solid var(--bad-line);border-radius:10px;color:var(--bad);font-size:13px}
+.note{padding:10px 12px;border-radius:10px;background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn);font-size:12px}
+.plan{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.plan li{display:flex;gap:8px;font-size:12px;color:var(--ink);line-height:1.45}
+.plan li .ic{width:16px;height:16px;color:var(--pri-ink);margin-top:1px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:90;max-width:calc(100vw - 32px);background:var(--navy);color:var(--card);padding:12px 18px;border-radius:12px;font-size:14px;font-weight:600;box-shadow:0 14px 40px rgba(0,0,0,.3)}
+.foot{margin-top:28px;text-align:center;color:var(--muted);font-size:12px}
+@media (max-width:1180px){.c4{grid-template-columns:repeat(2,minmax(0,1fr))}.c-main{grid-template-columns:minmax(0,1fr)}#tileDash{grid-row:auto}}
+@media (max-width:980px){.c2{grid-template-columns:minmax(0,1fr)}.bf-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.bm:nth-child(3){border-left:0}.bm:nth-child(n+3){border-top:1px solid var(--line)}}
+@media (max-width:640px){
+  .top{padding:10px 14px;gap:10px}.brand img{height:34px;max-width:70px}.top .t small{display:none}.top .t b{font-size:16px}
+  .chip>div{display:none}.chip{padding:4px}.chip .caret{display:none}
+  .wrap{padding:16px 14px 40px}
+  .stamp{text-align:left}
+  .c4{grid-template-columns:minmax(0,1fr)}
+  .tile{padding:14px}
+  .at{grid-template-columns:10px minmax(0,1fr) auto;align-items:start}.at .sd{margin-top:5px}.at .go{grid-column:3;grid-row:1}.at .rs{grid-column:2/4}
+  .subs button{flex:1 1 auto;justify-content:center;min-height:46px}
+}
+@media (max-width:340px){.bf-metrics{grid-template-columns:minmax(0,1fr)}.bm+.bm{border-left:0;border-top:1px solid var(--line)}}
+
+/* Hanya kolom kemajuan fisik ringkasan. */
+.pmo-physical .pmo-phys-gain.pos{color:var(--ok)}
+.pmo-physical .pmo-phys-gain.neg{color:var(--bad)}
+.pmo-physical .pmo-phys-journey{display:flex;align-items:center;gap:14px;margin:16px 0;flex-wrap:wrap}
+.pmo-physical .pmo-phys-journey>div{min-width:0;flex:1}
+.pmo-physical .pmo-phys-journey small{display:block;font-size:11px;line-height:1.4;color:var(--muted)}
+.pmo-physical .pmo-phys-journey b{display:block;font-size:18px;margin-top:4px;color:var(--ink);font-variant-numeric:tabular-nums}
+.pmo-physical .pmo-phys-journey>span{color:var(--muted);font-size:20px}
+.pmo-physical .pmo-phys-target{border-top:1px solid var(--line);padding-top:13px;margin-top:14px}
+.pmo-physical .pmo-phys-target>small{font-size:11px;line-height:1.5;display:block;color:var(--muted)}
+.pmo-physical .pmo-phys-target-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:7px 0}
+.pmo-physical .pmo-phys-target-row>strong{font-size:23px;line-height:1.3;color:var(--navy);font-variant-numeric:tabular-nums}
+.pmo-physical .pmo-phys-needed{font-size:11px;line-height:1.5;border-radius:7px;background:var(--warn-bg);color:var(--warn);padding:6px 8px}
+.pmo-physical .pmo-phys-needed.reached{background:var(--ok-bg);color:var(--ok)}
+.pmo-physical .pmo-phys-target p,.pmo-physical .pmo-phys-note{font-size:11px;line-height:1.5;color:var(--muted);margin:6px 0 0}
+
+/* Hanya rincian pembayaran dalam kolom nilai kontrak ringkasan. */
+.pmo-contract-pay{border-top:1px solid var(--line);margin-top:18px;padding-top:15px}
+.pmo-contract-pay>small{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+.pmo-contract-amount{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:24px;font-weight:700;line-height:1.3;color:var(--ok);margin:8px 0}
+.pmo-contract-amount>span{font-size:11px;border-radius:6px;padding:5px 8px;background:var(--ok-bg);color:var(--ok);font-weight:600}
+.pmo-contract-pay p{font-size:11px!important;line-height:1.5;color:var(--muted)}
+.pmo-contract-track{height:8px;background:var(--line);border-radius:9px;overflow:hidden;margin:14px 0 8px}
+.pmo-contract-track>i{height:100%;display:block;background:var(--ok);border-radius:9px}
+.pmo-contract-legend{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;font-size:11px;color:var(--muted)}
+.pmo-contract-legend b{color:var(--ink);font-weight:600}
+.pmo-contract-remaining{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;background:var(--tint);padding:10px;border-radius:7px;margin:13px 0;font-size:11px;color:var(--muted)}
+.pmo-contract-remaining b{color:var(--ink);font-weight:600}
+/* narasi terperinci */
+.pst-list{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:2px}
+.pst{display:grid;grid-template-columns:12px minmax(0,1fr);gap:10px;padding:10px 0;border-top:1px dashed var(--line)}
+.pst:first-child{border-top:0}
+.pst-dot{width:9px;height:9px;border-radius:50%;margin-top:8px;background:var(--ok)}
+.pst.warn .pst-dot{background:var(--amber,#d6a014)}.pst.bad .pst-dot{background:var(--bad)}.pst.wait .pst-dot{background:var(--muted)}
+.pst-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
+.pst-name{border:0;background:none;padding:0;font:inherit;font-size:15px;font-weight:700;color:var(--navy);cursor:pointer;text-align:left;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px;transition:text-decoration-color .15s}
+.pst-name:hover{text-decoration-color:currentColor}
+.pst-m{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pst-m b{color:var(--ink)}.pst-num{font-size:15px}
+.pst-chip{padding:1px 8px;border-radius:7px;font-size:11.5px;font-weight:700;background:var(--ok-bg);color:var(--ok)}
+.pst-chip.warn{background:var(--warn-bg);color:var(--warn)}.pst-chip.bad{background:var(--bad-bg);color:var(--bad)}.pst-chip.wait{background:var(--tint);color:var(--muted);border:1px solid var(--line)}
+.pst-w{font-weight:600}.pst-up{color:var(--muted)}
+.pst-hl{margin:4px 0 0;font-size:13px;line-height:1.55;color:var(--muted);max-width:95ch}
+.pst-next{margin-top:5px;font-size:12.5px;color:var(--ink)}.pst-next span{display:inline-block;margin-right:8px;padding:0 7px;border-radius:6px;background:var(--soft);color:var(--pri-ink);font-size:11px;font-weight:700}
+.pst-foot{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.pst-foot b{color:var(--ink)}.pst-basis{padding:1px 7px;border-radius:6px;background:var(--warn-bg);color:var(--warn);font-size:11px;font-weight:700}
+/* ===== Portal versi A · Command Center ===== */
+.hero{position:relative;overflow:hidden;border-radius:22px;color:#fff;background:#0b2a47;min-height:372px;box-shadow:0 18px 40px rgba(7,40,70,.22);isolation:isolate}
+.hero-bg{position:absolute;inset:0;z-index:-2}
+.hero-bg div{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transform:scale(1.06);transition:opacity 1.4s ease,transform 8s linear}
+.hero-bg div.on{opacity:1;transform:scale(1)}
+.hero::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(100deg,rgba(6,28,50,.94) 0%,rgba(7,40,70,.82) 42%,rgba(7,48,84,.45) 100%),radial-gradient(1200px 400px at 0% 100%,rgba(15,95,168,.45),transparent 60%)}
+.hero-in{position:relative;padding:28px 32px 60px;display:flex;flex-direction:column;gap:22px;min-height:372px}
+.hero-top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px;align-items:flex-start}
+.hero-eye{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9fd2ff}
+.hero-eye::before{content:"";width:8px;height:8px;border-radius:50%;background:#4fd1a0;box-shadow:0 0 0 4px rgba(79,209,160,.25);animation:hpulse 2.4s infinite}
+@keyframes hpulse{50%{box-shadow:0 0 0 8px rgba(79,209,160,0)}}
+.hero h1{margin:8px 0 4px;font-size:clamp(26px,3vw,38px);line-height:1.12;letter-spacing:-.015em;color:#fff}
+.hero-t p{margin:0;color:#c9dcee;font-size:15px;max-width:60ch}
+.hero .stamp{color:#bcd3e8;text-align:right}.hero .stamp b{color:#fff}
+.hero-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:auto}
+.hk{padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);min-width:0}
+.hk small{display:block;font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#b8d2ea}
+.hk b{display:block;margin:4px 0 2px;font-size:clamp(24px,2.4vw,32px);line-height:1.15;font-weight:800;font-variant-numeric:tabular-nums;color:#fff}
+.hk span{display:block;font-size:12.5px;color:#d3e4f3;line-height:1.4}
+.hk .up{color:#6ee7b7;font-weight:700}.hk .dn{color:#fda4a4;font-weight:700}
+.hk .seg{display:flex;height:6px;border-radius:99px;overflow:hidden;gap:2px;margin:8px 0 6px;background:rgba(255,255,255,.15)}.hk .seg i{display:block}
+.hero-alerts{display:flex;flex-wrap:wrap;gap:8px}
+.ha{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:99px;font-size:12.5px;font-weight:600;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#eaf3fb}
+.ha i{width:8px;height:8px;border-radius:50%;background:#9fb3c6;flex:none}.ha.bad i{background:#ff8c86}.ha.warn i{background:#f0c35a}.ha.ok i{background:#4fd1a0}.ha.info i{background:#8fcaf6}
+.hero-cap{position:absolute;right:18px;top:16px;display:none}
+.hero-dots{position:absolute;right:24px;bottom:18px;display:flex;gap:6px;align-items:center;font-size:11.5px;color:#c9dcee}
+.hero-dots span{margin-right:6px}.hero-dots button{width:8px;height:8px;padding:0;border:0;border-radius:99px;background:rgba(255,255,255,.4);cursor:pointer;transition:width .3s}.hero-dots button.on{width:22px;background:#fff}
+/* ringkasan */
+.story{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);border-radius:var(--r);background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);overflow:hidden}
+.story .st-main{padding:20px 22px;border-left:5px solid var(--pri)}
+.story .st-eye{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.story .st-lead{margin:6px 0 0;font-size:17px;line-height:1.55;font-weight:500;color:var(--ink);text-wrap:pretty}
+.story .st-lead b{color:var(--navy);font-weight:700;font-variant-numeric:tabular-nums}
+.story .st-side{border-left:1px solid var(--line);display:flex;flex-direction:column}
+.story .st-side .bm{padding:16px 18px}.story .st-side .bm+.bm{border-left:0;border-top:1px solid var(--line)}
+/* denyut proyek */
+.pulse{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.pc{position:relative;display:flex;flex-direction:column;border-radius:18px;overflow:hidden;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);cursor:pointer;text-align:left;padding:0;font:inherit;color:inherit;transition:transform .15s,box-shadow .15s,border-color .15s}
+.pc:hover{transform:translateY(-3px);border-color:var(--pri);box-shadow:0 14px 30px rgba(13,49,79,.16)}
+.pc-img{position:relative;height:118px;background:#13406b center/cover no-repeat}
+.pc-img::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(5,20,36,.78))}
+.pc-img h4{position:absolute;left:14px;right:14px;bottom:10px;z-index:1;margin:0;color:#fff;font-size:15px;line-height:1.3;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.pc-st{position:absolute;top:10px;left:10px;z-index:1;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700;background:#dcf5e9;color:#0f6b48}
+.pc-st.warn{background:#fff0bd;color:#7a5200}.pc-st.bad{background:#ffe3df;color:#a52826}.pc-st.wait{background:#eaf1f7;color:#35566f}
+.pc-wk{position:absolute;top:10px;right:10px;z-index:1;padding:3px 8px;border-radius:8px;font-size:11px;font-weight:700;background:rgba(5,20,36,.55);color:#fff}
+.pc-b{display:flex;gap:14px;align-items:center;padding:14px}
+.ring{position:relative;width:74px;height:74px;flex:none}.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:15px;font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums}
+.ring .tr{stroke:var(--line)}.ring .pl{stroke:var(--muted);opacity:.35}.ring .ac{stroke:var(--ok);transition:stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1)}
+.pc.warn .ring .ac{stroke:var(--amber)}.pc.bad .ring .ac{stroke:var(--bad)}.pc.wait .ring .ac{stroke:var(--muted)}
+.pc-m{min-width:0;font-size:12.5px;color:var(--muted);line-height:1.55;font-variant-numeric:tabular-nums}
+.pc-m b{color:var(--ink)}.pc-m .d{font-weight:700}.pc-m .d.good{color:var(--ok)}.pc-m .d.warn{color:var(--warn)}.pc-m .d.bad{color:var(--bad)}
+.pc-hl{margin:0 14px;padding-top:10px;border-top:1px dashed var(--line);font-size:12.5px;line-height:1.5;color:var(--ink);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.pc-nx{margin:auto 14px 14px;padding-top:10px;font-size:12px;color:var(--muted)}.pc-nx b{color:var(--pri-ink)}
+/* modul */
+.mods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.mods .tile{border-top:4px solid var(--mc,var(--pri));transition:transform .15s,box-shadow .15s}
+.mods .tile:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(13,49,79,.14)}
+.mods #tileDash{grid-row:auto}
+.m-bl{--mc:#0f5fa8}.m-gy{--mc:#35566f}.m-rd{--mc:#c0302f}.m-pu{--mc:#7a3fd1}.m-cy{--mc:#0a8aa8}
+@media (max-width:1180px){.hero-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.story{grid-template-columns:minmax(0,1fr)}.story .st-side{border-left:0;border-top:1px solid var(--line);flex-direction:row}.story .st-side .bm{flex:1}.story .st-side .bm+.bm{border-top:0;border-left:1px solid var(--line)}.mods{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){.hero-in{padding:22px 18px 60px}.hero .stamp{text-align:left}.story .st-side{flex-direction:column}.story .st-side .bm+.bm{border-left:0;border-top:1px solid var(--line)}.story .st-main{padding:16px}.story .st-lead{font-size:15.5px}
+  .mods{grid-template-columns:minmax(0,1fr)}.hk{padding:12px}.hk b{font-size:24px}}
+@media (prefers-reduced-motion:reduce){.hero-bg div,.ring .ac,.pc,.mods .tile{transition:none}.hero-eye::before{animation:none}}
+
+/* denyut proyek · tampilan HP: daftar ringkas tanpa geser */
+.pc-mn,.pc-mv,.pc-bar,.pc-meta-m{display:none}
+@media (max-width:760px){
+  .pulse{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+  .pc{display:grid;grid-template-columns:76px minmax(0,1fr);grid-template-areas:"img body" "hl hl" "nx nx";border-radius:16px}
+  .pc:hover{transform:none}
+  .pc-img{grid-area:img;height:auto;min-height:92px;margin:12px 0 0 12px;border-radius:12px;overflow:hidden}
+  .pc-img::after{background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(5,20,36,.55))}
+  .pc-img h4,.pc-img .pc-st{display:none}
+  .pc-wk{top:auto;bottom:6px;right:6px;left:6px;text-align:center;font-size:11px;padding:2px 4px}
+  .pc-b{grid-area:body;padding:12px 12px 6px;align-items:flex-start}
+  .pc .ring{display:none}
+  .pc-m{flex:1;min-width:0}
+  .pc-mn{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+  .pc-mn b{font-size:14.5px;line-height:1.3;color:var(--navy)}
+  .pc-mn .pc-st{position:static;flex:none;font-size:11px;padding:2px 8px}
+  .pc-mv{display:flex;align-items:baseline;gap:8px;margin-top:4px}
+  .pc-mv b{font-size:20px;font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums}
+  .pc-mv .d{font-size:12.5px;font-weight:700}
+  .pc-mv .d.good{color:var(--ok)}.pc-mv .d.warn{color:var(--warn)}.pc-mv .d.bad{color:var(--bad)}.pc-mv .d.wait{color:var(--muted)}
+  .pc-bar{display:block;position:relative;height:6px;border-radius:99px;background:var(--line);margin:6px 0 4px}
+  .pc-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--ok)}
+  .pc.warn .pc-bar i{background:var(--amber)}.pc.bad .pc-bar i{background:var(--bad)}.pc.wait .pc-bar i{background:var(--muted)}
+  .pc-bar s{position:absolute;top:-3px;width:2px;height:12px;margin-left:-1px;background:var(--ink);opacity:.6;border-radius:2px}
+  .pc-meta{display:none}
+  .pc-meta-m{display:block;font-size:12px;line-height:1.5;color:var(--muted)}.pc-meta-m b{color:var(--ink)}
+  .pc-hl{grid-area:hl;margin:4px 12px 0;padding-top:8px;-webkit-line-clamp:2;font-size:12.5px}
+  .pc-nx{grid-area:nx;margin:6px 12px 12px;padding-top:0}
+}
+/* ringkasan eksekutif direksi (.xb) terpusat di AccountMenu.html */
+#portalLibraryDialog{width:min(440px,calc(100% - 32px));max-width:none;box-sizing:border-box;padding:0;border:1px solid var(--line);border-radius:20px;background:var(--card);color:var(--ink);box-shadow:0 24px 72px #0005}
+#portalLibraryDialog::backdrop{background:rgba(7,18,30,.66)}
+.portal-library-panel{padding:24px;border-top:4px solid #8b5cf6}
+.portal-library-tag{display:inline-block;padding:6px 10px;border-radius:999px;background:var(--bg);color:var(--ink);font-size:11px;font-weight:700;letter-spacing:.05em}
+.portal-library-panel h2{margin:14px 0 8px;font-size:22px}
+.portal-library-panel p{margin:0;color:var(--muted);line-height:1.55}
+.portal-library-panel form{display:flex;justify-content:flex-end;margin-top:22px}
+.portal-library-panel button{border:0;border-radius:10px;background:#0f5fa8;color:white;padding:10px 18px;font:inherit;font-weight:700;cursor:pointer}
+
+/* Badge status: titik + label, tetap terbaca tanpa warna dan saat dicetak hitam-putih */
+.pst-chip:not(.wait)::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;vertical-align:.1em;flex:none;margin-right:5px}
+</style>
+
+</head>
+<body>
+<dialog id="portalLibraryDialog" aria-labelledby="portalLibraryTitle" aria-describedby="portalLibraryDescription" onclick="if(event.target===this)this.close()">
+  <div class="portal-library-panel">
+    <span class="portal-library-tag">MODUL 2 · DALAM PENGEMBANGAN</span>
+    <h2 id="portalLibraryTitle">Library &amp; Knowledge</h2>
+    <p id="portalLibraryDescription">Menu ini sedang disiapkan sebagai pusat referensi dan pengetahuan proyek.</p>
+    <form method="dialog"><button type="submit" autofocus>Tutup</button></form>
+  </div>
+</dialog>
+<script>try{if(localStorage.getItem('pmoExecutiveTheme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<header class="top">
+  <div class="brand">
+    <img src="https://drive.google.com/thumbnail?id=1LZynEU1SZ27JmRMPdv2D5CTxcd4cKp84&sz=w240" alt="PT Petrokimia Gresik" decoding="async" fetchpriority="high" onerror="this.style.display='none'">
+    <img src="https://drive.google.com/thumbnail?id=1JP0hqePxcaiFN0aZ2dv6WJ6qCNwrRLxf&sz=w240" alt="PMO Infrastruktur & Process Plant" decoding="async" fetchpriority="high" onerror="this.style.display='none'">
+  </div>
+  <div class="t"><small>PMO Infrastruktur &amp; Process Plant</small><b>Portal Proyek</b></div>
+  <div class="account-wrap">
+    <button type="button" class="chip" id="accountToggle" aria-haspopup="true" aria-expanded="false" aria-controls="accountMenu"><span class="av" id="userAv">–</span><div><b id="userName">Memeriksa sesi…</b><small id="userRole"></small></div><i class="ic caret" data-ic="down"></i></button>
+    <div class="pop" id="accountMenu" hidden>
+      <div class="access-info" id="accountAccess">Akses: —</div>
+      <div class="theme-label">Tampilan</div>
+      <div class="theme-switch"><button type="button" id="themeLight" onclick="setTheme('light')"><i class="ic" data-ic="sun"></i>Terang</button><button type="button" id="themeDark" onclick="setTheme('dark')"><i class="ic" data-ic="moon"></i>Gelap</button></div>
+      <button type="button" class="logout-btn" id="logoutButton" onclick="logout()"><i class="ic" data-ic="logout"></i>Keluar</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero" id="hero" aria-label="Ringkasan portofolio">
+    <div class="hero-bg" id="heroBg" aria-hidden="true"></div>
+    <div class="hero-in">
+      <div class="hero-top">
+        <div class="hero-t"><span class="hero-eye" id="heroEye">PMO Infrastruktur &amp; Process Plant</span><h1 id="greet">Selamat datang</h1><p id="heroSub">Ringkasan portofolio proyek dan akses seluruh modul.</p></div>
+        <div class="stamp" id="stamp"></div>
+      </div>
+      <div class="hero-kpis" id="heroKpis">
+        <div class="hk"><small>SPI rata-rata</small><b>—</b><span>Memuat…</span></div>
+        <div class="hk"><small>Status jadwal</small><b>—</b><span>&nbsp;</span></div>
+        <div class="hk"><small>Serapan RKAP</small><b>—</b><span>&nbsp;</span></div>
+        <div class="hk"><small>Termin terbayar</small><b>—</b><span>&nbsp;</span></div>
+      </div>
+    </div>
+    <div class="hero-cap" id="heroCap" aria-hidden="true"></div>
+  </section>
+  <div id="error" class="error" hidden></div>
+
+  <section class="grp"><h2>Story Lapangan</h2>
+    <div class="gl-stories" id="glStories"><div class="gl-empty-note">Memuat foto lapangan…</div></div>
+  </section>
+
+  <section class="grp"><h2>Ringkasan eksekutif</h2>
+    <div class="story" id="briefBox"><div class="loading">Memuat ringkasan eksekutif…</div></div>
+  </section>
+
+  <section class="grp"><h2>progres proyek</h2>
+    <div class="pulse" id="pulse"><div class="loading">Memuat kartu proyek…</div></div>
+  </section>
+
+  <section class="grp"><h2>Modul</h2>
+    <div class="mods">
+      <div class="tile m-bl" id="tileDash">
+        <div class="h"><span class="ico c-bl"><i class="ic" data-ic="grid"></i></span><div><span class="no">MODUL 1</span><h3>Dashboard Proyek</h3></div><span class="tag ok">Tersedia</span></div>
+        <p>Executive dashboard bulanan dan weekly progress per proyek: kurva S, deviasi, keuangan, dan milestone.</p>
+        <div class="subs"><button type="button" class="pri" onclick="go('executive')"><i class="ic" data-ic="grid"></i>Executive Dashboard</button><button type="button" class="pri master-monitoring-link" onclick="go('master')"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v16h16"/><rect x="7" y="6" width="8" height="3" rx="1"/><rect x="10" y="11" width="9" height="3" rx="1"/><rect x="8" y="16" width="5" height="2.5" rx="1"/></svg></i>Master Schedule &amp; Realisasi</button><button type="button" class="pri" onclick="go('weekly')"><i class="ic" data-ic="trend"></i>Weekly Progress</button><button type="button" onclick="if(window.pmoGallery)pmoGallery.open({})"><i class="ic" data-ic="camera"></i>Galeri foto</button></div>
+      </div>
+      <div class="tile m-gy" id="tileInput" hidden>
+        <div class="h"><span class="ico c-gy"><i class="ic" data-ic="edit"></i></span><div><span class="no">INPUT</span><h3>Input &amp; Pelaporan</h3></div><span class="tag ok">Tersedia</span></div>
+        <p>Input progress mingguan, laporan bulanan (biaya, milestone, RKAP), dan pengelolaan data proyek.</p>
+        <div class="subs"><button type="button" onclick="go('input')"><i class="ic" data-ic="edit"></i>Input progress</button><button type="button" onclick="go('monthly')"><i class="ic" data-ic="cal"></i>Laporan bulanan</button><button type="button" id="btnProject" hidden onclick="go('project')"><i class="ic" data-ic="plus"></i>Tambah / edit proyek</button></div>
+      </div>
+      <div class="tile m-rd" id="tileLive">
+        <div class="h"><span class="ico c-rd"><i class="ic" data-ic="cam"></i></span><div><span class="no">MODUL 4</span><h3>Spotlight Lapangan</h3></div><span class="tag ok">Tersedia</span></div>
+        <p>Pantau kondisi fisik konstruksi lewat CCTV tiap proyek serta display spotlight dashboard TV lobby (landscape &amp; vertikal) untuk eksekutif.</p>
+        <div class="subs"><button type="button" class="pri" onclick="go('live')"><i class="ic" data-ic="play"></i>Buka Live View</button><button type="button" class="pri" onclick="openSpotlightTv()"><i class="ic" data-ic="tv"></i>Spotlight Lobby</button></div>
+      </div>
+      <div class="tile m-pu" id="tileDoc">
+        <div class="h"><span class="ico c-pu"><i class="ic" data-ic="folder"></i></span><div><span class="no">MODUL 2</span><h3>Pelaksanaan Proyek</h3></div><span class="tag ok">Tersedia</span></div>
+        <p>Satu tempat untuk dokumen resmi tiap proyek, lengkap dengan nomor, revisi, tanggal, dan status. Berkas tetap di Google Drive, dashboard menyimpan daftar dan tautannya. Library &amp; Knowledge menyimpan pedoman dan prosedur perusahaan yang bisa dicari per kata, pasal, dan halaman.</p>
+        <div class="subs"><button type="button" class="pri" onclick="go('documents')"><i class="ic" data-ic="folder"></i>Buka Document Control</button><button type="button" class="sec" onclick="event.stopPropagation();go('library')"><i class="ic" data-ic="doc"></i>Library &amp; Knowledge</button></div>
+      </div>
+      <div class="tile m-cy" id="tileEpc">
+        <div class="h"><span class="ico c-cy"><i class="ic" data-ic="layers"></i></span><div><span class="no">MODUL 3</span><h3>EPCC Control</h3></div><span class="tag ok">E · P · C · C tersedia</span></div>
+        <p>Kendali detail per fase: status dokumen engineering, pelacakan pengadaan, front kerja konstruksi, dan punch list commissioning.</p>
+        <div class="subs"><button type="button" class="pri" onclick="go('engineering')"><i class="ic" data-ic="layers"></i>Engineering · IFR/IFA/IFC</button><button type="button" class="pri" onclick="go('epcc&amp;field=PROC')"><i class="ic" data-ic="layers"></i>Procurement · PO, FAT, MOS</button><button type="button" class="pri" onclick="go('epcc&amp;field=CONS')"><i class="ic" data-ic="layers"></i>Construction · lintasan kritis</button><button type="button" class="pri" onclick="go('epcc&amp;field=COM')"><i class="ic" data-ic="layers"></i>Commissioning · tahapan &amp; punch list</button></div>
+      </div>
+      <div class="tile m-bl" id="tileMr" hidden>
+        <div class="h"><span class="ico c-bl"><i class="ic" data-ic="slides"></i></span><div><span class="no">MODUL 5</span><h3>Pelaporan Manajemen</h3></div><span class="tag ok">Tersedia</span></div>
+        <p>Pelaporan per proyek dari data dashboard: presentasi bulanan (PowerPoint), laporan weekly (PDF/Excel), dan laporan bulanan (Word) sesuai template proyek.</p>
+        <div class="subs"><button type="button" class="pri" onclick="go('report')"><i class="ic" data-ic="slides"></i>Buat presentasi bulanan</button><button type="button" class="pri" onclick="event.stopPropagation();go('weeklyprint')"><i class="ic" data-ic="clip"></i>Buat Laporan Weekly</button><button type="button" class="pri" onclick="event.stopPropagation();go('monthlydoc')"><i class="ic" data-ic="doc"></i>Buat Laporan Bulanan</button></div>
+      </div>
+    </div>
+  </section>
+
+  <p class="foot">PMO Infrastructure &amp; Process Plant · Portal proyek</p>
+</main>
+
+<script>
+const initialSessionToken=<?!= JSON.stringify(initialSessionToken || '') ?>;
+const appUrl=<?!= JSON.stringify(appUrl || '') ?>;
+if(initialSessionToken)sessionStorage.setItem('pmoSessionToken',initialSessionToken);
+const token=initialSessionToken||sessionStorage.getItem('pmoSessionToken');
+let portal=null,showAll=false;
+
+const P={doc:'<path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h6"/>',grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',trend:'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>',cal:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',plus:'<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',folder:'<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',cam:'<path d="M3 7h11a2 2 0 012 2v6a2 2 0 01-2 2H3z"/><path d="M16 11l5-3v8l-5-3"/>',tv:'<rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/>',layers:'<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',slides:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M7 9h6M7 12h10"/>',shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',alert:'<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/>',check:'<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>',clip:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/>',play:'<circle cx="12" cy="12" r="9"/><path d="M10 8.5l5 3.5-5 3.5z"/>',camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',down:'<path d="M6 9l6 6 6-6"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',moon:'<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>',logout:'<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>'};
+function paint(root){(root||document).querySelectorAll('[data-ic]').forEach(function(el){if(el.firstChild)return;const p=P[el.getAttribute('data-ic')];if(p)el.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>'})}
+paint();
+
+function $(id){return document.getElementById(id)}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function pct(v,d){if(v==null||!isFinite(v))return '—';return (v*100).toLocaleString('id-ID',{minimumFractionDigits:d==null?2:d,maximumFractionDigits:d==null?2:d})+'%'}
+function signed(v,d){if(v==null||!isFinite(v))return '—';return (v>0?'+':v<0?'−':'')+pct(Math.abs(v),d)}
+function money(j){if(j==null||!isFinite(j))return '—';const a=Math.abs(j);const f=function(v,d){return Number(v).toLocaleString('id-ID',{minimumFractionDigits:d,maximumFractionDigits:d})};if(a>=1e6)return 'Rp '+f(j/1e6,2)+' T';if(a>=1e3)return 'Rp '+f(j/1e3,1)+' M';return 'Rp '+f(j,0)+' jt'}
+function go(page,project){window.top.location.href=appUrl+'?page='+page+(project?'&project='+encodeURIComponent(project):'')}
+function toast(msg){let t=$('toast');if(!t){t=document.createElement('div');t.id='toast';t.className='toast';t.setAttribute('role','status');document.body.appendChild(t)}t.textContent=msg;t.hidden=false;clearTimeout(window.__tt);window.__tt=setTimeout(function(){t.hidden=true},2600)}
+document.querySelectorAll('.tile.soon').forEach(function(b){b.addEventListener('click',function(){toast(b.getAttribute('data-name').replace('&amp;','&')+' segera hadir.')})});
+
+/* akun & tema */
+function setTheme(t){const dark=t==='dark';document.documentElement.setAttribute('data-theme',dark?'dark':'light');try{localStorage.setItem('pmoExecutiveTheme',dark?'dark':'light')}catch(e){}$('themeLight').classList.toggle('selected',!dark);$('themeDark').classList.toggle('selected',dark)}
+(function(){let t='light';try{t=localStorage.getItem('pmoExecutiveTheme')||'light'}catch(e){}setTheme(t)})();
+$('accountToggle').addEventListener('click',function(e){e.stopPropagation();const m=$('accountMenu');m.hidden=!m.hidden;this.setAttribute('aria-expanded',String(!m.hidden))});
+document.addEventListener('click',function(e){if(!e.target.closest('.account-wrap')){$('accountMenu').hidden=true;$('accountToggle').setAttribute('aria-expanded','false')}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')$('accountMenu').hidden=true});
+function logout(){const b=$('logoutButton');b.disabled=true;b.lastChild.textContent='Keluar…';const done=function(){goLogin_(true)};if(!token){done();return}google.script.run.withSuccessHandler(done).withFailureHandler(done).authLogout(token)}
+
+/* sesi */
+function sessionExpired_(msg){if(!/sesi (login )?(tidak valid|tidak ditemukan|telah berakhir|berakhir)|silakan login kembali/i.test(String(msg||'')))return false;goLogin_();return true}
+function goLogin_(quiet){if(window.__goingLogin)return;window.__goingLogin=true;try{sessionStorage.removeItem('pmoSessionToken');sessionStorage.removeItem('pmoUser')}catch(e){}const o=document.createElement('div');o.setAttribute('role','alert');o.style.cssText='position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:rgba(8,30,51,.78);color:#fff;font:600 15px/1.5 Inter,system-ui,sans-serif;text-align:center;padding:24px';o.innerHTML='<div><div style="font-size:18px;margin-bottom:4px">'+(quiet?'Anda telah keluar':'Sesi Anda telah berakhir')+'</div><div style="font-weight:500;opacity:.85">Membuka halaman login…</div><a id="goLoginLink" target="_top" style="display:inline-block;margin-top:16px;padding:10px 18px;border-radius:10px;background:#fff;color:#073b63;font-weight:700;text-decoration:none">Buka halaman login</a></div>';document.body.appendChild(o);$('goLoginLink').href=appUrl||String(window.location.href).split('?')[0];try{google.script.run.withSuccessHandler(function(html){if(!html)return;document.open();document.write(html);document.close()}).withFailureHandler(function(){}).getLoginPageHtml()}catch(e){}}
+function showError(msg){if(sessionExpired_(msg))return;const e=$('error');e.hidden=false;e.textContent=msg;$('briefBox').innerHTML='<div class="loading">Ringkasan belum dapat dimuat.</div>'}
+
+/* render */
+function setUser(u){
+  const name=u.name||u.username||'Pengguna';const role=String(u.role||'').toUpperCase();
+  $('userName').textContent=name;$('userRole').textContent=role?role.charAt(0)+role.slice(1).toLowerCase():'';
+  $('userAv').textContent=String(name).trim().split(/\s+/).slice(0,2).map(function(p){return p.charAt(0)}).join('').toUpperCase()||'U';
+  $('accountAccess').innerHTML='Akses: '+esc(role||'USER')+(u.project?'<small>Proyek: '+esc(u.project)+'</small>':'');
+  const h=new Date().getHours();$('greet').textContent=(h<11?'Selamat pagi':h<15?'Selamat siang':h<18?'Selamat sore':'Selamat malam')+', '+name;
+  const canInput=['ADMIN','PIC','INPUT'].indexOf(role)>=0;$('tileInput').hidden=!canInput;$('tileMr').hidden=!canInput;$('btnProject').hidden=!canInput;
+}
+function pmoPhysicalBriefHtml(s,b,escapeText,formatPercent){
+  const current=s.actual,previous=b.prev&&b.prev.actual;
+  const delta=current!=null&&previous!=null?current-previous:null;
+  const points=function(v){return (v>0?'+':v<0?'−':'')+(Math.abs(v)*100).toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2});};
+  const target=b.nextPhysical||{},needed=target.plan!=null&&current!=null?Math.max(0,target.plan-current):null;
+  const gainClass=delta>0?'pos':delta<0?'neg':'';
+  let html='<small>Kemajuan fisik bulan ini</small><div class="big pmo-phys-gain '+gainClass+'">'+(delta==null?'—':points(delta))+'<span>poin</span></div><p>Pertambahan progress fisik rata-rata '+(b.counted!=null&&b.counted<(Number(s.totalProjects)||0)?b.counted+' dari '+(Number(s.totalProjects)||0)+' proyek (sudah cut-off)':(Number(s.totalProjects)||0)+' proyek berjalan')+'</p>';
+  html+='<div class="pmo-phys-journey"><div><small>'+escapeText(b.prev&&b.prev.period||'Periode sebelumnya')+'</small><b>'+formatPercent(previous,2)+'</b></div><span aria-hidden="true">→</span><div><small>'+escapeText(b.period||'')+'</small><b>'+formatPercent(current,2)+'</b></div></div>';
+  if(delta==null)html+='<p class="pmo-phys-note">Data pembanding bulan sebelumnya belum tersedia.</p>';
+  html+='<div class="pmo-phys-target"><small>Sasaran fisik'+(target.period?' · '+escapeText(target.period):' bulan berikutnya')+'</small><div class="pmo-phys-target-row"><strong>'+formatPercent(target.plan,2)+'</strong>'+(needed==null?'':'<span class="pmo-phys-needed '+(needed===0?'reached':'')+'">'+(needed===0?'Sasaran tercapai':'Perlu tambahan <b>'+points(needed).replace(/^\+/,'')+' poin</b>')+'</span>')+'</div><p>Target kumulatif overall proyek berjalan, terbobot berdasarkan nilai investasi.</p>';
+  if(target.plan==null)html+='<p class="pmo-phys-note">'+(target.period?'Data rencana bulan berikutnya belum lengkap.':'Periode rencana berikutnya belum tersedia.')+'</p>';
+  return html+'</div>';
+}
+function pmoContractPaymentHtml(k,period,escapeText,moneyText,percentText){
+  const valid=k.paidPercent!=null&&Number.isFinite(Number(k.paidPercent));
+  const over=valid&&k.paidPercent>1;
+  let html='<div class="pmo-contract-pay"><small>Realisasi termin terbayar</small><div class="pmo-contract-amount">'+moneyText(k.paidToDate)+(valid?'<span>'+percentText(k.paidPercent,1)+'</span>':'')+'</div><p>Akumulasi seluruh proyek s.d. '+escapeText(period)+'</p>';
+  if(valid){const width=Math.max(0,Math.min(100,k.paidPercent*100));html+='<div class="pmo-contract-track" role="img" aria-label="Termin terbayar '+escapeText(percentText(k.paidPercent,1))+' dari nilai kontrak"><i style="width:'+width+'%"></i></div><div class="pmo-contract-legend"><span>Terbayar <b>'+percentText(k.paidPercent,1)+'</b></span><span>'+(over?'Melebihi kontrak':'Belum terbayar <b>'+percentText(1-k.paidPercent,1)+'</b>')+'</span></div>';}
+  html+='<div class="pmo-contract-remaining"><span>'+(k.remaining!=null&&k.remaining<0?'Pembayaran melebihi kontrak':'Sisa nilai kontrak')+'</span><b>'+moneyText(k.remaining==null?null:Math.abs(k.remaining))+'</b></div>';
+  if(k.paymentMissing||k.contractMissing)html+='<p class="pmo-contract-note">Data belum lengkap: '+(k.paymentMissing?k.paymentMissing+' proyek belum memiliki data termin':'')+(k.paymentMissing&&k.contractMissing?'; ':'')+(k.contractMissing?k.contractMissing+' proyek belum memiliki nilai kontrak':'')+'.</p>';
+  return html+'</div>';
+}
+/* ===== Ringkasan eksekutif untuk direksi (Ringkas + Narasi): Kesimpulan → Bukti → Perhatian → Tindak lanjut ===== */
+function pmoExecBrief(s,b){
+  s=s||{};b=b||{};
+  var items=Array.isArray(b.items)?b.items:[],run=Number(s.totalProjects)||items.length,counted=b.counted!=null?Number(b.counted):run;
+  var mon=function(p){return String(p||'').split(' ')[0]};
+  var per=String(b.period||'periode ini');
+  var nm=function(n){return typeof pmoProjName==='function'?pmoProjName(n):n};
+  var P=function(v,d){return v==null||!isFinite(v)?'—':(v*100).toLocaleString('id-ID',{minimumFractionDigits:d==null?2:d,maximumFractionDigits:d==null?2:d})+'%'};
+  var pts=function(v,sign){if(v==null||!isFinite(v))return '—';var t=(Math.abs(v)*100).toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2});return sign?(v>0?'+':v<0?'−':'±')+t:t};
+  var rp=function(jt,short){if(jt==null||!isFinite(jt))return '—';var v=Math.abs(jt)*1e6;return v>=1e12?'Rp '+(v/1e12).toLocaleString('id-ID',{maximumFractionDigits:2})+(short?' T':' triliun'):'Rp '+(v/1e9).toLocaleString('id-ID',{maximumFractionDigits:1})+(short?' M':' miliar')};
+  var wk=function(l){var n=Math.round(Math.abs(l));return n<1?'kurang dari 1 minggu':'±'+n+' minggu'};
+  var lagText=function(i){var l=i.lagWeeks;if(l==null||!isFinite(l))return '';if(l>=0.5)return 'terlambat '+wk(l);if(l<=-0.5)return 'lebih cepat '+wk(l);return 'tepat waktu'};
+  var first=function(t,max){t=String(t||'').replace(/\s+/g,' ').trim();if(!t)return '';var m=t.match(/^.*?[.;](\s|$)/);t=(m?m[0]:t).trim().replace(/[.;]$/,'');if(t.length>max)t=t.slice(0,max-1).replace(/\s+\S*$/,'')+'…';return /^[A-Z][a-z]/.test(t)?t.charAt(0).toLowerCase()+t.slice(1):t};
+  var live=items.filter(function(i){return !i.pending}),pend=items.filter(function(i){return i.pending});
+  var crit=live.filter(function(i){return i.status==='Critical'}),risk=live.filter(function(i){return i.status==='At risk'}),behind=crit.concat(risk);
+  var att=(b.attention||[]),overdue=att.filter(function(a){return (a.reasons||[]).some(function(r){return /Melewati jadwal/.test(r.text)})});
+  var absorb=att.filter(function(a){return (a.reasons||[]).some(function(r){return /Serapan RKAP/.test(r.text)})});
+  var dev=s.actual!=null&&s.plan!=null?s.actual-s.plan:null;
+  var change=s.actual!=null&&b.prev&&b.prev.actual!=null?s.actual-b.prev.actual:null;
+  var c=b.cost,k=b.contract;
+  // nilai pekerjaan (earned value) dari progres × nilai kontrak
+  var ev=0,pv=0,cv=0,nEv=0,evAll=0,ok=live.length>0;
+  live.forEach(function(i){if(i.contract==null||i.actual==null||i.plan==null){ok=false;return}ev+=i.actual*i.contract;pv+=i.plan*i.contract;cv+=i.contract;nEv++});
+  items.forEach(function(i){var a=i.pending?(i.last&&i.last.actual):i.actual;if(i.contract!=null&&a!=null)evAll+=a*i.contract});
+  var hasEv=ok&&nEv>0&&cv>0;
+  // SPI per proyek = realisasi / rencana; rata-rata sederhana (tidak ditimbang nilai kontrak)
+  var F2=function(v){return v==null||!isFinite(v)?'—':v.toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2})};
+  // proyek yang belum punya cut-off bulanan (baru mulai setelah tanggal cut-off) tidak ikut rata-rata SPI
+  var spiOf=function(i){if(i.noCut)return null;var a=i.pending?(i.last&&i.last.actual):i.actual,pl=i.pending?(i.last&&i.last.plan):i.plan;return a!=null&&pl!=null&&pl>0?a/pl:null};
+  var spiRows=items.map(function(i){return {i:i,v:spiOf(i)}}).filter(function(r){return r.v!=null&&isFinite(r.v)});
+  var spi=spiRows.length?spiRows.reduce(function(a,r){return a+r.v},0)/spiRows.length:null;
+  var spiLow=spiRows.slice().sort(function(a,b2){return a.v-b2.v})[0];
+  var spiPend=spiRows.filter(function(r){return r.i.pending});
+  var spiLv=function(v){return v==null?'na':v>=0.995?'good':v>=0.95?'warn':'bad'};
+  var level=crit.length||overdue.length?'bad':(risk.length||(spi!=null?spi<0.995:dev!=null&&dev<0))?'warn':'good';
+  var label={bad:'Kritis',warn:'Perlu perhatian',good:'Sesuai jadwal'}[level];
+  var spiLowShow=spiLow&&spiLow.v<0.995?spiLow:null;
+  var noCutI=items.filter(function(i){return i.noCut});
+  var noCutTxt=noCutI.length?noCutI.map(function(i){return nm(i.name)}).join(', ')+' belum dihitung (cut-off pertama '+(noCutI[0].firstCut?mon(noCutI[0].firstCut)+' '+String(noCutI[0].firstCut).split(' ')[1]:'bulan depan')+')':'';
+  var absNames=absorb.map(function(a){return nm(a.name)});
+  var absText=absorb.length?'serapan RKAP '+(absorb.length>2?absorb.length+' proyek':absNames.join(' dan '))+' masih di bawah rencana':'';
+  // ketepatan waktu
+  var timed=live.filter(function(i){return i.lagWeeks!=null&&isFinite(i.lagWeeks)});
+  var late=timed.filter(function(i){return i.lagWeeks>=0.5}).sort(function(a,b2){return b2.lagWeeks-a.lagWeeks});
+  var onTime=timed.length?timed.length-late.length:counted-behind.length;
+  // --- kalimat kesimpulan
+  var headline;
+  if(!run)headline='Belum ada proyek berjalan pada '+per+'.';
+  else if(level==='good')headline='Seluruh '+(counted<run?counted+' proyek yang sudah dilaporkan':run+' proyek')+' berjalan sesuai atau lebih cepat dari jadwal'+(spi!=null?' (SPI rata-rata '+F2(spi)+')':'')+'.'+(absorb.length?' Catatan: '+absText+'.':' Tidak ada yang memerlukan keputusan direksi bulan ini.');
+  else{
+    var parts=[];
+    if(late.length)parts.push(late.map(function(i){return '<b>'+nm(i.name)+'</b> terlambat '+wk(i.lagWeeks)}).join(', '));
+    else if(behind.length)parts.push(behind.map(function(i){return '<b>'+nm(i.name)+'</b> sedikit di bawah rencana'}).join(', '));
+    if(overdue.length)parts.push(overdue.map(function(a){return '<b>'+nm(a.name)+'</b> melewati jadwal selesai'}).join(', '));
+    headline=((spi!=null?spi>=0.995:dev!=null&&dev>=-0.005)?'Portofolio secara keseluruhan sesuai jadwal; ':'Portofolio sedikit di bawah jadwal; ')+parts.join('; ')+'.'+(absorb.length?' Catatan: '+absText+'.':'');
+  }
+  // --- 4 indikator
+  var lvDev=dev==null?'na':dev>=0?'good':dev>=-0.02?'warn':'bad';
+  var t1=spi!=null?{k:'SPI rata-rata',v:F2(spi),sub:['Rata-rata '+spiRows.length+' proyek'+(spiLowShow?' · terendah '+nm(spiLowShow.i.name)+' '+F2(spiLowShow.v):'')].concat(spiPend.length?[spiPend.map(function(r){return nm(r.i.name)+' memakai data minggu ke-'+r.i.latestWeek}).join('; ')]:[]).concat(noCutTxt?[noCutTxt]:[]),lv:spiLv(spi)}
+    :{k:'Progres pekerjaan',v:P(s.actual),sub:'rata-rata '+counted+' proyek ditimbang bobot · rencana '+P(s.plan)+' ('+pts(dev,true)+' poin)',lv:lvDev};
+  var t2={k:'Ketepatan waktu',v:onTime+' dari '+counted,sub:'proyek tepat waktu'+(late.length?' · terburuk '+nm(late[0].name)+' '+wk(late[0].lagWeeks):'')+(pend.length?' · '+pend.length+' belum dilaporkan':''),lv:crit.length||overdue.length||(late[0]&&late[0].lagWeeks>=4)?'bad':late.length||risk.length?'warn':'good'};
+  var t3={k:'Serapan RKAP '+(c&&c.year||''),v:c?P(c.percentYear,0):'—',sub:c?[rp(c.actualToDate,true)+' dari RKAP 2026 '+rp(c.rkapYear,true),'RKAP s.d. '+mon(c.period)+' '+rp(c.rkapToDate,true)+' → terserap '+P(c.percent,0)]:'data keuangan belum tersedia',lv:!c||c.percent==null?'na':c.percent>=0.9?'good':c.percent>=0.8?'warn':'bad'};
+  var payR=k&&k.paidToDate!=null&&evAll>0?k.paidToDate/evAll:null;
+  var cpiRows=items.filter(function(i){return i.cpi!=null&&isFinite(i.cpi)});
+  var cpi=cpiRows.length?cpiRows.reduce(function(a,i){return a+i.cpi},0)/cpiRows.length:null;
+  var cpiLow=cpiRows.slice().sort(function(a,b2){return a.cpi-b2.cpi})[0];if(cpiLow&&cpiLow.cpi>=0.995)cpiLow=null;
+  var t4=cpi!=null?{k:'CPI rata-rata',v:F2(cpi),sub:['Rata-rata '+cpiRows.length+' proyek '+(cpiLow?' · terendah '+nm(cpiLow.name)+' '+F2(cpiLow.cpi):'')],lv:spiLv(cpi)}
+    :{k:'CPI rata-rata',v:'—',sub:'Belum ada proyek dengan progres dan biaya aktual pada periode yang sama',lv:'na'};
+  // --- progres per proyek
+  var bars=items.map(function(i){var a=i.pending?(i.last&&i.last.actual):i.actual,pl=i.pending?(i.last&&i.last.plan):i.plan;
+    var st=i.pending?'wait':i.status==='Critical'?'bad':i.status==='At risk'?'warn':'good';
+    var note=i.pending?'belum dilaporkan · data s.d. minggu ke-'+i.latestWeek:(lagText(i)||(i.deviation!=null?pts(i.deviation,true)+' poin':''));
+    if(!i.pending&&st!=='good'&&/tepat waktu/.test(note))st='good';
+    var sv=spiOf(i);if(sv!=null)note='SPI '+F2(sv)+' · '+note;else if(i.noCut)note='SPI dihitung mulai '+(i.firstCut||'cut-off pertama')+' · '+note;
+    return {id:i.projectId,name:nm(i.name),raw:i.name,week:i.week||'',actual:a,plan:pl,lv:st,note:note,pending:!!i.pending}});
+  // --- perlu perhatian (penyebab & tindak lanjut dari isian proyek)
+  var list=[];
+  behind.forEach(function(i){var cs=i.cause||{},lt=lagText(i);
+    list.push({g:'jadwal',lv:i.status==='Critical'?'bad':'warn',name:nm(i.name),what:(lt&&lt!=='tepat waktu'?lt.charAt(0).toUpperCase()+lt.slice(1)+' dari jadwal':'Sedikit di bawah rencana')+' (realisasi '+P(i.actual)+', rencana '+P(i.plan)+')',
+      why:cs.concern?first(cs.concern,130):'',fld:cs.field||'',act:cs.mitigation?first(cs.mitigation,130):''})});
+  overdue.forEach(function(a){if(behind.some(function(i){return i.projectId===a.projectId}))return;var r=a.reasons.filter(function(x){return /Melewati/.test(x.text)})[0];list.push({g:'jadwal',lv:'bad',name:nm(a.name),what:r.text,why:'',act:''})});
+  absorb.forEach(function(a){var r=a.reasons.filter(function(x){return /Serapan/.test(x.text)})[0];var t=list.filter(function(x){return x.name===nm(a.name)})[0];var txt=r.text.replace('Serapan RKAP','serapan RKAP')+' dari rencana sampai '+mon(c&&c.period);
+    list.push({g:'keuangan',lv:'note',name:nm(a.name),what:txt.charAt(0).toUpperCase()+txt.slice(1),why:'',act:''})});
+  pend.forEach(function(i){list.push({g:'info',lv:'info',name:nm(i.name),what:'Belum masuk perhitungan: data s.d. minggu ke-'+i.latestWeek+', batas pelaporan '+mon(b.period)+' minggu ke-'+i.cutWeek,why:'',act:''})});
+  // --- narasi (memo)
+  var memo='<p>Pada '+per+', ';
+  if(spi!=null)memo+='indeks kinerja jadwal (SPI) rata-rata '+spiRows.length+' proyek sebesar <b>'+F2(spi)+'</b>'+(spi>=0.995?', artinya pekerjaan secara umum sesuai atau lebih cepat dari jadwal':', artinya pekerjaan secara umum sedikit tertinggal dari jadwal')+(spiLowShow?'; terendah '+nm(spiLowShow.i.name)+' '+F2(spiLowShow.v):'')+'. ';
+  else memo+='progres pekerjaan '+(counted<run?counted+' dari '+run+' proyek':run+' proyek')+' mencapai <b>'+P(s.actual)+'</b> dibanding rencana '+P(s.plan)+'. ';
+  if(change!=null)memo+='Bulan ini progres bertambah '+pts(Math.abs(change))+' poin dibanding '+mon(b.prev.period)+'. ';
+  memo+=onTime+' dari '+counted+' proyek tepat waktu'+(late.length?'; '+late.map(function(i){return nm(i.name)+' terlambat '+wk(i.lagWeeks)}).join(', '):'')+'. ';
+  if(c)memo+='Serapan RKAP '+c.year+' sebesar <b>'+P(c.percentYear,0)+'</b> ('+rp(c.actualToDate)+' dari RKAP '+c.year+' '+rp(c.rkapYear)+'); terhadap RKAP sampai '+mon(c.period)+' sebesar '+rp(c.rkapToDate)+', serapannya '+P(c.percent,0)+'. ';
+  if(cpi!=null)memo+='Estimasi CPI rata-rata '+cpiRows.length+' proyek sebesar <b>'+F2(cpi)+'</b>.';
+  memo+='</p>';
+  var ask=list.filter(function(x){return x.g==='jadwal'}),fin=list.filter(function(x){return x.g==='keuangan'});
+  if(ask.length)memo+='<p><b>Perlu perhatian:</b></p><ul>'+ask.map(function(x){return '<li><b>'+x.name+'</b> '+x.what.charAt(0).toLowerCase()+x.what.slice(1)+(x.why?'. Kendala '+(x.fld?'bidang '+x.fld+': ':': ')+x.why:'')+(x.act?'. Tindak lanjut: '+x.act:'')+(/…$/.test(x.act||x.why||'')?'':'.')+'</li>'}).join('')+'</ul>';
+  else memo+='<p>Dari sisi jadwal, tidak ada proyek yang memerlukan keputusan direksi bulan ini.</p>';
+  if(fin.length)memo+='<p><b>Catatan keuangan:</b> '+fin.map(function(x){return 'serapan RKAP '+x.name+' '+x.what.replace(/^Serapan RKAP\s*/i,'')}).join('; ')+'. Realisasi biaya kedua proyek ini perlu dipantau agar serapan akhir tahun sesuai RKAP.</p>'.replace('kedua proyek ini',fin.length===1?'proyek ini':fin.length===2?'kedua proyek ini':'proyek-proyek ini');
+  memo=memo.replace(/…\./g,'…');
+  var notes=[];
+  if(c&&c.basis)notes.push('Keuangan memakai laporan '+c.basis);
+  if(b.asOfText)notes.push('Data mingguan s.d. '+b.asOfText);
+  return {period:per,level:level,label:label,headline:headline,tiles:[t1,t2,t3,t4],bars:bars,attention:list,memo:memo,
+    memoText:memo.replace(/<\/p>|<\/ul>/g,'\n\n').replace(/<li>/g,'• ').replace(/<\/li>/g,'\n').replace(/<[^>]+>/g,'').replace(/\n{3,}/g,'\n\n').trim(),notes:notes};
+}
+function pmoExecBriefHtml(x,mode){
+  var e=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+  var LV={good:'Aman',warn:'Waspada',bad:'Kritis'};
+  var P=function(v){return v==null||!isFinite(v)?'—':(v*100).toLocaleString('id-ID',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'};
+  var h='<div class="xb-top"><span class="xb-eye">Ringkasan eksekutif · '+e(x.period)+'</span></div>';
+  if(mode==='narasi'){
+    h+='<div class="xb-memo">'+x.memo+'</div><div class="xb-act"><button type="button" data-xb-copy>Salin narasi</button>'+(window.speechSynthesis?'<button type="button" data-xb-say>Dengarkan</button>':'')+'<span class="xb-msg" role="status"></span></div>';
+  }else{
+    h+='<div class="xb-head"><span class="xb-st '+x.level+'"><i></i>'+e(x.label)+'</span><p class="xb-hl">'+x.headline+'</p></div>';
+    h+='<div class="xb-tiles">'+x.tiles.map(function(t){return '<div class="xb-t '+t.lv+'"><small>'+e(t.k)+(LV[t.lv]?'<em>'+LV[t.lv]+'</em>':'')+'</small><b>'+e(t.v)+'</b><p>'+(Array.isArray(t.sub)?t.sub.map(e).join('<br>'):e(t.sub))+'</p></div>'}).join('')+'</div>';
+    if(x.bars.length)h+='<div class="xb-bars"><h4>Progres per proyek <span>realisasi · garis = rencana</span></h4>'+x.bars.map(function(r){var a=Math.max(0,Math.min(100,(r.actual||0)*100)),p=Math.max(0,Math.min(100,(r.plan||0)*100));
+      return '<button type="button" class="xb-bar '+r.lv+'" data-pid="'+e(r.id)+'" data-name="'+e(r.raw)+'" data-week="'+e(r.week)+'"><span class="n">'+e(r.name)+'</span><span class="tr"><i style="width:'+a+'%"></i>'+(r.plan!=null?'<s style="left:'+p+'%"></s>':'')+'</span><span class="v">'+P(r.actual)+'</span><span class="l">'+e(r.note)+'</span></button>'}).join('')+'</div>';
+    var li=function(a){return '<li class="'+a.lv+'"><i></i><div><div class="w"><b>'+e(a.name)+'</b> · '+e(a.what)+'</div>'+(a.why||a.act?'<div class="c">'+(a.why?'<span>Kendala'+(a.fld?' '+e(a.fld):'')+':</span> '+e(a.why):'')+(a.why&&a.act?'<br>':'')+(a.act?'<span>Tindak lanjut:</span> '+e(a.act):'')+'</div>':'')+'</div></li>'};
+    var gJ=x.attention.filter(function(a){return a.g==='jadwal'}),gN=x.attention.filter(function(a){return a.g!=='jadwal'});
+    if(gJ.length)h+='<div class="xb-att"><h4>Perlu perhatian</h4><ul>'+gJ.map(li).join('')+'</ul></div>';
+    if(gN.length)h+='<div class="xb-att xb-note"><h4>Catatan</h4><ul>'+gN.map(li).join('')+'</ul></div>';
+    if(false)h+='<div class="xb-att"><h4>Perlu perhatian</h4><ul>'+x.attention.map(function(a){return '<li class="'+a.lv+'"><i></i><div><div class="w"><b>'+e(a.name)+'</b> · '+e(a.what)+'</div>'+(a.why||a.act?'<div class="c">'+(a.why?'<span>Kendala'+(a.fld?' '+e(a.fld):'')+':</span> '+e(a.why):'')+(a.why&&a.act?'<br>':'')+(a.act?'<span>Tindak lanjut:</span> '+e(a.act):'')+'</div>':'')+'</div></li>'}).join('')+'</ul></div>';
+  }
+  if(x.notes.length)h+='<div class="xb-foot">'+x.notes.map(function(n){return '<span>'+e(n)+'</span>'}).join('')+'</div>';
+  return h;
+}
+/* pasang ke elemen; onBar(row) dipanggil saat bar proyek diklik */
+function pmoExecBriefMount(el,s,b,onBar){
+  if(!el)return;var x=pmoExecBrief(s,b),mode='narasi';
+  var draw=function(){el.innerHTML=pmoExecBriefHtml(x,mode);
+    el.querySelectorAll('[data-xb]').forEach(function(t){t.onclick=function(){mode=t.getAttribute('data-xb');try{localStorage.setItem('pmoBriefMode',mode)}catch(e){}draw()}});
+    el.querySelectorAll('.xb-bar').forEach(function(r){r.onclick=function(){if(onBar)onBar({id:r.getAttribute('data-pid'),name:r.getAttribute('data-name'),week:r.getAttribute('data-week')})}});
+    var msg=el.querySelector('.xb-msg'),say=function(t){if(msg){msg.textContent=t;clearTimeout(msg._t);msg._t=setTimeout(function(){msg.textContent=''},3500)}};
+    var cp=el.querySelector('[data-xb-copy]');if(cp)cp.onclick=function(){var done=function(){say('Narasi disalin.')};try{navigator.clipboard.writeText(x.memoText).then(done,function(){fallback()})}catch(e){fallback()}
+      function fallback(){var ta=document.createElement('textarea');ta.value=x.memoText;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){say('Tidak bisa menyalin otomatis.')}ta.remove()}};
+    var sp=el.querySelector('[data-xb-say]');if(sp)sp.onclick=function(){if(window.pmoSay){var on=sp.getAttribute('data-on')==='1';if(on){pmoSay.stop();sp.removeAttribute('data-on');sp.textContent='Dengarkan';return}sp.setAttribute('data-on','1');sp.textContent='Hentikan';pmoSay.speak(x.memoText,function(){sp.removeAttribute('data-on');sp.textContent='Dengarkan'},function(m){say(m);sp.removeAttribute('data-on');sp.textContent='Dengarkan'})}else{try{var u=new SpeechSynthesisUtterance(x.memoText);u.lang='id-ID';speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){say('Suara tidak tersedia di browser ini.')}}};
+  };
+  draw();return x;
+}
+/* ===== Narasi ringkasan eksekutif terperinci (sama di Portal & Executive) ===== */
+function pmoProjName(n){return String(n||'').toLowerCase().replace(/(^|[\s(\-\/])([a-z])/g,function(m,a,c){return a+c.toUpperCase()}).replace(/\b(\d+)x(\d)/gi,'$1x$2').replace(/\b(Csu|Sa|Ubb|Ki|Pt|Epcc?)\b/g,function(w){return w.toUpperCase()})}
+function pmoBriefStory(s,b,esc,pct,money){
+  const items=Array.isArray(b.items)?b.items:[],run=Number(s.totalProjects)||items.length,counted=b.counted!=null?Number(b.counted):run;
+  const pts=function(v,sign){const t=(Math.abs(v)*100).toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2});return sign?(v>0?'+':v<0?'−':'')+t:t};
+  const nm=function(i){return '<button type="button" class="pst-name" data-pid="'+esc(i.projectId)+'" data-week="'+esc(i.week||'')+'" data-name="'+esc(i.name)+'">'+esc(pmoProjName(i.name))+'</button>'};
+  const per=esc(b.period||'periode laporan'),mon=esc(String(b.period||'').split(' ')[0]);
+  const change=s.actual!=null&&b.prev&&b.prev.actual!=null?s.actual-b.prev.actual:null;
+  const pend=items.filter(function(i){return i.pending}),crit=items.filter(function(i){return !i.pending&&i.status==='Critical'}),risk=items.filter(function(i){return !i.pending&&i.status==='At risk'});
+  let lead='Per '+per+', '+(counted<run?'<b>'+counted+' dari '+run+' proyek</b> telah mencapai week cut-off dengan progres fisik terbobot ':'<b>'+run+' proyek</b> berjalan mencatat progres fisik terbobot ')+'<b>'+pct(s.actual,2)+'</b>';
+  if(change!=null)lead+=' ('+(change>0?'tumbuh <b class="pos">+':change<0?'turun <b class="neg">−':'tetap <b>')+pts(change)+' poin</b> dari '+esc(String(b.prev.period||'').split(' ')[0])+')';
+  lead+='. ';
+  if(!run)lead+='Belum ada proyek berjalan pada periode ini. ';
+  else if(crit.length)lead+='<b class="neg">'+crit.length+' proyek kritis</b>: '+crit.map(function(i){return '<b>'+esc(pmoProjName(i.name))+'</b> ('+pts(i.deviation,true)+' poin)'}).join(', ')+(risk.length?'; '+risk.length+' proyek di bawah plan':'')+'. ';
+  else if(risk.length)lead+=risk.map(function(i){return '<b>'+esc(pmoProjName(i.name))+'</b>'}).join(', ')+' sedikit di bawah plan ('+risk.map(function(i){return pts(i.deviation,true)}).join(', ')+' poin), proyek lainnya sesuai atau di atas rencana. ';
+  else if(counted)lead+='Seluruh proyek yang dihitung berjalan sesuai atau di atas rencana. ';
+  if(pend.length)lead+=pend.map(function(i){return '<b>'+esc(pmoProjName(i.name))+'</b>'}).join(', ')+' menunggu cut-off '+pend.map(function(i){return 'W'+i.cutWeek}).join(', ')+' (input s.d. '+pend.map(function(i){return 'W'+i.latestWeek}).join(', ')+').';
+  const st=function(i){return i.pending?'wait':i.status==='Critical'?'bad':i.status==='At risk'?'warn':'good'};
+  const list=items.map(function(i){
+    let m;
+    if(i.pending){const l=i.last||{};m='<span class="pst-chip wait">Menunggu cut-off W'+esc(i.cutWeek)+'</span><span>data s.d. W'+esc(i.latestWeek)+': <b>'+pct(l.actual,2)+'</b> · plan '+pct(l.plan,2)+'</span>';}
+    else{const up=i.prevActual!=null&&i.actual!=null?i.actual-i.prevActual:null;
+      m='<b class="pst-num">'+pct(i.actual,2)+'</b><span>plan '+pct(i.plan,2)+'</span><span class="pst-chip '+st(i)+'">'+(i.deviation==null?'—':pts(i.deviation,true)+' poin')+'</span><span class="pst-w">Cut-off W'+esc(i.cutWeek)+'</span>'+(up!=null?'<span class="pst-up">'+(up>=0?'naik ':'turun ')+pts(up,true)+' poin</span>':'');}
+    const nx=i.nextMilestone?'<div class="pst-next"><span>Target '+esc(String(b.nextPeriod||'bulan depan').split(' ')[0])+(i.nextTarget!=null?' · '+pct(i.nextTarget,2):'')+'</span>'+esc(i.nextMilestone)+'</div>':'';
+    return '<li class="pst '+st(i)+'"><span class="pst-dot" aria-hidden="true"></span><div class="pst-body"><div class="pst-top">'+nm(i)+'<div class="pst-m">'+m+'</div></div>'+(i.highlight?'<p class="pst-hl">'+esc(i.highlight)+'</p>':'')+nx+'</div></li>'}).join('');
+  const cost=b.cost,k=b.contract;let foot='';
+  if(cost||k)foot='<b>Keuangan</b> · serapan RKAP '+esc(String(cost&&cost.year||''))+' <b>'+(cost&&cost.percentYear!=null?pct(cost.percentYear,0):'—')+'</b>'+(cost&&cost.basis?' <span class="pst-basis">laporan '+esc(cost.basis)+'</span>':'')+' · termin terbayar <b>'+(k&&k.paidPercent!=null?pct(k.paidPercent,1):'—')+'</b> dari kontrak <b>'+(k?money(k.total):'—')+'</b>';
+  const rep=b.reports?'<b>Laporan bulanan '+mon+'</b> · '+b.reports.filled+' dari '+b.reports.total+' proyek sudah masuk':'';
+  return {lead:lead,list:list?'<ul class="pst-list">'+list+'</ul>':'',foot:[foot,rep].filter(Boolean).map(function(x){return '<span>'+x+'</span>'}).join('')};
+}
+function goWeek(name,week){window.top.location.href=appUrl+'?page=weekly&project='+encodeURIComponent(name)+(week?'&week='+encodeURIComponent(week):'')}
+function thumb(id,w){return 'https://drive.google.com/thumbnail?id='+encodeURIComponent(id)+'&sz=w'+(w||1200)}
+function countUp(el,to,fmt){if(to==null||!isFinite(to)){el.textContent='—';return}const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;if(reduce){el.textContent=fmt(to);return}const t0=performance.now(),dur=1100;(function step(t){const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);el.textContent=fmt(to*e);if(k<1)requestAnimationFrame(step)})(t0)}
+let heroTimer=null;
+function heroPhotos(items){
+  const list=(items||[]).filter(function(i){return i.banner}).map(function(i){return {banner:i.banner,cap:i.caption!=null?i.caption:pmoProjName(i.name)}});const bg=$('heroBg');if(!list.length||!bg)return;
+  bg.innerHTML=list.map(function(i,k){return '<div'+(k===0?' class="on"':'')+' style="background-image:url(\''+thumb(i.banner)+'\')"></div>'}).join('');
+  let dots=document.querySelector('.hero-dots');if(!dots){dots=document.createElement('div');dots.className='hero-dots';$('hero').appendChild(dots)}
+  dots.innerHTML='<span id="heroName"></span>'+list.map(function(i,k){return '<button type="button" aria-label="Foto '+(k+1)+(i.cap?' · '+esc(i.cap):'')+'"'+(k===0?' class="on"':'')+'></button>'}).join('');
+  let cur=0;const show=function(n){cur=(n+list.length)%list.length;bg.querySelectorAll('div').forEach(function(d,k){d.classList.toggle('on',k===cur)});dots.querySelectorAll('button').forEach(function(d,k){d.classList.toggle('on',k===cur)});$('heroName').textContent=list[cur].cap||''};
+  dots.querySelectorAll('button').forEach(function(b,k){b.onclick=function(){show(k);restart()}});
+  const restart=function(){clearInterval(heroTimer);if(list.length>1)heroTimer=setInterval(function(){show(cur+1)},7000)};
+  show(0);restart();
+}
+function renderHero(s,b){
+  const items=b.items||[],run=Number(s.totalProjects)||items.length,counted=b.counted!=null?b.counted:run;
+  const pend=items.filter(function(i){return i.pending});
+  const change=s.actual!=null&&b.prev&&b.prev.actual!=null?s.actual-b.prev.actual:null;
+  const pts=function(v){return (v>0?'+':v<0?'−':'')+(Math.abs(v)*100).toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2})};
+  const g=s.onTrack||0,a=s.atRisk||0,r=s.critical||0,c=b.cost,k=b.contract;
+  // SPI rata-rata (sama dengan Ringkasan eksekutif): proyek tanpa cut-off bulanan tidak dihitung
+  const sp=(function(){const excl=items.filter(function(i){return i.noCut});const v=items.filter(function(i){return !i.noCut}).map(function(i){const ac=i.pending?(i.last&&i.last.actual):i.actual,pl=i.pending?(i.last&&i.last.plan):i.plan;return ac!=null&&pl!=null&&pl>0?ac/pl:null}).filter(function(x){return x!=null&&isFinite(x)});return {avg:v.length?v.reduce(function(x,y){return x+y},0)/v.length:null,n:v.length,excl:excl}})();
+  $('heroEye').textContent='PMO Infrastruktur & Process Plant · '+b.period;
+  $('heroSub').textContent='Posisi portofolio '+run+' proyek berjalan per week cut-off '+b.period+'.';
+  $('heroKpis').innerHTML=
+    '<div class="hk"><small>SPI rata-rata</small><b id="hk1">—</b><span>'+(sp.avg!=null?'<span class="'+(sp.avg>=0.995?'up':'dn')+'">'+(sp.avg>=0.995?'Sesuai jadwal':'Di bawah jadwal')+'</span>':'')+'Rata-rata '+sp.n+' proyek'+(sp.excl.length?' · '+esc(sp.excl.map(function(i){return pmoProjName(i.name)}).join(', '))+' mulai '+esc(String(sp.excl[0].firstCut||'bulan depan').split(' ')[0]):'')+'</span></div>'+
+    '<div class="hk"><small>Status jadwal</small><b>'+g+'<span style="display:inline;font-size:15px;font-weight:600;color:#b8d2ea"> / '+counted+' on track</span></b><div class="seg">'+(g?'<i style="flex:'+g+';background:#4fd1a0"></i>':'')+(a?'<i style="flex:'+a+';background:#f0c35a"></i>':'')+(r?'<i style="flex:'+r+';background:#ff8c86"></i>':'')+(pend.length?'<i style="flex:'+pend.length+';background:rgba(255,255,255,.35)"></i>':'')+'</div><span>'+a+' at risk · '+r+' critical'+(pend.length?' · '+pend.length+' menunggu cut-off':'')+'</span></div>'+
+    '<div class="hk"><small>Serapan RKAP '+esc(c&&c.year||'')+'</small><b id="hk3">—</b><span>'+(c?money(c.actualToDate)+' dari '+money(c.rkapYear)+(c.basis?' · laporan '+esc(String(c.basis).split(' ')[0]):''):'Data keuangan belum tersedia')+'</span></div>'+
+    '<div class="hk"><small>Termin terbayar</small><b id="hk4">—</b><span>'+(k?money(k.paidToDate)+' dari kontrak '+money(k.total):'Data kontrak belum tersedia')+'</span></div>';
+  const f=function(d){return function(v){return (v*100).toLocaleString('id-ID',{minimumFractionDigits:d,maximumFractionDigits:d})+'%'}};
+  countUp($('hk1'),sp.avg,function(v){return v.toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2})});countUp($('hk3'),c?c.percentYear:null,f(0));countUp($('hk4'),k?k.paidPercent:null,f(1));
+}
+function renderPulse(b){
+  const items=b.items||[],C=2*Math.PI*34,nx=String(b.nextPeriod||'').split(' ')[0];
+  const pts=function(v){return (v>0?'+':v<0?'−':'')+(Math.abs(v)*100).toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2})};
+  if(!items.length){$('pulse').innerHTML='<div class="loading">Belum ada proyek berjalan.</div>';return}
+  $('pulse').innerHTML=items.map(function(i){
+    const st=i.pending?'wait':i.status==='Critical'?'bad':i.status==='At risk'?'warn':'good';
+    const act=i.pending?(i.last&&i.last.actual):i.actual,plan=i.pending?(i.last&&i.last.plan):i.plan;
+    const up=!i.pending&&i.prevActual!=null&&i.actual!=null?i.actual-i.prevActual:null;
+    const ring='<div class="ring"><svg viewBox="0 0 80 80" aria-hidden="true"><circle class="tr" cx="40" cy="40" r="34" fill="none" stroke-width="8"/><circle class="pl" cx="40" cy="40" r="34" fill="none" stroke-width="8" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-Math.max(0,Math.min(1,plan||0))))+'"/><circle class="ac" cx="40" cy="40" r="34" fill="none" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+C+'" data-to="'+(C*(1-Math.max(0,Math.min(1,act||0))))+'"/></svg><b>'+(act==null?'—':(act*100).toLocaleString('id-ID',{maximumFractionDigits:1})+'%')+'</b></div>';
+    const meta=i.pending?'Plan <b>'+pct(plan,2)+'</b> (W'+i.latestWeek+')<br><span class="d">Menunggu cut-off W'+i.cutWeek+'</span><br>Data terakhir W'+i.latestWeek
+      :'Plan <b>'+pct(plan,2)+'</b><br>Deviasi <span class="d '+st+'">'+(i.deviation==null?'—':pts(i.deviation)+' poin')+'</span>'+(up!=null?'<br>'+(up>=0?'Naik ':'Turun ')+pts(up)+' poin':'');
+    return '<button type="button" class="pc '+st+'" data-name="'+esc(i.name)+'" data-week="'+esc(i.week||'')+'" title="Buka Weekly Progress W'+esc(i.week||'')+'"><div class="pc-img"'+(i.banner?' style="background-image:url(\''+thumb(i.banner,480)+'\')"':'')+'><span class="pc-st '+st+'">'+(i.pending?'Menunggu cut-off':esc(i.status))+'</span><span class="pc-wk">W'+esc(i.pending?i.latestWeek:i.cutWeek)+'</span><h4>'+esc(pmoProjName(i.name))+'</h4></div><div class="pc-b">'+ring+'<div class="pc-m"><div class="pc-mn"><b>'+esc(pmoProjName(i.name))+'</b><span class="pc-st '+st+'">'+(i.pending?'Menunggu cut-off':esc(i.status))+'</span></div><div class="pc-mv"><b>'+(act==null?'—':pct(act,2))+'</b><span class="d '+st+'">'+(i.pending?'data W'+i.latestWeek:(i.deviation==null?'—':pts(i.deviation)+' poin'))+'</span></div><div class="pc-bar"><i style="width:'+Math.max(0,Math.min(100,(act||0)*100))+'%"></i><s style="left:'+Math.max(0,Math.min(100,(plan||0)*100))+'%"></s></div><div class="pc-meta">'+meta+'</div><div class="pc-meta-m">Plan <b>'+pct(plan,2)+'</b>'+(i.pending?' · cut-off W'+i.cutWeek:(up!=null?' · '+(up>=0?'naik ':'turun ')+pts(up)+' poin dari bulan lalu':''))+'</div></div></div>'+(i.highlight?'<p class="pc-hl">'+esc(i.highlight)+'</p>':'')+(i.nextMilestone?'<div class="pc-nx">Target '+esc(nx)+' · <b>'+esc(i.nextMilestone)+'</b></div>':'<div class="pc-nx"></div>')+'</button>'}).join('');
+  $('pulse').querySelectorAll('.pc').forEach(function(c){c.onclick=function(){goWeek(c.getAttribute('data-name'),c.getAttribute('data-week'))}});
+  requestAnimationFrame(function(){requestAnimationFrame(function(){$('pulse').querySelectorAll('.ring .ac').forEach(function(a){a.style.strokeDashoffset=a.getAttribute('data-to')})})});
+}
+function renderBrief(d){
+  const b=d.brief,s=d.summary||{};
+  if(!b){$('briefBox').innerHTML='<div class="loading">'+esc(d.error||'Ringkasan eksekutif belum tersedia.')+'</div>';$('pulse').innerHTML='';return}
+  $('stamp').innerHTML=(b.asOfText?'Input mingguan terakhir <b>'+esc(b.asOfText)+'</b>'+(b.asOfWeek?' · W'+b.asOfWeek:'')+'<br>':'')+'Laporan '+esc(b.period)+': <b>'+b.reports.filled+' dari '+b.reports.total+'</b> proyek';
+  renderHero(s,b);
+  const st=pmoBriefStory(s,b,esc,pct,money);
+  const m=[];
+  m.push('<div class="bm pmo-physical">'+pmoPhysicalBriefHtml(s,b,esc,pct)+'</div>');
+  if(b.contract){const k=b.contract,dp=k.deltaPercent;m.push('<div class="bm"><small>Nilai kontrak</small><div class="big">'+money(k.total)+'</div><p><b>'+k.addenda+' addendum</b> · '+(dp?'<b class="'+(dp>0?'wrn':'pos')+'">'+signed(dp,1)+'</b> dari awal':'tetap')+'</p>'+pmoContractPaymentHtml(k,k.period||b.period,esc,money,pct)+'</div>')}
+  $('briefBox').className='story xb';
+  pmoExecBriefMount($('briefBox'),s,b,function(r){goWeek(r.name,r.week)});
+  renderPulse(b);heroPhotos(d.heroPhotos&&d.heroPhotos.length?d.heroPhotos.map(function(x){return {banner:x.id,caption:x.caption||''}}):b.items);paint();
+}
+let portalSessionResolve_=null;
+let portalSessionPromise_=new Promise(function(resolve){portalSessionResolve_=resolve});
+function portalSession_(){return portalSessionPromise_}
+/* pmoSwr (muat cepat): satu definisi bersama di PmoCore.html */
+function init(){
+  if(!token){goLogin_();return}
+  const start=performance.now();
+  const applyPortalUser=function(u){
+    if(!u||window.__portalUserApplied)return;
+    window.__portalUserApplied=true;
+    setUser(u);
+    if(portalSessionResolve_){portalSessionResolve_({success:true,user:u});portalSessionResolve_=null;}
+    console.info('PMO Portal menus ready ms: '+Math.round(performance.now()-start));
+  };
+  const fallbackSession=function(){
+    if(window.__portalUserApplied)return;
+    google.script.run.withSuccessHandler(function(s){
+      if(!s||!s.success||!s.user){goLogin_();return}
+      applyPortalUser(s.user);
+    }).withFailureHandler(function(e){showError(e&&e.message?e.message:String(e))}).authGetSession(token);
+  };
+  const cached=pmoSwr.get('portal');let shownSig=null;
+  if(cached){try{portal=cached.d;if(cached.d&&cached.d.user)setUser(cached.d.user);renderBrief(cached.d);shownSig=pmoSwr.sig(cached.d);pmoSwr.busy(true)}catch(e){shownSig=null}}
+  google.script.run.withSuccessHandler(function(d){
+    pmoSwr.log('Portal',start,d);pmoSwr.busy(false);
+    if(d&&d.user)applyPortalUser(d.user);else fallbackSession();
+    if(!d||!d.success){if(!shownSig)showError((d&&d.message)||'Ringkasan Portal belum tersedia. Menu tetap dapat digunakan.');return}
+    pmoSwr.set('portal',d);portal=d;if(!shownSig||pmoSwr.sig(d)!==shownSig)renderBrief(d);
+  }).withFailureHandler(function(e){fallbackSession();if(shownSig&&!sessionExpired_(e&&e.message)){pmoSwr.busy('Data belum diperbarui \u2014 periksa koneksi');return}showError(e&&e.message?e.message:String(e))}).getPortalData(token);
+}
+init();
+</script>
+<style>
+/* ===== Spotlight TV: layar penuh di atas Portal, kembali dengan Esc / tombol X ===== */
+.spot-ov{position:fixed;inset:0;z-index:6000;background:#070e17}
+.spot-ov iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#070e17}
+.spot-ld{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:14px;color:#9fb5c8;font:600 14px Inter,system-ui,sans-serif;text-align:center;padding:20px}
+.spot-ld i{width:38px;height:38px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top-color:#38bdf8;animation:spotSpin .9s linear infinite;justify-self:center}
+@keyframes spotSpin{to{transform:rotate(360deg)}}
+.spot-ld button{justify-self:center;min-height:40px;padding:0 16px;border-radius:10px;border:0;background:#0f5fa8;color:#fff;font:700 13px Inter,system-ui,sans-serif;cursor:pointer}
+.spot-x{position:absolute;top:12px;left:50%;margin-left:-23px;z-index:3;width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.28);background:rgba(7,14,23,.6);color:#fff;display:grid;place-items:center;cursor:pointer;opacity:.25;transition:opacity .25s;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:0}
+.spot-x svg{width:20px;height:20px}
+.spot-x:hover,.spot-x:focus-visible,.spot-ov.show-x .spot-x{opacity:1}
+.spot-hint{position:absolute;top:66px;left:50%;transform:translateX(-50%);z-index:3;padding:6px 12px;border-radius:99px;background:rgba(7,14,23,.65);color:#dbe7f3;font:600 12px Inter,system-ui,sans-serif;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.spot-ov.show-x .spot-hint{opacity:1}
+</style>
+<script>
+(function(){
+  var ov=null,wasFs=false,hideT=0;
+  function fsEl(){return document.fullscreenElement||document.webkitFullscreenElement||null}
+  function hint(){if(!ov)return;ov.classList.add('show-x');clearTimeout(hideT);hideT=setTimeout(function(){if(ov)ov.classList.remove('show-x')},3000)}
+  function close(){
+    if(!ov)return;var o=ov;ov=null;wasFs=false;clearTimeout(hideT);
+    try{if(fsEl()){var x=document.exitFullscreen||document.webkitExitFullscreen;if(x){var p=x.call(document);if(p&&p.catch)p.catch(function(){})}}}catch(e){}
+    o.remove();document.body.style.overflow='';
+  }
+  function fail(msg){if(!ov)return;var ld=ov.querySelector('.spot-ld');if(!ld)return;ld.innerHTML='<div>'+String(msg||'Spotlight belum bisa dimuat.').replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})+'</div><button type="button">Buka halaman Spotlight</button>';ld.querySelector('button').onclick=function(){close();go('spotlight')}}
+  window.pmoSpotClose=close;window.pmoSpotHint=hint;
+  window.openSpotlightTv=function(){
+    if(ov)return;
+    ov=document.createElement('div');ov.className='spot-ov';ov.setAttribute('role','dialog');ov.setAttribute('aria-label','Spotlight TV');
+    ov.innerHTML='<div class="spot-ld"><i></i><div>Menyiapkan Spotlight…</div></div><button type="button" class="spot-x" aria-label="Tutup Spotlight dan kembali ke Portal" title="Tutup (Esc)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><span class="spot-hint">Tekan Esc atau klik ✕ untuk kembali</span>';
+    document.body.appendChild(ov);document.body.style.overflow='hidden';
+    ov.querySelector('.spot-x').onclick=close;ov.addEventListener('mousemove',hint);ov.addEventListener('touchstart',hint,{passive:true});hint();
+    // layar penuh harus diminta langsung saat klik (gesture pengguna)
+    try{var el=document.documentElement,rq=el.requestFullscreen||el.webkitRequestFullscreen;if(rq){var pr=rq.call(el);if(pr&&pr.catch)pr.catch(function(){})}}catch(e){}
+    google.script.run.withSuccessHandler(function(r){
+      if(!ov)return;if(!r||!r.html){fail();return}
+      var inj='<script>try{window.google=parent.google;}catch(e){}'+
+        'document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("#btnBackPortal");if(b){e.preventDefault();e.stopPropagation();try{parent.pmoSpotClose()}catch(x){}}},true);'+
+        'document.addEventListener("keydown",function(e){if(e.key==="Escape"){try{parent.pmoSpotClose()}catch(x){}}});'+
+        '["mousemove","touchstart"].forEach(function(t){document.addEventListener(t,function(){try{parent.pmoSpotHint()}catch(x){}},{passive:true})});<\/script>';
+      var html=String(r.html).replace(/<head[^>]*>/i,function(m){return m+inj});
+      var f=document.createElement('iframe');f.title='Spotlight TV';f.setAttribute('allow','autoplay; fullscreen');f.setAttribute('allowfullscreen','');
+      f.onload=function(){var ld=ov&&ov.querySelector('.spot-ld');if(ld)ld.remove();try{f.focus()}catch(e){}};
+      f.srcdoc=html;ov.insertBefore(f,ov.firstChild);
+    }).withFailureHandler(function(e){fail(e&&e.message)}).getSpotlightPageHtml(token);
+  };
+  function onFs(){if(!ov)return;if(fsEl())wasFs=true;else if(wasFs)close()}
+  document.addEventListener('fullscreenchange',onFs);document.addEventListener('webkitfullscreenchange',onFs);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&ov)close()});
+})();
+</script>
+<script>window.pmoAiPage='portal';</script>
+<?!= include('Gallery') ?>
+<?!= include('AccountMenu') ?>
+<?!= include('AiWidget') ?>
+<style>
+.pmo-r-bid{margin:-4px 0 14px}.pmo-r-chk{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}.pmo-r-card .pmo-r-chk label{display:flex;align-items:center;gap:8px;margin:0;padding:9px 10px;border:1px solid var(--line,#dbe5ee);border-radius:9px;font-size:13px;font-weight:600;text-transform:none;color:var(--ink,#173149);cursor:pointer}.pmo-r-chk input{width:16px;height:16px;accent-color:var(--pri,#1565c0)}.pmo-r-bid small{display:block;font-size:12px;line-height:1.5;color:var(--muted,#607589)}
+.pmo-requests{margin:18px 0;padding:20px;background:var(--card,#fff);color:var(--ink,#173149);border:1px solid var(--line,#dbe5ee);border-radius:16px;font-family:Inter,Arial,sans-serif}.pmo-requests h2{margin:0;font-size:18px;color:var(--navy,#073b63)}.pmo-r-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}.pmo-r-head small{display:block;color:var(--muted,#607589);margin-top:5px}.pmo-r-actions{display:flex;gap:8px;flex-wrap:wrap}.pmo-requests button,.pmo-requests select{font:600 13px Inter,Arial,sans-serif;border:1px solid var(--line,#dbe5ee);border-radius:9px;padding:10px 13px;background:var(--card,#fff);color:var(--ink,#173149);cursor:pointer;min-height:42px;max-width:100%}.pmo-requests button:disabled{opacity:.55;cursor:wait}.pmo-requests .pmo-r-approve{background:#0f5fa8;border-color:#0f5fa8;color:#fff}.pmo-requests .pmo-r-reject{color:var(--bad,#b43c32)}.pmo-r-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,350px),1fr));gap:14px}.pmo-r-card{border:1px solid var(--line,#dbe5ee);border-radius:13px;padding:18px;background:var(--tint,#f7fafe)}.pmo-r-card h3{font-size:16px;margin:0 0 4px}.pmo-r-card small,.pmo-r-card p{color:var(--muted,#607589);font-size:13px;line-height:1.6}.pmo-r-card p{margin:12px 0}.pmo-r-card label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;margin-bottom:7px;color:var(--muted,#607589)}.pmo-r-card select{width:100%;margin-bottom:14px}.pmo-r-state{margin:10px 0;font-size:13px;line-height:1.6;white-space:pre-line}.pmo-r-card strong{color:var(--ink,#173149)}
+.pmo-r-toast{position:fixed;right:18px;top:18px;z-index:3100;max-width:calc(100vw - 36px);width:390px;padding:15px 18px;border-radius:12px;background:var(--card,#fff);color:var(--ink,#173149);border:1px solid var(--line,#dbe5ee);box-shadow:0 8px 32px rgba(8,32,52,.2);font:600 14px/1.5 Inter,Arial,sans-serif}.pmo-requests[hidden]{display:none!important}
+
+/* Perapian perubahan ringkasan hanya pada layar ponsel. */
+@media (max-width:640px){
+  .bf-metrics{grid-template-columns:minmax(0,1fr)}
+  .bf-metrics>.bm{min-width:0;padding:18px}
+  .bf-metrics>.bm+.bm{border-left:0;border-top:1px solid var(--line)}
+  .bf-metrics>.bm .big{font-size:30px;line-height:1.2;gap:7px}
+  .bf-metrics>.bm>small{font-size:12px;line-height:1.5}
+  .bf-metrics>.bm p{font-size:13px;line-height:1.6}
+  .pmo-physical .pmo-phys-journey{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;margin:18px 0}
+  .pmo-physical .pmo-phys-journey small{font-size:11px;line-height:1.5;letter-spacing:.02em;overflow-wrap:anywhere}
+  .pmo-physical .pmo-phys-journey b{font-size:21px;line-height:1.4;white-space:nowrap}
+  .pmo-physical .pmo-phys-journey>span{font-size:21px}
+  .pmo-physical .pmo-phys-target>small{font-size:11px;line-height:1.6}
+  .pmo-physical .pmo-phys-target-row{gap:10px;margin:10px 0}
+  .pmo-physical .pmo-phys-target-row>strong{font-size:27px;white-space:nowrap}
+  .pmo-physical .pmo-phys-needed{font-size:12px;padding:8px 10px;line-height:1.5}
+  .pmo-physical .pmo-phys-target p,.pmo-physical .pmo-phys-note{font-size:12px;line-height:1.6}
+  .pmo-contract-pay>small{font-size:11px;line-height:1.6}
+  .pmo-contract-amount{font-size:28px;line-height:1.3;gap:10px;overflow-wrap:anywhere}
+  .pmo-contract-amount>span{font-size:12px;padding:6px 9px}
+  .pmo-contract-pay p{font-size:12px!important;line-height:1.6}
+  .pmo-contract-track{height:10px;margin-top:16px}
+  .pmo-contract-legend{display:grid;grid-template-columns:minmax(0,1fr);font-size:12px;gap:6px;line-height:1.6}
+  .pmo-contract-legend>span{display:flex;justify-content:space-between;gap:8px}
+  .pmo-contract-remaining{padding:12px;font-size:12px;line-height:1.5;gap:8px}
+  .pmo-contract-remaining b{white-space:nowrap}
+}
+</style>
+<script>
+(function(){
+  var key='pmo-account-requests',box,grid,status,refresh,resend,knownRows=0;
+  function notify(text){var n=document.createElement('div');n.className='pmo-r-toast';n.setAttribute('role','status');n.textContent=text;document.body.appendChild(n);setTimeout(function(){n.remove()},8000)}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function session(){try{return typeof token!=='undefined'?token:sessionStorage.getItem('pmoSessionToken')||''}catch(e){return ''}}
+  function fail(e){box.hidden=false;status.textContent=(e&&e.message)||'Permintaan gagal diproses. Silakan coba lagi.';refresh.disabled=false;resend.disabled=!knownRows;}
+  function load(){
+    refresh.disabled=true;status.textContent='Memuat permintaan…';
+    google.script.run.withSuccessHandler(function(rows){
+      refresh.disabled=false;grid.replaceChildren();rows=rows||[];knownRows=rows.length;box.hidden=!knownRows;status.textContent=rows.length?rows.length+' akun menunggu persetujuan.':'Tidak ada permintaan akun yang menunggu persetujuan.';resend.disabled=!rows.length;
+      rows.forEach(function(r){
+        var card=document.createElement('article');card.className='pmo-r-card';
+        card.innerHTML='<h3>'+esc(r.name)+'</h3><small>@'+esc(r.username)+' · PENDING</small><p>Tim: <strong>'+esc(r.team)+'</strong><br>Proyek: <strong>'+esc(r.projectName||r.projectId)+'</strong><br>ID: '+esc(r.projectId)+'<br>Diajukan: '+esc(r.created)+'</p><label>Hak akses</label><select aria-label="Hak akses untuk '+esc(r.username)+'"><option value="USER">USER — Lihat semua proyek tanpa input</option><option value="INPUT">INPUT — Input hanya proyek yang ditetapkan</option><option value="KONTRAKTOR">KONTRAKTOR — Ajukan realisasi EPCC proyek ini saja</option></select><div class="pmo-r-bid" hidden><label>Bidang EPCC yang diisi kontraktor</label><div class="pmo-r-chk">'+[['ENG','Engineering'],['PROC','Procurement'],['CONS','Construction'],['COM','Commissioning']].map(function(b){return '<label><input type="checkbox" value="'+b[0]+'"> '+b[1]+'</label>'}).join('')+'</div><small>Kontraktor hanya melihat proyek '+esc(r.projectName||r.projectId)+'. Isiannya menunggu persetujuan ADMIN atau INPUT/PIC proyek.</small></div><div class="pmo-r-actions"><button type="button" class="pmo-r-approve">Setujui akun</button><button type="button" class="pmo-r-reject">Tolak</button><button type="button" class="pmo-r-resend">Kirim ulang email</button></div><div class="pmo-r-state" role="status"></div>';
+        var sel=card.querySelector('select'),msg=card.querySelector('[role=status]'),bid=card.querySelector('.pmo-r-bid');sel.onchange=function(){bid.hidden=sel.value!=='KONTRAKTOR'};
+        function busy(v){sel.disabled=v;card.querySelectorAll('button').forEach(function(b){b.disabled=v})}
+        function decide(d){var chosenRole=sel.value,bd=Array.prototype.map.call(card.querySelectorAll('.pmo-r-bid input:checked'),function(x){return x.value}).join(',');if(d==='APPROVE'&&chosenRole==='KONTRAKTOR'&&!bd){msg.textContent='Pilih minimal satu bidang EPCC untuk akun kontraktor.';return}busy(true);msg.textContent='Memproses…';google.script.run.withSuccessHandler(function(){notify(d==='APPROVE'?'Akun @'+r.username+' berhasil disetujui sebagai '+chosenRole+'.':'Permintaan akun @'+r.username+' ditolak.');load()}).withFailureHandler(function(e){busy(false);msg.textContent=(e&&e.message)||'Gagal memproses.'}).authReviewAccount(session(),r.username,chosenRole,d,bd)}
+        card.querySelector('.pmo-r-approve').onclick=function(){decide('APPROVE')};card.querySelector('.pmo-r-reject').onclick=function(){decide('REJECT')};
+        card.querySelector('.pmo-r-resend').onclick=function(){busy(true);msg.textContent='Mengirim email…';google.script.run.withSuccessHandler(function(x){busy(false);msg.textContent=x.message+(x.errors&&x.errors.length?'\n'+x.errors.join('\n'):'')}).withFailureHandler(function(e){busy(false);msg.textContent=(e&&e.message)||'Email gagal dikirim.'}).authResendPendingNotifications(session(),r.username)};
+        grid.appendChild(card);
+      });
+    }).withFailureHandler(fail).authPendingAccounts(session());
+  }
+  function build(){
+    if(document.getElementById(key))return;
+    box=document.createElement('div');box.id=key;box.className='pmo-requests';box.hidden=true;box.innerHTML='<div class="pmo-r-head"><div><h2>Permintaan Akun</h2><small>Periksa tim, proyek, dan hak akses sebelum menyetujui.</small></div><div class="pmo-r-actions"><button type="button" data-refresh>Muat ulang</button><button type="button" data-resend>Kirim ulang email PENDING</button></div></div><div class="pmo-r-state" role="status" aria-live="polite"></div><div class="pmo-r-grid"></div>';
+    var parent=document.getElementById('content')||document.querySelector('main');if(!parent)return;parent.prepend(box);
+    grid=box.querySelector('.pmo-r-grid');status=box.querySelector('[role=status]');refresh=box.querySelector('[data-refresh]');resend=box.querySelector('[data-resend]');refresh.onclick=load;
+    resend.onclick=function(){refresh.disabled=true;resend.disabled=true;status.textContent='Mengirim ulang notifikasi untuk akun PENDING…';google.script.run.withSuccessHandler(function(x){refresh.disabled=false;resend.disabled=false;status.textContent=x.message+(x.errors&&x.errors.length?'\n'+x.errors.join('\n'):'')}).withFailureHandler(fail).authResendPendingNotifications(session(),'')};load();
+  }
+  function init(){if(!session()||typeof google==='undefined')return;function ready(s){if(s&&s.success&&s.user&&String(s.user.role||'').toUpperCase()==='ADMIN')build()}if(typeof portalSession_==='function'){portalSession_().then(ready,function(){});return}google.script.run.withSuccessHandler(ready).withFailureHandler(function(){}).authGetSession(session())}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+</body>
+</html>
+  

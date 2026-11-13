@@ -1,0 +1,333 @@
+<style>
+/* ===== Galeri foto proyek per bulan: sorotan (story), timeline, album, bandingkan ===== */
+.gl-stories{display:flex;gap:14px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:none}
+.gl-stories::-webkit-scrollbar{display:none}
+.gl-st{flex:none;width:86px;border:0;background:none;padding:0;cursor:pointer;text-align:center;color:var(--ink,#132b43);font:inherit}
+.gl-ring{width:78px;height:78px;margin:0 auto;border-radius:50%;padding:3px;background:conic-gradient(from 210deg,#0f5fa8,#16b3a6,#f0c35a,#0f5fa8)}
+.gl-st.seen .gl-ring{background:var(--line,#d6e0ea)}
+.gl-ring>span{display:block;width:100%;height:100%;border-radius:50%;border:3px solid var(--bg,#f2f5f9);background:#13406b center/cover no-repeat}
+.gl-st b{display:block;margin-top:6px;font-size:12px;line-height:1.25;font-weight:700;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.gl-st small{display:block;font-size:10.5px;color:var(--muted,#5b7085);margin-top:1px}
+.gl-st.all .gl-ring{background:var(--soft,#e8f3fb)}
+.gl-st.all .gl-ring>span{display:grid;place-items:center;background:var(--card,#fff);color:var(--pri-ink,#0f5fa8)}
+.gl-st.all svg{width:26px;height:26px}
+.gl-empty-note{font-size:13px;color:var(--muted,#5b7085);padding:6px 2px}
+/* story viewer */
+.gl-sv{position:fixed;inset:0;z-index:400;background:#05101c;color:#fff;display:flex;align-items:center;justify-content:center;font-family:Inter,system-ui,sans-serif;animation:glF .2s ease}
+.gl-sv[hidden]{display:none}
+@keyframes glF{from{opacity:0}}
+.gl-sv-stage{position:relative;width:100vw;height:100vh;height:100dvh;background:#000;overflow:hidden;border-radius:0}
+@media (min-width:700px){.gl-sv-stage{border-radius:18px;width:min(88vw,1180px);height:min(88vh,780px)}}
+.gl-sv-img{position:absolute;inset:0;background:#000 center/contain no-repeat;transition:opacity .25s}
+.gl-sv-bg{position:absolute;inset:-30px;background:center/cover no-repeat;filter:blur(28px) brightness(.45);transform:scale(1.1)}
+.gl-sv-top{position:absolute;left:0;right:0;top:0;padding:12px 14px 30px;background:linear-gradient(180deg,rgba(0,0,0,.65),transparent);z-index:2}
+.gl-bars{display:flex;gap:4px}
+.gl-bars i{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.3);overflow:hidden;position:relative}
+.gl-bars i b{position:absolute;inset:0;width:0;background:#fff}
+.gl-bars i.done b{width:100%}
+.gl-sv-h{display:flex;align-items:center;gap:10px;margin-top:10px}
+.gl-sv-h .av{width:36px;height:36px;border-radius:50%;background:#13406b center/cover;border:2px solid rgba(255,255,255,.7);flex:none}
+.gl-sv-h div{flex:1;min-width:0}.gl-sv-h b{display:block;font-size:14px;line-height:1.25}.gl-sv-h small{font-size:12px;opacity:.8}
+.gl-x{width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:22px;line-height:1;cursor:pointer;flex:none}
+.gl-sv-bot{position:absolute;left:0;right:0;bottom:0;padding:40px 16px 16px;background:linear-gradient(0deg,rgba(0,0,0,.8),transparent);z-index:2}
+.gl-sv-cap{font-size:14.5px;line-height:1.5;margin:0 0 10px;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.gl-sv-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.gl-chip{padding:4px 10px;border-radius:99px;font-size:12px;font-weight:700;background:rgba(255,255,255,.16)}
+.gl-chip.good{background:#1d8a5f}.gl-chip.warn{background:#a8780c}.gl-chip.bad{background:#b3362f}
+.gl-sv-more{margin-left:auto;border:0;border-radius:99px;padding:8px 14px;background:#fff;color:#0b2a47;font:700 12.5px Inter,system-ui,sans-serif;cursor:pointer}
+.gl-tap{position:absolute;top:80px;bottom:120px;width:40%;z-index:1;cursor:pointer;border:0;background:transparent}
+.gl-tap.l{left:0}.gl-tap.r{right:0;width:60%}
+.gl-sv-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:22px;cursor:pointer;z-index:3;display:none}
+@media (min-width:900px){.gl-sv-nav{display:block}.gl-sv-nav.l{left:calc(50% - min(44vw,590px) - 58px)}.gl-sv-nav.r{right:calc(50% - min(44vw,590px) - 58px)}}
+/* galeri */
+.gl-g{position:fixed;inset:0;z-index:390;background:var(--bg,#f2f5f9);color:var(--ink,#132b43);display:flex;flex-direction:column;font-family:Inter,system-ui,sans-serif;animation:glF .2s ease}
+.gl-g[hidden]{display:none}
+.gl-gh{display:flex;align-items:center;gap:12px;padding:14px 22px;background:var(--card,#fff);border-bottom:1px solid var(--line,#e0e8f0)}
+.gl-gh h2{margin:0;font-size:19px;color:var(--navy,#073b63);flex:1}
+.gl-gh h2 small{display:block;font-size:12px;font-weight:500;color:var(--muted,#5b7085);margin-top:2px}
+.gl-gh .gl-x{background:var(--tint,#f4f8fc);color:var(--ink,#132b43);border:1px solid var(--line,#e0e8f0)}
+.gl-gb{flex:1;overflow:auto;padding:16px 22px 40px}
+.gl-wrap{max-width:1240px;margin:0 auto}
+.gl-projs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.gl-pchip{flex:none;display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;border-radius:99px;border:1px solid var(--line,#e0e8f0);background:var(--card,#fff);color:var(--ink,#132b43);font:600 13px Inter,system-ui,sans-serif;cursor:pointer}
+.gl-pchip i{width:28px;height:28px;border-radius:50%;background:#13406b center/cover}
+.gl-pchip.on{background:var(--pri,#0f5fa8);border-color:var(--pri,#0f5fa8);color:#fff}
+.gl-pchip em{font-style:normal;font-size:11px;opacity:.75}
+.gl-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:16px 0 10px}
+.gl-seg{display:inline-grid;grid-auto-flow:column;gap:3px;padding:3px;border-radius:11px;background:var(--tint,#f4f8fc);border:1px solid var(--line,#e0e8f0)}
+.gl-seg button{border:0;border-radius:8px;padding:8px 14px;background:transparent;color:var(--muted,#5b7085);font:700 13px Inter,system-ui,sans-serif;cursor:pointer}
+.gl-seg button.on{background:var(--card,#fff);color:var(--pri-ink,#0f5fa8);box-shadow:0 1px 3px rgba(13,49,79,.12)}
+.gl-add{margin-left:auto;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line,#e0e8f0);border-radius:10px;padding:8px 14px;background:var(--card,#fff);color:var(--pri-ink,#0f5fa8);font:700 13px Inter,system-ui,sans-serif;cursor:pointer}
+.gl-add svg{width:16px;height:16px}
+.gl-tl{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 12px;scroll-snap-type:x proximity}
+.gl-tm{flex:none;width:176px;border:2px solid transparent;border-radius:16px;background:var(--card,#fff);box-shadow:0 1px 2px rgba(13,49,79,.06),0 6px 16px rgba(13,49,79,.06);padding:0;cursor:pointer;text-align:left;overflow:hidden;font:inherit;color:inherit;scroll-snap-align:start;position:relative}
+.gl-tm.on{border-color:var(--pri,#0f5fa8)}
+.gl-tm .im{height:104px;background:#13406b center/cover}
+.gl-tm .tx{padding:9px 11px 11px}
+.gl-tm b{display:block;font-size:13.5px}
+.gl-tm small{display:block;font-size:11.5px;color:var(--muted,#5b7085);margin-top:2px}
+.gl-tm .pb{height:5px;border-radius:9px;background:var(--line,#e0e8f0);margin-top:7px;overflow:hidden}.gl-tm .pb i{display:block;height:100%;background:var(--ok,#16875d)}
+.gl-tm .n{position:absolute;top:8px;right:8px;padding:2px 8px;border-radius:8px;background:rgba(5,20,36,.6);color:#fff;font-size:11px;font-weight:700}
+.gl-tm::before{content:"";position:absolute;left:-12px;top:52px;width:12px;border-top:2px dashed var(--line,#d6e0ea)}
+.gl-tm:first-child::before{display:none}
+.gl-sum{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline;margin:6px 0 12px;font-size:13.5px;color:var(--muted,#5b7085)}
+.gl-sum h3{margin:0;font-size:17px;color:var(--navy,#073b63)}
+.gl-sum b{color:var(--ink,#132b43)}
+.gl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.gl-ph{position:relative;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:#13406b center/cover;cursor:pointer;border:0;padding:0}
+.gl-ph:hover{filter:brightness(1.06)}
+.gl-ph span{position:absolute;left:0;right:0;bottom:0;padding:18px 10px 8px;background:linear-gradient(0deg,rgba(0,0,0,.7),transparent);color:#fff;font:600 12px/1.35 Inter,system-ui,sans-serif;text-align:left}
+.gl-none{padding:40px 20px;text-align:center;color:var(--muted,#5b7085);border:1px dashed var(--line,#d6e0ea);border-radius:14px;line-height:1.6}
+/* bandingkan */
+.gl-cmp-pick{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.gl-cmp-pick label{display:block;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted,#5b7085);margin-bottom:6px}
+.gl-cmp-pick select{width:100%;padding:9px 10px;border-radius:10px;border:1px solid var(--line,#e0e8f0);background:var(--card,#fff);color:var(--ink,#132b43);font:600 13px Inter,system-ui,sans-serif}
+.gl-strip{display:flex;gap:6px;overflow-x:auto;margin-top:8px;padding-bottom:4px}
+.gl-strip button{flex:none;width:64px;height:48px;border-radius:8px;border:2px solid transparent;background:#13406b center/cover;cursor:pointer;padding:0}
+.gl-strip button.on{border-color:var(--pri,#0f5fa8)}
+.gl-cmp{position:relative;aspect-ratio:16/9;width:min(100%,calc(66vh*16/9));margin:0 auto;border-radius:16px;overflow:hidden;background:#000;user-select:none;touch-action:none}
+.gl-cmp .a,.gl-cmp .b{position:absolute;inset:0;background:#000 center/cover no-repeat}
+.gl-cmp .b{clip-path:inset(0 0 0 var(--x,50%))}
+.gl-cmp .h{position:absolute;top:0;bottom:0;left:var(--x,50%);width:3px;margin-left:-1.5px;background:#fff;box-shadow:0 0 8px rgba(0,0,0,.5);pointer-events:none}
+.gl-cmp .h::after{content:"⟷";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:#fff;color:#0b2a47;display:grid;place-items:center;font-size:18px;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+.gl-cmp .lb{position:absolute;top:12px;padding:5px 10px;border-radius:8px;background:rgba(5,20,36,.7);color:#fff;font:700 12px Inter,system-ui,sans-serif}
+.gl-cmp .lb.l{left:12px}.gl-cmp .lb.r{right:12px}
+.gl-cmp-note{font-size:12.5px;color:var(--muted,#5b7085);margin-top:8px}
+@media (max-width:640px){.gl-stories{gap:8px;justify-content:space-between}.gl-st{width:64px}.gl-ring{width:60px;height:60px;padding:2px}.gl-ring>span{border-width:2px}.gl-st b{font-size:10.5px}.gl-st small{font-size:9.5px}.gl-st.all svg{width:20px;height:20px}}
+@media (max-width:640px){.gl-gh{padding:12px 14px}.gl-gb{padding:12px 14px 30px}.gl-tm{width:148px}.gl-tm .im{height:88px}.gl-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.gl-cmp-pick{grid-template-columns:1fr}.gl-cmp{aspect-ratio:4/3}.gl-add span{display:none}}
+body.gl-lock{overflow:hidden}
+/* unggah foto */
+.gl-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:520;max-width:min(560px,calc(100vw - 32px));padding:12px 16px;border-radius:12px;background:#0b2a47;color:#fff;font:600 13.5px/1.5 Inter,system-ui,sans-serif;box-shadow:0 14px 40px rgba(0,0,0,.3);display:flex;gap:10px;align-items:flex-start}
+.gl-toast.bad{background:#a52826}.gl-toast.ok{background:#16734f}
+.gl-toast button{margin-left:auto;border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:8px;padding:4px 10px;font:700 12px Inter,system-ui,sans-serif;cursor:pointer;flex:none}
+.gl-up{position:fixed;inset:0;z-index:450;background:rgba(6,22,38,.5);display:flex;align-items:center;justify-content:center;padding:16px;font-family:Inter,system-ui,sans-serif;animation:glF .18s ease}
+.gl-up[hidden]{display:none}
+.gl-upc{width:min(860px,100%);max-height:calc(100vh - 32px);display:flex;flex-direction:column;background:var(--card,#fff);color:var(--ink,#132b43);border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,.35);overflow:hidden}
+.gl-uph{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line,#e0e8f0)}
+.gl-uph h3{margin:0;font-size:17px;color:var(--navy,#073b63);flex:1}.gl-uph h3 small{display:block;font-size:12px;font-weight:500;color:var(--muted,#5b7085);margin-top:2px}
+.gl-uph .gl-x{background:var(--tint,#f4f8fc);color:var(--ink,#132b43);border:1px solid var(--line,#e0e8f0)}
+.gl-upb{flex:1;overflow:auto;padding:16px 20px}
+.gl-uprow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.gl-uprow label{font-size:12px;font-weight:700;color:var(--muted,#5b7085);text-transform:uppercase;letter-spacing:.05em}
+.gl-uprow select{padding:8px 10px;border-radius:10px;border:1px solid var(--line,#e0e8f0);background:var(--card,#fff);color:var(--ink,#132b43);font:600 13px Inter,system-ui,sans-serif}
+.gl-uprow a{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--pri-ink,#0f5fa8);text-decoration:none}
+.gl-drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:26px 16px;border:2px dashed var(--line,#cdd9e5);border-radius:14px;background:var(--tint,#f4f8fc);text-align:center;cursor:pointer;color:var(--muted,#5b7085);font-size:13px}
+.gl-drop.over{border-color:var(--pri,#0f5fa8);background:var(--soft,#e8f3fb)}
+.gl-drop b{color:var(--ink,#132b43);font-size:14.5px}
+.gl-drop svg{width:30px;height:30px;color:var(--pri-ink,#0f5fa8)}
+.gl-note{padding:12px 14px;border-radius:12px;font-size:13px;line-height:1.55;margin-bottom:12px}
+.gl-note.warn{background:var(--warn-bg,#fff0bd);color:var(--warn,#8f6100)}.gl-note.bad{background:var(--bad-bg,#ffe3df);color:var(--bad,#c0302f)}
+.gl-note .gl-nbtn{display:inline-block;margin-top:8px;border:0;border-radius:9px;padding:7px 12px;background:#0f5fa8;color:#fff;font:700 12.5px Inter,system-ui,sans-serif;cursor:pointer}
+.gl-uplist{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:12px}
+.gl-upi{position:relative;border:1px solid var(--line,#e0e8f0);border-radius:12px;overflow:hidden;background:var(--card,#fff)}
+.gl-upi .th{aspect-ratio:4/3;background:#13406b center/cover}
+.gl-upi .rm{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:0;background:rgba(5,20,36,.7);color:#fff;font-size:16px;cursor:pointer}
+.gl-upi input{width:100%;border:0;border-top:1px solid var(--line,#e0e8f0);padding:8px 10px;font:500 12.5px Inter,system-ui,sans-serif;background:var(--card,#fff);color:var(--ink,#132b43);box-sizing:border-box}
+.gl-upi .meta{display:flex;justify-content:space-between;gap:6px;padding:6px 10px 8px;font-size:11px;color:var(--muted,#5b7085)}
+.gl-upi .meta span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gl-upi .meta b{font-weight:700;white-space:nowrap;flex:none}.gl-upi .meta .ok{color:var(--ok,#16875d)}.gl-upi .meta .err{color:var(--bad,#c0302f)}
+.gl-upi .bar{height:3px;background:var(--line,#e0e8f0)}.gl-upi .bar i{display:block;height:100%;width:0;background:var(--pri,#0f5fa8);transition:width .3s}
+.gl-upf{display:flex;align-items:center;gap:10px;padding:14px 20px;border-top:1px solid var(--line,#e0e8f0);background:var(--tint,#f4f8fc)}
+.gl-upf span{font-size:12.5px;color:var(--muted,#5b7085);flex:1}
+.gl-upf button{border:1px solid var(--line,#e0e8f0);border-radius:10px;padding:10px 16px;background:var(--card,#fff);color:var(--ink,#132b43);font:700 13px Inter,system-ui,sans-serif;cursor:pointer}
+.gl-upf button.pri{background:#0f5fa8;border-color:#0f5fa8;color:#fff}.gl-upf button:disabled{opacity:.5;cursor:not-allowed}
+@media (max-width:640px){.gl-uplist{grid-template-columns:repeat(2,minmax(0,1fr))}.gl-upf{flex-wrap:wrap}.gl-upf span{flex-basis:100%}}
+
+
+.gl-photo-delete,.gl-upload-delete{border:1px solid #c95858;background:#702b2b;color:#fff;border-radius:9px;padding:8px 12px;min-height:40px;cursor:pointer;font:inherit}
+.gl-upload-delete{position:relative;margin:8px;font-size:12px}
+.gl-del-confirm{position:fixed;inset:0;z-index:100500;background:#0009;display:flex;align-items:center;justify-content:center;padding:18px}
+.gl-del-card{width:min(460px,100%);max-height:85vh;overflow:auto;box-sizing:border-box;background:var(--card,#fff);color:var(--ink,#132b43);border:1px solid var(--line,#dce5ed);border-radius:18px;padding:24px;box-shadow:0 20px 80px #0005;font:inherit}
+.gl-del-card h3{margin:0 0 12px}.gl-del-card p{line-height:1.6}.gl-del-caption{color:var(--muted,#637890);overflow-wrap:anywhere}.gl-del-card>div{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}.gl-del-card button{font:inherit;min-height:44px;border-radius:10px;padding:10px 18px;border:1px solid var(--line,#ccd8e2);cursor:pointer}.gl-del-card [data-confirm]{background:#b83030;color:#fff;border-color:#b83030}.gl-del-card small{display:block;color:#dc6262;margin-top:12px;line-height:1.5}.gl-del-card button:disabled{opacity:.6;cursor:wait}
+
+</style>
+<script>
+/* window.pmoGallery: renderStories(el), openStory(projectId), open({project, month, mode}) */
+(function(){
+  if(window.pmoGallery)return;
+  var SV=function(p){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>'};
+  var IC={grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',plus:'<path d="M12 5v14M5 12h14"/>'};
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function tok(){try{if(typeof token!=='undefined'&&token)return token}catch(e){}try{return sessionStorage.getItem('pmoSessionToken')||''}catch(e){return ''}}
+  function nm(n){return String(n||'').toLowerCase().replace(/(^|[\s(\-\/])([a-z])/g,function(m,a,c){return a+c.toUpperCase()}).replace(/\b(Csu|Sa|Ubb|Pt)\b/g,function(w){return w.toUpperCase()})}
+  function pc(v,d){return v==null||!isFinite(v)?'—':(v*100).toLocaleString('id-ID',{minimumFractionDigits:d==null?2:d,maximumFractionDigits:d==null?2:d})+'%'}
+  function st(m){if(!m||m.pending||m.actual==null||m.plan==null)return '';var d=(m.actual-m.plan)*100;return d>0?'good':d>=-2?'warn':'bad'}
+  function stTxt(m){var s=st(m);return s==='good'?'On track':s==='warn'?'At risk':s==='bad'?'Critical':m&&m.pending?'Menunggu cut-off':''}
+  function drv(id,w){return 'https://drive.google.com/thumbnail?id='+encodeURIComponent(id)+'&sz=w'+(w||480)}
+  var IDX=null,loading=null,srv={},q={480:[],1280:[]},qt=null;
+  /* gambar: coba thumbnail Drive langsung; bila gagal, minta dari server (data URI) */
+  function setImg(el,id,w){w=w>=1000?1280:480;el.dataset.gid=id;el.dataset.gw=w;var k=w+':'+id;if(srv[k]){el.style.backgroundImage='url("'+srv[k]+'")';return}
+    var im=new Image();im.onload=function(){if(el.dataset.gid===id)el.style.backgroundImage='url("'+im.src+'")'};im.onerror=function(){q[w].push(el);clearTimeout(qt);qt=setTimeout(flush,60)};im.src=drv(id,w)}
+  function flush(){[480,1280].forEach(function(w){var els=q[w];q[w]=[];if(!els.length)return;var ids=[];els.forEach(function(e){if(ids.indexOf(e.dataset.gid)<0)ids.push(e.dataset.gid)});
+    for(var i=0;i<ids.length;i+=(w>500?4:12))(function(part){google.script.run.withSuccessHandler(function(r){var m=r&&r.images||{};Object.keys(m).forEach(function(id){srv[w+':'+id]=m[id]});els.forEach(function(e){var u=srv[w+':'+e.dataset.gid];if(u&&+e.dataset.gw===w)e.style.backgroundImage='url("'+u+'")'})}).withFailureHandler(function(){}).getGalleryThumbs(tok(),part,w)})(ids.slice(i,i+(w>500?4:12)))})}
+  function paintImgs(root){root.querySelectorAll('[data-img]').forEach(function(e){setImg(e,e.getAttribute('data-img'),+e.getAttribute('data-w')||480)})}
+  function load(cb){if(IDX)return cb(IDX);if(loading){loading.push(cb);return}loading=[cb];
+    var c=null;try{c=JSON.parse(localStorage.getItem('pmoGalIdx')||'null')}catch(e){}
+    if(c&&c.d&&Date.now()-c.t<864e5){IDX=c.d;IDX.canAdd=false;(IDX.projects||[]).forEach(function(p){p.canManage=false});var l=loading;loading=null;l.forEach(function(f){f(IDX)});refresh();return}
+    refresh()}
+  function refresh(){google.script.run.withSuccessHandler(function(d){if(!d||!d.success)return;var changed=JSON.stringify(d.projects)!==JSON.stringify(IDX&&IDX.projects)||!!d.canAdd!==!!(IDX&&IDX.canAdd);IDX=d;try{localStorage.setItem('pmoGalIdx',JSON.stringify({t:Date.now(),d:d}))}catch(e){}
+      if(loading){var l=loading;loading=null;l.forEach(function(f){f(IDX)})}else if(changed&&storyHost)renderStories(storyHost);if(changed&&gl&&!gl.hidden)renderG()}).withFailureHandler(function(){if(loading){var l=loading;loading=null;IDX={projects:[]};l.forEach(function(f){f(IDX)})}}).getGalleryIndex(tok())}
+  function projs(){return (IDX&&IDX.projects||[]).filter(function(p){return p.months&&p.months.length})}
+  function latest(p){return p.months[p.months.length-1]}
+  /* bulan acuan: foto bulan acuan, atau bulan terakhir sebelumnya yang ada fotonya */
+  var MON=['januari','februari','maret','april','mei','juni','juli','agustus','september','oktober','november','desember'];
+  function keyOf(v){v=String(v||'').trim();if(/^\d{4}-\d{2}$/.test(v))return v;var s=v.toLowerCase(),y=s.match(/(\d{4})/);if(!y)return '';for(var i=0;i<12;i++)if(s.indexOf(MON[i])>=0)return y[1]+'-'+('0'+(i+1)).slice(-2);return ''}
+  function nowKey(){var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)}
+  function pick(p,ak){if(!ak)return latest(p);for(var i=p.months.length-1;i>=0;i--)if(p.months[i].key<=ak)return p.months[i];return null}
+  function seenKey(p,m){m=m||latest(p);return 'pmoGalSeen:'+p.id+':'+m.key+':'+m.photos.length}
+  function isSeen(p,m){try{return !!localStorage.getItem(seenKey(p,m))}catch(e){return false}}
+  /* ---- sorotan (story) di Portal ---- */
+  var storyHost=null,storyOpt={};
+  /* renderStories(host, {month}) — month: 'Oktober 2026' atau '2026-10'; tanpa month = bulan berjalan */
+  function renderStories(host,opt){storyHost=host;if(opt!==undefined)storyOpt=opt||{};load(function(){
+    var ak=keyOf(storyOpt.month)||nowKey(),fixed=!!keyOf(storyOpt.month),albl=fixed?(String(storyOpt.month).indexOf('-')>0?ak:String(storyOpt.month)):'';
+    var list=projs().filter(function(p){return pick(p,ak)});
+    var allBtn='<button type="button" class="gl-st all" data-all="1"><div class="gl-ring"><span>'+SV(IC.grid)+'</span></div><b>Galeri lengkap</b><small>'+(projs().length?'Timeline &amp; bandingkan':(IDX&&IDX.canAdd?'Tambah foto':'Buka galeri'))+'</small></button>';
+    var openAll=function(){open(fixed?{month:ak}:{})};
+    if(!list.length&&fixed&&projs().length){host.innerHTML=allBtn+'<div class="gl-empty-note" style="align-self:center;max-width:520px">Belum ada foto lapangan sampai '+esc(albl)+'. Foto bulan berikutnya bisa dilihat dengan memilih bulan lain atau lewat <b>Galeri lengkap</b>.</div>';host.querySelector('.gl-st').onclick=openAll;return}
+    if(!list.length){host.innerHTML=allBtn+'<div class="gl-empty-note" style="align-self:center;max-width:520px">Belum ada foto lapangan. '+(IDX&&IDX.canAdd?'Klik <b>Galeri lengkap</b> › pilih proyek › <b>Tambah foto</b> untuk membuka folder Drive bulan ini, atau unggah foto di Pelaporan Manajemen.':'Foto dari Pelaporan Manajemen atau folder Drive "Galeri Foto" tiap proyek akan tampil di sini.')+'</div>';host.querySelector('.gl-st').onclick=function(){open({})};return}
+    list.sort(function(a,b){return (isSeen(a,pick(a,ak))?1:0)-(isSeen(b,pick(b,ak))?1:0)});
+    host.innerHTML=list.map(function(p){var m=pick(p,ak),old=m.key!==ak;return '<button type="button" class="gl-st'+(isSeen(p,m)?' seen':'')+'" data-p="'+esc(p.id)+'" title="'+esc(nm(p.name))+' · '+esc(m.label)+(old?' (belum ada foto '+esc(fixed?albl:'bulan ini')+', ditampilkan foto terakhir)':'')+'"><div class="gl-ring"><span data-img="'+esc(m.photos[0].id)+'" data-w="480"></span></div><b>'+esc(nm(p.name))+'</b><small>'+esc(m.label.split(' ')[0])+' · '+m.photos.length+' foto</small></button>'}).join('')+allBtn;
+    paintImgs(host);
+    host.querySelectorAll('.gl-st').forEach(function(b){b.onclick=function(){if(b.getAttribute('data-all'))openAll();else openStory(b.getAttribute('data-p'),{anchor:ak})}});
+  })}
+  /* ---- penampil story ---- */
+  var sv=null,S={};
+  function buildSv(){sv=document.createElement('div');sv.className='gl-sv';sv.hidden=true;sv.setAttribute('role','dialog');sv.setAttribute('aria-modal','true');sv.setAttribute('aria-label','Foto lapangan');
+    sv.innerHTML='<button type="button" class="gl-sv-nav l" aria-label="Sebelumnya">‹</button><div class="gl-sv-stage"><div class="gl-sv-bg"></div><div class="gl-sv-img"></div><div class="gl-sv-top"><div class="gl-bars"></div><div class="gl-sv-h"><span class="av"></span><div><b></b><small></small></div><button type="button" class="gl-x" aria-label="Tutup">×</button></div></div><button type="button" class="gl-tap l" aria-label="Foto sebelumnya"></button><button type="button" class="gl-tap r" aria-label="Foto berikutnya"></button><div class="gl-sv-bot"><p class="gl-sv-cap"></p><div class="gl-sv-chips"></div></div></div><button type="button" class="gl-sv-nav r" aria-label="Berikutnya">›</button>';
+    document.body.appendChild(sv);
+    sv.querySelector('.gl-x').onclick=closeStory;sv.querySelector('.gl-tap.l').onclick=function(){step(-1)};sv.querySelector('.gl-tap.r').onclick=function(){step(1)};
+    sv.querySelector('.gl-sv-nav.l').onclick=function(){step(-1)};sv.querySelector('.gl-sv-nav.r').onclick=function(){step(1)};
+    var hold=function(v){S.paused=v};['pointerdown'].forEach(function(e){sv.querySelector('.gl-sv-stage').addEventListener(e,function(){hold(true)})});['pointerup','pointerleave'].forEach(function(e){sv.querySelector('.gl-sv-stage').addEventListener(e,function(){hold(false)})});
+    document.addEventListener('keydown',function(e){if(sv.hidden)return;if(e.key==='Escape')closeStory();else if(e.key==='ArrowRight')step(1);else if(e.key==='ArrowLeft')step(-1)})}
+  function openStory(pid,opt){opt=opt||{};load(function(){var ak=opt.anchor?keyOf(opt.anchor):'',list=projs().filter(function(p){return !ak||pick(p,ak)});var pi=Math.max(0,list.findIndex(function(p){return p.id===pid}));if(!list.length)return;if(!sv)buildSv();
+    S={list:list,pi:pi,mi:null,i:opt.index||0,auto:!opt.album,month:opt.month||null,anchor:ak||null,paused:false};sv.hidden=false;document.body.classList.add('gl-lock');show()})}
+  function curMonth(){var p=S.list[S.pi];if(S.month){var m=p.months.find(function(x){return x.key===S.month});if(m)return m}return (S.anchor&&pick(p,S.anchor))||latest(p)}
+  function show(){var p=S.list[S.pi],m=curMonth(),ph=m.photos[S.i];if(!ph)return;
+    try{localStorage.setItem(seenKey(p,m),'1')}catch(e){}
+    var img=sv.querySelector('.gl-sv-img'),bg=sv.querySelector('.gl-sv-bg');img.style.backgroundImage='';setImg(img,ph.id,1280);setImg(bg,ph.id,480);setImg(sv.querySelector('.av'),p.banner||m.photos[0].id,480);
+    sv.querySelector('.gl-sv-h b').textContent=nm(p.name);sv.querySelector('.gl-sv-h small').textContent=m.label+' · foto '+(S.i+1)+' dari '+m.photos.length+(ph.date?' · '+ph.date:'');
+    sv.querySelector('.gl-sv-cap').textContent=ph.cap||'';sv.querySelector('.gl-sv-cap').style.display=ph.cap?'':'none';
+    var s=st(m);sv.querySelector('.gl-sv-chips').innerHTML=(m.actual!=null?'<span class="gl-chip">Aktual '+pc(m.actual)+'</span>':'')+(m.plan!=null?'<span class="gl-chip">Plan '+pc(m.plan)+'</span>':'')+(stTxt(m)?'<span class="gl-chip '+s+'">'+stTxt(m)+'</span>':'')+'<button type="button" class="gl-sv-more">Lihat galeri</button>'+(p.canManage===true?'<button type="button" class="gl-photo-delete">Hapus foto</button>':'');
+    var del=sv.querySelector('.gl-photo-delete');if(del)del.onclick=function(){askDeletePhoto(p,ph)};
+    sv.querySelector('.gl-sv-more').onclick=function(){var pid=p.id,mk=m.key;closeStory();open({project:pid,month:mk})};
+    var bars=sv.querySelector('.gl-bars');bars.innerHTML=m.photos.map(function(_,k){return '<i class="'+(k<S.i?'done':'')+'"><b></b></i>'}).join('');
+    clearInterval(S.tm);if(!S.auto)return;var cur=bars.children[S.i].firstChild,t=0;S.tm=setInterval(function(){if(S.paused||sv.hidden)return;t+=50;cur.style.width=Math.min(100,t/5000*100)+'%';if(t>=5000)step(1)},50)}
+  function step(d){var p=S.list[S.pi],m=curMonth();S.i+=d;
+    if(S.i>=m.photos.length){if(!S.auto||S.month){S.i=m.photos.length-1;closeStory();return}if(S.pi<S.list.length-1){S.pi++;S.i=0}else{closeStory();return}}
+    else if(S.i<0){if(S.auto&&!S.month&&S.pi>0){S.pi--;S.i=curMonth().photos.length-1}else S.i=0}
+    show()}
+  function closeStory(){if(!sv)return;clearInterval(S.tm);sv.hidden=true;if(!gl||gl.hidden)document.body.classList.remove('gl-lock');if(storyHost)renderStories(storyHost)}
+  /* ---- galeri: timeline, album, bandingkan ---- */
+  var gl=null,G={};
+  function open(o){o=o||{};load(function(){var list=projs();if(!gl){gl=document.createElement('div');gl.className='gl-g';gl.hidden=true;gl.setAttribute('role','dialog');gl.setAttribute('aria-modal','true');gl.innerHTML='<div class="gl-gh"><h2>Galeri foto proyek<small>Perkembangan lapangan per bulan</small></h2><button type="button" class="gl-x" aria-label="Tutup">×</button></div><div class="gl-gb"><div class="gl-wrap" id="glBody"></div></div>';document.body.appendChild(gl);gl.querySelector('.gl-x').onclick=function(){gl.hidden=true;document.body.classList.remove('gl-lock')};document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!gl.hidden&&(!sv||sv.hidden)){gl.hidden=true;document.body.classList.remove('gl-lock')}})}
+    var all=(IDX&&IDX.projects)||[];var pid=o.project||(G.pid)||(list[0]&&list[0].id)||(all[0]&&all[0].id);
+    G={pid:pid,month:o.month||null,mode:o.mode||'album',a:null,b:null,ai:0,bi:0};gl.hidden=false;document.body.classList.add('gl-lock');renderG()})}
+  function renderG(){var all=(IDX&&IDX.projects)||[],p=all.find(function(x){return x.id===G.pid})||all[0];var body=gl.querySelector('#glBody');if(!p){body.innerHTML='<div class="gl-none">Belum ada proyek.</div>';return}
+    var ms=p.months||[];if(!G.month||!ms.some(function(m){return m.key===G.month}))G.month=ms.length?ms[ms.length-1].key:null;var m=ms.find(function(x){return x.key===G.month});
+    var h='<div class="gl-projs">'+all.map(function(x){var n=(x.months||[]).reduce(function(s,y){return s+y.photos.length},0);return '<button type="button" class="gl-pchip'+(x.id===p.id?' on':'')+'" data-p="'+esc(x.id)+'"><i data-img="'+esc(x.banner||'')+'" data-w="480"></i>'+esc(nm(x.name))+' <em>'+n+' foto</em></button>'}).join('')+'</div>';
+    h+='<div class="gl-tools"><div class="gl-seg" role="tablist"><button type="button" data-m="album" class="'+(G.mode==='album'?'on':'')+'">Album bulanan</button><button type="button" data-m="cmp" class="'+(G.mode==='cmp'?'on':'')+'"'+(ms.length<2?' disabled title="Perlu foto minimal 2 bulan"':'')+'>Bandingkan</button></div>'+(p.canManage===true?'<button type="button" class="gl-add" id="glAdd">'+SV(IC.plus)+'<span>Tambah foto '+esc(m?m.label:'bulan ini')+'</span></button>':'')+'</div>';
+    if(!ms.length){h+='<div class="gl-none"><b>Belum ada foto untuk '+esc(nm(p.name))+'.</b><br>Unggah foto di Pelaporan Manajemen, atau taruh foto di folder Drive proyek › <b>Galeri Foto</b> › subfolder bulan (misal <b>2026-10</b>).</div>';body.innerHTML=h;wireG(p,m);return}
+    h+='<div class="gl-tl">'+ms.map(function(x){var a=Math.max(0,Math.min(100,(x.actual||0)*100));return '<button type="button" class="gl-tm'+(x.key===G.month?' on':'')+'" data-k="'+esc(x.key)+'"><div class="im" data-img="'+esc(x.photos[0].id)+'" data-w="480"></div><span class="n">'+x.photos.length+' foto</span><div class="tx"><b>'+esc(x.label)+'</b><small>Aktual '+pc(x.actual)+(x.plan!=null?' · plan '+pc(x.plan):'')+'</small><div class="pb"><i style="width:'+a+'%"></i></div></div></button>'}).join('')+'</div>';
+    if(G.mode==='cmp')h+=cmpHtml(ms);
+    else h+='<div class="gl-sum"><h3>'+esc(m.label)+'</h3><span>Aktual <b>'+pc(m.actual)+'</b></span><span>Plan <b>'+pc(m.plan)+'</b></span>'+(stTxt(m)?'<span>'+stTxt(m)+'</span>':'')+'<span>'+m.photos.length+' foto</span></div><div class="gl-grid">'+m.photos.map(function(ph,i){return '<button type="button" class="gl-ph" data-i="'+i+'" data-img="'+esc(ph.id)+'" data-w="480">'+(ph.cap?'<span>'+esc(ph.cap)+'</span>':'')+'</button>'}).join('')+'</div>';
+    body.innerHTML=h;wireG(p,m);paintImgs(body);var on=body.querySelector('.gl-tm.on');if(on&&on.scrollIntoView)on.scrollIntoView({block:'nearest',inline:'center'})}
+  function cmpHtml(ms){if(!G.a||!ms.some(function(x){return x.key===G.a}))G.a=ms[0].key;if(!G.b||!ms.some(function(x){return x.key===G.b}))G.b=ms[ms.length-1].key;
+    var A=ms.find(function(x){return x.key===G.a}),B=ms.find(function(x){return x.key===G.b});G.ai=Math.min(G.ai,A.photos.length-1);G.bi=Math.min(G.bi,B.photos.length-1);
+    var opts=function(sel){return ms.map(function(x){return '<option value="'+esc(x.key)+'"'+(x.key===sel?' selected':'')+'>'+esc(x.label)+' · '+pc(x.actual,1)+'</option>'}).join('')};
+    var strip=function(M,cur,side){return '<div class="gl-strip">'+M.photos.map(function(ph,i){return '<button type="button" class="'+(i===cur?'on':'')+'" data-s="'+side+'" data-i="'+i+'" data-img="'+esc(ph.id)+'" data-w="480" aria-label="Foto '+(i+1)+'"></button>'}).join('')+'</div>'};
+    return '<div class="gl-cmp-pick"><div><label>Sebelum</label><select id="glA">'+opts(G.a)+'</select>'+strip(A,G.ai,'a')+'</div><div><label>Sesudah</label><select id="glB">'+opts(G.b)+'</select>'+strip(B,G.bi,'b')+'</div></div>'+
+      '<div class="gl-cmp" id="glCmp" style="--x:50%"><div class="a" data-img="'+esc(A.photos[G.ai].id)+'" data-w="1280"></div><div class="b" data-img="'+esc(B.photos[G.bi].id)+'" data-w="1280"></div><div class="h"></div><span class="lb l">'+esc(A.label)+' · '+pc(A.actual,1)+'</span><span class="lb r">'+esc(B.label)+' · '+pc(B.actual,1)+'</span></div><p class="gl-cmp-note">Geser garis putih untuk membandingkan. Hasil paling baik bila foto diambil dari posisi yang sama tiap bulan. Progres naik <b>'+(A.actual!=null&&B.actual!=null?((B.actual-A.actual)*100).toLocaleString('id-ID',{maximumFractionDigits:2})+' poin':'—')+'</b>.</p>'}
+  function wireG(p,m){var body=gl.querySelector('#glBody');
+    body.querySelectorAll('.gl-pchip').forEach(function(b){b.onclick=function(){G.pid=b.getAttribute('data-p');G.month=null;G.a=G.b=null;G.ai=G.bi=0;renderG()}});
+    body.querySelectorAll('.gl-seg button').forEach(function(b){b.onclick=function(){if(b.disabled)return;G.mode=b.getAttribute('data-m');renderG()}});
+    body.querySelectorAll('.gl-tm').forEach(function(b){b.onclick=function(){G.month=b.getAttribute('data-k');if(G.mode==='cmp'){G.b=G.month;G.bi=0}renderG()}});
+    body.querySelectorAll('.gl-ph').forEach(function(b){b.onclick=function(){openStory(p.id,{album:true,month:G.month,index:+b.getAttribute('data-i')})}});
+    var add=body.querySelector('#glAdd');if(add)add.onclick=function(){openUpload(p,G.month)};
+    var A=body.querySelector('#glA'),B=body.querySelector('#glB');if(A)A.onchange=function(){G.a=A.value;G.ai=0;renderG()};if(B)B.onchange=function(){G.b=B.value;G.bi=0;renderG()};
+    body.querySelectorAll('.gl-strip button').forEach(function(b){b.onclick=function(){if(b.getAttribute('data-s')==='a')G.ai=+b.getAttribute('data-i');else G.bi=+b.getAttribute('data-i');renderG()}});
+    var c=body.querySelector('#glCmp');if(c){var drag=false,set=function(x){var r=c.getBoundingClientRect();c.style.setProperty('--x',Math.max(0,Math.min(100,(x-r.left)/r.width*100))+'%')};
+      c.addEventListener('pointerdown',function(e){drag=true;try{c.setPointerCapture(e.pointerId)}catch(_){}set(e.clientX)});c.addEventListener('pointermove',function(e){if(drag)set(e.clientX)});c.addEventListener('pointerup',function(){drag=false})}}
+
+  /* ---- notifikasi ---- */
+  var toastEl=null,toastTm=null;
+  function toast(msg,type,action){if(!toastEl){toastEl=document.createElement('div');toastEl.setAttribute('role','status');document.body.appendChild(toastEl)}
+    toastEl.className='gl-toast '+(type||'');toastEl.innerHTML='<span>'+esc(msg)+'</span>'+(action?'<button type="button">'+esc(action.label)+'</button>':'')+'<button type="button" aria-label="Tutup">×</button>';toastEl.hidden=false;
+    var bs=toastEl.querySelectorAll('button');if(action)bs[0].onclick=function(){toastEl.hidden=true;action.fn()};bs[bs.length-1].onclick=function(){toastEl.hidden=true};
+    clearTimeout(toastTm);toastTm=setTimeout(function(){toastEl.hidden=true},type==='bad'?9000:5000)}
+  function base(){try{if(typeof appUrl!=='undefined'&&appUrl)return appUrl}catch(e){}return String(window.location.href).split('?')[0]}
+  function goSetup(name){window.top.location.href=base()+'?page=project&project='+encodeURIComponent(name||'')}
+  /* ---- unggah foto dari komputer ---- */
+  var up=null,U={};
+  /* Hapus dari galeri dan Drive; pemeriksaan hak akses final berada di server. */
+  var deletingPhoto=false;
+  function askDeletePhoto(p,ph,done){
+    if(deletingPhoto||!p||p.canManage!==true||!ph||!ph.id)return;
+    var focus=document.activeElement,paused=!!(sv&&!sv.hidden),box=document.createElement('div');
+    if(paused)S.paused=true;
+    box.className='gl-del-confirm';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.setAttribute('aria-label','Hapus foto');
+    box.innerHTML='<div class="gl-del-card"><h3>Hapus foto ini?</h3><p>Foto proyek <b>'+esc(nm(p.name))+'</b> akan dipindahkan ke Sampah Google Drive. Jika dipakai pada laporan manajemen, slot foto tersebut juga dikosongkan.</p><p class="gl-del-caption">'+esc(ph.cap||'Foto lapangan')+'</p><div><button type="button" data-cancel>Batal</button><button type="button" data-confirm>Hapus foto</button></div><small role="status"></small></div>';
+    document.body.appendChild(box);
+    var cancel=box.querySelector('[data-cancel]'),confirm=box.querySelector('[data-confirm]');
+    function close(){box.remove();if(paused)S.paused=false;if(focus&&focus.isConnected)focus.focus()}
+    cancel.onclick=function(){if(!deletingPhoto)close()};
+    box.onkeydown=function(e){if(e.key==='Escape'){e.stopPropagation();if(!deletingPhoto)close()}if(e.key==='Tab'){e.preventDefault();(document.activeElement===cancel?confirm:cancel).focus()}};
+    confirm.onclick=function(){
+      if(deletingPhoto)return;deletingPhoto=true;cancel.disabled=confirm.disabled=true;confirm.textContent='Menghapus…';
+      google.script.run.withSuccessHandler(function(r){deletingPhoto=false;if(!r||!r.success){cancel.disabled=confirm.disabled=false;confirm.textContent='Hapus foto';box.querySelector('small').textContent='Foto belum terhapus. Coba lagi.';return}close();
+        Object.keys(srv).forEach(function(k){if(k.slice(k.indexOf(':')+1)===String(ph.id))delete srv[k]});
+        if(sv&&!sv.hidden)closeStory();
+        if(done)done();refreshAll();toast('Foto dipindahkan ke Sampah Drive.','ok');
+      }).withFailureHandler(function(e){deletingPhoto=false;cancel.disabled=confirm.disabled=false;confirm.textContent='Hapus foto';box.querySelector('small').textContent=e&&e.message||'Foto belum berhasil dihapus.';}).deleteGalleryPhoto(tok(),p.id,ph.id);
+    };cancel.focus();
+  }
+
+  function monthOpts(sel){var out=[],d=new Date();for(var i=0;i<6;i++){var x=new Date(d.getFullYear(),d.getMonth()-i,1),k=x.getFullYear()+'-'+('0'+(x.getMonth()+1)).slice(-2);out.push('<option value="'+k+'"'+(k===sel?' selected':'')+'>'+['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'][x.getMonth()]+' '+x.getFullYear()+'</option>')}
+    if(sel&&out.join('').indexOf('"'+sel+'"')<0)out.push('<option value="'+esc(sel)+'" selected>'+esc(sel)+'</option>');return out.join('')}
+  function openUpload(p,month){if(p.canManage!==true){toast('Tambah dan hapus foto hanya untuk Admin atau INPUT/PIC proyek ini.','bad');return}var now=new Date(),cur=now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2);
+    U={p:p,month:month||cur,items:[],busy:false,info:null};
+    if(!up){up=document.createElement('div');up.className='gl-up';up.hidden=true;up.setAttribute('role','dialog');up.setAttribute('aria-modal','true');document.body.appendChild(up);up.addEventListener('click',function(e){if(e.target===up&&!U.busy)closeUpload()})}
+    up.hidden=false;renderUp();
+    google.script.run.withSuccessHandler(function(r){U.info=r;renderUp()}).withFailureHandler(function(e){U.info={error:e&&e.message||'Info folder tidak dapat dimuat.'};renderUp()}).getGalleryUploadInfo(tok(),p.id)}
+  function closeUpload(){if(U.items.some(function(x){return x.st==='ok'})){refreshAll()}up.hidden=true;U.items.forEach(function(x){if(x.url)URL.revokeObjectURL(x.url)})}
+  function refreshAll(){IDX=null;try{localStorage.removeItem('pmoGalIdx')}catch(e){}load(function(){if(gl&&!gl.hidden)renderG();if(storyHost)renderStories(storyHost)})}
+  function fmtSize(b){return b>1048576?(b/1048576).toFixed(1).replace('.',',')+' MB':Math.round(b/1024)+' KB'}
+  function renderUp(){var p=U.p,info=U.info,pending=U.items.filter(function(x){return x.st!=='ok'}).length,done=U.items.filter(function(x){return x.st==='ok'}).length;
+    var noFolder=info&&info.folderSet===false,err=info&&info.error;
+    var h='<div class="gl-upc"><div class="gl-uph"><h3>Tambah foto · '+esc(nm(p.name))+'<small>Pilih foto dari komputer atau HP, periksa pratinjau, lalu unggah ke Google Drive proyek.</small></h3><button type="button" class="gl-x" aria-label="Tutup">×</button></div><div class="gl-upb">';
+    if(err)h+='<div class="gl-note bad">'+esc(err)+'</div>';
+    else if(noFolder)h+='<div class="gl-note warn"><b>Folder Google Drive proyek belum diatur.</b><br>Foto disimpan di folder Drive milik tim proyek. Isi dulu link folder di menu <b>Tambah / Edit Proyek › Folder Google Drive proyek</b>, lalu bagikan folder itu ke akun <b>'+esc(info.account||'pemilik dashboard')+'</b> sebagai Editor.'+(info.role==='ADMIN'||info.role==='INPUT'||info.role==='PIC'?'<br><button type="button" class="gl-nbtn" id="glGoSetup">Buka Tambah / Edit Proyek</button>':'')+'</div>';
+    h+='<div class="gl-uprow"><label for="glUpMonth">Bulan</label><select id="glUpMonth"'+(U.busy?' disabled':'')+'>'+monthOpts(U.month)+'</select>'+(info&&info.folderSet?'<a href="#" id="glOpenFolder">Buka folder Drive ↗</a>':'')+'</div>';
+    if(!noFolder&&!err)h+='<label class="gl-drop" id="glDrop"><input type="file" id="glFiles" accept="image/jpeg,image/png,image/webp" multiple hidden'+(U.busy?' disabled':'')+'>'+SV('<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/>')+'<b>Pilih foto</b><span>atau seret beberapa foto ke sini · JPG, PNG, WEBP · foto besar otomatis diperkecil</span></label>';
+    if(U.items.length)h+='<div class="gl-uplist">'+U.items.map(function(x,i){var stx=x.st==='ok'?'<b class="ok">✓ Terunggah</b>':x.st==='err'?'<b class="err">Gagal</b>':x.st==='up'?'<b>Mengunggah…</b>':x.st==='prep'?'<b>Menyiapkan…</b>':'<span>Siap</span>';
+      return '<div class="gl-upi"><div class="th" style="background-image:url(\''+x.url+'\')"></div>'+(x.st==='ok'&&x.savedId&&!U.busy?'<button type="button" class="gl-upload-delete" data-delete="'+i+'">Hapus dari Drive</button>':'')+(x.st==='ok'||U.busy?'':'<button type="button" class="rm" data-i="'+i+'" aria-label="Hapus">×</button>')+'<input type="text" data-i="'+i+'" maxlength="160" placeholder="Keterangan foto (opsional)" value="'+esc(x.cap)+'"'+(x.st==='ok'||U.busy?' disabled':'')+'><div class="bar"><i style="width:'+(x.st==='ok'?100:x.st==='up'?60:x.st==='prep'?25:0)+'%"></i></div><div class="meta"><span>'+esc(x.file.name.slice(0,24))+' · '+fmtSize(x.out?x.out.size:x.file.size)+'</span>'+stx+'</div>'+(x.err?'<div class="meta"><span class="err">'+esc(x.err)+'</span></div>':'')+'</div>'}).join('')+'</div>';
+    h+='</div><div class="gl-upf"><span>'+(U.items.length?U.items.length+' foto dipilih'+(done?' · '+done+' terunggah':''):'Belum ada foto dipilih')+'</span><button type="button" id="glUpClose">'+(done&&!pending?'Selesai':'Tutup')+'</button><button type="button" class="pri" id="glUpGo"'+(!pending||U.busy||noFolder||err?' disabled':'')+'>'+(U.busy?'Mengunggah…':'Unggah '+(pending||'')+' foto')+'</button></div></div>';
+    up.innerHTML=h;
+    up.querySelector('.gl-x').onclick=function(){if(!U.busy)closeUpload()};up.querySelector('#glUpClose').onclick=function(){if(!U.busy)closeUpload()};
+    var gs=up.querySelector('#glGoSetup');if(gs)gs.onclick=function(){goSetup(p.name)};
+    var mo=up.querySelector('#glUpMonth');mo.onchange=function(){U.month=mo.value};
+    var of=up.querySelector('#glOpenFolder');if(of)of.onclick=function(e){e.preventDefault();google.script.run.withSuccessHandler(function(r){if(r&&r.url)window.open(r.url,'_blank','noopener')}).withFailureHandler(function(e){toast(e&&e.message||'Folder tidak dapat dibuka.','bad')}).getGalleryFolderUrl(tok(),p.id,U.month)};
+    var fi=up.querySelector('#glFiles'),dr=up.querySelector('#glDrop');
+    if(fi)fi.onchange=function(){addFiles(fi.files);fi.value=''};
+    if(dr){['dragenter','dragover'].forEach(function(ev){dr.addEventListener(ev,function(e){e.preventDefault();dr.classList.add('over')})});['dragleave','drop'].forEach(function(ev){dr.addEventListener(ev,function(e){e.preventDefault();dr.classList.remove('over')})});dr.addEventListener('drop',function(e){if(!U.busy)addFiles(e.dataTransfer.files)})}
+    up.querySelectorAll('.rm').forEach(function(b){b.onclick=function(){var x=U.items.splice(+b.getAttribute('data-i'),1)[0];if(x&&x.url)URL.revokeObjectURL(x.url);renderUp()}});
+    up.querySelectorAll('.gl-upi input').forEach(function(inp){inp.oninput=function(){U.items[+inp.getAttribute('data-i')].cap=inp.value}});
+    up.querySelectorAll('[data-delete]').forEach(function(b){b.onclick=function(){var index=+b.getAttribute('data-delete'),x=U.items[index];askDeletePhoto(U.p,{id:x.savedId,cap:x.cap||x.file.name},function(){U.items.splice(index,1);if(x.url)URL.revokeObjectURL(x.url);renderUp()})}});
+    up.querySelector('#glUpGo').onclick=startUpload}
+  function addFiles(list){var bad=0;Array.prototype.forEach.call(list||[],function(f){if(!/^image\/(jpeg|png|webp)$/.test(f.type)){bad++;return}if(U.items.length>=30){bad++;return}U.items.push({file:f,url:URL.createObjectURL(f),cap:'',st:'new'})});
+    if(bad)toast(bad+' file dilewati (bukan JPG/PNG/WEBP atau melebihi 30 foto per unggahan).','bad');renderUp()}
+  function shrink(f){return new Promise(function(res,rej){var img=new Image();img.onload=function(){var M=2560,w=img.naturalWidth,h=img.naturalHeight,k=Math.min(1,M/Math.max(w,h));
+      if(k===1&&f.size<=3.5*1048576){var rd=new FileReader();rd.onload=function(){res({mime:f.type,base64:String(rd.result).split(',')[1],size:f.size})};rd.onerror=rej;rd.readAsDataURL(f);return}
+      var c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h*k);var g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(img,0,0,c.width,c.height);
+      var u=c.toDataURL('image/jpeg',0.86);res({mime:'image/jpeg',base64:u.split(',')[1],size:Math.round(u.length*0.75)})};img.onerror=function(){rej(new Error('Foto tidak dapat dibaca.'))};img.src=URL.createObjectURL(f)})}
+  function startUpload(){if(U.busy)return;var queue=U.items.filter(function(x){return x.st!=='ok'});if(!queue.length)return;U.busy=true;var ok=0,fail=0,i=0;renderUp();
+    var next=function(){if(i>=queue.length){U.busy=false;renderUp();if(ok)galleryAfterUpload();toast(fail?ok+' foto terunggah, '+fail+' gagal. Periksa foto yang gagal lalu coba lagi.':ok+' foto berhasil diunggah ke '+(U.info&&U.info.folderName?U.info.folderName+' › ':'')+'Galeri Foto › '+U.month+'.',fail?'bad':'ok');return}
+      var x=queue[i++];x.st='prep';x.err='';renderUp();
+      shrink(x.file).then(function(o){x.out=o;x.st='up';renderUp();var nmf=x.file.name.replace(/\.[^.]+$/,'')+(o.mime==='image/jpeg'&&!/\.jpe?g$/i.test(x.file.name)?'.jpg':x.file.name.match(/\.[^.]+$/)?x.file.name.match(/\.[^.]+$/)[0]:'.jpg');
+        google.script.run.withSuccessHandler(function(r){x.savedId=r&&r.id;x.st='ok';ok++;next()}).withFailureHandler(function(e){x.st='err';x.err=e&&e.message||'Gagal mengunggah.';fail++;if(/belum diatur/.test(x.err)){U.info=U.info||{};U.info.folderSet=false}next()}).uploadGalleryPhoto(tok(),U.p.id,U.month,{name:nmf,mime:o.mime,base64:o.base64,caption:x.cap})
+      }).catch(function(e){x.st='err';x.err=e.message;fail++;next()})};
+    next()}
+  function galleryAfterUpload(){G.month=U.month;refreshAll()}
+  window.pmoGallery={renderStories:renderStories,openStory:openStory,open:open,refresh:refresh};
+  var host=document.getElementById('glStories');if(host&&tok())renderStories(host);
+})();
+</script>

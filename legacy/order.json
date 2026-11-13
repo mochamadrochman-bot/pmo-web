@@ -1,0 +1,18 @@
+[
+ "AiApi",
+ "Auth",
+ "Code",
+ "DocApi",
+ "EngApi",
+ "EngFilesApi",
+ "EpcApi",
+ "InputApi",
+ "LibraryApi",
+ "LifecycleApi",
+ "LiveApi",
+ "MonthlyApi",
+ "MonthlyDocApi",
+ "ProjectApi",
+ "ReportApi",
+ "WeeklyPrintApi"
+]

@@ -1,0 +1,74 @@
+<style>
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin: 0 0 18px; }
+  .panel h2 { font-size: 16px; margin: 0 0 6px; color: var(--navy); }
+  .muted { color: var(--muted); }
+  ol.langkah { margin: 8px 0 0 18px; padding: 0; font-size: 14px; }
+  ol.langkah li { margin: 4px 0; }
+  .drop { margin-top: 14px; border: 2px dashed var(--line); border-radius: 12px; padding: 22px; text-align: center; background: #fbfcfd; }
+  .drop.over { border-color: var(--teal); background: #f0fdfa; }
+  .btn { padding: 9px 16px; border-radius: 8px; border: 0; background: var(--navy); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .ok { color: #166534; font-size: 14px; margin-top: 12px; }
+  table.sheets td, table.sheets th { font-size: 13px; padding: 6px 10px; }
+  .warn { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-top: 12px; }
+</style>
+
+<h1>Impor Data</h1>
+<p class="sub">Isi spreadsheet PMO DASHBOARD yang dipakai halaman Portal, Executive, Weekly, dan modul lain.</p>
+
+<div class="panel">
+  <h2>Unggah spreadsheet</h2>
+  <ol class="langkah">
+    <li>Buka spreadsheet <b>PMO DASHBOARD</b> di Google Sheets.</li>
+    <li>Menu <b>File → Download → Microsoft Excel (.xlsx)</b>.</li>
+    <li>Pilih atau seret berkas itu ke kotak di bawah, lalu klik <b>Impor</b>.</li>
+  </ol>
+  <div class="warn">Impor <b>mengganti seluruh</b> data spreadsheet di server dengan isi berkas. Perubahan yang dibuat lewat aplikasi baru setelah impor terakhir akan tertimpa.</div>
+  <div class="drop" id="drop">
+    <input type="file" id="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+    <div style="margin-top:12px"><button class="btn" id="go" disabled>Impor</button></div>
+    <div class="err" id="err" role="alert"></div>
+    <div class="ok" id="ok" role="status"></div>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>Data saat ini</h2>
+  <% if (last) { %>
+    <p class="muted" style="margin:0 0 10px">Impor terakhir: <%= new Date(last.at).toLocaleString('id-ID', { timeZone: 'Asia/Bangkok' }) %> oleh <%= last.actor || '—' %><%= last.file_name ? ' · ' + last.file_name : '' %></p>
+  <% } %>
+  <% if (!sheets.length) { %>
+    <div class="empty">Belum ada data. Unggah spreadsheet lebih dulu.</div>
+  <% } else { %>
+    <table class="sheets"><thead><tr><th>Sheet</th><th>Baris</th><th>Kolom</th></tr></thead><tbody>
+      <% sheets.forEach(function (s) { %><tr><td><%= s.name %></td><td><%= s.rows %></td><td><%= s.cols %></td></tr><% }); %>
+    </tbody></table>
+  <% } %>
+</div>
+
+<script>
+(function () {
+  var file = document.getElementById('file'), go = document.getElementById('go');
+  var err = document.getElementById('err'), ok = document.getElementById('ok'), drop = document.getElementById('drop');
+  file.addEventListener('change', function () { go.disabled = !file.files.length; err.textContent = ''; ok.textContent = ''; });
+  ['dragover', 'dragenter'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function (ev) { drop.addEventListener(ev, function () { drop.classList.remove('over'); }); });
+  drop.addEventListener('drop', function (e) { e.preventDefault(); if (e.dataTransfer.files.length) { file.files = e.dataTransfer.files; go.disabled = false; } });
+  go.addEventListener('click', async function () {
+    var f = file.files[0];
+    if (!f) return;
+    if (!/\.xlsx$/i.test(f.name)) { err.textContent = 'Pilih berkas .xlsx.'; return; }
+    if (!confirm('Ganti seluruh data spreadsheet di server dengan isi ' + f.name + '?')) return;
+    go.disabled = true; err.textContent = ''; ok.textContent = 'Mengunggah dan membaca berkas… (bisa sampai 1 menit)';
+    try {
+      var res = await fetch('/api/admin/import-xlsx', { method: 'POST', headers: { 'content-type': 'application/octet-stream', 'x-file-name': encodeURIComponent(f.name) }, body: f });
+      var j = await res.json();
+      if (!j.ok) throw new Error(j.error || 'Impor gagal.');
+      ok.textContent = 'Berhasil: ' + j.data.sheets + ' sheet dimuat. Memuat ulang halaman…';
+      setTimeout(function () { location.reload(); }, 1500);
+    } catch (e) {
+      ok.textContent = ''; err.textContent = e.message; go.disabled = false;
+    }
+  });
+})();
+</script>

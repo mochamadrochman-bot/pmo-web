@@ -24,7 +24,7 @@ async function read(token) {
   if (!token) return null;
   const res = await db.query(
     `select s.token, s.expires_at, u.id, u.username, u.full_name, u.role,
-            u.project_ids, u.must_change_password
+            u.project_ids, u.must_change_password, u.legacy_role, u.team
        from sessions s
        join users u on u.id = s.user_id
       where s.token = $1 and s.expires_at > now() and u.status = 'aktif'`,
