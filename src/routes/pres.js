@@ -104,7 +104,7 @@ router.delete('/api/pres/decks/:id', requireUser, onlyManager, async (req, res, 
     if (!d.rows[0]) return bad(res, 'Materi tidak ditemukan.');
     if (req.user.role !== 'admin' && d.rows[0].created_by !== req.user.username) return res.status(403).json({ ok: false, error: 'Materi ini hanya dapat dihapus oleh pengunggahnya atau Admin.' });
     // Lepaskan dari semua susunan slide.
-    const sets = await db.query("select key, data from pres_sets where key <> '_settings'");
+    const sets = await db.query("select key, data from pres_sets where key <> '_settings' and key not like 'layout:%'");
     for (const s of sets.rows) {
       const items = Array.isArray(s.data) ? s.data : [];
       const kept = items.filter((x) => Number(x.deck) !== id);
@@ -121,7 +121,7 @@ router.get('/api/pres/set', requireUser, async (req, res, next) => {
   try {
     const key = String(req.query.key || '').toUpperCase().replace(/^EXECUTIVE$/, 'executive').replace(/^WEEKLY:/, 'weekly:');
     if (!KEY_RE.test(key) || key === '_settings') return bad(res, 'Kunci presentasi tidak valid.');
-    const r = await db.query("select key, data from pres_sets where key = any($1::text[])", [[key, '_settings']]);
+    const r = await db.query("select key, data from pres_sets where key = any($1::text[])", [[key, '_settings', 'layout:' + key]]);
     const get = (k, d) => { const x = r.rows.find((y) => y.key === k); return x ? x.data : d; };
     const items = get(key, []);
     // Lengkapi ukuran halaman supaya slide bisa ditata tanpa menunggu gambar.
@@ -136,7 +136,9 @@ router.get('/api/pres/set', requireUser, async (req, res, next) => {
       const m = meta.find((y) => y.deck_id === Number(x.deck) && y.page_no === Number(x.page));
       return m ? { deck: m.deck_id, page: m.page_no, pos: x.pos || 'end', width: m.width, height: m.height, title: m.title } : null;
     }).filter(Boolean);
-    res.json({ ok: true, data: { key, items: full, settings: get('_settings', {}), canManage: canManage(req.user) } });
+    const lay = get('layout:' + key, {});
+    const layout = { order: Array.isArray(lay.order) ? lay.order : [], hidden: Array.isArray(lay.hidden) ? lay.hidden : [] };
+    res.json({ ok: true, data: { key, items: full, layout, settings: get('_settings', {}), canManage: canManage(req.user) } });
   } catch (err) { next(err); }
 });
 
@@ -153,6 +155,15 @@ router.put('/api/pres/set', requireUser, onlyManager, async (req, res, next) => 
        on conflict (key) do update set data = excluded.data, updated_by = excluded.updated_by, updated_at = now()`,
       [key, JSON.stringify(items), req.user.username]
     );
+    if (b.layout && typeof b.layout === 'object') {
+      const clean = (a) => (Array.isArray(a) ? a : []).map((t) => String(t || '').slice(0, 200)).filter(Boolean).slice(0, 200);
+      const lay = { order: clean(b.layout.order), hidden: clean(b.layout.hidden) };
+      await db.query(
+        `insert into pres_sets (key, data, updated_by, updated_at) values ($1, $2, $3, now())
+         on conflict (key) do update set data = excluded.data, updated_by = excluded.updated_by, updated_at = now()`,
+        ['layout:' + key, JSON.stringify(lay), req.user.username]
+      );
+    }
     if (b.settings && typeof b.settings === 'object') {
       const s = {};
       ['coverTitle', 'coverSub', 'thanksSub', 'thanksContact'].forEach((k) => { if (b.settings[k] !== undefined) s[k] = String(b.settings[k] || '').slice(0, 200); });

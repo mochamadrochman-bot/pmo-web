@@ -12,7 +12,7 @@ const PRES_EXTRA_JS = String.raw`<script>
 (function(){
   if(window.pmoPresExtra)return;
   var LOGO='https://drive.google.com/thumbnail?id=1JP0hqePxcaiFN0aZ2dv6WJ6qCNwrRLxf&sz=w480';
-  var cache={key:null,items:[],settings:{},canManage:false,base:[]};
+  var cache={key:null,items:[],settings:{},layout:{order:[],hidden:[]},canManage:false,base:[],err:''};
   var BULAN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],HARI=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function api(url,opt){return fetch(url,Object.assign({credentials:'same-origin',headers:{'content-type':'application/json'}},opt||{})).then(function(r){return r.json().catch(function(){return {ok:false,error:'Server tidak merespons ('+r.status+').'}})}).then(function(j){if(!j.ok)throw new Error(j.error||'Permintaan gagal.');return j.data})}
@@ -69,6 +69,8 @@ const PRES_EXTRA_JS = String.raw`<script>
       '.px-row img{width:96px;border-radius:6px;border:1px solid #e2e8f0;display:block}.px-row b{font-size:13px;display:block}.px-row small{font-size:12px;color:#6b7c8a}',
       '.px-row select,.px-f input,.px-pick select{width:100%;padding:8px 10px;border:1px solid #c9d6e2;border-radius:9px;font:13px Inter,system-ui,sans-serif;background:#fff;color:#132b43}',
       '.px-acts{display:flex;gap:4px}',
+      '.px-h4{margin:0 0 4px;font-size:14px;color:#0f2f52}.px-h4 span{font-weight:500;color:#6b7c8a;font-size:12px;margin-left:6px}',
+      '.px-brow{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid #d9e3ec;border-radius:10px;background:#fff;margin-bottom:6px}.px-brow label{display:flex;align-items:center;gap:10px;flex:1;min-width:0;font-size:13px;font-weight:600;cursor:pointer}.px-brow label span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.px-brow input{width:16px;height:16px;accent-color:#0f5fa8}.px-brow.off{background:#f3f5f8}.px-brow.off label span{color:#9aa5b1;text-decoration:line-through}',
       '.px-empty{padding:22px;text-align:center;color:#6b7c8a;font-size:13px;border:1px dashed #c9d6e2;border-radius:12px;background:#fff}',
       '.px-deck{border:1px solid #d9e3ec;border-radius:12px;background:#fff;margin-bottom:10px}.px-deck-h{display:flex;align-items:center;gap:10px;padding:12px 14px}.px-deck-h b{font-size:14px}.px-deck-h small{display:block;font-size:12px;color:#6b7c8a}.px-deck-h .px-acts{margin-left:auto}',
       '.px-thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:0 14px 14px}',
@@ -135,10 +137,15 @@ const PRES_EXTRA_JS = String.raw`<script>
   }
   function decorate(cfg,slides){
     css();
-    var S=cache.settings||{},bn=banners();
-    cache.base=slides.map(function(s){return s.title||''});
+    var S=cache.settings||{},bn=banners(),mine=cache.key===keyOf(cfg);
+    var L=mine&&cache.layout?cache.layout:{order:[],hidden:[]};
+    /* urutan slide dashboard: sesuai susunan tersimpan; slide baru tetap di dekat posisi aslinya */
+    var last=-1,ord=slides.map(function(sl,i){var t=sl.title||'',o=L.order.indexOf(t);if(o>=0){last=o;return {sl:sl,t:t,k:o}}return {sl:sl,t:t,k:last+0.001*(i+1)}});
+    ord.sort(function(x,y){return x.k-y.k});
+    cache.orig=slides.map(function(sl){return sl.title||''});cache.base=ord.map(function(x){return x.t});
+    var hid={};(L.hidden||[]).forEach(function(t){hid[t]=1});
     var start=[],end=[],after={};
-    (cache.key===keyOf(cfg)?cache.items:[]).forEach(function(x){
+    (mine?cache.items:[]).forEach(function(x){
       var p=String(x.pos||'end');
       if(p==='start')start.push(x);
       else if(p.indexOf('after:')===0&&cache.base.indexOf(p.slice(6))>=0)(after[p.slice(6)]=after[p.slice(6)]||[]).push(x);
@@ -146,7 +153,7 @@ const PRES_EXTRA_JS = String.raw`<script>
     });
     var out=[coverSlide(cfg,S,bn)];
     start.forEach(function(x){out.push(pdfSlide(x))});
-    slides.forEach(function(s){out.push(s);(after[s.title||'']||[]).forEach(function(x){out.push(pdfSlide(x))})});
+    ord.forEach(function(x){if(!hid[x.t])out.push(x.sl);(after[x.t]||[]).forEach(function(y){out.push(pdfSlide(y))})});
     end.forEach(function(x){out.push(pdfSlide(x))});
     out.push(thanksSlide(cfg,S,bn));
     return out;
@@ -154,10 +161,11 @@ const PRES_EXTRA_JS = String.raw`<script>
   function load(cfg){
     var key=keyOf(cfg);cache.key=key;
     if(!key){cache.items=[];return Promise.resolve()}
-    return api('/api/pres/set?key='+encodeURIComponent(key)).then(function(d){cache.items=d.items||[];cache.settings=d.settings||{};cache.canManage=!!d.canManage}).catch(function(){cache.items=[]});
+    cache.err='';
+    return api('/api/pres/set?key='+encodeURIComponent(key)).then(function(d){cache.items=d.items||[];cache.settings=d.settings||{};cache.layout=d.layout||{order:[],hidden:[]};cache.canManage=!!d.canManage}).catch(function(e){cache.items=[];cache.layout={order:[],hidden:[]};cache.err=(e&&e.message)||'Data materi tambahan tidak dapat dimuat.';try{console.warn('pmoPresExtra',cache.err)}catch(x){}});
   }
   function btn(){
-    if(!cache.canManage||!cache.key)return '';
+    if(!cache.key||!(cache.canManage||cache.err))return '';
     return '<button type="button" class="pp-ic" data-a="extra" title="Materi tambahan (PDF)" aria-label="Materi tambahan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5M12 11v6M9 14h6"/></svg></button>';
   }
 
@@ -178,6 +186,8 @@ const PRES_EXTRA_JS = String.raw`<script>
     var key=cache.key||keyOf(cfg);if(!key)return;
     var items=cache.items.map(function(x){return {deck:x.deck,page:x.page,pos:x.pos,title:x.title,width:x.width,height:x.height}});
     var S=Object.assign({},cache.settings||{}),dirty=false,lib=[];
+    var hid0={};((cache.layout&&cache.layout.hidden)||[]).forEach(function(t){hid0[t]=1});
+    var base=cache.base.map(function(t){return {t:t,show:!hid0[t]}});
     var m=document.createElement('div');m.className='px-mg';m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('aria-label','Materi tambahan presentasi');
     m.innerHTML='<div class="px-box"><div class="px-hd"><div><b>Materi tambahan</b><small>'+esc([cfg.page,cfg.sub].filter(Boolean).join(' · '))+'</small></div><button type="button" class="px-x" aria-label="Tutup">×</button></div>'+
       '<div class="px-tabs" role="tablist"><button type="button" class="on" data-t="set">Susunan slide</button><button type="button" data-t="lib">Pustaka PDF</button><button type="button" data-t="txt">Sampul &amp; penutup</button></div>'+
@@ -187,11 +197,16 @@ const PRES_EXTRA_JS = String.raw`<script>
     var say=function(t,bad){msg.textContent=t||'';msg.classList.toggle('bad',!!bad)};
     var mark=function(){dirty=true;saveBtn.disabled=false};
     var posOpts=function(cur){
-      var o=[['start','Awal (setelah sampul)']].concat(cache.base.map(function(t){return ['after:'+t,'Setelah: '+t]})).concat([['end','Akhir (sebelum terima kasih)']]);
+      var o=[['start','Awal (setelah sampul)']].concat(base.map(function(b){return b.t}).map(function(t){return ['after:'+t,'Setelah: '+t]})).concat([['end','Akhir (sebelum terima kasih)']]);
       return o.map(function(x){return '<option value="'+esc(x[0])+'"'+(x[0]===cur?' selected':'')+'>'+esc(x[1])+'</option>'}).join('');
     };
     function drawSet(){
-      bd.innerHTML='<p class="px-note">Slide PDF berikut disisipkan ke presentasi ini. Halaman sampul selalu di awal dan halaman Terima Kasih selalu di akhir. Tambah slide dari tab <b>Pustaka PDF</b>.</p>'+
+      var nShow=base.filter(function(b){return b.show}).length;
+      bd.innerHTML=(cache.err?'<div class="px-empty" style="border-color:#f3b4ae;color:#b42318;margin-bottom:12px">Gagal memuat data materi tambahan: '+esc(cache.err)+'</div>':'')+
+        '<h4 class="px-h4">Slide dashboard <span>'+nShow+' dari '+base.length+' ditampilkan</span></h4><p class="px-note">Centang untuk menampilkan, atur urutan dengan ↑ ↓. Halaman sampul selalu pertama dan halaman Terima Kasih selalu terakhir.</p>'+
+        base.map(function(b,i){return '<div class="px-brow'+(b.show?'':' off')+'" data-b="'+i+'"><label><input type="checkbox"'+(b.show?' checked':'')+'><span>'+esc(b.t||'Slide '+(i+1))+'</span></label><div class="px-acts"><button type="button" class="px-btn sm" data-bm="-1" title="Naik"'+(i===0?' disabled':'')+'>↑</button><button type="button" class="px-btn sm" data-bm="1" title="Turun"'+(i===base.length-1?' disabled':'')+'>↓</button></div></div>'}).join('')+
+        '<div style="display:flex;gap:8px;margin:8px 0 22px"><button type="button" class="px-btn sm" data-bx="all">Tampilkan semua</button><button type="button" class="px-btn sm" data-bx="reset">Kembalikan urutan bawaan</button></div>'+
+        '<h4 class="px-h4">Slide tambahan (PDF) <span>'+items.length+' slide</span></h4><p class="px-note">Tambah slide dari tab <b>Pustaka PDF</b>.</p>'+
         (items.length?items.map(function(x,i){return '<div class="px-row" data-i="'+i+'"><img src="/api/pres/img/'+x.deck+'/'+x.page+'?t=1" alt=""><div><b>'+esc(x.title||'Materi')+'</b><small>Halaman '+x.page+'</small></div><select aria-label="Posisi slide">'+posOpts(x.pos)+'</select><div class="px-acts"><button type="button" class="px-btn sm" data-m="-1" title="Naik"'+(i===0?' disabled':'')+'>↑</button><button type="button" class="px-btn sm" data-m="1" title="Turun"'+(i===items.length-1?' disabled':'')+'>↓</button><button type="button" class="px-btn sm" data-m="del" title="Hapus dari presentasi">✕</button></div></div>'}).join(''):'<div class="px-empty">Belum ada slide tambahan untuk presentasi ini.</div>');
     }
     function drawTxt(){
@@ -251,10 +266,14 @@ const PRES_EXTRA_JS = String.raw`<script>
     }
     function show(t){tab=t;m.querySelectorAll('.px-tabs button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-t')===t)});if(t==='set')drawSet();else if(t==='lib')drawLib();else drawTxt()}
     m.querySelector('.px-tabs').onclick=function(e){var b=e.target.closest('button[data-t]');if(b)show(b.getAttribute('data-t'))};
-    bd.addEventListener('change',function(e){var r=e.target.closest('.px-row');if(r&&e.target.tagName==='SELECT'){items[Number(r.getAttribute('data-i'))].pos=e.target.value;mark()}});
+    bd.addEventListener('change',function(e){var br=e.target.closest('.px-brow');if(br&&e.target.type==='checkbox'){base[Number(br.getAttribute('data-b'))].show=e.target.checked;mark();drawSet();return}var r=e.target.closest('.px-row');if(r&&e.target.tagName==='SELECT'){items[Number(r.getAttribute('data-i'))].pos=e.target.value;mark()}});
     bd.addEventListener('input',function(e){var k=e.target.getAttribute&&e.target.getAttribute('data-k');if(k){S[k]=e.target.value;mark()}});
     bd.addEventListener('click',function(e){
       var b=e.target.closest('button');if(!b)return;
+      var bb=b.closest('.px-brow');
+      if(bb&&b.getAttribute('data-bm')){var bi=Number(bb.getAttribute('data-b')),bj=bi+Number(b.getAttribute('data-bm'));var bt=base[bi];base[bi]=base[bj];base[bj]=bt;mark();drawSet();return}
+      if(b.getAttribute('data-bx')==='all'){base.forEach(function(x){x.show=true});mark();drawSet();return}
+      if(b.getAttribute('data-bx')==='reset'){var o0=(cache.orig||[]);base.sort(function(x,y){return o0.indexOf(x.t)-o0.indexOf(y.t)});base.forEach(function(x){x.show=true});mark();drawSet();return}
       var r=b.closest('.px-row');
       if(r&&b.getAttribute('data-m')){var i=Number(r.getAttribute('data-i')),a=b.getAttribute('data-m');
         if(a==='del')items.splice(i,1);else{var j=i+Number(a);var tmp=items[i];items[i]=items[j];items[j]=tmp}mark();drawSet();return}
@@ -272,7 +291,7 @@ const PRES_EXTRA_JS = String.raw`<script>
     m.querySelector('.px-x').onclick=close;m.querySelector('[data-x=close]').onclick=close;
     saveBtn.onclick=function(){
       saveBtn.disabled=true;say('Menyimpan…');
-      api('/api/pres/set',{method:'PUT',body:JSON.stringify({key:key,items:items.map(function(x){return {deck:x.deck,page:x.page,pos:x.pos}}),settings:S})})
+      api('/api/pres/set',{method:'PUT',body:JSON.stringify({key:key,items:items.map(function(x){return {deck:x.deck,page:x.page,pos:x.pos}}),layout:{order:base.map(function(x){return x.t}),hidden:base.filter(function(x){return !x.show}).map(function(x){return x.t})},settings:S})})
       .then(function(){dirty=false;window.removeEventListener('keydown',onKey,true);m.remove();
         if(window.pmoPresent&&pmoPresent.isOpen()){pmoPresent.close();setTimeout(function(){if(typeof window.pmoPresentStart==='function')window.pmoPresentStart()},650)}})
       .catch(function(e){saveBtn.disabled=false;say(e.message,true)});
