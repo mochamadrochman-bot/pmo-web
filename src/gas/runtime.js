@@ -48,6 +48,31 @@ const PORTAL_GROUPS_JS = `function pmoGroupedCards(items,b,card,esc,thumb){
 }
 `;
 
+/** Tambah/Edit Proyek: perilaku isian kelompok proyek (disisipkan ke ProjectSetup.html). */
+const PROJECT_GROUP_JS = `<script>
+function pmoGrpRoutine(){var g=document.getElementById('fGroup');return !!g&&g.value!=='PENGEMBANGAN'}
+function pmoGrpApply(){
+  var t=document.getElementById('fGroup').value,id=String(document.getElementById('fId').value||'').trim().toUpperCase(),sel=document.getElementById('fParent');
+  var cur=sel.value||sel.getAttribute('data-cur')||'';
+  var list=(typeof ctx!=='undefined'&&ctx&&ctx.devProjects)||[];
+  sel.innerHTML='<option value="">Pilih proyek induk…</option>'+list.filter(function(p){return p.id!==id}).map(function(p){return '<option value="'+p.id+'"'+(p.id===cur?' selected':'')+'>'+String(p.name||p.id).replace(/</g,'&lt;')+'</option>'}).join('');
+  document.getElementById('wParent').hidden=t!=='SUB';
+  ['wPlant','wIdc','wPm'].forEach(function(k){var e=document.getElementById(k);if(e)e.hidden=t!=='PENGEMBANGAN'});
+  document.getElementById('grpHint').textContent=t==='PENGEMBANGAN'?'Plant cost FS wajib. IDC dan PM cost FS boleh dilengkapi menyusul.':t==='RUTIN'?'Cukup nilai kontrak. Nilai investasi = nilai kontrak.':'Cukup nilai kontrak. Laporannya dikelompokkan di bawah proyek induk.';
+  if(typeof moneyHints==='function')moneyHints();
+}
+function pmoGrpFill(p){
+  var g=document.getElementById('fGroup'),sel=document.getElementById('fParent');if(!g)return;
+  g.value=(p&&p.groupType)||'PENGEMBANGAN';sel.setAttribute('data-cur',(p&&p.parentId)||'');sel.value='';pmoGrpApply();
+}
+(function(){
+  var g=document.getElementById('fGroup'),sel=document.getElementById('fParent');if(!g)return;
+  g.addEventListener('change',function(){pmoGrpApply();if(typeof refresh==='function')refresh()});
+  sel.addEventListener('change',function(){sel.setAttribute('data-cur',sel.value);if(typeof refresh==='function')refresh()});
+  pmoGrpApply();
+})();
+</script>`;
+
 /**
  * Perubahan kecil pada HTML lama, diterapkan saat dimuat supaya berkas di legacy/
  * tetap identik dengan Apps Script (mudah disinkronkan ulang).
@@ -81,6 +106,36 @@ const HTML_PATCHES = [
     find: 'function renderPulse(b){',
     replace: PORTAL_GROUPS_JS + 'function renderPulse(b){',
   },
+  // Tambah/Edit Proyek: isian kelompok proyek dan proyek induk.
+  {
+    file: 'ProjectSetup',
+    find: '<label class="f"><span>Kapasitas</span><input class="inp" id="fCapacity" placeholder="contoh: 500.000 ton/tahun"></label>\n          </div>',
+    replace: '<label class="f"><span>Kapasitas</span><input class="inp" id="fCapacity" placeholder="contoh: 500.000 ton/tahun"></label>\n          </div>\n          <div class="g g2b"><label class="f"><span>Kelompok proyek <em>*</em></span><select class="inp" id="fGroup"><option value="PENGEMBANGAN">Pengembangan</option><option value="RUTIN">Investasi rutin</option><option value="SUB">Sub-proyek</option></select><small class="hint" id="grpHint"></small></label><label class="f" id="wParent" hidden><span>Proyek induk <em>*</em></span><select class="inp" id="fParent"></select><small class="hint">Laporan sub-proyek dikelompokkan di bawah proyek induk ini.</small></label></div>',
+  },
+  { file: 'ProjectSetup', find: '<label class="f"><span>Plant cost FS <em>*</em></span>', replace: '<label class="f" id="wPlant"><span>Plant cost FS <em>*</em></span>' },
+  { file: 'ProjectSetup', find: '<label class="f"><span>IDC FS</span>', replace: '<label class="f" id="wIdc"><span>IDC FS</span>' },
+  { file: 'ProjectSetup', find: '<label class="f"><span>PM cost FS</span>', replace: '<label class="f" id="wPm"><span>PM cost FS</span>' },
+  {
+    file: 'ProjectSetup',
+    find: "function fillForm(d){\n  const p=d?d.project:{};",
+    replace: "function fillForm(d){\n  const p=d?d.project:{};pmoGrpFill(p);",
+  },
+  {
+    file: 'ProjectSetup',
+    find: "contractValue:pmoney($('fContract').value),plantFs:pmoney($('fPlant').value),idcFs:pmoney($('fIdc').value),pmFs:pmoney($('fPm').value),",
+    replace: "contractValue:pmoney($('fContract').value),plantFs:pmoGrpRoutine()?pmoney($('fContract').value):pmoney($('fPlant').value),idcFs:pmoGrpRoutine()?0:pmoney($('fIdc').value),pmFs:pmoGrpRoutine()?0:pmoney($('fPm').value),groupType:$('fGroup').value,parentId:$('fGroup').value==='SUB'?$('fParent').value:'',",
+  },
+  {
+    file: 'ProjectSetup',
+    find: "add(pmoney($('fContract').value)!=null,'Nilai kontrak');add(pmoney($('fPlant').value)!=null,'Plant cost FS');",
+    replace: "add(pmoney($('fContract').value)!=null,'Nilai kontrak');if(!pmoGrpRoutine())add(pmoney($('fPlant').value)!=null,'Plant cost FS');if($('fGroup').value==='SUB')add(!!$('fParent').value,'Proyek induk');",
+  },
+  {
+    file: 'ProjectSetup',
+    find: "const pl=pmoney($('fPlant').value),idc=pmoney($('fIdc').value)||0,pm=pmoney($('fPm').value)||0;",
+    replace: "const rt=pmoGrpRoutine(),pl=rt?pmoney($('fContract').value):pmoney($('fPlant').value),idc=rt?0:(pmoney($('fIdc').value)||0),pm=rt?0:(pmoney($('fPm').value)||0);",
+  },
+  { file: 'ProjectSetup', find: '</body>', replace: PROJECT_GROUP_JS + '</body>' },
   // Panel "Permintaan Akun" lama tidak dipakai lagi: akun dikelola di /admin/akun.
   ...['Portal', 'ExecutiveDashboard'].map((file) => ({
     file,
@@ -144,6 +199,43 @@ ${RETIRED.map((n) => `  ${n} = function () { throw new Error('Akun kini dikelola
     } catch (e) { /* tanpa kelompok, kartu tampil seperti biasa */ }
     return r;
   };
+  // Tambah/Edit Proyek: kelompok proyek (Pengembangan / Rutin / Sub-proyek).
+  var __origSetupCtx = getProjectSetupContext, __origSetupData = getProjectSetupData, __origSetupSave = saveProjectSetup;
+  getProjectSetupContext = function (token) {
+    var r = __origSetupCtx(token);
+    if (!r || !r.success) return r;
+    var g = __bridge.groups(), db = loadDb_();
+    var typeOf = function (id) { return (g[id] && g[id].type) || 'PENGEMBANGAN'; };
+    return Object.assign({}, r, {
+      groups: g,
+      devProjects: (db.allProjects || []).filter(function (p) { return typeOf(p.id) === 'PENGEMBANGAN'; })
+        .map(function (p) { return { id: p.id, name: p.fullName || p.name }; })
+    });
+  };
+  getProjectSetupData = function (token, projectId) {
+    var r = __origSetupData(token, projectId);
+    if (!r || !r.success || !r.project) return r;
+    var g = __bridge.groups()[r.project.id] || {};
+    return Object.assign({}, r, { project: Object.assign({}, r.project, { groupType: g.type || 'PENGEMBANGAN', parentId: g.parent || '' }) });
+  };
+  saveProjectSetup = function (token, payload) {
+    payload = Object.assign({}, payload || {});
+    var id = normKey_(payload.id);
+    var type = String(payload.groupType || 'PENGEMBANGAN').trim().toUpperCase();
+    var parent = type === 'SUB' ? normKey_(payload.parentId || '') : '';
+    var allIds = (loadDb_().allProjects || []).map(function (p) { return p.id; });
+    var err = __bridge.groupCheck(id, type, parent, allIds);
+    if (err) throw new Error(err);
+    if (type !== 'PENGEMBANGAN') {
+      // Rutin / sub-proyek: cukup nilai kontrak. Plant cost FS = nilai kontrak, IDC dan PM cost 0.
+      payload.plantFs = payload.contractValue;
+      payload.idcFs = 0;
+      payload.pmFs = 0;
+    }
+    var r = __origSetupSave(token, payload);
+    if (r && r.success !== false) __bridge.groupSet(id, type, parent);
+    return r;
+  };
   getLoginPageHtml = function () {
     return '<!doctype html><meta charset="utf-8"><script>location.replace("/login")</script>';
   };
@@ -199,6 +291,8 @@ function createScope(opts) {
     user: () => (opts.user ? { ...opts.user, createdAt: Date.now() } : null),
     logout: () => { if (opts.onLogout) opts.onLogout(); },
     groups: () => require('../lib/groups').all(),
+    groupCheck: (id, type, parent, allIds) => require('../lib/groups').check(id, type, parent, allIds),
+    groupSet: (id, type, parent) => require('../lib/groups').setSync(id, type, parent, opts.user && opts.user.username),
   };
   const exported = factory(...GLOBAL_NAMES.map((n) => globals[n]), bridge);
   // Templat melihat fungsi/konstanta kode lama dan layanan global.

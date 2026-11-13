@@ -80,4 +80,49 @@ async function save(rows, knownIds, actor) {
   return { saved: clean.length };
 }
 
-module.exports = { load, get, all, save, TYPES };
+/**
+ * Simpan satu proyek dari menu Tambah/Edit Proyek (kode lama berjalan sinkron).
+ * Peta di memori langsung diperbarui; penulisan ke database ditunggu lewat settle().
+ * allIds: semua ID proyek. Mengembalikan pesan galat atau null.
+ */
+const pending = [];
+function check(id, type, parent, allIds) {
+  if (!TYPES.includes(type)) return 'Kelompok proyek tidak dikenal.';
+  if (type === 'SUB') {
+    if (!parent) return 'Pilih proyek induk untuk sub-proyek.';
+    if (parent === id) return 'Proyek tidak bisa menjadi induk dirinya sendiri.';
+    if (allIds && !allIds.includes(parent)) return 'Proyek induk tidak dikenal: ' + parent;
+    if (get(parent).type !== 'PENGEMBANGAN') return 'Proyek induk harus proyek Pengembangan.';
+  }
+  if (type !== 'PENGEMBANGAN') {
+    const kids = Object.keys(map).filter((k) => map[k].type === 'SUB' && map[k].parent === id);
+    if (kids.length) return 'Proyek ini masih menjadi induk dari ' + kids.join(', ') + '. Pindahkan sub-proyeknya dulu, atau tetap pilih Pengembangan.';
+  }
+  return null;
+}
+function setSync(id, type, parent, actor) {
+  const p = type === 'SUB' ? parent : null;
+  map[id] = { type, parent: p };
+  pending.push({ id, type, parent: p, actor: actor || null });
+}
+/** Menulis perubahan setSync ke database (dipanggil setelah pemanggilan kode lama selesai). */
+async function settle() {
+  const ops = pending.splice(0);
+  for (const x of ops) {
+    await db.query(
+      `insert into project_groups (project_id, group_type, parent_id, updated_at, updated_by)
+       values ($1, $2, $3, now(), $4)
+       on conflict (project_id) do update set group_type = excluded.group_type,
+         parent_id = excluded.parent_id, updated_at = now(), updated_by = excluded.updated_by`,
+      [x.id, x.type, x.parent, x.actor]
+    );
+  }
+}
+/** Membatalkan perubahan setSync yang belum ditulis (mis. penyimpanan proyek ditolak). */
+async function discard() {
+  if (!pending.length) return;
+  pending.splice(0);
+  await load();
+}
+
+module.exports = { load, get, all, save, check, setSync, settle, discard, TYPES };

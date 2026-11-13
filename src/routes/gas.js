@@ -10,6 +10,7 @@
 const express = require('express');
 const runtime = require('../gas/runtime');
 const store = require('../gas/store');
+const groups = require('../lib/groups');
 const { clearCache } = require('../gas/services');
 const session = require('../session');
 const access = require('../lib/access');
@@ -193,6 +194,15 @@ router.post('/app/rpc/:fn', requireUser, async (req, res) => {
   } catch (err) {
     console.error(JSON.stringify({ ev: 'gas_flush_fail', fn: name, message: String(err.message || err) }));
     if (!failed) failed = new Error('Data gagal disimpan ke database. Coba lagi.');
+  }
+  // Kelompok proyek dari menu Tambah/Edit Proyek: ikut tersimpan hanya bila penyimpanan proyek berhasil.
+  try {
+    if (failed) await groups.discard();
+    else await groups.settle();
+  } catch (err) {
+    console.error(JSON.stringify({ ev: 'project_group_save_fail', fn: name, message: String(err.message || err) }));
+    if (!failed) failed = new Error('Data proyek tersimpan, tetapi kelompok proyek gagal disimpan. Atur ulang di menu Kelompok Proyek.');
+    await groups.load().catch(() => {});
   }
   const ms = Date.now() - started;
   if (ms > 3000) console.warn(JSON.stringify({ ev: 'gas_slow', fn: name, ms }));
