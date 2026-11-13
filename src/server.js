@@ -18,6 +18,7 @@ const gasRoutes = require('./routes/gas');
 const gasStore = require('./gas/store');
 const gasRuntime = require('./gas/runtime');
 const googleAuth = require('./google/auth');
+const gasSync = require('./gas/sync');
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
@@ -120,6 +121,8 @@ async function start() {
     const info = await gasStore.load();
     const rt = gasRuntime.load();
     console.log(JSON.stringify({ ev: 'gas_ready', sheets: info.sheets, functions: rt.functions, html: rt.html }));
+    const auto = gasSync.start();
+    console.log(JSON.stringify({ ev: 'gas_sync_schedule', auto, minutes: gasSync.info().minutes }));
   } catch (err) {
     console.error(JSON.stringify({ ev: 'migrate_fail', message: String(err.message || err) }));
     process.exit(1);

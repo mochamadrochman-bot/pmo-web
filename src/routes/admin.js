@@ -200,6 +200,8 @@ router.get('/api/admin/audit', onlyAdmin, async (req, res, next) => {
 const gasStore = require('../gas/store');
 const { parseWorkbook } = require('../gas/xlsx-import');
 const { clearCache } = require('../gas/services');
+const gasSync = require('../gas/sync');
+const gauth = require('../google/auth');
 
 router.get('/admin/data', onlyAdmin, async (req, res, next) => {
   try {
@@ -207,6 +209,7 @@ router.get('/admin/data', onlyAdmin, async (req, res, next) => {
     const sheets = book ? book.list().map((d) => ({ name: d.name, rows: d.lastRow(), cols: d.lastCol() })) : [];
     renderPage(res, 'pages/admin-data', {
       title: 'Impor Data', user: req.user, sheets, last: await gasStore.lastImport(),
+      sync: gasSync.info(), google: gauth.status(),
     });
   } catch (err) {
     next(err);
@@ -242,7 +245,6 @@ router.post('/api/admin/import-xlsx',
 
 // --- Koneksi Google (Drive, Sheets) --------------------------------------------
 const crypto = require('node:crypto');
-const gauth = require('../google/auth');
 const OAUTH_COOKIE = 'pmo_goauth';
 
 function redirectUri(req) {
@@ -296,6 +298,17 @@ router.post('/api/admin/google/test', onlyAdmin, async (req, res) => {
     const j = await r.json();
     if (!r.ok) throw new Error((j.error && j.error.message) || 'HTTP ' + r.status);
     res.json({ ok: true, data: { email: j.user && j.user.emailAddress, usage: j.storageQuota } });
+  } catch (e) {
+    res.json({ ok: false, error: e.message });
+  }
+});
+
+router.post('/api/admin/sync', onlyAdmin, async (req, res) => {
+  try {
+    const r = await gasSync.syncNow({ force: true, actor: req.user.username });
+    if (r.status === 'skipped') return res.json({ ok: false, error: r.reason });
+    await audit(req.user, 'data_sync', 'spreadsheet', '', { sheets: r.sheets });
+    res.json({ ok: true, data: r });
   } catch (e) {
     res.json({ ok: false, error: e.message });
   }

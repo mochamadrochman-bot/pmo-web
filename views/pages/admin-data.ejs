@@ -17,7 +17,25 @@
 <p class="sub">Isi spreadsheet PMO DASHBOARD yang dipakai halaman Portal, Executive, Weekly, dan modul lain.</p>
 
 <div class="panel">
-  <h2>Unggah spreadsheet</h2>
+  <h2>Sinkron dari Google Sheets</h2>
+  <% if (!google.connected) { %>
+    <p class="muted" style="margin:0">Akun Google belum dihubungkan. Buka <a href="/admin/google">Koneksi Google</a> dulu, atau pakai unggah manual di bawah.</p>
+  <% } else { %>
+    <p style="margin:0 0 6px;font-size:14px">
+      <% if (sync.auto) { %>Otomatis setiap <b><%= sync.minutes %> menit</b>, hanya bila spreadsheet berubah.<% } else { %>Sinkron otomatis <b>mati</b>.<% } %>
+    </p>
+    <% if (sync.lastResult) { %>
+      <p class="muted" style="margin:0;font-size:13px">Pemeriksaan terakhir: <%= new Date(sync.lastResult.at).toLocaleString('id-ID', { timeZone: 'Asia/Bangkok' }) %> ·
+        <%= sync.lastResult.status === 'synced' ? 'data diperbarui' : sync.lastResult.status === 'unchanged' ? 'tidak ada perubahan' : 'gagal: ' + sync.lastResult.error %></p>
+    <% } %>
+    <div style="margin-top:12px"><button class="btn" id="syncBtn" type="button">Sinkron sekarang</button></div>
+    <div class="err" id="syncErr" role="alert"></div>
+    <div class="ok" id="syncOk" role="status"></div>
+  <% } %>
+</div>
+
+<div class="panel">
+  <h2>Unggah spreadsheet (manual)</h2>
   <ol class="langkah">
     <li>Buka spreadsheet <b>PMO DASHBOARD</b> di Google Sheets.</li>
     <li>Menu <b>File → Download → Microsoft Excel (.xlsx)</b>.</li>
@@ -47,6 +65,19 @@
 </div>
 
 <script>
+(function () {
+  var sb = document.getElementById('syncBtn');
+  if (sb) sb.addEventListener('click', async function () {
+    var e = document.getElementById('syncErr'), o = document.getElementById('syncOk');
+    sb.disabled = true; e.textContent = ''; o.textContent = 'Mengunduh spreadsheet dari Google… (bisa sampai 1 menit)';
+    try {
+      var j = await (await fetch('/api/admin/sync', { method: 'POST' })).json();
+      if (!j.ok) throw new Error(j.error || 'Sinkron gagal.');
+      o.textContent = 'Berhasil: ' + j.data.sheets + ' sheet diperbarui. Memuat ulang…';
+      setTimeout(function () { location.reload(); }, 1200);
+    } catch (x) { o.textContent = ''; e.textContent = x.message; sb.disabled = false; }
+  });
+})();
 (function () {
   var file = document.getElementById('file'), go = document.getElementById('go');
   var err = document.getElementById('err'), ok = document.getElementById('ok'), drop = document.getElementById('drop');
