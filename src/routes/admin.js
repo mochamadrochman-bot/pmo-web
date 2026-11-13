@@ -246,6 +246,48 @@ router.post('/api/admin/import-xlsx',
     }
   });
 
+// --- Kelompok proyek (Pengembangan / Rutin / Sub-proyek) ---------------------
+const groups = require('../lib/groups');
+const gasRuntime = require('../gas/runtime');
+
+/** Daftar proyek dari spreadsheet: [{ id, name, team, active }]. */
+function sheetProjects() {
+  const { exported } = gasRuntime.createScope({ user: null, appUrl: '', onLogout() {} });
+  const d = exported.loadDb_();
+  const active = new Set((d.projects || []).map((p) => p.id));
+  return (d.allProjects || []).map((p) => ({ id: p.id, name: p.name || p.id, team: p.team || '', active: active.has(p.id) }));
+}
+
+router.get('/admin/kelompok', onlyAdmin, (req, res, next) => {
+  try {
+    let projects = [];
+    let error = '';
+    if (!gasStore.book()) error = 'Data spreadsheet belum diimpor. Buka Impor Data dulu.';
+    else {
+      try { projects = sheetProjects(); } catch (e) { error = 'Daftar proyek tidak terbaca: ' + e.message; }
+    }
+    const g = groups.all();
+    projects = projects.map((p) => ({ ...p, type: (g[p.id] && g[p.id].type) || 'PENGEMBANGAN', parent: (g[p.id] && g[p.id].parent) || '', saved: !!g[p.id] }));
+    renderPage(res, 'pages/admin-kelompok', { title: 'Kelompok Proyek', user: req.user, projects, error });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/api/admin/kelompok', onlyAdmin, async (req, res, next) => {
+  try {
+    let ids;
+    try { ids = sheetProjects().map((p) => p.id); } catch (e) { return bad(res, 'Daftar proyek tidak terbaca: ' + e.message); }
+    const r = await groups.save(req.body && req.body.rows, ids, req.user.username);
+    if (r.error) return bad(res, r.error);
+    clearCache();
+    await audit(req.user, 'project_groups', 'project_groups', '', { rows: r.saved });
+    res.json({ ok: true, data: { saved: r.saved, groups: groups.all() } });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // --- Koneksi Google (Drive, Sheets) --------------------------------------------
 const crypto = require('node:crypto');
 const OAUTH_COOKIE = 'pmo_goauth';

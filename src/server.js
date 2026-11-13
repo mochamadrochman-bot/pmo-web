@@ -128,6 +128,7 @@ async function start() {
     await migrate();
     const g = await googleAuth.load();
     console.log(JSON.stringify({ ev: 'google_auth', configured: g.configured, connected: g.connected }));
+    await require('./lib/groups').load();
     const info = await gasStore.load();
     const rt = gasRuntime.load();
     console.log(JSON.stringify({ ev: 'gas_ready', sheets: info.sheets, functions: rt.functions, html: rt.html }));
