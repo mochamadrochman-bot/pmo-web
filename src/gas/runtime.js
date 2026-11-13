@@ -36,7 +36,13 @@ const HTML_PATCHES = [
   {
     file: 'AccountMenu',
     find: "b.innerHTML=SV(kind==='admin'?USR:KEY)+'<span>'+(kind==='admin'?'Reset password pengguna':'Ganti password')+'</span>';b.onclick=function(e){e.stopPropagation();kind==='admin'?admin():change()};",
-    replace: "b.innerHTML=SV(kind==='admin'?USR:KEY)+'<span>'+(kind==='admin'?'Kelola Akun':'Ganti password')+'</span>';b.onclick=function(e){e.stopPropagation();location.href=kind==='admin'?'/admin/akun':'/akun/password'};",
+    replace: "var NAV={self:['Ganti password','/akun/password'],admin:['Kelola Akun','/admin/akun'],data:['Impor Data','/admin/data'],google:['Koneksi Google','/admin/google']}[kind];b.innerHTML=SV(kind==='self'?KEY:USR)+'<span>'+NAV[0]+'</span>';b.onclick=function(e){e.stopPropagation();location.href=NAV[1]};",
+  },
+  {
+    // Menu admin server baru: Kelola Akun, Impor Data, Koneksi Google.
+    file: 'AccountMenu',
+    find: "p.insertBefore(btnFor(ref,'self'),ref);if(role==='ADMIN')p.insertBefore(btnFor(ref,'admin'),ref)",
+    replace: "p.insertBefore(btnFor(ref,'self'),ref);if(role==='ADMIN'){p.insertBefore(btnFor(ref,'admin'),ref);p.insertBefore(btnFor(ref,'data'),ref);p.insertBefore(btnFor(ref,'google'),ref)}",
   },
 ];
 
