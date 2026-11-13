@@ -15,6 +15,7 @@ const projectRoutes = require('./routes/projects');
 const portalRoutes = require('./routes/portal');
 const adminRoutes = require('./routes/admin');
 const gasRoutes = require('./routes/gas');
+const loginPage = require('./routes/login-page');
 const gasStore = require('./gas/store');
 const gasRuntime = require('./gas/runtime');
 const googleAuth = require('./google/auth');
@@ -68,6 +69,15 @@ app.get('/health', async (req, res) => {
 
 app.get('/login', (req, res) => {
   if (req.user) return res.redirect('/');
+  if (process.env.LEGACY_LOGIN !== '0') {
+    try {
+      const base = (process.env.APP_BASE_URL || (req.protocol + '://' + req.get('host'))).replace(/\/$/, '');
+      res.set('Cache-Control', 'no-store');
+      return res.type('html').send(loginPage.render(base + '/app'));
+    } catch (err) {
+      console.error('[login] tampilan lama gagal, pakai tampilan sederhana:', err.message);
+    }
+  }
   renderPage(res, 'pages/login', { title: 'Masuk', error: null });
 });
 

@@ -25,8 +25,10 @@ function toSource(src) {
     const end = src.indexOf('?>', start + 2);
     if (end < 0) throw new Error('Tag templat tidak ditutup.');
     const body = src.slice(start + 2, end);
-    if (body.startsWith('!=')) code += '__o.push(__raw(' + body.slice(2) + '));\n';
-    else if (body.startsWith('=')) code += '__o.push(__esc(' + body.slice(1) + '));\n';
+    // Apps Script menerima titik koma di akhir ekspresi: <?!= include('Styles'); ?>
+    const expr = (s) => s.replace(/[\s;]+$/, '');
+    if (body.startsWith('!=')) code += '__o.push(__raw(' + expr(body.slice(2)) + '));\n';
+    else if (body.startsWith('=')) code += '__o.push(__esc(' + expr(body.slice(1)) + '));\n';
     else code += body + '\n';
     i = end + 2;
   }
