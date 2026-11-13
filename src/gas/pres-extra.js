@@ -12,7 +12,7 @@ const PRES_EXTRA_JS = String.raw`<script>
 (function(){
   if(window.pmoPresExtra)return;
   var LOGO='https://drive.google.com/thumbnail?id=1JP0hqePxcaiFN0aZ2dv6WJ6qCNwrRLxf&sz=w480';
-  var cache={key:null,items:[],settings:{},layout:{order:[],hidden:[]},canManage:false,base:[],err:''};
+  var cache={key:null,items:[],settings:{},layout:{order:[],hidden:[]},canManage:false,base:[],err:'',videos:[]};
   var BULAN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],HARI=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function api(url,opt){return fetch(url,Object.assign({credentials:'same-origin',headers:{'content-type':'application/json'}},opt||{})).then(function(r){return r.json().catch(function(){return {ok:false,error:'Server tidak merespons ('+r.status+').'}})}).then(function(j){if(!j.ok)throw new Error(j.error||'Permintaan gagal.');return j.data})}
@@ -32,6 +32,7 @@ const PRES_EXTRA_JS = String.raw`<script>
       '.px-bg{position:absolute;inset:0}',
       '.px-bg i{position:absolute;inset:-4%;background:center/cover no-repeat;opacity:0;transform:scale(1.02);transition:opacity 1.8s ease,transform 9s linear}',
       '.px-bg i.on{opacity:.42;transform:scale(1.12)}',
+      '.px-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.4s ease}.px-vid.on{opacity:.62}',
       '.px-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,18,34,.55) 0%,rgba(6,22,40,.72) 55%,rgba(4,14,26,.94) 100%),radial-gradient(70% 60% at 50% 45%,rgba(56,189,248,.16),transparent 70%)}',
       '.px-grid{position:absolute;inset:0;opacity:.18;background-image:radial-gradient(rgba(255,255,255,.55) 1px,transparent 1.2px);background-size:2.2cqw 2.2cqw;-webkit-mask:radial-gradient(60% 55% at 50% 50%,transparent 40%,#000 100%);mask:radial-gradient(60% 55% at 50% 50%,transparent 40%,#000 100%)}',
       '.px-in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4cqw 7cqw;gap:1.1cqw}',
@@ -99,7 +100,18 @@ const PRES_EXTRA_JS = String.raw`<script>
     });
     return out;
   }
-  function bgHtml(list){return '<div class="px-bg">'+list.map(function(u,i){return '<i'+(i===0?' class="on"':'')+' style="background-image:url(\''+esc(u)+'\')"></i>'}).join('')+'</div><div class="px-shade"></div><div class="px-grid"></div>'}
+  function bgHtml(list,vids){return '<div class="px-bg">'+list.map(function(u,i){return '<i'+(i===0?' class="on"':'')+' style="background-image:url(\''+esc(u)+'\')"></i>'}).join('')+'</div>'+(vids&&vids.length?'<video class="px-vid" muted playsinline preload="none" data-v="'+esc(vids.join(','))+'" aria-hidden="true"></video>':'')+'<div class="px-shade"></div><div class="px-grid"></div>'}
+  /* video latar: diputar hanya saat slide tampil; video berikutnya setelah selesai; gagal = lewati */
+  function playVids(card){
+    var v=card.querySelector('.px-vid');if(!v)return;var ids=String(v.getAttribute('data-v')||'').split(',').filter(Boolean),k=0,bad=0;
+    var load=function(){v.src='/api/pres/video/'+encodeURIComponent(ids[k]);v.load()};
+    v.addEventListener('playing',function(){v.classList.add('on');bad=0});
+    v.addEventListener('ended',function(){k=(k+1)%ids.length;load();v.play().catch(function(){})});
+    v.addEventListener('error',function(){bad++;v.classList.remove('on');if(bad>=ids.length){v.remove();return}k=(k+1)%ids.length;load()});
+    var t=setInterval(function(){if(!document.body.contains(card)){clearInterval(t);try{v.pause();v.removeAttribute('src');v.load()}catch(e){}return}
+      var sl=card.closest('.pp-slide'),on=sl&&!sl.classList.contains('next')&&!sl.classList.contains('prev');
+      if(on){if(!v.getAttribute('src'))load();if(v.paused)v.play().catch(function(){})}else if(!v.paused)v.pause()},700);
+  }
   function rotate(card){
     var imgs=card.querySelectorAll('.px-bg i');if(imgs.length<2)return;
     var k=0,t=setInterval(function(){if(!document.body.contains(card)){clearInterval(t);return}imgs[k].classList.remove('on');k=(k+1)%imgs.length;imgs[k].classList.add('on')},7000);
@@ -115,21 +127,21 @@ const PRES_EXTRA_JS = String.raw`<script>
   function logoHtml(){return '<div class="px-core px-up"><div class="px-ring"></div><div class="px-logo"><img src="'+LOGO+'" alt="Logo PT Petrokimia Gresik" onerror="this.style.display=\'none\'"></div></div>'}
   function coverSlide(cfg,S,bn){
     var title=S.coverTitle||'Rapat Progres Proyek';
-    return {title:'Sampul',html:'<div class="px-hero px-cover">'+bgHtml(bn)+'<div class="px-in">'+logoHtml()+
+    return {title:'Sampul',html:'<div class="px-hero px-cover">'+bgHtml(bn,cache.videos)+'<div class="px-in">'+logoHtml()+
       '<div class="px-eye px-up d1">PMO Infrastruktur &amp; Process Plant</div>'+
       '<h1 class="px-h px-up d2">'+esc(title)+'</h1><div class="px-bar px-up d2"></div>'+
       '<div class="px-sub px-up d3">'+esc(S.coverSub||[cfg.page,cfg.sub].filter(Boolean).join(' · '))+'</div>'+
       '<div class="px-meta px-up d4">'+esc(today())+'</div></div><div class="px-foot">PT Petrokimia Gresik</div></div>',
-      after:function(card){card.classList.add('px-bleed');rotate(card)}};
+      after:function(card){card.classList.add('px-bleed');rotate(card);playVids(card)}};
   }
   function thanksSlide(cfg,S,bn){
-    return {title:'Terima kasih',html:'<div class="px-hero px-thanks">'+bgHtml(bn.slice().reverse())+'<div class="px-in">'+logoHtml()+
+    return {title:'Terima kasih',html:'<div class="px-hero px-thanks">'+bgHtml(bn.slice().reverse(),cache.videos.slice().reverse())+'<div class="px-in">'+logoHtml()+
       '<div class="px-eye px-up d1">'+esc([cfg.page,cfg.sub].filter(Boolean).join(' · '))+'</div>'+
       '<h1 class="px-h px-up d2">Terima Kasih</h1><div class="px-bar px-up d2"></div>'+
       '<div class="px-sub px-up d3">'+esc(S.thanksSub||'Sesi diskusi & tanya jawab')+'</div>'+
       (S.thanksContact?'<div class="px-meta px-up d3">'+esc(S.thanksContact)+'</div>':'')+
       stats()+'</div><div class="px-foot">PMO Infrastruktur &amp; Process Plant · PT Petrokimia Gresik</div></div>',
-      after:function(card){card.classList.add('px-bleed');rotate(card)}};
+      after:function(card){card.classList.add('px-bleed');rotate(card);playVids(card)}};
   }
   function pdfSlide(x){
     return {title:x.title+' · hal. '+x.page,extra:true,html:'<div class="px-pdf" style="aspect-ratio:'+x.width+'/'+x.height+'"><img src="/api/pres/img/'+x.deck+'/'+x.page+'" alt="'+esc(x.title)+' halaman '+x.page+'" loading="eager"></div>',
@@ -160,9 +172,11 @@ const PRES_EXTRA_JS = String.raw`<script>
   }
   function load(cfg){
     var key=keyOf(cfg);cache.key=key;
-    if(!key){cache.items=[];return Promise.resolve()}
+    var proj=key&&key.indexOf('weekly:')===0?key.slice(7):'';
+    var vids=api('/api/pres/videos'+(proj?'?project='+encodeURIComponent(proj):'')).then(function(d){cache.videos=d.videos||[]}).catch(function(){cache.videos=[]});
+    if(!key){cache.items=[];return vids}
     cache.err='';
-    return api('/api/pres/set?key='+encodeURIComponent(key)).then(function(d){cache.items=d.items||[];cache.settings=d.settings||{};cache.layout=d.layout||{order:[],hidden:[]};cache.canManage=!!d.canManage}).catch(function(e){cache.items=[];cache.layout={order:[],hidden:[]};cache.err=(e&&e.message)||'Data materi tambahan tidak dapat dimuat.';try{console.warn('pmoPresExtra',cache.err)}catch(x){}});
+    return api('/api/pres/set?key='+encodeURIComponent(key)).then(function(d){cache.items=d.items||[];cache.settings=d.settings||{};cache.layout=d.layout||{order:[],hidden:[]};cache.canManage=!!d.canManage}).catch(function(e){cache.items=[];cache.layout={order:[],hidden:[]};cache.err=(e&&e.message)||'Data materi tambahan tidak dapat dimuat.';try{console.warn('pmoPresExtra',cache.err)}catch(x){}}).then(function(){return vids});
   }
   function btn(){
     if(!cache.key||!(cache.canManage||cache.err))return '';
