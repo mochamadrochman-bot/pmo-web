@@ -160,6 +160,8 @@ function pmoGrpFill(p){
  * Perubahan kecil pada HTML lama, diterapkan saat dimuat supaya berkas di legacy/
  * tetap identik dengan Apps Script (mudah disinkronkan ulang).
  */
+const { PRES_EXTRA_JS } = require('./pres-extra');
+
 const HTML_PATCHES = [
   {
     file: 'AccountMenu',
@@ -236,6 +238,32 @@ const HTML_PATCHES = [
     file: 'ProjectSetup',
     find: '<option value="SUB">Sub-proyek</option>',
     replace: '<option value="SUB">Investasi rutin · sub-proyek dari proyek pengembangan</option>',
+  },
+  // Mode presentasi: sampul, terima kasih, dan slide dari pustaka PDF (lihat pres-extra.js).
+  {
+    file: 'AccountMenu',
+    find: "step(b,'Menyusun slide…',58);return wait(250)})",
+    replace: "step(b,'Menyusun slide…',58);return Promise.all([wait(250),window.pmoPresExtra?window.pmoPresExtra.load(cfg).catch(function(){}):null])})",
+  },
+  {
+    file: 'AccountMenu',
+    find: "var slides=[];try{slides=(cfg.build?cfg.build():[])||[]}catch(e){console.warn('pmoPresent',e)}",
+    replace: "var slides=[];try{slides=(cfg.build?cfg.build():[])||[]}catch(e){console.warn('pmoPresent',e)}if(window.pmoPresExtra){try{slides=window.pmoPresExtra.decorate(cfg,slides.filter(Boolean))}catch(e){console.warn('pmoPresExtra',e)}}",
+  },
+  {
+    file: 'AccountMenu',
+    find: '<div class="pp-ctl"><button type="button" class="pp-ic" data-a="list"',
+    replace: '<div class="pp-ctl">\'+(window.pmoPresExtra?window.pmoPresExtra.btn():\'\')+\'<button type="button" class="pp-ic" data-a="list"',
+  },
+  {
+    file: 'AccountMenu',
+    find: "else if(k==='fs')toggleFs()});",
+    replace: "else if(k==='fs')toggleFs();else if(k==='extra'&&window.pmoPresExtra)window.pmoPresExtra.manage(st.cfg)});",
+  },
+  {
+    file: 'AccountMenu',
+    find: "window.pmoPresent={open:open,close:close,go:function(n){go(n)},isOpen:function(){return !!st}};\n})();\n</script>",
+    replace: "window.pmoPresent={open:open,close:close,go:function(n){go(n)},isOpen:function(){return !!st}};\n})();\n</script>\n" + PRES_EXTRA_JS,
   },
   // Panel "Permintaan Akun" lama tidak dipakai lagi: akun dikelola di /admin/akun.
   ...['Portal', 'ExecutiveDashboard'].map((file) => ({

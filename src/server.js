@@ -36,7 +36,9 @@ app.use(helmet({ contentSecurityPolicy: false }));
 // Halaman lama mengirim berkas lewat google.script.run (base64), jadi batasnya lebih besar di /app/rpc.
 const jsonSmall = express.json({ limit: '1mb' });
 const jsonLarge = express.json({ limit: '40mb' });
-app.use((req, res, next) => (req.path.startsWith('/app/rpc/') ? jsonLarge : jsonSmall)(req, res, next));
+app.use((req, res, next) => ((req.path.startsWith('/app/rpc/') || /^\/api\/pres\/decks\/\d+\/pages\//.test(req.path)) ? jsonLarge : jsonSmall)(req, res, next));
+// pdf.js untuk merender PDF materi presentasi di browser.
+app.use('/vendor/pdfjs', express.static(path.join(__dirname, '..', 'node_modules', 'pdfjs-dist', 'build'), { maxAge: '7d', index: false }));
 app.use(express.urlencoded({ extended: false, limit: '1mb' }));
 
 // Parser cookie ringan, cukup untuk satu cookie sesi.
@@ -94,6 +96,7 @@ app.get('/akun/password', requireUser, (req, res) => {
 });
 app.get('/privasi', (req, res) => renderPage(res, 'pages/privasi', { title: 'Kebijakan Privasi', user: req.user }));
 app.use('/', adminRoutes);
+app.use('/', require('./routes/pres'));
 app.use('/', gasRoutes);
 app.use('/api', projectRoutes);
 app.use('/', portalRoutes);
