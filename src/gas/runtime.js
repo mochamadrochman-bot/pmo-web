@@ -173,7 +173,7 @@ function pmoExecGroups(data){
         return '<li class="'+(sub?'xg-li-sub':'')+'"><span class="xg-nm">'+(sub?'<small>Sub · '+esc(nm(par(p.projectId)))+'</small>':'')+esc(nm(p.projectId)||p.name)+'</span><span class="xg-pct">'+(p.actual==null?'—':pc(p.actual))+'</span><span class="xg-s '+c+'">'+esc(s||'—')+'</span></li>'}).join('');
       return '<article class="xg-card '+(t==='RUTIN'?'xg-rut':'xg-dev')+'"><h4><b class="xg-pill '+(t==='RUTIN'?'xg-rut':'xg-dev')+'">'+LABEL[t]+'</b></h4><div class="xg-sub">'+list.length+' proyek berjalan · '+c.g+' on track · '+c.a+' at risk · '+c.r+' critical</div>'+rl+'<ul class="xg-list">'+(li||'<li><span class="xg-nm">Belum ada proyek berjalan.</span></li>')+'</ul></article>';
     });
-    box.innerHTML=cards.join('');box.hidden=!cards.length;
+    box.innerHTML=cards.join('');box.hidden=!cards.length||(typeof mIsOn==='function'&&mIsOn()&&typeof mTab!=='undefined'&&mTab!=='ringkasan');
   }
 
   // ---------- peta deviasi bulanan & 3 month look ahead ----------
@@ -335,7 +335,7 @@ const HTML_PATCHES = [
   {
     file: 'ExecutiveDashboard',
     find: '</section>\n\n      <section class="grid g-ov">',
-    replace: '</section>\n      <section class="xg-sum" id="pmoGroupSummary" hidden aria-label="Ringkasan per kelompok proyek"></section>\n\n      <section class="grid g-ov">',
+    replace: '</section>\n      <section class="xg-sum" id="pmoGroupSummary" data-mtab="ringkasan" hidden aria-label="Ringkasan per kelompok proyek"></section>\n\n      <section class="grid g-ov">',
   },
   {
     file: 'ExecutiveDashboard',
@@ -381,6 +381,12 @@ const HTML_PATCHES = [
     find: "box=document.createElement('div');box.id=key;box.className='pmo-requests';box.hidden=true;",
     replace: "return;box=document.createElement('div');box.id=key;box.className='pmo-requests';box.hidden=true;",
   })),
+  // Weekly Dashboard (mode mobile): rapikan jarak label data-label pada kartu Concern, Mitigasi, RTL, dan Aktivitas Kritis.
+  {
+    file: 'Dashboard',
+    find: '</style></head><body>',
+    replace: '\nhtml.m-mode .table.pmo-cards>tbody>tr>td::before{display:block;margin-bottom:2px}\nhtml.m-mode .table.pmo-cards>tbody>tr>td:first-child::before{display:none}\nhtml.m-mode .table.pmo-cards>tbody>tr>td:first-child{display:block;margin:0 0 8px 0;padding-bottom:6px!important;border-bottom:1px solid var(--line)!important}\nhtml.m-mode #concerns>tr>td:nth-child(2){display:block;margin:0 0 8px 0}\nhtml.m-mode #concerns>tr>td:nth-child(2)::before{display:inline-block;margin-right:8px;margin-bottom:0}\n</style></head><body>',
+  },
 ];
 
 /** Penghubung login baru (cookie) ke bentuk akun yang dikenal kode lama. */
