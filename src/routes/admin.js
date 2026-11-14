@@ -257,6 +257,82 @@ router.post('/api/admin/intro', onlyAdmin, async (req, res, next) => {
   }
 });
 
+const { SheetData } = require('../gas/sheets');
+
+router.get('/api/admin/backup', onlyAdmin, async (req, res, next) => {
+  try {
+    const book = gasStore.book();
+    const sheets = book ? book.list().map((d) => ({ name: d.name, position: d.index, data: d.toJSON() })) : [];
+    const props = {};
+    for (const [k, v] of gasStore.state.props.entries()) {
+      if (!/^SYS:/.test(k)) props[k] = v;
+    }
+    const payload = {
+      format: 'pmo-backup-v1',
+      exportedAt: new Date().toISOString(),
+      exportedBy: req.user.username,
+      sheets,
+      groups: groups.all(),
+      props,
+    };
+    const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+    const fileName = 'pmo-backup-' + stamp + '.json';
+    await audit(req.user, 'data_backup', 'spreadsheet', fileName, { sheets: sheets.length });
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="' + fileName + '"');
+    res.send(JSON.stringify(payload));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/api/admin/restore',
+  onlyAdmin,
+  express.raw({ type: 'application/octet-stream', limit: '80mb' }),
+  async (req, res, next) => {
+    try {
+      if (!Buffer.isBuffer(req.body) || req.body.length < 20) return bad(res, 'Berkas backup kosong atau tidak terbaca.');
+      let payload;
+      try {
+        payload = JSON.parse(req.body.toString('utf8'));
+      } catch (e) {
+        return bad(res, 'Berkas bukan JSON backup yang valid.');
+      }
+      if (!payload || payload.format !== 'pmo-backup-v1' || !Array.isArray(payload.sheets) || !payload.sheets.length) {
+        return bad(res, 'Format berkas backup tidak dikenal (harus pmo-backup-v1).');
+      }
+      const sheets = payload.sheets.map((s, idx) => {
+        const d = SheetData.fromJSON(s.data || s);
+        d.index = typeof s.position === 'number' ? s.position : idx;
+        return d;
+      });
+      const names = sheets.map((d) => d.name);
+      const missing = ['DATA MINGGUAN PROYEK', 'DATA BULANAN'].filter((n) => !names.includes(n));
+      if (missing.length) return bad(res, 'Sheet wajib tidak ditemukan di berkas backup: ' + missing.join(', '));
+      const fileName = decodeURIComponent(String(req.get('x-file-name') || 'backup.json')).slice(0, 200);
+      await gasStore.replaceMain(sheets, req.user.username, fileName);
+      if (payload.groups && typeof payload.groups === 'object') {
+        await groups.replaceAll(payload.groups, req.user.username);
+      }
+      if (payload.props && typeof payload.props === 'object') {
+        for (const [k, v] of Object.entries(payload.props)) {
+          if (/^SYS:/.test(k)) continue;
+          const val = String(v == null ? '' : v);
+          await db.query(
+            'insert into gas_props (key, value, updated_at) values ($1, $2, now()) on conflict (key) do update set value = excluded.value, updated_at = now()',
+            [k, val]
+          );
+          gasStore.state.props.set(k, val);
+        }
+      }
+      clearCache();
+      await audit(req.user, 'data_restore', 'spreadsheet', fileName, { sheets: sheets.length });
+      res.json({ ok: true, data: { sheets: sheets.length } });
+    } catch (err) {
+      next(err);
+    }
+  });
+
 // --- Kelompok proyek (Pengembangan / Rutin / Sub-proyek) ---------------------
 const groups = require('../lib/groups');
 const gasRuntime = require('../gas/runtime');

@@ -86,6 +86,22 @@
 </div>
 
 <div class="panel">
+  <h2>Backup &amp; pulihkan data aplikasi (.json)</h2>
+  <p class="muted" style="margin:0 0 12px;font-size:13px">Unduh salinan seluruh data spreadsheet, kelompok proyek, dan pengaturan ke laptop Anda, atau pulihkan kembali dari berkas backup <code>.json</code>.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+    <a class="btn" href="/api/admin/backup" style="text-decoration:none;display:inline-block">Unduh Backup (.json)</a>
+  </div>
+  <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
+    <label for="restoreFile" style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Pulihkan dari berkas backup (.json)</label>
+    <input type="file" id="restoreFile" accept=".json,application/json" />
+    <div style="margin-top:10px"><button class="btn" id="restoreBtn" type="button" disabled>Pulihkan Backup</button></div>
+    <div class="warn" style="margin-top:10px">Pemulihan akan mengganti seluruh data spreadsheet dan kelompok proyek saat ini dengan isi berkas backup.</div>
+    <div class="err" id="restoreErr" role="alert"></div>
+    <div class="ok" id="restoreOk" role="status"></div>
+  </div>
+</div>
+
+<div class="panel">
   <h2>Data saat ini</h2>
   <% if (last) { %>
     <p class="muted" style="margin:0 0 10px">Impor terakhir: <%= new Date(last.at).toLocaleString('id-ID', { timeZone: 'Asia/Bangkok' }) %> oleh <%= last.actor || '—' %><%= last.file_name ? ' · ' + last.file_name : '' %></p>
@@ -178,6 +194,28 @@
       ok.textContent = ''; err.textContent = e.message; cb.checked = !cb.checked;
     } finally {
       cb.disabled = false;
+    }
+  });
+})();
+(function () {
+  var rf = document.getElementById('restoreFile'), rb = document.getElementById('restoreBtn');
+  var err = document.getElementById('restoreErr'), ok = document.getElementById('restoreOk');
+  if (!rf || !rb) return;
+  rf.addEventListener('change', function () { rb.disabled = !rf.files.length; err.textContent = ''; ok.textContent = ''; });
+  rb.addEventListener('click', async function () {
+    var f = rf.files[0];
+    if (!f) return;
+    if (!/\.json$/i.test(f.name)) { err.textContent = 'Pilih berkas backup .json.'; return; }
+    if (!confirm('Pulihkan seluruh data dari ' + f.name + '? Data spreadsheet dan kelompok proyek saat ini akan diganti.')) return;
+    rb.disabled = true; err.textContent = ''; ok.textContent = 'Memulihkan data dari backup…';
+    try {
+      var res = await fetch('/api/admin/restore', { method: 'POST', headers: { 'content-type': 'application/octet-stream', 'x-file-name': encodeURIComponent(f.name) }, body: f });
+      var j = await res.json();
+      if (!j.ok) throw new Error(j.error || 'Pemulihan gagal.');
+      ok.textContent = 'Berhasil dipulihkan: ' + j.data.sheets + ' sheet dimuat. Memuat ulang…';
+      setTimeout(function () { location.reload(); }, 1500);
+    } catch (e) {
+      ok.textContent = ''; err.textContent = e.message; rb.disabled = false;
     }
   });
 })();

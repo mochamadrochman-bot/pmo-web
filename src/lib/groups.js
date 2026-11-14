@@ -125,4 +125,32 @@ async function discard() {
   await load();
 }
 
-module.exports = { load, get, all, save, check, setSync, settle, discard, TYPES };
+/** Pulihkan seluruh peta kelompok proyek dari file backup. */
+async function replaceAll(groupMap, actor) {
+  if (!groupMap || typeof groupMap !== 'object') return;
+  const rows = Object.keys(groupMap).map((id) => {
+    const g = groupMap[id] || {};
+    const t = TYPES.includes(String(g.type || '').toUpperCase()) ? String(g.type).toUpperCase() : 'PENGEMBANGAN';
+    return { id: String(id).trim(), type: t, parent: t === 'SUB' && g.parent ? String(g.parent).trim() : null };
+  }).filter((r) => r.id);
+  const client = await db.pool.connect();
+  try {
+    await client.query('begin');
+    await client.query('delete from project_groups');
+    for (const r of rows) {
+      await client.query(
+        'insert into project_groups (project_id, group_type, parent_id, updated_at, updated_by) values ($1, $2, $3, now(), $4)',
+        [r.id, r.type, r.parent, actor || null]
+      );
+    }
+    await client.query('commit');
+  } catch (e) {
+    await client.query('rollback').catch(() => {});
+    throw e;
+  } finally {
+    client.release();
+  }
+  await load();
+}
+
+module.exports = { load, get, all, save, check, setSync, settle, discard, replaceAll, TYPES };
