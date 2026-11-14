@@ -252,8 +252,17 @@ node src/server.js                # migrasi otomatis saat start
 5. Pantau log dan backup harian di minggu pertama.
 
 ### R6 — Operasional & keamanan
-- **Uji restore backup R2** ke database sementara dan dokumentasikan langkahnya.
-- Aktifkan **Healthcheck** Coolify (`/health`) untuk mengurangi Bad Gateway saat deploy.
+- **Uji restore backup R2 (selesai 14 Nov 2026):** Diuji ke database sementara `pmo_restore_test` pada container `ffqpcdob9wkuacesuueycolv` (`postgres:18-alpine`) dari file `.dmp` terbaru di `/data/coolify/backups/databases/root-team-0/pmo-db-ffqpcdob9wkuacesuueycolv/`. Hasil bersih tanpa error (`users=27`, `sheets=43`, `groups=7`), lalu `pmo_restore_test` dihapus kembali:
+  ```bash
+  DB=ffqpcdob9wkuacesuueycolv
+  BK=$(ls -t /data/coolify/backups/databases/root-team-0/pmo-db-$DB/*.dmp | head -n 1)
+  docker exec -i $DB psql -U postgres -c "DROP DATABASE IF EXISTS pmo_restore_test;"
+  docker exec -i $DB psql -U postgres -c "CREATE DATABASE pmo_restore_test;"
+  docker exec -i $DB pg_restore -U postgres -d pmo_restore_test --no-owner --no-acl < "$BK"
+  docker exec -i $DB psql -U postgres -d pmo_restore_test -c "SELECT (SELECT count(*) FROM users) AS users, (SELECT count(*) FROM gas_sheets) AS sheets, (SELECT count(*) FROM project_groups) AS groups;"
+  docker exec -i $DB psql -U postgres -c "DROP DATABASE pmo_restore_test;"
+  ```
+- **Healthcheck Coolify (selesai 14 Nov 2026):** Diaktifkan di `pmo-web` → Healthcheck (`GET http://localhost:3000/health`, expected `200`, start period `30s`).
 - Opsional: proxy Cloudflare (oranye) di depan VPS. Uji dulu karena SSL dan Traefik sudah benar.
 - Domain profesional lewat tim IT. Cukup ganti DNS, `APP_BASE_URL`, dan redirect URI OAuth di Google Cloud.
 - Akun Google untuk Drive saat ini Gmail pribadi. Bisa diganti nanti lewat Admin → Koneksi Google, dan folder Drive harus dibagikan ke akun baru.
