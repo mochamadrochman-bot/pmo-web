@@ -147,4 +147,25 @@ function accessTokenSync() {
   return state.access.token;
 }
 
-module.exports = { load, status, authUrl, exchangeCode, disconnect, accessTokenSync, configured, SCOPES };
+/** Access token asinkron (tidak memblokir event loop). */
+async function accessToken() {
+  if (state.access && state.access.exp > Date.now()) return state.access.token;
+  if (!configured()) throw new Error('Koneksi Google belum disetel di server (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET).');
+  if (!state.refreshToken) throw new Error('Akun Google belum dihubungkan. Admin: buka menu Koneksi Google.');
+  const body = new URLSearchParams({
+    grant_type: 'refresh_token', refresh_token: state.refreshToken,
+    client_id: process.env.GOOGLE_CLIENT_ID, client_secret: process.env.GOOGLE_CLIENT_SECRET,
+  });
+  const r = await fetch(TOKEN_URL, { method: 'POST', body });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || !j.access_token) {
+    state.lastError = (j.error || 'HTTP ' + r.status) + (j.error_description ? ': ' + j.error_description : '');
+    if (j.error === 'invalid_grant') throw new Error('Izin Google sudah dicabut atau kedaluwarsa. Admin perlu menghubungkan ulang di menu Koneksi Google.');
+    throw new Error('Gagal mendapatkan akses Google (' + state.lastError + ').');
+  }
+  state.access = { token: j.access_token, exp: Date.now() + (Number(j.expires_in || 3600) - 120) * 1000 };
+  state.lastError = null;
+  return state.access.token;
+}
+
+module.exports = { load, status, authUrl, exchangeCode, disconnect, accessToken, accessTokenSync, configured, SCOPES };

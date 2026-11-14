@@ -209,9 +209,18 @@ router.get('/admin/data', onlyAdmin, async (req, res, next) => {
   try {
     const book = gasStore.book();
     const sheets = book ? book.list().map((d) => ({ name: d.name, rows: d.lastRow(), cols: d.lastCol() })) : [];
+    let dbStats = null;
+    try {
+      const [tot, tbl] = await Promise.all([
+        db.query("SELECT pg_database_size(current_database())::bigint AS bytes, pg_size_pretty(pg_database_size(current_database())) AS pretty"),
+        db.query("SELECT relname AS name, pg_total_relation_size(relid)::bigint AS bytes, pg_size_pretty(pg_total_relation_size(relid)) AS pretty, n_live_tup::bigint AS rows FROM pg_stat_user_tables ORDER BY pg_total_relation_size(relid) DESC LIMIT 8"),
+      ]);
+      dbStats = { total: tot.rows[0] || null, tables: tbl.rows || [] };
+    } catch (_) { dbStats = null; }
     renderPage(res, 'pages/admin-data', {
       title: 'Impor Data', user: req.user, sheets, last: await gasStore.lastImport(),
       sync: gasSync.info(), google: gauth.status(), introEnabled: gasStore.introEnabled(),
+      dbStats,
     });
   } catch (err) {
     next(err);

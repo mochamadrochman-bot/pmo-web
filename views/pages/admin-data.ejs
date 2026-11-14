@@ -115,6 +115,31 @@
   <% } %>
 </div>
 
+<% if (dbStats && dbStats.total) { %>
+<div class="panel">
+  <h2>Kapasitas database</h2>
+  <p style="margin:0 0 12px;font-size:14px">
+    Total ukuran database saat ini: <strong style="color:var(--navy)"><%= dbStats.total.pretty %></strong>
+    <span class="muted" style="margin-left:6px">(<%= Number(dbStats.total.bytes).toLocaleString('id-ID') %> byte)</span>
+  </p>
+  <% if (dbStats.tables && dbStats.tables.length) { %>
+    <table class="sheets">
+      <thead><tr><th>Tabel</th><th>Perkiraan baris</th><th>Ukuran (termasuk indeks)</th><th>Porsi</th></tr></thead>
+      <tbody>
+        <% var totBytes = Number(dbStats.total.bytes) || 1; dbStats.tables.forEach(function (t) { var pct = Math.min(100, (Number(t.bytes) / totBytes) * 100); %>
+          <tr>
+            <td><code><%= t.name %></code></td>
+            <td><%= Number(t.rows || 0).toLocaleString('id-ID') %></td>
+            <td><strong><%= t.pretty %></strong></td>
+            <td><%= pct.toFixed(1) %>%</td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+</div>
+<% } %>
+
 <script>
 (function () {
   var current = <%- JSON.stringify(sync.mode) %>, btn = document.getElementById('modeBtn');

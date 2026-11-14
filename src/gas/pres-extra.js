@@ -16,10 +16,20 @@ const PRES_EXTRA_JS = String.raw`<script>
   var BULAN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],HARI=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function api(url,opt){return fetch(url,Object.assign({credentials:'same-origin',headers:{'content-type':'application/json'}},opt||{})).then(function(r){return r.json().catch(function(){return {ok:false,error:'Server tidak merespons ('+r.status+').'}})}).then(function(j){if(!j.ok)throw new Error(j.error||'Permintaan gagal.');return j.data})}
+  function normKeyPart(v){return String(v||'').trim().toUpperCase().replace(/[^A-Z0-9 ._&()\-\/]/g,' ').replace(/\s+/g,' ').trim().slice(0,120)}
+  function nameKeyOf(cfg){
+    if(/weekly/i.test(String(cfg&&cfg.page||''))){
+      var n=normKeyPart((document.getElementById('weeklyProjectName')||{}).textContent||'');
+      return n?'weekly:'+n:null;
+    }
+    return 'executive';
+  }
   function keyOf(cfg){
     if(/weekly/i.test(String(cfg&&cfg.page||''))){
-      var n=String((document.getElementById('weeklyProjectName')||{}).textContent||'').trim().toUpperCase().replace(/[^A-Z0-9 ._&()\-\/]/g,' ').replace(/\s+/g,' ').trim().slice(0,120);
-      return n?'weekly:'+n:null;
+      var el=document.getElementById('weeklyProjectName');
+      var pid=normKeyPart((el&&el.dataset&&el.dataset.pid)||window.__pmoWeeklyPid||'');
+      if(pid)return 'weekly:'+pid;
+      return nameKeyOf(cfg);
     }
     return 'executive';
   }
@@ -188,7 +198,9 @@ const PRES_EXTRA_JS = String.raw`<script>
     var vids=Promise.race([galleryPhotos(proj),new Promise(function(r){setTimeout(function(){r(null)},7000)})]).then(function(a){cache.photos=a||galMemo[proj||'*']||[]}).catch(function(){cache.photos=[]});
     if(!key){cache.items=[];return vids}
     cache.err='';
-    return api('/api/pres/set?key='+encodeURIComponent(key)).then(function(d){cache.items=d.items||[];cache.settings=d.settings||{};cache.layout=d.layout||{order:[],hidden:[]};cache.canManage=!!d.canManage}).catch(function(e){cache.items=[];cache.layout={order:[],hidden:[]};cache.err=(e&&e.message)||'Data materi tambahan tidak dapat dimuat.';try{console.warn('pmoPresExtra',cache.err)}catch(x){}}).then(function(){return vids});
+    var fb=nameKeyOf(cfg);
+    var q='key='+encodeURIComponent(key)+(fb&&fb!==key?'&fallbackKey='+encodeURIComponent(fb):'');
+    return api('/api/pres/set?'+q).then(function(d){cache.items=d.items||[];cache.settings=d.settings||{};cache.layout=d.layout||{order:[],hidden:[]};cache.canManage=!!d.canManage}).catch(function(e){cache.items=[];cache.layout={order:[],hidden:[]};cache.err=(e&&e.message)||'Data materi tambahan tidak dapat dimuat.';try{console.warn('pmoPresExtra',cache.err)}catch(x){}}).then(function(){return vids});
   }
   function btn(){
     if(!cache.key||!(cache.canManage||cache.err))return '';
