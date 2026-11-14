@@ -1,7 +1,7 @@
 # Handover — Migrasi WEB DASHBOARD PMO ke VPS
 
-> Dokumen serah-terima untuk melanjutkan proyek di editor/agent lain (Antigravity).
-> Ditulis 14 November 2026. Bahasa kerja: Bahasa Indonesia. Pemilik: SPM Proyek Infrastruktur, PMO Infrastruktur & Process Plant — PT Petrokimia Gresik.
+> Dokumen serah-terima untuk melanjutkan proyek di editor/agent lain (Claude / Antigravity).
+> Diperbarui 15 November 2026. Bahasa kerja: Bahasa Indonesia. Pemilik: SPM Proyek Infrastruktur, PMO Infrastruktur & Process Plant — PT Petrokimia Gresik.
 > **Jangan pernah menempel password, isi `.env`, kunci SSH, atau API key ke chat/AI.** Rahasia disimpan di Environment Variables Coolify atau password manager.
 
 ---
@@ -198,19 +198,17 @@ node src/server.js                # migrasi otomatis saat start
 
 ## 6. Rencana ke depan (urut prioritas)
 
-### R1 — Sinkronkan pembaca XML Master Schedule (versi Apps Script v243) · **Minggu 15 Nov**
-- **Latar belakang:** pemilik sudah memperbarui pembaca XML MS Project di Apps Script (menu Master Schedule).
-  - **Aktual** sekarang membaca kolom khusus *Bobot Realisasi S/D Periode Ini* (`ExtendedAttribute` FieldID `188743989` / Number13), contohnya **64,24%**. Versi lama menghitung `PercentComplete` dibobot durasi (50,4%).
-  - **Rencana** memakai *Bobot Kontrak* (FieldID `188743986` / Number10) dan tanggal baseline, contohnya sekitar **61,19%**.
-  - Total bobot 104% tidak ditampilkan. Periode laporan dibaca 7 Nov 2026.
-- **File baru dari Apps Script ada di `docs/apps-script-v243/`:** `MasterSchedule.html`, `Login.html`, `Code.gs`.
-- **Langkah:**
-  1. Bandingkan dengan `legacy/` (`diff`). Perhatikan file mungkin berbeda format akhir baris (CRLF) sehingga diff terlihat besar; normalisasi dulu.
-  2. Salin ketiganya ke `legacy/`, timpa versi lama. Kalau ada fungsi `.gs` baru, cek `legacy/order.json` (urutan file, bukan fungsi; biasanya tidak berubah).
-  3. Jalankan server. Cek log `gas_patch_miss` untuk patch di `Login`, `Portal`, `ProjectSetup`, `ExecutiveDashboard`, dan `AccountMenu`. Perbaiki `find` yang tidak cocok lagi.
-  4. Uji unggah XML Master Schedule (minta file XML Dermaga A ke pemilik). Hasil harus Aktual 64,24%, Rencana ±61,19%, periode 7 Nov 2026.
-  5. Cek tampilan yang membaca hasil yang sama: `getExecutiveMasterSchedule` dan `getMasterScheduleMonitoring`.
-  6. **Login.html baru** berisi animasi pembuka. Lihat R2 sebelum mengganti, karena login-page.js menambal Login.html.
+### R1 — Sinkronkan pembaca XML Master Schedule (versi Apps Script v243) · **SELESAI (14 Nov 2026, commit `762c563`)**
+- `legacy/Code.gs`, `legacy/MasterSchedule.html`, dan `legacy/Login.html` telah disinkronkan dari `docs/apps-script-v243/`.
+
+### R2 — Animasi pembuka "stop motion" Login → Portal · **SELESAI (14 Nov 2026, commit `9aea29a`)**
+- Diimplementasikan lewat `src/gas/portal-intro.js`, `src/routes/login-page.js`, `src/routes/gas.js`, `src/gas/store.js`, `src/routes/admin.js`, dan `views/pages/admin-data.ejs` (durasi ~5 detik setelah login sebelum masuk Portal, dapat diaktifkan/nonaktifkan di `/admin/data`).
+
+### Tambahan Selesai 14 Nov 2026 (`bbc0945` .. `ec41c4e`)
+- **Pengelompokan & Tampilan Executive/Weekly:** Peta deviasi bulanan, 3-month look ahead, target/milestone, dan kartu realisasi keuangan dikelompokkan per Pengembangan & Rutin; perbaikan tampilan mobile (Weekly `.pmo-cards`, `#pmoGroupSummary` di tab `Ringkasan`, Weekly `#sec-msc` di tab `Kurva S`).
+- **Backup & Pemantauan Admin (`/admin/data`):** Ekspor & pulihkan backup `.json` (`src/lib/groups.js`, `src/routes/admin.js`, `views/pages/admin-data.ejs`) dan panel **Kapasitas database** (`pg_database_size` & 8 tabel terbesar).
+- **Portal & Narasi Eksekutif Direksi:** Kartu progres Portal memakai data cut-off bulanan dengan judul `Progres Proyek Cut off Bulan <Periode>`; Ringkasan Eksekutif di Portal & Executive menampilkan narasi Direksi (SPI `actual/plan`, CPI, serapan RKAP per kategori, status Proyek Selesai, Fokus Tindak Lanjut Direksi) tanpa kartu KPI atas, tanpa Mode Ringkas, dan tanpa badge `PERLU PERHATIAN`.
+- **Presentasi PDF & Kunci Slide Weekly:** Migrasi `db/migrations/004-pres-drive.sql`, `src/google/auth.js`, `src/routes/pres.js` menyimpan slide PDF baru ke Google Drive (`PMO Presentation Slides`), serta `src/gas/pres-extra.js` & `src/gas/runtime.js` memakai kunci `weekly:<PROJECT_ID>` dengan fallback nama lama.
 
 ### R2 — Animasi pembuka "stop motion" Login → Portal · Minggu 15 Nov
 - **Sudah ada di `docs/apps-script-v243/Login.html`:**
@@ -267,10 +265,12 @@ node src/server.js                # migrasi otomatis saat start
 - Domain profesional lewat tim IT. Cukup ganti DNS, `APP_BASE_URL`, dan redirect URI OAuth di Google Cloud.
 - Akun Google untuk Drive saat ini Gmail pribadi. Bisa diganti nanti lewat Admin → Koneksi Google, dan folder Drive harus dibagikan ke akun baru.
 
-### R7 — Hal kecil yang tercatat
-- Kartu Portal masih diurutkan menurut status bulanan, bukan status week terakhir.
-- Pertimbangkan memindahkan gambar slide PDF dari DB ke Google Drive bila ukuran DB membesar. Saat ini disimpan di DB demi kecepatan dan keandalan presentasi; keputusan pemilik belum final.
-- Weekly presentation: kunci susunan memakai nama proyek dari `#weeklyProjectName`. Bila nama proyek berubah, susunan lama tidak terbawa.
+### R7 — Hal kecil yang tercatat · **SELESAI (14 Nov 2026, commit `d0f026e` .. `ec41c4e`)**
+- Slide PDF presentasi baru dipindahkan ke Google Drive (`PMO Presentation Slides`) via `db/migrations/004-pres-drive.sql` & `src/routes/pres.js` (slide lama di DB tetap dilayani).
+- Kunci susunan slide Weekly menggunakan `weekly:<PROJECT_ID>` dengan fallback `weekly:<NAMA_PROYEK>` di `src/gas/pres-extra.js`, `src/gas/runtime.js`, dan `src/routes/pres.js`.
+- Kartu Portal memakai data cut-off bulanan dengan judul `Progres Proyek Cut off Bulan <Periode>`.
+- Ringkasan Eksekutif (Portal & Executive) memakai narasi Direksi dengan SPI (`actual/plan`), CPI, dan serapan RKAP per kategori Pengembangan & Rutin.
+- Pemantauan kapasitas database (`pg_database_size` & 8 tabel terbesar) tersedia di `/admin/data`.
 
 ---
 
