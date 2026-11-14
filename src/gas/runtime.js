@@ -43,12 +43,15 @@ const EXEC_BRIEF_NARR_JS = `(function(){
       '.xbn-wrap{display:flex;flex-direction:column;gap:12px}',
       '.xbn-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding-bottom:10px;border-bottom:1px solid var(--line,#e2e8f0)}',
       '.xbn-eye{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#64748b)}',
-      '.xbn-memo{background:var(--soft,#f8fafc);border:1px solid var(--line,#e2e8f0);border-radius:14px;padding:16px 18px;font-size:14px;line-height:1.68;color:var(--ink,#1e293b)}',
+      '.xbn-memo{font-size:14px;line-height:1.7;color:var(--ink,#1e293b);padding:2px 0}',
       '.xbn-memo p{margin:0 0 11px}.xbn-memo p:last-child{margin-bottom:0}',
       '.xbn-memo ul{margin:6px 0 10px 18px;padding:0}.xbn-memo li{margin-bottom:6px}',
       '.xbn-done{display:inline-flex;align-items:center;padding:2px 9px;border-radius:99px;background:rgba(15,138,95,.12);color:#0f8a5f;font-weight:700;font-size:12px;margin-right:6px}',
       '.xbn-tag{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:700;color:#fff;background:#0f5fa8;margin-right:4px}',
-      '.xbn-tag.rut{background:#0f8a5f}'
+      '.xbn-tag.rut{background:#0f8a5f}',
+      '#briefBox.xb{padding:18px 20px!important}',
+      '.xbn-wrap .xb-act{margin-top:2px}',
+      '.xbn-wrap .xb-foot{margin-top:2px;padding-top:10px;border-top:1px solid var(--line,#e2e8f0)}'
     ].join('');
     document.head.appendChild(st);
   }
@@ -127,7 +130,7 @@ const EXEC_BRIEF_NARR_JS = `(function(){
     }
     var ask=(base.attention||[]).filter(function(a){return a.g==='jadwal'}),finA=(base.attention||[]).filter(function(a){return a.g==='keuangan'});
     if(ask.length){
-      memo+='<p><b>Fokus Tindak Lanjut &amp; Perhatian Direksi:</b></p><ul>'+ask.map(function(x){
+      memo+='<p><b>Fokus Tindak Lanjut Direksi:</b></p><ul>'+ask.map(function(x){
         return '<li><b>'+esc(x.name)+'</b> \\u2014 '+esc(x.what)
           +(x.why?'. <i>Kendala'+(x.fld?' ('+esc(x.fld)+')':'')+':</i> '+esc(x.why):'')
           +(x.act?'. <i>Tindak lanjut:</i> '+esc(x.act):'')+'.</li>';
@@ -141,8 +144,10 @@ const EXEC_BRIEF_NARR_JS = `(function(){
 
     var plain=memo.replace(/<\\/p>|<\\/ul>/g,'\\n\\n').replace(/<li>/g,'\\u2022 ').replace(/<\\/li>/g,'\\n').replace(/<[^>]+>/g,'').replace(/\\n{3,}/g,'\\n\\n').trim();
 
+    var pt=document.getElementById('portalBriefTitle');
+    if(pt&&base.period)pt.textContent='Ringkasan eksekutif \\u00b7 '+base.period;
     var h='<div class="xbn-wrap">'
-      +'<div class="xbn-head"><span class="xbn-eye">Ringkasan eksekutif \\u00b7 '+esc(base.period)+'</span><span class="xb-st '+esc(base.level||'good')+'"><i></i>'+esc(base.label||'Sesuai jadwal')+'</span></div>'
+      +(pt?'':'<div class="xbn-head"><span class="xbn-eye">Ringkasan eksekutif \\u00b7 '+esc(base.period)+'</span></div>')
       +'<div class="xbn-memo">'+memo+'</div>'
       +'<div class="xb-act"><button type="button" data-xb-copy>Salin narasi</button>'+(window.speechSynthesis?'<button type="button" data-xb-say>Dengarkan</button>':'')+'<span class="xb-msg" role="status"></span></div>'
       +(base.notes&&base.notes.length?'<div class="xb-foot">'+base.notes.map(function(n){return '<span>'+esc(n)+'</span>'}).join('')+'</div>':'')
@@ -438,7 +443,12 @@ const HTML_PATCHES = [
     replace: "const __card=function(i){",
   },
   {
-    // Portal: beri judul cut-off bulan pada progres proyek.
+    // Portal: beri judul dinamis pada ringkasan eksekutif & progres proyek cut-off bulan.
+    file: 'Portal',
+    find: '<section class="grp"><h2>Ringkasan eksekutif</h2>',
+    replace: '<section class="grp"><h2 id="portalBriefTitle">Ringkasan eksekutif</h2>',
+  },
+  {
     file: 'Portal',
     find: '<section class="grp"><h2>progres proyek</h2>',
     replace: '<section class="grp"><h2 id="portalPulseTitle">Progres Proyek</h2>',
