@@ -1,0 +1,2230 @@
+<!doctype html>
+<html lang="id">
+<head>
+<?!= include('PmoCore') ?>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Master Schedule dan Realisasi Monitoring</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+:root{--amb:#d6a014;
+  --g-base:#7f97ae;--g-eng:#2b82d9;--g-proc:#8b5cf6;--g-cons:#d99018;--g-com:#14967f;--g-act:#16875d;--g-late:#d9483f;--g-now:#a66cd6;
+  --r:16px;color-scheme:light
+}
+:root[data-theme="dark"]{--amb:#f0c35a;
+  --g-base:#5f7a93;--g-eng:#38bdf8;--g-proc:#a855f7;--g-cons:#f59e0b;--g-com:#14b8a6;--g-act:#2fb985;--g-late:#f43f5e;--g-now:#c99be0;color-scheme:dark
+}
+*{box-sizing:border-box}html,body{margin:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 Inter,"Segoe UI",system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.55}
+:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+.ic{display:inline-grid;width:20px;height:20px;flex:none}.ic svg{width:100%;height:100%}
+.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;padding:12px 28px;background:var(--topbar);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .t{flex:1;min-width:0}.top .t small{display:block;font-size:12px;color:var(--muted)}.top .t b{display:block;font-size:18px;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon-btn{width:40px;height:40px;border:1px solid var(--line);border-radius:10px;background:var(--card);display:grid;place-items:center;color:var(--muted)}
+.av{width:36px;height:36px;border-radius:50%;background:var(--pri);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700;flex:none}
+.sel{min-height:38px;padding:0 32px 0 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);font-weight:600;max-width:300px}
+.wrap{max-width:1680px;margin:0 auto;padding:18px 28px 40px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:38px;padding:0 13px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font-weight:600;font-size:12.5px;white-space:nowrap;transition:background .15s,border-color .15s}
+.btn:hover{background:var(--soft);border-color:color-mix(in srgb,var(--pri) 40%,var(--line))}
+.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff}
+.btn .ic{width:15px;height:15px}
+.error{padding:12px 14px;border-radius:12px;background:var(--bad-bg);border:1px solid var(--bad-line);color:var(--bad);margin-bottom:12px}
+/* sidebar */
+.app{display:grid;grid-template-columns:var(--sw,268px) minmax(0,1fr);min-height:100vh;transition:grid-template-columns .2s ease}
+.main{min-width:0}
+.side{position:sticky;top:0;align-self:start;height:100vh;background:var(--card);border-right:1px solid var(--line);display:flex;flex-direction:column;z-index:40;overflow:hidden}
+.side-head{display:flex;align-items:center;gap:10px;padding:16px 14px 12px 18px;min-height:76px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.brand img{height:60px;max-width:100%;object-fit:contain;flex:none;display:block}.brand .brand-petro{width:90px}.brand .brand-pmo{width:80px}
+.sbtn{width:36px;height:36px;border:0;border-radius:10px;background:transparent;color:var(--muted);display:grid;place-items:center;flex:none}.sbtn:hover{background:var(--soft);color:var(--pri-ink)}
+.side nav{flex:1;overflow-y:auto;padding:2px 12px 12px}
+.sec{display:flex;align-items:center;gap:10px;margin:20px 6px 8px;color:#8697a8;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase}
+.sec::after{content:"";flex:1;border-top:1px solid var(--line)}
+.nav{display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;margin:2px 0;border:0;border-radius:10px;background:transparent;color:var(--ink);font-size:14px;font-weight:500;text-align:left;white-space:nowrap}
+.nav span{overflow:hidden;text-overflow:ellipsis}
+.nav:hover{background:var(--soft)}.nav.active{background:var(--pri);color:#fff}
+.nav.sub{padding:9px 12px;font-size:13px;color:var(--muted)}.nav.sub:hover{color:var(--pri-ink)}.nav.sub.on{background:var(--soft);color:var(--pri-ink);font-weight:600}
+.side-foot{padding:12px 14px 16px;border-top:1px solid var(--line)}
+.pj{display:flex;align-items:center;gap:12px;width:100%;padding:8px;border:0;border-radius:12px;background:var(--tint);text-align:left}
+.pj .pjic{width:36px;height:36px;border-radius:10px;background:var(--soft);color:var(--pri-ink);display:grid;place-items:center;flex:none}
+.pj small{display:block;font-size:11px;color:var(--muted);line-height:1.2}.pj b{display:block;font-size:14px;color:var(--navy);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.scrim{display:none}.hamb{display:none}
+.sec-t{cursor:pointer;user-select:none;border-radius:8px}.sec-t:hover{color:var(--pri)}
+.sec-t .sg-c{width:14px;height:14px;margin-left:auto;transform:rotate(90deg);transition:transform .15s}.sgrp.min .sec-t .sg-c{transform:none}
+.sec-t .sg-n{font-style:normal;font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:0}
+.app:not(.collapsed) .sgrp.min .nav:not(.on):not(.active){display:none}
+.app.collapsed .sec-t .sg-c,.app.collapsed .sec-t .sg-n{display:none}
+:root[data-theme="dark"] .sec{color:#7f95aa}
+:root[data-theme="dark"] .brand{flex:0 1 auto;width:auto;background:#fff;border-radius:12px;padding:6px 10px;box-shadow:0 1px 3px rgba(0,0,0,.35)}:root[data-theme="dark"] .brand img{height:52px}
+@media (min-width:901px){
+  .app.collapsed{--sw:76px}
+  .collapsed .nav span,.collapsed .sec span,.collapsed .pj>div:last-child,.collapsed .brand .brand-petro{display:none}
+  .collapsed .side-head{flex-direction:column;justify-content:center;gap:2px;padding:8px 0;min-height:92px}
+  .collapsed .brand{justify-content:center;flex:none}.collapsed .brand .brand-pmo{width:56px;height:48px}
+  :root[data-theme="dark"] .collapsed .brand{padding:4px 5px;border-radius:10px}
+  .collapsed .nav{justify-content:center;padding:11px 0}.collapsed .sec{margin:16px 18px 10px}
+  .collapsed .side-foot{padding:12px 10px 16px}.collapsed .pj{justify-content:center;padding:6px}
+  .collapsed [data-toggle-nav] .ic svg{transform:rotate(180deg)}
+}
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;inset:0 auto 0 0;width:min(300px,86vw);height:100%;transform:translateX(-100%);transition:transform .2s ease;box-shadow:0 0 40px rgba(7,20,36,.3)}
+  .app.nav-open .side{transform:none}
+  .app.nav-open .scrim{display:block;position:fixed;inset:0;background:rgba(7,20,36,.45);z-index:35}
+  .hamb{display:grid}
+}
+@media (prefers-reduced-motion:reduce){.app,.side{transition:none}}
+
+/* ===================================================================== */
+/* MASTER SCHEDULE UI/UX UPGRADE (6 PILAR PROFESIONAL)                   */
+/* ===================================================================== */
+.hero{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.hero .ey{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--pri-ink)}
+.hero h1{margin:4px 0 2px;font-size:22px;color:var(--navy);line-height:1.25}
+.hero p{margin:0;color:var(--muted);font-size:13.5px;max-width:780px}
+.hero .chip{margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--muted);font-size:12px;font-weight:600;white-space:nowrap}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);min-width:0}
+
+/* Pilar 6: Upgraded KPI Cards with Schedule Health & Progress Bar */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 16px;min-width:0;position:relative;display:flex;flex-direction:column;justify-content:space-between}
+.kpi.kpi-warn{border-color:color-mix(in srgb,var(--bad) 45%,var(--line))}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.kpi small{display:block;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.kpi-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+.kpi-badge.ok{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-line)}
+.kpi-badge.warn{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-line)}
+.kpi-badge.bad{background:var(--bad-bg);color:var(--bad);border:1px solid var(--bad-line)}
+.kpi-badge.info{background:var(--soft);color:var(--pri-ink);border:1px solid color-mix(in srgb,var(--pri) 30%,var(--line))}
+.kpi .v{font-size:25px;font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1.2;margin-top:4px; display:flex;align-items:baseline;gap:6px}
+.kpi .v span{font-size:12.5px;color:var(--muted);font-weight:600}
+.kpi p{margin:6px 0 0;font-size:12px;color:var(--muted);line-height:1.35}
+.kpi-bar{height:6px;border-radius:99px;background:color-mix(in srgb,var(--line) 75%,transparent);margin-top:8px;overflow:hidden;position:relative}
+.kpi-bar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--pri),var(--ok))}
+.kpi-act-btn{padding:4px 10px;border-radius:8px;border:1px solid var(--bad-line);background:var(--bad-bg);color:var(--bad);font-size:11.5px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.kpi-act-btn:hover{opacity:.85}
+
+/* Pilar 6: Unified Modern Control Toolbar */
+.tools{display:flex;flex-direction:column;gap:12px;padding:14px 16px;margin-bottom:12px}
+.tools-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.tools label.ctrl-lbl{display:flex;flex-direction:column;gap:4px;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.tools .sel{font-size:12.5px;text-transform:none;letter-spacing:0;color:var(--ink);min-width:155px;min-height:36px}
+.tools .sp{flex:1}
+.ms-search-wrap{position:relative;flex:1;min-width:220px;max-width:320px}
+.ms-search-wrap input{width:100%;height:36px;padding:0 28px 0 32px;border:1px solid var(--line);border-radius:10px;background:var(--tint);color:var(--ink);font-size:12.5px;font-weight:500}
+.ms-search-wrap input:focus{border-color:var(--pri);background:var(--card);outline:none}
+.ms-search-wrap .s-ic{position:absolute;left:9px;top:9px;width:16px;height:16px;color:var(--muted);pointer-events:none}
+.ms-search-clear{position:absolute;right:6px;top:6px;width:24px;height:24px;border:0;border-radius:6px;background:transparent;color:var(--muted);display:grid;place-items:center;font-size:14px}
+.ms-search-clear:hover{background:var(--soft);color:var(--ink)}
+
+/* Discipline Filter Chips */
+.fchips{display:inline-flex;align-items:center;gap:4px;padding:3px;border-radius:11px;background:var(--tint);border:1px solid var(--line);flex-wrap:wrap}
+.fchip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:var(--muted);font-size:12px;font-weight:600;transition:all .15s}
+.fchip:hover{color:var(--ink);background:color-mix(in srgb,var(--card) 60%,transparent)}
+.fchip.on{background:var(--pri);color:#fff;font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.fchip .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.dot.eng{background:var(--g-eng)}.dot.proc{background:var(--g-proc)}.dot.cons{background:var(--g-cons)}.dot.com{background:var(--g-com)}
+
+/* Toggle Pill Checkboxes */
+.pill-chk{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--tint);color:var(--ink);font-size:12px;font-weight:600;cursor:pointer;user-select:none;transition:all .15s}
+.pill-chk:hover{border-color:color-mix(in srgb,var(--pri) 50%,var(--line))}
+.pill-chk input{margin:0;accent-color:var(--pri);width:14px;height:14px;cursor:pointer}
+.pill-chk.late-pill:has(input:checked){background:var(--bad-bg);border-color:var(--bad-line);color:var(--bad);font-weight:700}
+.pill-chk.date-pill:has(input:checked){background:var(--soft);border-color:color-mix(in srgb,var(--pri) 45%,var(--line));color:var(--pri-ink);font-weight:700}
+
+.status{color:var(--muted);font-size:12.5px;line-height:1.5;margin:0 2px 10px}.status.err{color:var(--bad)}
+
+/* Gantt Header & Legend */
+.ph{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:13px 16px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--tint) 60%,var(--card))}
+.ph-title{display:flex;align-items:center;gap:10px;flex:1;min-width:220px;flex-wrap:wrap}
+.ph h3{margin:0;font-size:15px;color:var(--navy)}
+.ph-sub{font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:6px;background:var(--tint);border:1px solid var(--line);color:var(--muted);font-variant-numeric:tabular-nums}
+.leg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11.5px;color:var(--muted);font-weight:500}.leg span{display:inline-flex;align-items:center;gap:6px}
+.leg i{display:inline-block;width:16px;height:7px;border-radius:3px;background:var(--g-act)}
+.leg .k-base{background:var(--g-base);height:5px}.leg .k-plan{width:3px;height:12px;background:#fff;border:1px solid var(--pri);border-radius:1px}
+.leg .k-late{background:var(--g-late)}.leg .k-over{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--g-late) 35%,transparent) 0 3px,transparent 3px 6px);border:1px dashed var(--g-late);height:9px}
+.leg .k-cut{background:var(--amb);width:2px;height:12px}.leg .k-week{background:var(--pri);width:3px;height:12px}.leg .k-now{background:var(--g-now);width:3px;height:12px}
+
+/* Pilar 1 & 2: Clean Table Hierarchy + Sticky Left Columns */
+.chart{overflow:auto;max-height:70vh;position:relative;scroll-behavior:smooth}
+.chart table{table-layout:fixed;border-spacing:0;border-collapse:separate;font-size:12px}
+.chart td,.chart th{padding:0;border-bottom:1px solid var(--line);vertical-align:middle;text-align:left}
+.chart thead{position:sticky;top:0;z-index:12}
+.chart th{height:66px;color:var(--muted);font-size:11px;font-weight:700;background:var(--tint);text-transform:uppercase;letter-spacing:.03em}
+.chart th small{font-size:10.5px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--muted);display:block;margin-top:2px}
+
+.name-col{width:350px;position:sticky;left:0;z-index:5;background:var(--card);border-right:1px solid var(--line)}
+th.name-col{padding:0 16px;z-index:14;background:var(--tint)}
+
+.sched-col{width:170px;position:sticky;left:350px;z-index:5;background:var(--card);border-right:1px solid var(--line);padding:8px 11px;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:11.5px}
+th.sched-col{z-index:14;background:var(--tint)}
+
+.prog-col{width:175px;position:sticky;left:520px;z-index:5;background:var(--card);border-right:1px solid var(--line);padding:8px 11px;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:11.5px;box-shadow:3px 0 8px rgba(0,0,0,.06)}
+th.prog-col{z-index:14;background:var(--tint)}
+
+.chart.hide-dates .sched-col{display:none}
+.chart.hide-dates .prog-col{left:350px}
+
+/* Discipline Accent Variables & Clean Row Surfaces */
+.chart tr{--f-acc:var(--pri)}
+.chart tr[data-epcc-field="ENG"]{--f-acc:var(--g-eng)}
+.chart tr[data-epcc-field="PROC"]{--f-acc:var(--g-proc)}
+.chart tr[data-epcc-field="CONS"]{--f-acc:var(--g-cons)}
+.chart tr[data-epcc-field="COM"]{--f-acc:var(--g-com)}
+
+.chart tbody tr>td{background-color:var(--card);transition:background-color .12s}
+.chart tbody tr.kind-project>td{background-color:var(--tint)}
+.chart tbody tr.kind-field>td{background-color:color-mix(in srgb,var(--f-acc) 7%,var(--card))}
+.chart tbody tr.kind-group>td{background-color:color-mix(in srgb,var(--f-acc) 3%,var(--card))}
+.chart tbody tr:hover>td{background-color:color-mix(in srgb,var(--pri) 9%,var(--card))!important}
+.chart tbody tr.is-selected>td{background-color:color-mix(in srgb,var(--pri) 15%,var(--card))!important}
+
+/* Left Discipline Accent Bar on Name Column */
+.chart tbody td.name-col{border-left:4px solid var(--f-acc)}
+.chart tbody tr.kind-item td.name-col{border-left:3px solid color-mix(in srgb,var(--f-acc) 55%,transparent)}
+
+.name-col>div{display:flex;align-items:center;min-height:62px;padding-right:10px;gap:4px}
+.expand{border:1px solid transparent;background:color-mix(in srgb,var(--muted) 12%,transparent);color:var(--pri-ink);width:24px;height:24px;flex:none;border-radius:6px;display:grid;place-items:center;transition:all .15s}
+.expand:hover{background:var(--soft);border-color:color-mix(in srgb,var(--pri) 35%,transparent)}
+.expand svg{width:13px;height:13px;transition:transform .15s}.expand[aria-expanded="true"] svg{transform:rotate(90deg)}
+.spacer{width:24px;flex:none;display:grid;place-items:center;color:var(--muted);font-size:10px;opacity:.6}
+
+.item-name{border:0;background:none;color:var(--ink);text-align:left;padding:8px 2px;min-width:0;flex:1;font:inherit;border-radius:6px}
+.item-meta{display:flex;align-items:center;gap:6px;margin-bottom:2px;flex-wrap:wrap}
+.ms-fbadge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;background:color-mix(in srgb,var(--f-acc) 18%,transparent);color:var(--f-acc);border:1px solid color-mix(in srgb,var(--f-acc) 38%,transparent)}
+.item-name small{font-size:10.5px;color:var(--muted);overflow-wrap:anywhere;font-weight:600}
+.item-name b{display:block;line-height:1.3;font-weight:600;overflow-wrap:anywhere;font-size:12px}
+.item-name em{display:block;font-style:normal;font-size:10.5px;margin-top:2px;color:var(--muted)}
+.kind-project .item-name b{color:var(--navy);font-size:13.5px;font-weight:800}
+.kind-field .item-name b{font-size:13px;font-weight:700;color:var(--navy)}
+.kind-group .item-name b{font-weight:700}
+
+/* Schedule Column Formatting */
+.sch-base{font-weight:600;color:var(--ink);font-size:11.5px}
+.sch-act{display:block;font-size:10.5px;margin-top:4px;font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.sch-act.ok{color:var(--ok)}.sch-act.bad{color:var(--bad)}.sch-act.run{color:var(--pri-ink)}.sch-act.muted{color:var(--muted);font-weight:500}
+
+/* Progress & Deviation Column Formatting */
+.prog-top{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.prog-act{font-size:13px;font-weight:800;color:var(--navy)}
+.prog-act.late{color:var(--bad)}
+.dev-pill{display:inline-block;padding:1px 6px;border-radius:5px;font-size:10.5px;font-weight:700}
+.dev-pill.ok{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-line)}
+.dev-pill.warn{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-line)}
+.dev-pill.bad{background:var(--bad-bg);color:var(--bad);border:1px solid var(--bad-line)}
+.dev-pill.neutral{background:var(--soft);color:var(--muted)}
+.prog-sub{font-size:10.5px;color:var(--muted);margin-top:2px;display:flex;justify-content:space-between}
+.prog-sub b{color:var(--ink);font-weight:600}
+.prog-mbar{height:4px;border-radius:99px;background:color-mix(in srgb,var(--line) 85%,transparent);margin-top:4px;position:relative;overflow:visible}
+.prog-mbar>i{display:block;height:100%;border-radius:99px;background:var(--g-act)}
+.prog-mbar>i.late{background:var(--g-late)}
+.prog-mbar>s{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--navy);border-radius:1px;pointer-events:none}
+
+/* Pilar 4: Timeline Axis & Pin Badges */
+.axis{height:66px;position:relative;user-select:none}
+.months{height:30px;position:relative;border-bottom:1px solid var(--line)}
+.months>span{position:absolute;text-align:center;height:30px;line-height:30px;border-left:1px solid var(--line);font-size:11px;font-weight:700;overflow:hidden;white-space:nowrap;padding:0 3px;color:var(--ink)}
+.months>span.yr-alt{background:color-mix(in srgb,var(--pri) 6%,transparent)}
+.weeks{height:36px;position:relative}
+.week{position:absolute;text-align:left;height:36px;padding:11px 0 0 3px;border-left:1px solid color-mix(in srgb,var(--line) 75%,transparent);font-size:10px;font-weight:600;overflow:visible;white-space:nowrap;color:var(--muted)}
+.zoom-week .week{text-align:center;padding-left:0;overflow:hidden}
+.week.cutoff{background:color-mix(in srgb,var(--amb) 14%,transparent);color:var(--warn);font-weight:800}
+.week.selected{background:color-mix(in srgb,var(--pri) 18%,transparent);color:var(--pri-ink);font-weight:800}
+.pin-badge{position:absolute;top:2px;transform:translateX(-50%);padding:1px 6px;border-radius:4px;font-size:9.5px;font-weight:800;white-space:nowrap;z-index:9;pointer-events:none;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.pin-badge.pick{background:var(--pri);color:#fff}
+.pin-badge.now{background:var(--g-now);color:#fff;top:18px}
+
+/* Pilar 3: Dual-Track Gantt Bar & Plan Target Tick */
+.track{height:62px;position:relative;background-image:linear-gradient(to right,color-mix(in srgb,var(--line) 70%,transparent) 1px,transparent 1px);isolation:isolate}
+.baseline,.actual{position:absolute;border:0;min-width:3px;padding:0}
+.baseline{top:13px;height:9px;border-radius:99px;background:color-mix(in srgb,var(--f-acc) 52%,var(--g-base));opacity:.85}
+.plan-tick{position:absolute;top:10px;height:15px;width:3px;border-radius:1.5px;background:#fff;box-shadow:0 0 0 1px rgba(7,27,47,.6),0 1px 3px rgba(0,0,0,.4);z-index:3;pointer-events:none}
+.actual{top:29px;height:18px;border-radius:5px;background:linear-gradient(90deg,color-mix(in srgb,var(--g-act) 88%,#0ea5e9),var(--g-act));z-index:2;text-align:left;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.actual.done{background:linear-gradient(90deg,#0d9488,var(--g-act))}
+.actual.late{background:linear-gradient(90deg,#e11d48,var(--g-late))}
+.actual>span{position:absolute;left:7px;top:1.5px;color:#fff;font-size:10.5px;font-weight:700;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none}
+.actual>span.out{left:calc(100% + 6px);color:var(--ink);text-shadow:none;background:color-mix(in srgb,var(--card) 90%,transparent);padding:0 5px;border-radius:4px;border:1px solid var(--line)}
+.overrun{position:absolute;top:29px;height:18px;border:1px dashed var(--g-late);background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--g-late) 26%,transparent) 0 4px,transparent 4px 8px);z-index:1;border-radius:0 5px 5px 0;pointer-events:none}
+.cutline,.pickline,.todayline{position:absolute;top:0;bottom:0;width:0;border-left:1px dashed var(--amb);pointer-events:none;z-index:0;opacity:.45}
+.pickline{border-left:2px solid var(--pri);z-index:4;opacity:.95}
+.todayline{border-left:2px dotted var(--g-now);opacity:.9;z-index:4}
+.empty,.actual-missing{position:absolute;top:12px;left:14px;color:var(--muted);font-size:11.5px}
+.actual-missing{top:31px;font-size:11px;font-style:italic}
+.foot{color:var(--muted);font-size:12px;line-height:1.65;padding:11px 16px;border-top:1px solid var(--line);background:color-mix(in srgb,var(--tint) 45%,var(--card))}
+
+/* Pilar 5: Interactive Bottom Inspector Card */
+.detail{padding:16px;margin-top:12px;color:var(--muted);font-size:13px;border:1px solid color-mix(in srgb,var(--pri) 38%,var(--line))}
+.detail-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--line)}
+.detail-title-grp{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.detail h3{margin:0;color:var(--navy);font-size:15px}
+.dgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.dgrid>div{padding:11px 13px;border:1px solid var(--line);border-radius:12px;background:var(--tint)}
+.dgrid small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.dgrid b{color:var(--ink);font-size:14.5px;font-variant-numeric:tabular-nums;display:block}
+.dgrid .sub-v{display:block;font-size:11.5px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums}
+.dgrid .pos{color:var(--ok)}.dgrid .neg{color:var(--bad)}
+.detail p{margin:12px 0 0;line-height:1.6;font-size:12.5px}
+
+/* Pilar 5: Floating Glassmorphism Gantt Tooltip */
+.ms-tip{position:fixed;z-index:999;pointer-events:none;width:305px;padding:11px 13px;border-radius:12px;background:color-mix(in srgb,var(--card) 94%,transparent);backdrop-filter:blur(10px);border:1px solid color-mix(in srgb,var(--pri) 45%,var(--line));box-shadow:0 10px 30px rgba(0,0,0,.35);font-size:12px;color:var(--ink);transition:opacity .1s}
+.ms-tip-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:6px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+.ms-tip-title{font-weight:700;font-size:12.5px;color:var(--navy);margin-bottom:8px;line-height:1.35}
+.ms-tip-row{display:flex;justify-content:space-between;gap:8px;margin-top:4px;font-size:11.5px;font-variant-numeric:tabular-nums}
+.ms-tip-row span{color:var(--muted)}
+.ms-tip-row b{color:var(--ink)}
+
+.mnote{padding:22px;text-align:center}.mnote h2{margin:0 0 6px;font-size:18px;color:var(--navy)}.mnote p{margin:0 0 14px;color:var(--muted)}
+@media (max-width:1180px){.kpis,.dgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){.top{padding:10px 14px}.wrap{padding:14px}#desk{display:none!important}#mobileNote{display:block!important}.top .sel{display:none}}
+
+/* ===== Jadwal CPM (import XML P6 / MS Project) ===== */
+.cp-tabs{display:inline-flex;gap:4px;padding:4px;margin:0 0 14px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.cp-tabs button{border:0;background:none;padding:8px 16px;border-radius:9px;font-weight:700;color:var(--muted)}
+.cp-tabs button.on{background:var(--soft);color:var(--pri-ink)}
+#desk.cpm-on>#summary,#desk.cpm-on>#sumBox,#desk.cpm-on>#status,#desk.cpm-on>#ganttBox,#desk.cpm-on>#detail{display:none}
+#cpmView{display:grid;gap:14px}
+.cp-info{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:12px 16px}
+.cp-info b{color:var(--navy)}.cp-info .m{color:var(--muted);font-size:13px}.cp-info .sp{flex:1}
+.cp-btn{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:0 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);font-weight:700;color:var(--ink)}
+.cp-btn:hover{border-color:var(--pri-ink);color:var(--pri-ink)}
+.cp-btn.pri{background:var(--pri);border-color:var(--pri);color:#fff}.cp-btn.pri:hover{filter:brightness(1.08);color:#fff}
+.cp-btn.cp-dangerfill{background:#c0302f;border-color:#c0302f;color:#fff}.cp-btn.cp-dangerfill:hover{filter:brightness(1.1);color:#fff}
+.cp-modal.cp-small .cp-dlg{width:min(500px,100%)}
+.cp-ask{font-size:14px;line-height:1.6}.cp-ask b{color:var(--navy)}.cp-ask ul{margin:8px 0 0;padding-left:20px}
+.cp-askin{display:grid;gap:5px;font-size:12px;font-weight:600;color:var(--muted)}
+.cp-askin input{min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font-weight:500}
+.cp-btn.cp-danger{color:var(--bad);border-color:var(--bad-line)}.cp-btn.cp-danger:hover{background:var(--bad-bg);color:var(--bad);border-color:var(--bad)}
+.cp-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.cp-kpi{padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card);min-width:0}
+.cp-kpi small{display:block;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cp-kpi b{display:block;font-size:20px;color:var(--navy);font-variant-numeric:tabular-nums;white-space:nowrap}
+.cp-kpi span{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cp-kpi.bad b{color:var(--bad)}
+.cp-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 16px}
+.cp-tools input[type=search]{min-height:38px;width:280px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.cp-tools label{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);font-weight:600}
+.cp-tools .sel{max-width:200px}.cp-tools .sp{flex:1}
+.cp-leg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);padding:10px 16px;border-bottom:1px solid var(--line)}
+.cp-leg span{display:inline-flex;align-items:center;gap:6px}
+.cp-leg i{width:18px;height:8px;border-radius:3px;background:var(--g-eng)}
+.cp-leg i.d{background:var(--g-act)}.cp-leg i.c{background:var(--g-late)}.cp-leg i.w{background:var(--g-base);height:5px}
+.cp-leg i.f{height:2px;background:var(--muted)}.cp-leg i.m{width:9px;height:9px;transform:rotate(45deg);border-radius:1px;background:var(--navy)}
+.cp-leg i.s{width:2px;height:12px;background:var(--amb)}.cp-leg i.n{width:2px;height:12px;background:var(--g-now)}
+.cp-grid{position:relative;overflow:auto;height:calc(100vh - 150px);min-height:420px;border-radius:0 0 var(--r) var(--r)}
+.cp-inner{position:relative}
+.cp-head{position:sticky;top:0;z-index:5;display:flex;height:44px;background:var(--tint);border-bottom:1px solid var(--line)}
+.cp-hl{position:sticky;left:0;z-index:6;display:flex;flex:none;background:var(--tint);border-right:1px solid var(--line)}
+.cp-hl div,.cp-l div{flex:none;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cp-hl div{display:flex;align-items:center;font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.cp-c1{width:360px}.cp-c2{width:58px;text-align:right;justify-content:flex-end}.cp-c3,.cp-c4{width:84px}.cp-c5{width:60px;text-align:right;justify-content:flex-end}
+.cp-scale{position:relative;flex:none}
+.cp-scale span{position:absolute;top:0;height:44px;padding:4px 6px;border-left:1px solid var(--line);font-size:11.5px;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden}
+.cp-scale span small{display:block;font-weight:500;font-size:10.5px}
+.cp-scale em{position:absolute;bottom:2px;font-style:normal;font-size:10px;color:var(--muted);transform:translateX(-50%)}
+.cp-bg{position:absolute;pointer-events:none}
+.cp-bg i{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+.cp-bg i.sd{width:2px;background:var(--amb);z-index:1}.cp-bg i.now{width:2px;background:var(--g-now);z-index:1}
+.cp-rows{position:absolute;left:0;right:0}
+.cp-row{position:absolute;left:0;height:30px;display:flex;border-bottom:1px solid var(--line);font-size:13px}
+.cp-row:hover .cp-l{background:var(--tint)}
+.cp-l{position:sticky;left:0;z-index:3;display:flex;flex:none;align-items:center;height:29px;background:var(--card);border-right:1px solid var(--line);font-variant-numeric:tabular-nums;cursor:pointer}
+.cp-row.cp-wbs .cp-l{font-weight:700;color:var(--navy)}
+.cp-row.cp-sel .cp-l{background:var(--soft)}.cp-row.cp-rel .cp-l{background:var(--warn-bg)}
+.cp-row.cp-crit .cp-c5{color:var(--bad);font-weight:700}
+.cp-l .tw{display:inline-grid;place-items:center;width:18px;height:18px;margin-right:4px;border-radius:5px;color:var(--muted);flex:none;font-size:10px}
+.cp-l .cd{color:var(--muted);font-size:11.5px;margin-right:6px}
+.cp-l .n{color:var(--muted);font-weight:500;font-size:11.5px;margin-left:6px}
+.cp-b{position:absolute;top:8px;height:13px;border-radius:4px;background:var(--g-eng);min-width:3px;z-index:2;cursor:pointer}
+.cp-b.cp-done{background:var(--g-act)}.cp-b.cp-crit{background:var(--g-late)}
+.cp-b u{position:absolute;left:0;top:0;bottom:0;border-radius:4px 0 0 4px;background:var(--g-act)}
+.cp-b.cp-w{top:11px;height:6px;border-radius:2px;background:var(--g-base)}
+.cp-b.cp-w u{background:var(--g-act);border-radius:2px 0 0 2px}
+.cp-b.cp-ms{width:11px;height:11px;min-width:0;top:9px;margin-left:-5px;transform:rotate(45deg);border-radius:2px;background:var(--navy)}
+.cp-b.cp-ms.cp-crit{background:var(--g-late)}.cp-b.cp-ms.cp-done{background:var(--g-act)}
+.cp-f{position:absolute;top:14px;height:2px;background:var(--muted);opacity:.55;z-index:1}
+.cp-lbl{position:absolute;top:6px;font-size:11px;color:var(--muted);white-space:nowrap;z-index:1;pointer-events:none}
+.cp-svg{position:absolute;pointer-events:none;z-index:2;overflow:visible}
+.cp-svg path{fill:none;stroke:var(--muted);stroke-width:1.1;opacity:.6}
+.cp-svg path.c{stroke:var(--g-late);opacity:.85}.cp-svg path.s{stroke:var(--pri-ink);stroke-width:2;opacity:1}
+.cp-svg polygon{fill:var(--muted);opacity:.75}.cp-svg polygon.c{fill:var(--g-late)}.cp-svg polygon.s{fill:var(--pri-ink);opacity:1}
+.cp-empty{padding:44px 24px;text-align:center;color:var(--muted)}
+.cp-empty h3{margin:0 0 6px;color:var(--navy);font-size:18px}.cp-empty p{margin:0 auto 16px;max-width:620px}
+.cp-det{padding:16px 18px}
+.cp-det h3{margin:0 0 2px;font-size:16px;color:var(--navy)}.cp-det .p{color:var(--muted);font-size:12.5px;margin-bottom:12px}
+.cp-facts{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.cp-facts div{padding:8px 10px;border:1px solid var(--line);border-radius:10px;min-width:0}
+.cp-facts small{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.cp-facts b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.cp-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cp-2 h4{margin:0 0 6px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.cp-t{width:100%;border-collapse:collapse;font-size:13px}
+.cp-t td{padding:6px 8px;border-top:1px solid var(--line);vertical-align:top}
+.cp-t tr{cursor:pointer}.cp-t tr:hover td{background:var(--tint)}
+.cp-t .k{color:var(--muted);white-space:nowrap}.cp-t .tg{display:inline-block;padding:1px 7px;border-radius:6px;background:var(--soft);color:var(--pri-ink);font-weight:700;font-size:11.5px}
+.cp-t .cr{color:var(--bad);font-weight:700}
+.cp-modal{position:fixed;inset:0;z-index:9990;display:grid;place-items:center;padding:20px;background:rgba(6,18,32,.55);backdrop-filter:blur(4px)}
+.cp-dlg{width:min(720px,100%);max-height:calc(100vh - 40px);overflow:auto;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 60px rgba(4,15,30,.4)}
+.cp-dlg header{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line)}
+.cp-dlg header h3{margin:0;flex:1;font-size:17px;color:var(--navy)}
+.cp-dlg .bd{padding:18px 20px;display:grid;gap:14px}
+.cp-dlg footer{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--line)}
+.cp-drop{display:grid;place-items:center;gap:6px;padding:28px;border:2px dashed var(--line);border-radius:14px;text-align:center;color:var(--muted);cursor:pointer}
+.cp-drop:hover,.cp-drop.over{border-color:var(--pri-ink);color:var(--pri-ink)}
+.cp-drop b{color:var(--ink);font-size:15px}
+.cp-prog{height:8px;border-radius:99px;background:var(--line);overflow:hidden}.cp-prog i{display:block;height:100%;width:0;background:var(--pri);transition:width .2s}
+.cp-sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.cp-sum div{padding:10px 12px;border:1px solid var(--line);border-radius:12px;min-width:0}
+.cp-sum small{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.cp-sum b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cp-val{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.cp-val li{padding:8px 12px;border-radius:10px;background:var(--tint);border:1px solid var(--line);font-size:13px}
+.cp-val li.err{background:var(--bad-bg);border-color:var(--bad-line);color:var(--bad)}
+.cp-val li.warn{background:var(--warn-bg);border-color:var(--warn-line);color:var(--warn)}
+.cp-val li.ok{background:var(--ok-bg);border-color:var(--ok-line);color:var(--ok)}
+.cp-note{font-size:12.5px;color:var(--muted);margin:0}
+.cp-msg{padding:10px 14px;border-radius:10px;background:var(--bad-bg);border:1px solid var(--bad-line);color:var(--bad);font-size:13px}
+.cp-load{padding:60px 20px;text-align:center;color:var(--muted)}
+.cp-stage{display:grid;gap:14px}
+.cp-stage.cp-fs{background:var(--bg);padding:14px 18px;overflow:auto;align-content:start}
+.cp-stage.cp-full{position:fixed;inset:0;z-index:9000}
+.cp-stage.cp-fs .cp-grid{height:calc(100vh - 170px)}
+.cp-stage.cp-fs.cp-simon .cp-grid{height:calc(100vh - 300px)}
+.cp-sim{padding:12px 16px;border-color:var(--warn-line);background:var(--warn-bg);display:grid;gap:10px}
+.cp-sim-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}.cp-sim-h b{color:var(--warn)}.cp-sim-h span{font-size:13px}.cp-sim-h .sp{flex:1}
+.cp-sim-r{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.cp-sim-r div{padding:8px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.cp-sim-r small{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.cp-sim-r b,.cp-sum b{font-variant-numeric:tabular-nums}
+.cp-sim-r b.bad,.cp-sum b.bad{color:var(--bad)}.cp-sim-r b.ok,.cp-sum b.ok{color:var(--ok)}
+.cp-chips{display:flex;flex-wrap:wrap;gap:6px}
+.cp-chips span{display:inline-flex;align-items:center;gap:6px;padding:3px 4px 3px 10px;border-radius:99px;background:var(--card);border:1px solid var(--line);font-size:12.5px}
+.cp-chips button,.cp-x{width:22px;height:22px;border:0;border-radius:50%;background:var(--tint);color:var(--muted);font-weight:700;line-height:1;display:inline-grid;place-items:center}
+.cp-chips button:hover,.cp-x:hover{background:var(--bad-bg);color:var(--bad)}
+.cp-g{position:absolute;top:22px;height:4px;border-radius:2px;background:var(--g-base);opacity:.75;z-index:1}
+.cp-row.cp-mv .cp-c3,.cp-row.cp-mv .cp-c4{color:var(--warn);font-weight:700}
+.cp-leg i.g{height:4px;background:var(--g-base)}
+.cp-svg path.m{stroke-dasharray:4 3}
+.cp-edit{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px;margin:0 0 12px;padding:10px 12px;border:1px dashed var(--warn-line);border-radius:12px}
+.cp-edit label{display:grid;gap:3px;font-size:11.5px;font-weight:600;color:var(--muted)}.cp-edit label.grow{flex:1;min-width:220px}
+.cp-edit input,.cp-edit select{min-height:36px;padding:0 10px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);font-weight:600}
+.cp-edit input[type=number]{width:110px}
+.cp-find{display:grid;gap:4px;margin:-4px 0 12px}
+.cp-find button{text-align:left;padding:7px 10px;border:1px solid var(--line);border-radius:9px;background:var(--card);font-size:13px}
+.cp-find button:hover{border-color:var(--pri-ink)}.cp-find small{color:var(--muted);margin-left:6px}
+.cp-t .tg.mn{background:var(--warn-bg);color:var(--warn)}
+.cp-t tr.off td{opacity:.6;cursor:default}.cp-t tr.off:hover td{background:none}
+.cp-t th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:6px 8px}
+.cp-hist tr{cursor:default}
+.cp-h4{margin:4px 0 -4px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.cp-dt{border:1px solid var(--line);border-radius:12px;padding:8px 12px}.cp-dt summary{cursor:pointer;font-weight:600}.cp-dt[open] summary{margin-bottom:6px}
+.cp-dt .cp-t{font-size:12.5px}.cp-dt .cp-t tr{cursor:default}
+.cp-chk{display:flex;gap:8px;align-items:flex-start;font-size:13px}
+.cp-dlg{width:min(860px,100%)}
+/* Tahap 3: progres bacaan XML, forecast, ekspor */
+.cp-t3{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px;align-items:start}
+.cp-pg,.cp-fc{padding:14px 16px;display:grid;gap:12px;min-width:0}
+.cp-pg header,.cp-fc header{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.cp-pg h3,.cp-fc h3{margin:0;font-size:16px;color:var(--navy)}.cp-pg .m,.cp-fc .m{color:var(--muted);font-size:13px}
+.cp-pg-n{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.cp-fc-n{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.cp-pg-n>div,.cp-fc-n>div{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--tint);min-width:0}
+.cp-pg-n small,.cp-fc-n small{display:block;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.cp-pg-n b,.cp-fc-n b{display:block;font-size:20px;color:var(--navy);font-variant-numeric:tabular-nums;white-space:nowrap}
+.cp-pg-n b.ac{color:var(--ok)}.cp-pg-n .bad b,.cp-fc-n .bad b{color:var(--bad)}
+.cp-fc-n span{display:block;font-size:12px;color:var(--muted)}.cp-fc-n .mid{border-color:var(--pri-ink);background:var(--soft)}
+.cp-curve{width:100%;height:auto;display:block}
+.cp-curve .gl{stroke:var(--line);stroke-width:1}.cp-curve .ax{fill:var(--muted);font-size:11px}
+.cp-curve .pl{fill:none;stroke:var(--g-base);stroke-width:2.5;stroke-dasharray:6 4}.cp-curve .ac{fill:none;stroke:var(--g-act);stroke-width:3}
+.cp-curve .acd{fill:var(--g-act);stroke:var(--card);stroke-width:2}.cp-curve .cut{stroke:var(--g-now);stroke-width:1.5;stroke-dasharray:4 4}
+.cp-lg2{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted)}.cp-lg2 span{display:inline-flex;align-items:center;gap:6px}
+.cp-lg2 i{display:inline-block;width:22px;height:0;border-top:3px solid var(--g-act)}.cp-lg2 i.pl{border-top:3px dashed var(--g-base)}.cp-lg2 i.ct{border-top:2px dashed var(--g-now)}
+.cp-pt tr{cursor:default}.cp-pt tr:hover td{background:none}.cp-pt .r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.cp-pt th.r{text-align:right}
+.cp-pt td.bar{width:26%;min-width:90px;vertical-align:middle}
+.cp-pb{position:relative;display:block;height:10px;border-radius:6px;background:var(--line)}.cp-pb i{display:block;height:100%;border-radius:6px;background:var(--g-act)}
+.cp-pb u{position:absolute;top:-3px;width:2px;height:16px;background:var(--ink);text-decoration:none}
+.cp-fchs{display:flex;flex-wrap:wrap;gap:8px}
+.cp-fch{display:grid;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:var(--tint);font-size:12px}
+.cp-fch small{color:var(--muted)}.cp-fch b{color:var(--navy);font-size:13.5px}.cp-fch em{font-style:normal;color:var(--muted)}.cp-fch.up em{color:var(--bad);font-weight:700}.cp-fch.dn em{color:var(--ok);font-weight:700}
+.cp-lnk{border:0;background:none;padding:0 2px;color:var(--pri-ink);font-weight:700;text-decoration:underline;font-size:12.5px}
+.cp-optl{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:600}
+@media(max-width:1280px){.cp-t3{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:1280px){.cp-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.cp-facts{grid-template-columns:repeat(3,minmax(0,1fr))}.cp-c1{width:280px}}
+
+/* Badge status: titik + label, tetap terbaca tanpa warna dan saat dicetak hitam-putih */
+.kpi-badge.ok::before,.kpi-badge.warn::before,.kpi-badge.bad::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;vertical-align:.1em;flex:none}
+</style>
+</head>
+<body>
+<script>try{if(localStorage.getItem('pmoExecutiveTheme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<div class="app" id="app">
+<aside class="side" id="side" aria-label="Menu utama">
+  <div class="side-head">
+    <div class="brand">
+      <img src="https://drive.google.com/thumbnail?id=1LZynEU1SZ27JmRMPdv2D5CTxcd4cKp84&sz=w800" alt="PT Petrokimia Gresik" class="brand-petro" onerror="this.style.display='none'">
+      <img src="https://drive.google.com/thumbnail?id=1JP0hqePxcaiFN0aZ2dv6WJ6qCNwrRLxf&sz=w800" alt="PMO Infrastruktur & Process Plant" class="brand-pmo" onerror="this.style.display='none'">
+    </div>
+    <button type="button" class="sbtn" data-toggle-nav aria-label="Sembunyikan atau tampilkan menu" aria-expanded="true" title="Sembunyikan atau tampilkan menu"><i class="ic" data-ic="chevl"></i></button>
+  </div>
+  <nav aria-label="Navigasi halaman">
+    <div class="sgrp" data-sgw="dash">
+    <div class="sec sec-t" role="button" tabindex="0" data-sg="dash" aria-expanded="true" title="Ringkas / tampilkan menu Dashboard"><span>Dashboard</span><i class="sg-n"></i><i class="ic sg-c" data-ic="chevr"></i></div>
+    <button type="button" class="nav" onclick="go('portal')" title="Portal proyek"><i class="ic" data-ic="home"></i><span>Portal proyek</span></button>
+    <button type="button" class="nav" onclick="go('executive')" title="Executive Dashboard"><i class="ic" data-ic="grid"></i><span>Executive Dashboard</span></button>
+    <button type="button" class="nav active" aria-current="page" title="Master Schedule dan Realisasi Monitoring"><i class="ic" data-ic="gantt"></i><span>Master Schedule</span></button>
+    <button type="button" class="nav" onclick="goProj('weekly')" title="Weekly Progress"><i class="ic" data-ic="trend"></i><span>Weekly Progress</span></button>
+    <button type="button" class="nav" onclick="goProj('engineering')" title="EPCC Control"><i class="ic" data-ic="layers"></i><span>EPCC Control</span></button>
+    <button type="button" class="nav" onclick="goProj('documents')" title="Document Control"><i class="ic" data-ic="folder"></i><span>Document Control</span></button>
+    <button type="button" class="nav" data-mr hidden onclick="goProj('report')" title="Pelaporan Manajemen"><i class="ic" data-ic="slides"></i><span>Pelaporan Manajemen</span></button>
+    <button type="button" class="nav" data-role="input" hidden onclick="goProj('input')" title="Input Progress"><i class="ic" data-ic="edit"></i><span>Input Progress</span></button>
+    <button type="button" class="nav" data-role="input" hidden onclick="goProj('monthly')" title="Laporan Bulanan"><i class="ic" data-ic="cal"></i><span>Laporan Bulanan</span></button>
+    <button type="button" class="nav" data-role="admin" hidden onclick="go('project')" title="Tambah / Edit Proyek"><i class="ic" data-ic="plusc"></i><span>Tambah / Edit Proyek</span></button>
+    </div>
+    <div class="sgrp" data-sgw="isi">
+    <div class="sec sec-t" role="button" tabindex="0" data-sg="isi" aria-expanded="true" title="Ringkas / tampilkan menu Isi halaman"><span>Isi halaman</span><i class="sg-n"></i><i class="ic sg-c" data-ic="chevr"></i></div>
+    <button type="button" class="nav sub" data-goto="sumBox" title="Ringkasan"><i class="ic" data-ic="list"></i><span>Ringkasan</span></button>
+    <button type="button" class="nav sub" data-goto="ganttBox" title="Schedule &amp; realisasi"><i class="ic" data-ic="gantt"></i><span>Schedule &amp; realisasi</span></button>
+    <button type="button" class="nav sub" data-goto="detail" title="Detail pekerjaan"><i class="ic" data-ic="info"></i><span>Detail pekerjaan</span></button>
+    </div>
+  </nav>
+  <div class="side-foot"><button type="button" class="pj" id="pjBtn" title="Ganti proyek"><span class="pjic"><i class="ic" data-ic="building"></i></span><div><small>Proyek aktif</small><b id="pjName">–</b></div></button></div>
+</aside>
+<div class="scrim" id="scrim"></div>
+<div class="main">
+<header class="top">
+  <button type="button" class="icon-btn hamb" data-toggle-nav aria-label="Buka menu" aria-expanded="false"><i class="ic" data-ic="menu"></i></button>
+  <div class="t"><small>Modul 1 · Dashboard proyek</small><b id="projTitle">Master Schedule dan Realisasi Monitoring</b></div>
+  <select class="sel" id="project" aria-label="Pilih proyek"><option value="">Memuat proyek…</option></select>
+  <button type="button" class="icon-btn" id="themeBtn" aria-label="Ganti tema terang/gelap" title="Ganti tema" onclick="toggleTheme()"><i class="ic" data-ic="moon"></i></button>
+  <span class="av" id="userAv" title="">–</span>
+</header>
+<main class="wrap">
+  <div id="error" class="error" hidden></div>
+  <div id="mobileNote" class="panel mnote" hidden><h2>Tersedia pada desktop</h2><p>Master Schedule dan Realisasi Monitoring ditampilkan pada layar desktop agar hierarki dan jadwal mingguan nyaman dibaca.</p><button type="button" class="btn pri" onclick="go('executive')">Kembali ke Executive Dashboard</button></div>
+  <div id="desk">
+    <div class="hero">
+      <div><div class="ey">EPCC Control · baseline &amp; realisasi</div><h1>Master Schedule dan Realisasi Monitoring</h1><p>Telusuri proyek → bidang → group WBS → item, lalu bandingkan baseline aktif dengan progres dan deviasi pada week yang tercatat.</p></div>
+      <span class="chip"><i class="ic" data-ic="lock" style="width:14px;height:14px"></i>Hanya baca · data otomatis</span>
+    </div>
+
+    <div class="cp-tabs" id="cpTabs" role="tablist" aria-label="Tampilan Master Schedule"><button type="button" role="tab" class="on" data-cpv="mon" aria-selected="true">Monitoring EPCC</button><button type="button" role="tab" data-cpv="cpm" aria-selected="false">Jadwal CPM</button></div>
+
+    <div id="summary" class="kpis"></div>
+
+    <div class="panel tools" id="sumBox">
+      <div class="tools-row">
+        <div class="ms-search-wrap">
+          <i class="ic s-ic" data-ic="search"></i>
+          <input type="search" id="msSearch" placeholder="Cari WBS, nomor dokumen, atau item..." aria-label="Cari pekerjaan atau WBS">
+          <button type="button" class="ms-search-clear" id="msSearchClear" hidden title="Hapus pencarian">×</button>
+        </div>
+
+        <div class="fchips" role="group" aria-label="Filter bidang EPCC">
+          <button type="button" class="fchip on" data-fchip="ALL">Semua</button>
+          <button type="button" class="fchip" data-fchip="ENG"><span class="dot eng"></span>ENG</button>
+          <button type="button" class="fchip" data-fchip="PROC"><span class="dot proc"></span>PROC</button>
+          <button type="button" class="fchip" data-fchip="CONS"><span class="dot cons"></span>CONS</button>
+          <button type="button" class="fchip" data-fchip="COM"><span class="dot com"></span>COM</button>
+        </div>
+
+        <label class="pill-chk late-pill"><input type="checkbox" id="lateOnly"> Hanya melewati baseline</label>
+        <label class="pill-chk date-pill"><input type="checkbox" id="hideDates"> Sembunyikan kolom tanggal</label>
+
+        <span class="sp"></span>
+        <button type="button" class="btn" id="expandAllBtn" title="Buka seluruh hierarki WBS">Buka semua</button>
+        <button type="button" class="btn" id="collapseAllBtn" title="Ringkas ke level bidang">Ringkas</button>
+      </div>
+
+      <div class="tools-row" style="padding-top:8px;border-top:1px solid var(--line)">
+        <label class="ctrl-lbl">Week realisasi<select class="sel" id="week" aria-label="Week realisasi tercatat"><option>Memuat week…</option></select></label>
+        <label class="ctrl-lbl">Level hierarki<select class="sel" id="depth" aria-label="Tingkat hierarki"><option value="0">Ringkasan proyek</option><option value="1" selected>Ringkasan EPCC</option><option value="2">Group WBS</option><option value="3">Semua item</option></select></label>
+        <label class="ctrl-lbl">Skala waktu<select class="sel" id="zoom" aria-label="Skala waktu"><option value="month">Bulanan + week cut-off</option><option value="week">Detail setiap week</option></select></label>
+        <span class="sp"></span>
+        <button type="button" class="btn" id="focusWeek"><i class="ic" data-ic="target"></i>Ke week pilihan</button>
+        <button type="button" class="btn" id="reload"><i class="ic" data-ic="refresh"></i>Muat ulang</button>
+      </div>
+    </div>
+
+    <p id="status" class="status" role="status">Menyiapkan data…</p>
+
+    <article class="panel" id="ganttBox">
+      <div class="ph">
+        <div class="ph-title">
+          <h3 id="selectedPeriod">Schedule &amp; realisasi</h3>
+          <span class="ph-sub" id="periodSpan" hidden></span>
+        </div>
+        <div class="leg">
+          <span><i class="k-base"></i>Jadwal baseline</span>
+          <span><i class="k-plan"></i>Target plan week pilihan</span>
+          <span><i></i>Aktual on-track</span>
+          <span><i class="k-late"></i>Melewati baseline</span>
+          <span><i class="k-over"></i>Rentang overrun</span>
+          <span><i class="k-cut"></i>Cut-off bulanan</span>
+          <span><i class="k-week"></i>Week pilihan</span>
+          <span><i class="k-now"></i>Week berjalan</span>
+        </div>
+      </div>
+      <div id="chart" class="chart" tabindex="0" aria-label="Gantt baseline dan progres aktual"></div>
+      <div class="foot">Batang aktual menunjukkan <b>persentase realisasi pada rentang baseline</b>; garis vertikal putih pada batang baseline menunjukkan <b>posisi target plan pada week pilihan</b>. Arsiran merah menunjukkan waktu terlapor yang melewati finish baseline sementara pekerjaan belum selesai 100%. Arahkan kursor pada baris untuk ringkasan cepat atau klik baris untuk diagnostik lengkap di bawah.</div>
+    </article>
+
+    <section id="detail" class="panel detail" aria-live="polite">Pilih nama pekerjaan atau batang untuk melihat detail.</section>
+
+    <section id="cpmView" hidden></section>
+  </div>
+</main>
+</div>
+</div>
+
+<div id="msTooltip" class="ms-tip" hidden></div>
+
+<script>
+const appUrl=<?!= JSON.stringify(appUrl || '') ?>;
+const initialSessionToken=<?!= JSON.stringify(initialSessionToken || '') ?>;
+const initialProjectName=<?!= JSON.stringify(initialProjectName || '') ?>;
+if(initialSessionToken)sessionStorage.setItem('pmoSessionToken',initialSessionToken);
+const token=initialSessionToken||sessionStorage.getItem('pmoSessionToken');
+const P={home:'<path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/>',grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',trend:'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',layers:'<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',folder:'<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>',cal:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',plusc:'<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',chevl:'<path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/>',chevr:'<path d="M9 6l6 6-6 6"/>',building:'<path d="M4 21V5a1 1 0 011-1h9a1 1 0 011 1v16M15 9h4a1 1 0 011 1v11M3 21h18M8 8h3M8 12h3M8 16h3"/>',moon:'<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',slides:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M7 9h6M7 12h10"/>',gantt:'<path d="M4 4v16h16"/><rect x="7" y="6" width="8" height="3" rx="1"/><rect x="10" y="11" width="9" height="3" rx="1"/><rect x="8" y="16" width="5" height="2.5" rx="1"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>',lock:'<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/>',target:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',refresh:'<path d="M20 11a8 8 0 10-2.3 5.7"/><path d="M20 4v7h-7"/>',search:'<circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/>'};
+function paint(root){(root||document).querySelectorAll('[data-ic]').forEach(function(el){const p=P[el.getAttribute('data-ic')];if(p)el.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>'})}
+paint();
+function $(id){return document.getElementById(id)}
+const MS={data:null,cache:{},week:0,depth:1,open:{},busy:0,rows:[],fieldFilter:'ALL',q:'',selectedId:''};
+function msE(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function msD(v){return v?new Date(v+'T12:00:00Z').toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'}):'—';}
+function msDShort(v){return v?new Date(v+'T12:00:00Z').toLocaleDateString('id-ID',{day:'2-digit',month:'short', year:'2-digit',timeZone:'UTC'}):'—';}
+function msDay(v,n){const d=new Date(v+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);}
+function msTime(v){return Date.parse(v+'T00:00:00Z');}
+function msPct(v){return v==null||!Number.isFinite(Number(v))?'—':Number(v).toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';}
+function msDevFmt(v){if(v==null||!Number.isFinite(Number(v)))return '—';const n=Number(v);return (n>0.005?'+':'')+n.toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';}
+function go(page){window.top.location.href=appUrl+'?page='+page}
+function goProj(page){window.top.location.href=appUrl+'?page='+page+(MS.data&&MS.data.project?'&project='+encodeURIComponent(MS.data.project.name):'')}
+function goField(f){const m={ENG:'engineering',PROC:'procurement',CONS:'construction',COM:'commissioning'};goProj(m[f]||'weekly');}
+function msMobile(){return matchMedia('(max-width:760px)').matches;}
+function msStatus(message,error){const el=$('status');el.textContent=message;el.classList.toggle('err',!!error);}
+function toggleTheme(){const dark=document.documentElement.getAttribute('data-theme')!=='dark';document.documentElement.setAttribute('data-theme',dark?'dark':'light');try{localStorage.setItem('pmoExecutiveTheme',dark?'dark':'light')}catch(e){}themeIcon()}
+function themeIcon(){const b=$('themeBtn');if(!b)return;b.firstElementChild.setAttribute('data-ic',document.documentElement.getAttribute('data-theme')==='dark'?'sun':'moon');paint(b)}
+function sessionExpired_(msg){if(!/sesi (login )?(tidak valid|tidak ditemukan|telah berakhir|berakhir)|silakan login kembali/i.test(String(msg||'')))return false;goLogin_();return true}
+function goLogin_(){if(window.__goingLogin)return;window.__goingLogin=true;try{sessionStorage.removeItem('pmoSessionToken');sessionStorage.removeItem('pmoUser')}catch(e){}window.top.location.href=appUrl}
+function msBusy(on){['week','depth','zoom','reload','project','focusWeek'].forEach(function(id){if($(id))$(id).disabled=on});$('chart').setAttribute('aria-busy',String(on));if(window.pmoSwr&&window.pmoSwr.busy)window.pmoSwr.busy(on);}
+function msLoad(id,force){
+  if(msMobile())return;
+  if(!token){goLogin_();return}
+  const req=++MS.busy;
+  const key='ms_'+(id||'default');
+  if(!force&&MS.cache[id]){msAccept(MS.cache[id]);return;}
+  let hadCache=false;
+  if(!force&&window.pmoSwr){
+    const cached=window.pmoSwr.get(key);
+    if(cached&&cached.ok){hadCache=true;MS.cache[cached.project.id]=cached;MS.cache[id]=cached;msAccept(cached);}
+  }
+  if(!hadCache){
+    MS.data=null;$('chart').innerHTML='';$('summary').innerHTML='';$('detail').textContent='Memuat proyek pilihan…';$('selectedPeriod').textContent='Memuat data…';
+    msBusy(true);msStatus('Memuat baseline aktif dan realisasi EPCC Control…');
+  }else if(window.pmoSwr&&window.pmoSwr.busy){
+    window.pmoSwr.busy(true);
+  }
+  google.script.run.withSuccessHandler(function(data){
+    if(req!==MS.busy)return;
+    msBusy(false);
+    if(!data||!data.ok){if(!hadCache)msStatus('Data tidak tersedia. Silakan muat ulang.',true);return;}
+    MS.cache[data.project.id]=data;MS.cache[id]=data;
+    if(window.pmoSwr){window.pmoSwr.set(key,data);window.pmoSwr.set('ms_'+data.project.id,data);}
+    if(!hadCache||!MS.data||MS.data.generatedAt!==data.generatedAt)msAccept(data);
+  }).withFailureHandler(function(err){
+    if(req!==MS.busy)return;
+    msBusy(false);
+    if(hadCache)return;
+    const m=(err&&err.message)||'Gagal memuat data. Silakan muat ulang.';
+    if(sessionExpired_(m))return;
+    msStatus(m,true);
+  }).getMasterScheduleMonitoring(token,id||'');
+}
+function msAccept(data){
+  msBusy(false);
+  const keepWeek=MS.data&&MS.data.project&&MS.data.project.id===data.project.id&&MS.week;
+  MS.data=data;
+  MS.week=keepWeek&&data.weeks.indexOf(keepWeek)>=0?keepWeek:(data.weeks.length?data.weeks[data.weeks.length-1]:0);
+  if(!keepWeek){MS.open={};MS.selectedId='';}
+  const sel=$('project');sel.innerHTML=data.projects.map(p=>'<option value="'+msE(p.id)+'"'+(p.id===data.project.id?' selected':'')+'>'+msE(p.name)+'</option>').join('');sel.hidden=data.projects.length<2;
+  $('pjName').textContent=data.project.name;$('projTitle').textContent='Master Schedule · '+data.project.name;
+  const u=data.user||{},nm=u.name||'';if(nm&&($('userAv').textContent==='–'||!$('userAv').textContent))$('userAv').textContent=nm.trim().split(/\s+/).slice(0,2).map(function(p){return p.charAt(0)}).join('').toUpperCase();
+  document.querySelectorAll('[data-role="input"]').forEach(function(b){b.hidden=!data.canInput});document.querySelectorAll('[data-role="admin"]').forEach(function(b){b.hidden=['ADMIN','PIC','INPUT'].indexOf(String(u.role||'').toUpperCase())<0});
+  if(window.sideGrpSync)sideGrpSync();
+  $('week').innerHTML=data.weeks.length?data.weeks.slice().reverse().map(w=>'<option value="'+w+'"'+(w===MS.week?' selected':'')+'>W'+w+' · '+(data.start?msD(msDay(data.start,(w-1)*7))+' – '+msD(msDay(data.start,w*7-1)):'tanggal belum tersedia')+'</option>').join(''):'<option value="0">Belum ada realisasi EPCC</option>';
+  $('week').disabled=!data.weeks.length;
+  msRender();
+}
+function msIndicatedDates(records,week,origin){
+  const history=(records||[]).filter(r=>r.week<=week&&Number.isFinite(r.actual)).sort((a,b)=>a.week-b.week);
+  const firstProgress=history.findIndex(r=>r.actual>0);
+  const firstComplete=history.findIndex(r=>r.actual>=99.999);
+  function indication(index,finish){
+    if(!origin||index<1)return null;
+    const prior=history[index-1],next=history[index];
+    if(prior.week>=next.week)return null;
+    const from=msDay(origin,prior.week*7),to=msDay(origin,next.week*7-1);
+    return {text:next.week===prior.week+1?msD(finish?to:from):msD(from)+' – '+msD(to),week:next.week,date:next.week===prior.week+1?(finish?to:from):''};
+  }
+  return {start:indication(firstProgress,false),finish:indication(firstComplete,true)};
+}
+function msActualDate(actual,key){
+  if(actual&&actual[key])return msD(actual[key]);
+  const inferred=actual&&actual[key+'Hint'];
+  return inferred?inferred.text+' · Terindikasi':''+msD(null);
+}
+function msLatest(arr,w){return (arr||[]).filter(r=>r.week<=w).sort((a,b)=>b.week-a.week)[0]||null;}
+function msPlan(item,field,cut,w){
+  if(field.code!=='ENG'){const p=item.plan||[];return p.length&&w>0?Number(p[Math.min(w,p.length)-1])||0:null;}
+  const p=item.engPlan;if(!p||!cut)return null;let sum=0;
+  (p.dates||[]).forEach(function(date,i){if(!date||!p.weights[i])return;if(i===3){if(date<=cut)sum+=p.weights[i];}else{if(date<=cut)sum+=p.weights[i]*p.portion/100;if(msDay(date,p.days)<=cut)sum+=p.weights[i]*(1-p.portion/100);}});return sum;
+}
+function msEvaluate(node,field,cut){
+  const copy=Object.assign({},node);copy.field=field?field.code:(node.kind==='field'?node.code:'PROJ');
+  if(node.kind==='field')field=node;
+  copy.children=(node.children||[]).map(n=>msEvaluate(n,field,cut));
+  if(node.kind==='item'){
+    copy.planValue=msPlan(node,field,cut,MS.week);const records=field.snapshots&&field.snapshots[node.sourceId];
+    copy.actual=msLatest(records,MS.week);
+    if(copy.actual){
+      const dates=msIndicatedDates(records,MS.week,MS.data.start);
+      copy.actual=Object.assign({},copy.actual,{startHint:field.code==='ENG'?null:dates.start,finishHint:dates.finish});
+    }
+    copy.basis=Number(node.basisWeight)||0;copy.coverage=copy.actual?1:0;copy.leaves=1;
+  }else{
+    copy.leaves=copy.children.reduce((t,c)=>t+(c.leaves||0),0);copy.coverage=copy.children.reduce((t,c)=>t+(c.coverage||0),0);
+    const weight=copy.children.reduce((t,c)=>t+(c.basis||0),0);copy.basis=weight;
+    if(weight&&copy.children.every(c=>c.planValue!=null))copy.planValue=copy.children.reduce((t,c)=>t+c.basis*c.planValue,0)/weight;else copy.planValue=null;
+    if(weight&&copy.coverage===copy.leaves&&copy.leaves&&copy.children.every(c=>c.actual)){copy.actual={actual:copy.children.reduce((t,c)=>t+c.basis*c.actual.actual,0)/weight,week:Math.max(...copy.children.map(c=>c.actual.week)),start:'',finish:''};}
+    else copy.actual=null;
+    if(node.kind==='field'){
+      const rec=msLatest(node.history,MS.week);
+      if(rec&&rec.actual!=null){copy.actual=Object.assign({},rec,{start:'',finish:''});copy.summaryOnly=copy.coverage<copy.leaves;}
+      if(rec&&rec.plan!=null&&copy.planValue==null){copy.planValue=rec.plan;}
+      if(node.code==='ENG'&&rec&&rec.revision!=null&&rec.revision!==node.revision)copy.revNote='Progres W'+rec.week+' tercatat pada baseline engineering Rev '+rec.revision+' (baseline aktif Rev '+node.revision+').';
+    }
+    if(node.kind==='project'){
+      const activeFields=copy.children.filter(f=>f.actual&&f.actual.actual!=null);
+      if(activeFields.length){
+        const avgAct=activeFields.reduce((t,f)=>t+Number(f.actual.actual||0),0)/activeFields.length;
+        const maxWk=Math.max.apply(null,activeFields.map(f=>f.actual.week||0));
+        copy.actual={actual:avgAct,week:maxWk,start:'',finish:''};
+      }else copy.actual=null;
+      const planFields=copy.children.filter(f=>f.planValue!=null);
+      if(planFields.length){
+        copy.planValue=planFields.reduce((t,f)=>t+Number(f.planValue||0),0)/planFields.length;
+      }else copy.planValue=null;
+    }
+  }
+  if(copy.actual){
+    const reportedCut=MS.data.start?msDay(MS.data.start,copy.actual.week*7-1):'';
+    const actualFinish=copy.actual.finish||(copy.actual.finishHint&&copy.actual.finishHint.date);
+    copy.late=!!copy.end&&((copy.actual.actual<99.999&&reportedCut>copy.end)||(actualFinish&&actualFinish>copy.end));
+    copy.reportedCut=reportedCut;
+  }
+  copy.dev=(copy.actual&&copy.actual.actual!=null&&copy.planValue!=null)?(Number(copy.actual.actual)-Number(copy.planValue)):null;
+  return copy;
+}
+const CHEV='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+const FLBL={PROJ:'PROYEK',ENG:'ENG',PROC:'PROC',CONS:'CONS',COM:'COM'};
+
+function msScheduleCell(n){
+  const E=msE;
+  if(!n.start&&!n.end)return '<div class="sch-base">—</div><span class="sch-act muted">'+E(n.notice||'Baseline belum lengkap')+'</span>';
+  const baseStr=msDShort(n.start)+' → '+msDShort(n.end);
+  let actHtml='';
+  if(n.kind==='item'){
+    const s=msActualDate(n.actual,'start'),f=msActualDate(n.actual,'finish');
+    if(s!=='—'||f!=='—'){
+      actHtml='<span class="sch-act '+(n.late?'bad':'ok')+'">Aktual: '+E(s)+' → '+E(f)+'</span>';
+    }else if(n.late){
+      actHtml='<span class="sch-act bad">⚠ Melewati '+msDShort(n.end)+'</span>';
+    }else if(n.actual&&n.actual.actual>=99.999){
+      actHtml='<span class="sch-act ok">✓ Selesai · W'+n.actual.week+'</span>';
+    }else if(n.actual){
+      actHtml='<span class="sch-act run">● Berjalan · W'+n.actual.week+'</span>';
+    }else{
+      actHtml='<span class="sch-act muted">Belum ada realisasi</span>';
+    }
+  }else{
+    if(n.late){
+      actHtml='<span class="sch-act bad">⚠ Melewati '+msDShort(n.end)+'</span>';
+    }else if(n.actual&&n.actual.actual>=99.999){
+      actHtml='<span class="sch-act ok">✓ Selesai 100% · W'+n.actual.week+'</span>';
+    }else if(n.actual){
+      actHtml='<span class="sch-act run">● Aktif s.d. W'+n.actual.week+'</span>';
+    }else{
+      actHtml='<span class="sch-act muted">Belum tercatat</span>';
+    }
+  }
+  return '<div class="sch-base" title="Baseline: '+msD(n.start)+' – '+msD(n.end)+'">'+baseStr+'</div>'+actHtml;
+}
+
+function msProgCell(n){
+  if(!n.actual&&n.planValue==null){
+    return '<div class="prog-top"><span class="prog-act" style="color:var(--muted)">—</span></div><div class="prog-sub"><span>Plan: —</span></div>';
+  }
+  const pg=n.actual?n.actual.actual:null;
+  const pl=n.planValue;
+  const dev=n.dev;
+  let pill='';
+  if(dev!=null){
+    const cls=n.late||dev<-2?'bad':(dev<-0.05?'warn':'ok');
+    pill='<span class="dev-pill '+cls+'">'+msDevFmt(dev)+'</span>';
+  }else if(pg!=null&&pg>=99.999){
+    pill='<span class="dev-pill ok">100%</span>';
+  }else if(n.late){
+    pill='<span class="dev-pill bad">Terlambat</span>';
+  }
+  const wFill=pg!=null?Math.max(0,Math.min(100,pg)):0;
+  const wPlan=pl!=null?Math.max(0,Math.min(100,pl)):null;
+  return '<div class="prog-top"><span class="prog-act'+(n.late?' late':'')+'">'+msPct(pg)+'</span>'+pill+'</div>'+
+    '<div class="prog-sub"><span>Plan'+(MS.week?' W'+MS.week:'')+': <b>'+msPct(pl)+'</b></span></div>'+
+    '<div class="prog-mbar"><i class="'+(n.late?'late':'')+'" style="width:'+wFill+'%"></i>'+(wPlan!=null?'<s style="left:'+wPlan+'%" title="Target Plan: '+msPct(pl)+'"></s>':'')+'</div>';
+}
+
+function msRender(){
+  if(!MS.data)return;const data=MS.data,E=msE,cut=data.start&&MS.week?msDay(data.start,MS.week*7-1):'';
+  const tree=msEvaluate(data.project,null,cut),rows=[];MS.rows=rows;
+
+  // Count total items and late items across the full evaluated tree before filtering
+  let totalLeaves=0,lateLeaves=0,lateFields=0;
+  function countTree(n){
+    if(n.kind==='field'&&n.late)lateFields++;
+    if(n.kind==='item'){totalLeaves++;if(n.late)lateLeaves++;}
+    (n.children||[]).forEach(countTree);
+  }
+  countTree(tree);
+
+  const onlyLate=$('lateOnly').checked;
+  const fFilter=MS.fieldFilter||'ALL';
+  const q=(MS.q||'').trim().toLowerCase();
+
+  function filterNode(n){
+    if(fFilter!=='ALL'&&n.kind!=='project'&&n.field!==fFilter)return false;
+    if(n.kind==='item'){
+      if(onlyLate&&!n.late)return false;
+      if(q){
+        const hay=((n.code||'')+' '+(n.name||'')).toLowerCase();
+        if(hay.indexOf(q)<0)return false;
+      }
+      return true;
+    }
+    const selfMatch=q&&(((n.code||'')+' '+(n.name||'')).toLowerCase().indexOf(q)>=0);
+    if(!selfMatch){
+      n.children=(n.children||[]).filter(filterNode);
+    }
+    if(onlyLate&&n.kind!=='project'&&!n.late&&n.children.length===0)return false;
+    if(q&&!selfMatch&&n.children.length===0)return false;
+    return true;
+  }
+
+  filterNode(tree);
+
+  // Build Summary KPI Cards
+  const current=data.currentWeek>0?data.currentWeek:0;
+  const fields=tree.children||[];
+  const recorded=fields.filter(f=>f.actual).length,based=fields.filter(f=>f.revision!=null).length;
+  const pAct=tree.actual?tree.actual.actual:null,pPlan=tree.planValue,pDev=tree.dev;
+  const devCls=pDev!=null?(pDev<-2?'bad':pDev<-0.05?'warn':'ok'):'info';
+  $('summary').innerHTML=
+    '<div class="kpi"><div class="kpi-top"><small>Periode realisasi</small>'+(current?'<span class="kpi-badge info">Berjalan W'+current+'</span>':'')+'</div><div class="v">'+(MS.week?'W'+MS.week:'—')+'</div><p>Cut-off '+msD(cut)+' · Kalender proyek</p></div>'+
+    '<div class="kpi"><div class="kpi-top"><small>Rata-rata progres bidang</small>'+(pDev!=null?'<span class="kpi-badge '+devCls+'">'+msDevFmt(pDev)+'</span>':'')+'</div><div class="v">'+(pAct!=null?msPct(pAct):'—')+' <span>vs Plan '+msPct(pPlan)+'</span></div><div class="kpi-bar"><i style="width:'+(pAct!=null?Math.min(100,Math.max(0,pAct)):0)+'%"></i></div></div>'+
+    '<div class="kpi"><div class="kpi-top"><small>Cakupan baseline &amp; item</small><span class="kpi-badge ok">'+recorded+'/'+based+' Bidang</span></div><div class="v">'+totalLeaves.toLocaleString('id-ID')+' <span>item WBS/dok</span></div><p>Baseline aktif tersubmit pada '+based+' bidang EPCC</p></div>'+
+    '<div class="kpi'+(lateFields>0||lateLeaves>0?' kpi-warn':'')+'"><div class="kpi-top"><small>Ketepatan jadwal</small>'+(lateFields>0||lateLeaves>0?'<button type="button" class="kpi-act-btn" id="kpiFilterLateBtn">'+(onlyLate?'Tampilkan semua':'Filter terlambat')+'</button>':'<span class="kpi-badge ok">On Schedule</span>')+'</div><div class="v" style="color:'+(lateFields>0||lateLeaves>0?'var(--bad)':'var(--ok)')+'">'+(lateLeaves>0?lateLeaves+' <span>item melewati baseline</span>':(lateFields>0?lateFields+' <span>bidang melewati baseline</span>':'0 <span>item terlambat</span>'))+'</div><p>'+(lateFields>0?lateFields+' bidang memiliki pekerjaan melewati finish baseline':'Seluruh pekerjaan berada dalam rentang jadwal baseline')+'</p></div>';
+
+  if($('kpiFilterLateBtn')){
+    $('kpiFilterLateBtn').onclick=function(){
+      $('lateOnly').checked=!$('lateOnly').checked;
+      $('lateOnly').dispatchEvent(new Event('change'));
+    };
+  }
+
+  if((onlyLate||q)&&(!tree.children||!tree.children.length)){
+    $('chart').innerHTML='<p class="empty" style="position:static;padding:28px 18px;text-align:center">Tidak ada pekerjaan yang cocok dengan filter / pencarian saat ini.</p>';
+    return;
+  }
+
+  function walk(n,d){
+    rows.push({n:n,d:d});
+    const forceOpen=!!(q||onlyLate);
+    if(n.children&&n.children.length&&(forceOpen||MS.open[n.id]===true||(MS.open[n.id]!==false&&d<MS.depth))){
+      n.children.forEach(c=>walk(c,d+1));
+    }
+  }
+  walk(tree,0);
+
+  let end=tree.end||cut||data.start,origin=data.start||tree.start;
+  if(tree.start&&(!origin||tree.start<origin))origin=tree.start;
+  if(cut&&(!end||cut>end))end=cut;
+  if(data.start&&current){const todayCut=msDay(data.start,current*7-1);if(!end||todayCut>end)end=todayCut;}
+  const unavailable=!origin||!end;
+  if(!unavailable&&$('periodSpan')){$('periodSpan').hidden=false;$('periodSpan').textContent=msD(origin)+' – '+msD(end);}
+
+  let width=920,axisStart=0,axisEnd=1,weekCells=[],monthCells=[],marks=[],pins=[];
+  const zoom=$('zoom').value==='week'?28:13.5;
+  if(!unavailable){
+    axisStart=msTime(origin);let days=Math.ceil((msTime(end)-axisStart)/86400000)+1;days=Math.max(7,days);axisEnd=axisStart+days*86400000;width=Math.max(920,Math.round(days/7*zoom));
+    const pos=date=>(msTime(date)-axisStart)/(axisEnd-axisStart)*100;
+    if(data.start){
+      const first=Math.max(1,Math.floor((axisStart-msTime(data.start))/604800000)+1),last=Math.floor((axisEnd-1-msTime(data.start))/604800000)+1;
+      const cutMap={};data.cutoffs.forEach(c=>{if(c.week>=first&&c.week<=last)(cutMap[c.week]=cutMap[c.week]||[]).push(c.label);});
+      const near=function(a,b){return a&&b&&Math.abs(a-b)<=3};
+      const lbl=function(w){if(zoom===28)return true;if(w===MS.week)return true;if(w===current)return !near(w,MS.week);return w%8===0&&!near(w,MS.week)&&!near(w,current)};
+      for(let w=first;w<=last;w++){
+        const x=pos(msDay(data.start,(w-1)*7)),ww=604800000/(axisEnd-axisStart)*100,isCut=!!cutMap[w];
+        weekCells.push('<span class="week'+(isCut?' cutoff':'')+(w===MS.week?' selected':'')+'" style="left:'+x+'%;width:'+ww+'%" title="W'+w+(isCut?' · Cut-off '+E(cutMap[w].join(', ')):'')+'">'+(lbl(w)?'W'+w:'')+'</span>');
+        if(isCut)marks.push('<i class="cutline" style="left:'+(x+ww)+'%" title="Cut-off '+E(cutMap[w].join(', '))+' · W'+w+'"></i>');
+      }
+      if(MS.week){
+        const px=pos(msDay(data.start,MS.week*7-1));
+        marks.push('<i class="pickline" style="left:'+px+'%" title="Week pilihan W'+MS.week+'"></i>');
+        pins.push('<span class="pin-badge pick" style="left:'+Math.min(97.5,Math.max(2.5,px))+'%">W'+MS.week+'</span>');
+      }
+      if(current){
+        const nx=pos(msDay(data.start,(current-1)*7));
+        marks.push('<i class="todayline" style="left:'+nx+'%" title="Week berjalan W'+current+'"></i>');
+        if(current!==MS.week)pins.push('<span class="pin-badge now" style="left:'+Math.min(97.5,Math.max(2.5,nx))+'%">Kini W'+current+'</span>');
+      }
+    }
+    const begin=new Date(origin+'T00:00:00Z');begin.setUTCDate(1);
+    for(let m=begin;m.getTime()<axisEnd;m.setUTCMonth(m.getUTCMonth()+1)){
+      const next=new Date(Date.UTC(m.getUTCFullYear(),m.getUTCMonth()+1,1));
+      const l=Math.max(axisStart,m.getTime()),r=Math.min(axisEnd,next.getTime());
+      if(r>l){
+        const wPct=(r-l)/(axisEnd-axisStart)*100;
+        const wPx=width*wPct/100;
+        const yr=m.getUTCFullYear();
+        const shortYr="'"+String(yr).slice(-2);
+        const mShort=m.toLocaleDateString('id-ID',{month:'short',timeZone:'UTC'});
+        const label=wPx>=72?(mShort+' '+yr):(wPx>=36?(mShort+' '+shortYr):(m.getUTCMonth()%2===0?mShort:''));
+        const altCls=yr%2===1?' yr-alt':'';
+        monthCells.push('<span class="'+altCls+'" style="left:'+((l-axisStart)/(axisEnd-axisStart)*100)+'%;width:'+wPct+'%" title="'+mShort+' '+yr+'">'+label+'</span>');
+      }
+    }
+  }
+  const percent=date=>(msTime(date)-axisStart)/(axisEnd-axisStart)*100;
+  function bar(n,i){
+    let h='';
+    if(n.start&&n.end&&!unavailable){
+      const left=percent(n.start),span=(msTime(n.end)-msTime(n.start)+86400000)/(axisEnd-axisStart)*100;
+      h+='<button type="button" class="baseline" style="left:'+left+'%;width:'+Math.max(.15,span)+'%" data-detail="'+i+'" aria-label="Baseline '+E(n.name)+'"></button>';
+      if(n.planValue!=null&&n.planValue>0){
+        const pLeft=left+span*Math.min(100,Math.max(0,n.planValue))/100;
+        h+='<i class="plan-tick" style="left:'+pLeft+'%"></i>';
+      }
+      if(n.actual){
+        const pg=n.actual.actual;
+        const actW=Math.max(.25,span*pg/100);
+        const actPx=width*actW/100;
+        const outCls=actPx<82?' out':'';
+        const stCls=n.late?' late':(pg>=99.999?' done':'');
+        h+='<button type="button" class="actual'+stCls+'" style="left:'+left+'%;width:'+actW+'%" data-detail="'+i+'" aria-label="Aktual '+E(n.name)+' '+msPct(pg)+'"><span class="'+outCls+'">'+msPct(pg)+' · W'+n.actual.week+'</span></button>';
+        if(n.late&&n.reportedCut>n.end){
+          h+='<span class="overrun" style="left:'+percent(msDay(n.end,1))+'%;width:'+Math.max(.25,percent(n.reportedCut)-percent(n.end))+'%"></span>';
+        }
+      }
+    }else{
+      h='<span class="empty">'+E(n.notice||'Tanggal baseline belum lengkap')+'</span>';
+    }
+    if(!n.actual&&n.kind!=='project')h+='<span class="actual-missing">'+E(n.historyNotice||(MS.week?'Detail realisasi week ini belum tersedia':'Realisasi belum tersedia'))+'</span>';
+    return '<div class="track" style="width:'+width+'px;background-size:'+((604800000/(axisEnd-axisStart))*100)+'% 100%">'+marks.join('')+h+'</div>';
+  }
+
+  const hideDates=$('hideDates').checked;
+  $('chart').classList.toggle('hide-dates',hideDates);
+  $('chart').classList.toggle('zoom-week',zoom===28);
+  const leftColsWidth=hideDates?(350+175):(350+170+175);
+
+  if(!MS.selectedId&&rows.length){
+    MS.selectedId=rows[0].n.id;
+  }
+
+  $('chart').innerHTML='<table style="width:'+(leftColsWidth+width)+'px"><thead><tr><th class="name-col">Hierarki proyek / WBS pekerjaan</th><th class="sched-col">Jadwal (Start → Finish)<small>Baseline &amp; status aktual</small></th><th class="prog-col">Progres s.d. '+(MS.week?'W'+MS.week:'Week')+'<small>Aktual vs Plan · Deviasi</small></th><th><div class="axis" style="width:'+width+'px"><div class="months">'+monthCells.join('')+'</div><div class="weeks">'+weekCells.join('')+pins.join('')+'</div></div></th></tr></thead><tbody>'+
+    rows.map(function(row,i){
+      const n=row.n,children=n.children.length;
+      const forceOpen=!!(q||onlyLate);
+      const opened=children&&(forceOpen||MS.open[n.id]===true||(MS.open[n.id]!==false&&row.d<MS.depth));
+      const fCode=n.field||n.code||'PROJ';
+      const badgeLbl=FLBL[fCode]||fCode;
+      const metaText=n.kind==='field'?'Baseline Rev '+(n.revision==null?'—':n.revision):n.kind==='group'&&(!n.code||n.code===n.name)?'Group WBS':n.code;
+      const selCls=MS.selectedId===n.id?' is-selected':'';
+      return '<tr class="kind-'+n.kind+selCls+'" data-row-idx="'+i+'" data-epcc-field="'+E(fCode)+'">'+
+        '<td class="name-col"><div style="padding-left:'+(row.d*16+8)+'px">'+
+          (children?'<button type="button" class="expand" data-toggle="'+i+'" aria-expanded="'+!!opened+'" aria-label="Buka tutup '+E(n.name)+'">'+CHEV+'</button>':'<span class="spacer">•</span>')+
+          '<button type="button" class="item-name" data-detail="'+i+'">'+
+            '<div class="item-meta"><span class="ms-fbadge">'+E(badgeLbl)+'</span><small>'+E(metaText)+'</small></div>'+
+            '<b>'+E(n.name)+'</b>'+
+            (n.kind==='field'?'<em>'+E(n.summaryOnly?'Realisasi: ringkasan bidang':'Detail '+n.coverage+'/'+n.leaves+' item tersedia')+'</em>':(n.kind==='project'?'<em>Konsolidasi '+fields.length+' bidang EPCC · '+totalLeaves.toLocaleString('id-ID')+' item</em>':''))+
+          '</button>'+
+        '</div></td>'+
+        '<td class="sched-col">'+msScheduleCell(n)+'</td>'+
+        '<td class="prog-col">'+msProgCell(n)+'</td>'+
+        '<td>'+bar(n,i)+'</td>'+
+      '</tr>';
+    }).join('')+'</tbody></table>';
+
+  $('chart').querySelectorAll('[data-toggle]').forEach(b=>b.onclick=function(ev){
+    ev.stopPropagation();
+    const row=rows[+b.dataset.toggle],open=MS.open[row.n.id]===true||(MS.open[row.n.id]!==false&&row.d<MS.depth);
+    MS.open[row.n.id]=!open;
+    const scroll=$('chart'),x=scroll.scrollLeft,y=scroll.scrollTop;
+    msRender();scroll.scrollLeft=x;scroll.scrollTop=y;
+  });
+
+  $('chart').querySelectorAll('tbody tr[data-row-idx]').forEach(tr=>{
+    const idx=+tr.getAttribute('data-row-idx');
+    const node=rows[idx].n;
+    tr.onclick=function(){
+      MS.selectedId=node.id;
+      $('chart').querySelectorAll('tbody tr.is-selected').forEach(r=>r.classList.remove('is-selected'));
+      tr.classList.add('is-selected');
+      msDetail(node,false);
+    };
+    tr.onmouseenter=function(ev){msShowTip(ev,node);};
+    tr.onmousemove=function(ev){msMoveTip(ev);};
+    tr.onmouseleave=msHideTip;
+  });
+
+  const selRow=rows.find(r=>r.n.id===MS.selectedId)||rows[0];
+  if(selRow)msDetail(selRow.n,true);
+
+  msStatus('Baseline aktif dibandingkan dengan data EPCC yang tercatat sampai week pilihan. Arahkan kursor ke baris untuk melihat tooltip atau klik baris untuk membuka diagnostik pekerjaan.');
+  $('selectedPeriod').textContent='Schedule & realisasi · '+data.project.name+(MS.week?' · W'+MS.week:'');
+  MS.axis={origin:origin,width:width,days:(axisEnd-axisStart)/86400000,leftColsWidth:leftColsWidth};
+}
+
+function msShowTip(ev,n){
+  const tip=$('msTooltip');if(!tip)return;
+  const E=msE,a=n.actual,fCode=n.field||n.code||'PROJ';
+  const stBadge=n.late?'<span class="dev-pill bad">⚠ Melewati Baseline</span>':(a&&a.actual>=99.999?'<span class="dev-pill ok">✓ Selesai 100%</span>':'<span class="dev-pill info">● On Schedule</span>');
+  tip.innerHTML=
+    '<div class="ms-tip-hd"><span class="ms-fbadge">'+E(FLBL[fCode]||fCode)+' · '+E(n.kind==='field'?'Rev '+(n.revision!=null?n.revision:'—'):(n.code||n.kind))+'</span>'+stBadge+'</div>'+
+    '<div class="ms-tip-title">'+E(n.name)+'</div>'+
+    '<div class="ms-tip-row"><span>Jadwal Baseline:</span><b>'+msD(n.start)+' → '+msD(n.end)+'</b></div>'+
+    '<div class="ms-tip-row"><span>Target Plan (W'+MS.week+'):</span><b>'+msPct(n.planValue)+'</b></div>'+
+    '<div class="ms-tip-row"><span>Realisasi Aktual:</span><b style="color:'+(n.late?'var(--bad)':'var(--ok)')+'">'+(a?msPct(a.actual)+' (W'+a.week+')':'Belum tersedia')+'</b></div>'+
+    '<div class="ms-tip-row"><span>Deviasi s.d. W'+MS.week+':</span><b style="color:'+(n.dev!=null&&n.dev<0?'var(--bad)':'var(--ok)')+'">'+msDevFmt(n.dev)+'</b></div>';
+  tip.hidden=false;
+  msMoveTip(ev);
+}
+function msMoveTip(ev){
+  const tip=$('msTooltip');if(!tip||tip.hidden)return;
+  const x=Math.min(window.innerWidth-320,ev.clientX+16);
+  const y=Math.max(12,Math.min(window.innerHeight-190,ev.clientY-20));
+  tip.style.left=x+'px';
+  tip.style.top=y+'px';
+}
+function msHideTip(){const tip=$('msTooltip');if(tip)tip.hidden=true;}
+
+function msDetail(n,silent){
+  const a=n.actual,E=msE,fCode=n.field||n.code||'PROJ';
+  const statusPill=n.late
+    ?'<span class="kpi-badge bad">⚠ Melewati Finish Baseline ('+msD(n.end)+')</span>'
+    :(a&&a.actual>=99.999
+      ?'<span class="kpi-badge ok">✓ Selesai Penuh (100% · W'+a.week+')</span>'
+      :'<span class="kpi-badge info">● Dalam Rentang Jadwal Baseline</span>');
+  const navBtn=fCode&&fCode!=='PROJ'
+    ?'<button type="button" class="btn" onclick="goField(\''+E(fCode)+'\')">Buka di EPCC Control ('+E(fCode)+') →</button>'
+    :'<button type="button" class="btn" onclick="goProj(\'weekly\')">Buka Weekly Progress →</button>';
+
+  $('detail').innerHTML=
+    '<div class="detail-head">'+
+      '<div class="detail-title-grp">'+
+        '<span class="ms-fbadge" style="font-size:11px;padding:2px 8px">'+E(FLBL[fCode]||fCode)+'</span>'+
+        '<h3>'+(n.code&&n.code!==n.name?E(n.code)+' · ':'')+E(n.name)+'</h3>'+
+        statusPill+
+      '</div>'+
+      navBtn+
+    '</div>'+
+    '<div class="dgrid">'+
+      '<div><small>Jadwal Baseline (Start → Finish)</small><b>'+msD(n.start)+' → '+msD(n.end)+'</b><span class="sub-v">Aktual: '+E(msActualDate(a,'start'))+' → '+E(msActualDate(a,'finish'))+'</span></div>'+
+      '<div><small>Target Plan pada W'+MS.week+'</small><b>'+msPct(n.planValue)+'</b><span class="sub-v">Berdasarkan kurva rencana aktif</span></div>'+
+      '<div><small>Aktual Tercatat</small><b class="'+(n.late?'neg':'pos')+'">'+(a?msPct(a.actual)+' · W'+a.week:'Belum tersedia')+'</b><span class="sub-v">Cakupan: '+(n.coverage||0)+' / '+(n.leaves||0)+' item</span></div>'+
+      '<div><small>Deviasi Progres (Aktual − Plan)</small><b class="'+(n.dev!=null&&n.dev<0?'neg':'pos')+'">'+msDevFmt(n.dev)+'</b><span class="sub-v">'+(n.late?'Melewati batas finish baseline':'Sesuai kalender pemantauan')+'</span></div>'+
+    '</div>'+
+    '<p>'+E(n.late?'Pekerjaan ini melewati tanggal selesai baseline sementara realisasi belum mencapai 100%.':a?(a.actual>=99.999?'Pekerjaan telah selesai 100% terlapor.':'Pekerjaan sedang berjalan dalam rentang jadwal baseline.'):(n.notice||'Detail realisasi untuk week ini belum tersimpan.'))+' '+(a&&a.week<MS.week?'Data terakhir berasal dari snapshot W'+a.week+'; bukan input baru pada W'+MS.week+'. ':'')+(n.revNote?E(n.revNote)+' ':'')+'Tanggal aktual terindikasi dihitung dari perubahan progres antar-week.</p>';
+}
+
+$('project').onchange=function(){MS.open={};MS.selectedId='';msLoad(this.value);};
+$('week').onchange=function(){MS.week=+this.value;msRender();};
+$('depth').onchange=function(){MS.depth=+this.value;MS.open={};msRender();};
+$('zoom').onchange=msRender;
+$('hideDates').onchange=msRender;
+$('lateOnly').onchange=function(){
+  MS.open={};
+  if(this.checked){$('depth').selectedIndex=$('depth').options.length-1;MS.depth=+$('depth').value;}
+  msRender();
+};
+$('msSearch').oninput=function(){
+  MS.q=this.value||'';
+  $('msSearchClear').hidden=!MS.q;
+  msRender();
+};
+$('msSearchClear').onclick=function(){
+  $('msSearch').value='';
+  MS.q='';
+  this.hidden=true;
+  msRender();
+};
+document.querySelectorAll('[data-fchip]').forEach(function(btn){
+  btn.onclick=function(){
+    MS.fieldFilter=btn.getAttribute('data-fchip')||'ALL';
+    document.querySelectorAll('[data-fchip]').forEach(function(x){x.classList.toggle('on',x===btn);});
+    msRender();
+  };
+});
+$('expandAllBtn').onclick=function(){
+  MS.depth=3;$('depth').value='3';MS.open={};msRender();
+};
+$('collapseAllBtn').onclick=function(){
+  MS.depth=1;$('depth').value='1';MS.open={};msRender();
+};
+$('reload').onclick=function(){msLoad($('project').value||'',true);};
+$('focusWeek').onclick=function(){
+  if(!MS.data||!MS.axis||!MS.data.start||!MS.week)return;
+  const el=$('chart'),days=(msTime(msDay(MS.data.start,(MS.week-1)*7))-msTime(MS.axis.origin))/86400000;
+  const leftW=MS.axis.leftColsWidth||560;
+  el.scrollLeft=Math.max(0,days/MS.axis.days*MS.axis.width-(el.clientWidth-leftW)/2);
+};
+/* sidebar: grup, isi halaman, ringkas/buka */
+document.querySelectorAll('.nav.sub').forEach(function(b){b.onclick=function(){const t=$(b.getAttribute('data-goto'));if(t)window.scrollTo({top:Math.max(0,t.getBoundingClientRect().top+window.scrollY-80),behavior:'smooth'});document.querySelectorAll('.nav.sub').forEach(function(x){x.classList.toggle('on',x===b)});$('app').classList.remove('nav-open')}});
+(function(){let st={};try{st=JSON.parse(localStorage.getItem('pmoDocSideGrp')||'null')||{}}catch(e){st={}}
+  const apply=function(){document.querySelectorAll('[data-sgw]').forEach(function(w){const k=w.getAttribute('data-sgw'),min=!!st[k],t=w.querySelector('[data-sg]');w.classList.toggle('min',min);if(t)t.setAttribute('aria-expanded',String(!min));
+    const n=w.querySelectorAll('.nav:not([hidden])').length-w.querySelectorAll('.nav.on:not([hidden]),.nav.active:not([hidden])').length,b=w.querySelector('.sg-n');if(b)b.textContent=min&&n>0?'+'+n:''})};
+  window.sideGrpSync=apply;
+  document.querySelectorAll('[data-sg]').forEach(function(t){const tg=function(){const k=t.getAttribute('data-sg');st[k]=!st[k];try{localStorage.setItem('pmoDocSideGrp',JSON.stringify(st))}catch(e){}apply()};t.onclick=tg;t.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg()}}});
+  apply()})();
+(function(){const app=$('app'),mq=window.matchMedia('(max-width:900px)'),btns=Array.prototype.slice.call(document.querySelectorAll('[data-toggle-nav]'));
+  try{if(localStorage.getItem('pmoWeeklyNav')==='collapsed')app.classList.add('collapsed')}catch(e){}
+  const sync=function(){const open=mq.matches?app.classList.contains('nav-open'):!app.classList.contains('collapsed');btns.forEach(function(b){b.setAttribute('aria-expanded',String(open))})};
+  btns.forEach(function(b){b.addEventListener('click',function(){if(mq.matches)app.classList.toggle('nav-open');else{const c=app.classList.toggle('collapsed');try{localStorage.setItem('pmoWeeklyNav',c?'collapsed':'open')}catch(e){}}sync()})});
+  $('scrim').addEventListener('click',function(){app.classList.remove('nav-open');sync()});
+  if(mq.addEventListener)mq.addEventListener('change',function(){app.classList.remove('nav-open');sync()});sync();
+  $('pjBtn').onclick=function(){const s=$('project');if(!MS.data||MS.data.projects.length<2)return;app.classList.remove('nav-open');s.focus();try{s.showPicker()}catch(e){s.click()}};
+})();
+themeIcon();
+if(msMobile()){$('desk').hidden=true;$('mobileNote').hidden=false;}else msLoad(initialProjectName||'');
+</script>
+<script>
+/* ===== Jadwal CPM: pembaca XML (Primavera P6 / MS Project) + hitung CPM. Murni data, tanpa DOM ===== */
+window.MSC=(function(){
+  var ENT={amp:'&',lt:'<',gt:'>',quot:'"',apos:"'"};
+  function unesc(s){if(s.indexOf('<![CDATA[')>=0)return s.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,'$1').trim();return s.indexOf('&')<0?s:s.replace(/&(#x[0-9a-fA-F]+|#\d+|[a-z]+);/g,function(m,e){if(e.charAt(0)==='#'){var c=e.charAt(1)==='x'?parseInt(e.slice(2),16):parseInt(e.slice(1),10);try{return String.fromCodePoint(c)}catch(x){return ''}}return ENT[e]!==undefined?ENT[e]:m})}
+  function iso(v){v=String(v||'');return /^\d{4}-\d{2}-\d{2}/.test(v)?v.slice(0,10):''}
+  function num(v){var n=Number(v);return isFinite(n)?n:0}
+  function r2(n){return Math.round(n*100)/100}
+
+  /* SAX ringan: dipanggil per potongan teks, tahan file puluhan MB. on.open(path,name) / on.leaf(path,name,text) / on.close(path,name) */
+  function Sax(on){
+    var buf='',stack=[],re=/<(\/?)([A-Za-z_][\w.:-]*)((?:"[^"]*"|'[^']*'|[^>"'])*?)(\/?)>/g;
+    function run(final){
+      re.lastIndex=0;var m=re.exec(buf),consumed=0;
+      while(m){
+        var next=null,after=re.lastIndex;
+        if(!m[1]&&!m[4]){next=re.exec(buf);if(!next&&!final)break}
+        var name=m[2];
+        if(m[1]){stack.pop();on.close(stack,name);consumed=after;m=re.exec(buf);continue}
+        if(m[4]){on.leaf(stack,name,'');consumed=after;m=re.exec(buf);continue}
+        if(next&&next[1]&&next[2]===name){on.leaf(stack,name,unesc(buf.slice(after,next.index)));consumed=re.lastIndex;m=re.exec(buf);continue}
+        on.open(stack,name);stack.push(name);consumed=after;m=next;
+      }
+      buf=buf.slice(consumed);
+    }
+    return {push:function(t){buf+=t;run(false)},end:function(){run(true)}};
+  }
+
+  var P6T={'Finish to Start':'FS','Start to Start':'SS','Finish to Finish':'FF','Start to Finish':'SF'};
+  var P6C={'Start On or After':'SNET','Finish On or After':'FNET','Start On':'MSO','Mandatory Start':'MSO','Finish On':'MFO','Mandatory Finish':'MFO','Start On or Before':'SNLT','Finish On or Before':'FNLT'};
+  var DOW={Sunday:0,Monday:1,Tuesday:2,Wednesday:3,Thursday:4,Friday:5,Saturday:6};
+  var MSC_C={2:'MSO',3:'MFO',4:'SNET',5:'SNLT',6:'FNET',7:'FNLT'},MST={0:'FF',1:'FS',2:'SF',3:'SS'};
+
+  function p6Handler(){
+    var R={source:'P6',proj:{},wbs:[],acts:[],links:[],cals:{},baselineSkipped:0},cur=null,kind='',skip=0,cal=null,day=null,hol=null,first=true;
+    return {res:R,
+      open:function(st,n){
+        if(skip){return}
+        var d=st.length;
+        if(d===1&&n==='BaselineProject'){skip=1;R.baselineSkipped++;return}
+        if(d===1&&n==='Project'){if(!first){skip=1;return}first=false;return}
+        if(d===2&&st[1]==='Project'&&(n==='WBS'||n==='Activity'||n==='Relationship')){cur={};kind=n;return}
+        if(n==='Calendar'&&(d===1||(d===2&&st[1]==='Project'))){cal={work:[0,0,0,0,0,0,0],hol:[],hpd:8,name:'',id:''};return}
+        if(cal){if(n==='StandardWorkHours')day={d:-1,w:0};else if(n==='HolidayOrException')hol={d:'',w:0}}
+      },
+      leaf:function(st,n,t){
+        if(skip)return;var d=st.length;
+        if(cur&&d===3){cur[n]=t;return}
+        if(cal){
+          if(day){if(n==='DayOfWeek')day.d=DOW[t];else if(n==='Start'&&st[st.length-1]==='WorkTime')day.w=1}
+          else if(hol){if(n==='Date')hol.d=iso(t);else if(n==='Start'&&st[st.length-1]==='WorkTime')hol.w=1}
+          else if(st[st.length-1]==='Calendar'){if(n==='ObjectId')cal.id=t;else if(n==='Name')cal.name=t;else if(n==='HoursPerDay')cal.hpd=num(t)||8}
+          return;
+        }
+        if(d===2&&st[1]==='Project')R.proj[n]=t;
+      },
+      close:function(st,n){
+        if(skip){if(st.length===1&&(n==='BaselineProject'||n==='Project'))skip=0;return}
+        if(cal){
+          if(n==='StandardWorkHours'&&day){if(day.d>=0)cal.work[day.d]=day.w;day=null}
+          else if(n==='HolidayOrException'&&hol){if(hol.d&&!hol.w)cal.hol.push(hol.d);hol=null}
+          else if(n==='Calendar'&&st[st.length-1]!=='StandardWorkWeek'&&(st.length===1||st.length===2)){if(cal.id)R.cals[cal.id]=cal;cal=null}
+          return;
+        }
+        if(cur&&st.length===2&&n===kind){
+          var c=cur;cur=null;
+          if(kind==='WBS')R.wbs.push([c.ObjectId,c.ParentObjectId||'',c.Code||'',c.Name||'',num(c.SequenceNumber)]);
+          else if(kind==='Relationship')R.links.push([c.PredecessorActivityObjectId,c.SuccessorActivityObjectId,P6T[c.Type]||'FS',num(c.Lag)]);
+          else R.acts.push(c);
+        }
+      }
+    };
+  }
+  /* batas 'mulai' yang jatuh di akhir jam kerja berarti mulai hari berikutnya */
+  function p6CDate(tp,v){var d=iso(v);if(!d)return '';if(/^(Start On|Mandatory Start)/.test(tp||'')&&String(v).slice(11,16)>='16:59')return fmt(parse(d)+1);return d}
+  function p6Finish(R,warn){
+    var use={},best='';R.acts.forEach(function(a){use[a.CalendarObjectId]=(use[a.CalendarObjectId]||0)+1});
+    Object.keys(use).forEach(function(k){if(!best||use[k]>use[best])best=k});
+    var cal=R.cals[best]||R.cals[R.proj.ActivityDefaultCalendarObjectId]||{work:[1,1,1,1,1,1,1],hol:[],hpd:8,name:'7 hari kerja'};
+    if(Object.keys(use).length>1)warn.push('File memakai '+Object.keys(use).length+' kalender aktivitas; disederhanakan ke kalender "'+cal.name+'".');
+    var hpd=cal.hpd||8,summary={},acts=[];
+    R.acts.forEach(function(a){
+      if(a.Type==='WBS Summary'){summary[a.ObjectId]=1;return}
+      var tp=a.Type==='Start Milestone'?'M':a.Type==='Finish Milestone'?'F':'T';
+      var pct=num(a.PercentComplete);if(pct<=1.0001)pct=pct*100;
+      if(a.Status==='Completed')pct=100;
+      acts.push([a.ObjectId,String(a.Id||'').trim(),String(a.Name||'').trim(),a.WBSObjectId||'',tp,tp==='T'?r2(num(a.PlannedDuration)/hpd):0,iso(a.PlannedStartDate),iso(a.PlannedFinishDate),iso(a.StartDate),iso(a.FinishDate),iso(a.ActualStartDate),iso(a.ActualFinishDate),r2(pct),P6C[a.PrimaryConstraintType]||'',p6CDate(a.PrimaryConstraintType,a.PrimaryConstraintDate)]);
+    });
+    var dropped=0,links=[];
+    R.links.forEach(function(l){if(summary[l[0]]||summary[l[1]]){dropped++;return}links.push([l[0],l[1],l[2],r2(l[3]/hpd)])});
+    if(dropped)warn.push(dropped+' hubungan ke aktivitas ringkasan WBS dilewati.');
+    if(R.baselineSkipped)warn.push('Baseline di dalam file tidak ikut diimpor; tanggal rencana aktivitas tetap dipakai.');
+    return {source:'P6',projName:R.proj.Name||'',projCode:R.proj.Id||'',dataDate:iso(R.proj.DataDate),statusDate:statusOf(acts,iso(R.proj.DataDate)),cal:{work:cal.work,hol:cal.hol.slice().sort(),hpd:hpd,name:cal.name||''},wbs:R.wbs,acts:acts,links:links};
+  }
+
+  function mspHandler(){
+    var R={source:'MSP',proj:{},tasks:[],cals:[],fields:[]},t=null,lk=null,bl=null,cal=null,wd=null,ex=null,ea=null;
+    return {res:R,
+      open:function(st,n){
+        var d=st.length;
+        if(d===2&&st[1]==='Tasks'&&n==='Task'){t={links:[]};return}
+        if(n==='ExtendedAttribute'&&(t||(d===2&&st[1]==='ExtendedAttributes'))){ea={};return}
+        if(t){if(n==='PredecessorLink')lk={};else if(n==='Baseline')bl={};return}
+        if(d===2&&st[1]==='Calendars'&&n==='Calendar'){cal={uid:'',name:'',base:0,work:[0,1,1,1,1,1,0],hol:[]};return}
+        if(cal){if(n==='WeekDay')wd={};else if(n==='Exception')ex={}}
+      },
+      leaf:function(st,n,x){
+        var d=st.length,top=st[d-1];
+        if(ea){ea[n]=x;return}
+        if(t){if(lk)lk[n]=x;else if(bl)bl[n]=x;else if(d===3)t[n]=x;return}
+        if(cal){
+          if(wd){if(top==='WeekDay'||top==='TimePeriod')wd[n]=x}
+          else if(ex){if(top==='Exception'||top==='TimePeriod')ex[n]=x}
+          else if(top==='Calendar'){if(n==='UID')cal.uid=x;else if(n==='Name')cal.name=x;else if(n==='IsBaseCalendar')cal.base=num(x)}
+          return;
+        }
+        if(d===1)R.proj[n]=x;
+      },
+      close:function(st,n){
+        if(n==='ExtendedAttribute'&&ea){if(t)(t.ext||(t.ext={}))[ea.FieldID]=ea.Value;else R.fields.push(ea);ea=null;return}
+        if(t){
+          if(n==='PredecessorLink'&&lk){t.links.push(lk);lk=null}
+          else if(n==='Baseline'&&bl){if(!t.bl||num(bl.Number)===0)t.bl=bl;bl=null}
+          else if(n==='Task'&&st.length===2){R.tasks.push(t);t=null}
+          return;
+        }
+        if(cal){
+          if(n==='WeekDay'&&wd){var dt=num(wd.DayType);if(dt>=1&&dt<=7)cal.work[dt-1]=num(wd.DayWorking)?1:0;else if(dt===0&&!num(wd.DayWorking)&&wd.FromDate)cal.hol.push([iso(wd.FromDate),iso(wd.ToDate)||iso(wd.FromDate)]);wd=null}
+          else if(n==='Exception'&&ex){if(!num(ex.DayWorking)&&ex.FromDate)cal.hol.push([iso(ex.FromDate),iso(ex.ToDate)||iso(ex.FromDate)]);ex=null}
+          else if(n==='Calendar'&&st.length===2){R.cals.push(cal);cal=null}
+        }
+      }
+    };
+  }
+  /* tanggal status: data date file, atau tanggal aktual terakhir bila data date tertinggal */
+  function statusOf(acts,dd){var t=new Date(),td=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0'),mx='';acts.forEach(function(a){if(a[10]&&a[10]<=td&&a[10]>mx)mx=a[10];if(a[11]&&a[11]<=td&&a[11]>mx)mx=a[11]});if(dd&&dd<=td&&dd>mx)mx=dd;return mx||td}
+  function isoDur(v){var m=/^P(?:(\d+(?:\.\d+)?)D)?(?:T(?:(\d+(?:\.\d+)?)H)?(?:(\d+(?:\.\d+)?)M)?(?:(\d+(?:\.\d+)?)S)?)?$/.exec(String(v||''));if(!m)return 0;return num(m[1])*24*60+num(m[2])*60+num(m[3])+num(m[4])/60}
+  function mspFinish(R,warn){
+    var mpd=num(R.proj.MinutesPerDay)||480,cal=null;
+    R.cals.forEach(function(c){if(String(c.uid)===String(R.proj.CalendarUID))cal=c});
+    if(!cal)cal=R.cals.filter(function(c){return c.base})[0]||{work:[0,1,1,1,1,1,0],hol:[],name:'Standard'};
+    var hol=[];cal.hol.forEach(function(h){var a=parse(h[0]),b=parse(h[1]);if(a===null||b===null||b<a||b-a>400)return;for(var d=a;d<=b;d++)hol.push(fmt(d))});
+    var fields={};R.fields.forEach(function(f){fields[String(f.Alias||'').toLowerCase().replace(/[^a-z0-9]/g,'')]=f.FieldID});
+    var weightId=fields.bobotkontrak,actualId=fields.bobotrealisasisdperiodeini,periodId=fields.periodelaporan;
+    function custom(t,id){var v=id&&t.ext&&t.ext[id];if(v===undefined||v==='')return null;v=Number(String(v).replace(',','.'));return isFinite(v)?v:null}
+    var report={actual:null,groups:{},basis:'custom'},rootTask=null;
+    var wbs=[],acts=[],links=[],summary={},stack=[],seq=0;
+    R.tasks.forEach(function(t){
+      if(num(t.IsNull)||t.UID===undefined)return;
+      var lv=num(t.OutlineLevel);if(lv<=0){if(!rootTask)rootTask=t;report.actual=custom(t,actualId);return;}
+      while(stack.length&&stack[stack.length-1].lv>=lv)stack.pop();
+      var parent=stack.length?stack[stack.length-1].id:'';
+      if(num(t.Summary)){var id='W'+t.UID;summary[t.UID]=1;if(lv===1)report.groups[id]={actual:custom(t,actualId),weight:custom(t,weightId)};wbs.push([id,parent,t.WBS||t.OutlineNumber||'',t.Name||'',++seq]);stack.push({lv:lv,id:id});return}
+      var ms=num(t.Milestone)?(String(t.Start||'').slice(11,13)>='12'?'F':'M'):'T',b=t.bl||{},s=iso(t.Start),f=iso(t.Finish);
+      acts.push([String(t.UID),String(t.WBS||t.OutlineNumber||t.ID||t.UID).trim(),String(t.Name||'').trim(),parent,ms,ms==='T'?r2(isoDur(t.Duration)/mpd):0,iso(b.Start)||s,iso(b.Finish)||f,s,f,iso(t.ActualStart),iso(t.ActualFinish),r2(num(t.PercentComplete)),MSC_C[num(t.ConstraintType)]||'',iso(t.ConstraintDate),custom(t,weightId),custom(t,actualId)]);
+      t.links.forEach(function(l){links.push([String(l.PredecessorUID),String(t.UID),MST[num(l.Type)]||'FS',r2(num(l.LinkLag)/10/mpd)])});
+    });
+    var before=links.length;links=links.filter(function(l){return !summary[l[0]]&&!summary[l[1]]});
+    if(before-links.length)warn.push((before-links.length)+' hubungan ke summary task dilewati (CPM memakai aktivitas saja).');
+    var reportDate='';var period=rootTask&&rootTask.ext&&rootTask.ext[periodId]||'';var pm=/(\d{1,2})\s*[-–]\s*(\d{1,2})\s+([A-Z]+)\s+(\d{4})/i.exec(period);var months=['JANUARI','FEBRUARI','MARET','APRIL','MEI','JUNI','JULI','AGUSTUS','SEPTEMBER','OKTOBER','NOVEMBER','DESEMBER'];if(pm){var mi=months.indexOf(pm[3].toUpperCase());if(mi>=0)reportDate=pm[4]+'-'+String(mi+1).padStart(2,'0')+'-'+pm[2].padStart(2,'0')}
+    return {source:'MSP',projName:R.proj.Title||R.proj.Name||'',projCode:'',dataDate:iso(R.proj.StatusDate)||iso(R.proj.CurrentDate),statusDate:reportDate||statusOf(acts,iso(R.proj.StatusDate)),cal:{work:cal.work,hol:hol.sort(),hpd:mpd/60,name:cal.name||'',progress:actualId?report:null},wbs:wbs,acts:acts,links:links};
+  }
+
+  /* reader: {size, read(start,end)->Promise<ArrayBuffer>} ; onProgress(0..1) */
+  function parseFile(reader,onProgress){
+    var CH=4*1024*1024,dec=new TextDecoder('utf-8'),pos=0,h=null,sax=null,warn=[],head='';
+    function step(){
+      if(pos>=reader.size){if(sax)sax.end();if(!h)throw new Error('File bukan XML Primavera P6 atau MS Project.');return h.res.source==='P6'?p6Finish(h.res,warn):mspFinish(h.res,warn)}
+      return reader.read(pos,Math.min(reader.size,pos+CH)).then(function(ab){
+        pos+=ab.byteLength||CH;var txt=dec.decode(ab,{stream:pos<reader.size});
+        if(!h){head+=txt;
+          if(head.length<3000&&pos<reader.size)return step();
+          var probe=head.slice(0,6000);
+          if(/<APIBusinessObjects[\s>]/.test(probe))h=p6Handler();
+          else if(/<Project[\s>][^>]*schemas\.microsoft\.com\/project/.test(probe)||/<Project[\s>]/.test(probe)&&/<SaveVersion>|<Tasks>|<CalendarUID>/.test(head))h=mspHandler();
+          else throw new Error('Format tidak dikenali. Gunakan XML dari Primavera P6 (Export → Primavera PM XML) atau MS Project (Save As → XML).');
+          sax=Sax(h);txt=head;head='';
+        }
+        sax.push(txt);if(onProgress)onProgress(Math.min(1,pos/reader.size));
+        return new Promise(function(r){setTimeout(r,0)}).then(step);
+      });
+    }
+    return Promise.resolve().then(step).then(function(m){m.warn=warn;return m});
+  }
+
+  /* ---- tanggal: nomor hari sejak 1970 (UTC) ---- */
+  function parse(s){if(!s)return null;var t=Date.UTC(+s.slice(0,4),+s.slice(5,7)-1,+s.slice(8,10));return isNaN(t)?null:Math.round(t/864e5)}
+  function fmt(d){var x=new Date(d*864e5);return x.getUTCFullYear()+'-'+String(x.getUTCMonth()+1).padStart(2,'0')+'-'+String(x.getUTCDate()).padStart(2,'0')}
+  function Cal(cal,minDay,maxDay){
+    var work=(cal&&cal.work)||[1,1,1,1,1,1,1],hol={};((cal&&cal.hol)||[]).forEach(function(h){var d=parse(h);if(d!==null)hol[d]=1});
+    if(!work.some(function(w){return w}))work=[1,1,1,1,1,1,1];
+    var lo=minDay-30,hi=maxDay+3660,idx=new Int32Array(hi-lo+2),days=[],n=0;
+    for(var d=lo;d<=hi;d++){var w=work[(d+4)%7]&&!hol[d];idx[d-lo]=n;if(w){days.push(d);n++}} /* 1970-01-01 = Kamis */
+    return {
+      /* indeks hari kerja pertama pada/ setelah tanggal d */
+      at:function(d){d=Math.max(lo,Math.min(hi,d));return idx[d-lo]},
+      isWork:function(d){return d>=lo&&d<hi&&idx[d-lo+1]>idx[d-lo]},
+      day:function(i){i=Math.max(0,Math.min(days.length-1,i));return days[i]}
+    };
+  }
+
+  /* acts: baris model; links: [pred,succ,tipe,lag]. Hasil per aktivitas: es,ef (indeks hari kerja, ef eksklusif), tf, crit + tanggal */
+  function cpm(model){
+    var A=model.acts,N=A.length,ix={},i;
+    for(i=0;i<N;i++)ix[A[i][0]]=i;
+    var mn=Infinity,mx=-Infinity;
+    A.forEach(function(a){[a[6],a[7],a[8],a[9],a[14]].forEach(function(s){var d=parse(s);if(d!==null){if(d<mn)mn=d;if(d>mx)mx=d}})});
+    if(!isFinite(mn)){mn=parse('2025-01-01');mx=mn+365}
+    var C=Cal(model.cal,mn,mx),succ=[],pred=[],deg=new Int32Array(N),bad=0;
+    for(i=0;i<N;i++){succ.push([]);pred.push([])}
+    model.links.forEach(function(l){var p=ix[l[0]],s=ix[l[1]];if(p===undefined||s===undefined||p===s){bad++;return}var e={p:p,s:s,t:l[2],lag:Math.round(l[3]||0)};succ[p].push(e);pred[s].push(e);deg[s]++});
+    var order=[],q=[],dg=deg.slice();for(i=0;i<N;i++)if(!dg[i])q.push(i);
+    while(q.length){var x=q.pop();order.push(x);succ[x].forEach(function(e){if(--dg[e.s]===0)q.push(e.s)})}
+    var cyc=[];if(order.length<N){for(i=0;i<N;i++)if(dg[i]>0)cyc.push(i)}
+    var dur=new Int32Array(N),ES=new Int32Array(N),EF=new Int32Array(N),LS=new Int32Array(N),LF=new Int32Array(N),start0=C.at(mn);
+    for(i=0;i<N;i++)dur[i]=A[i][4]==='T'?Math.max(1,Math.round(A[i][5]||0)):0;
+    var lock=new Uint8Array(N),sd=parse(model.dataDate||''),sd0=sd===null?start0:Math.max(start0,C.at(sd));
+    order.forEach(function(k){
+      var a=A[k],es=start0,efMin=-1,c=a[13],cd=parse(a[14]),as=parse(a[10]),af=parse(a[11]);
+      /* sudah mulai menurut file: tanggal dikunci (selesai = aktual; berjalan = mulai aktual s.d. selesai terjadwal) */
+      if(as!==null){var e0=C.at(as)+(a[4]==='F'?1:0),e1=af!==null?C.at(af)+1:(parse(a[9])!==null?C.at(parse(a[9]))+1:e0+dur[k]);if(e1<e0+(dur[k]?1:0))e1=e0+(dur[k]?1:0);ES[k]=e0;EF[k]=e1;dur[k]=e1-e0;lock[k]=af!==null?2:1;return}
+      if(dur[k]||a[4]==='M')es=Math.max(es,sd0);
+      pred[k].forEach(function(e){var p=e.p;
+        if(e.t==='SS')es=Math.max(es,ES[p]+e.lag);else if(e.t==='FF')efMin=Math.max(efMin,EF[p]+e.lag);else if(e.t==='SF')efMin=Math.max(efMin,ES[p]+e.lag);else es=Math.max(es,EF[p]+e.lag)});
+      if(cd!==null){if(c==='SNET')es=Math.max(es,C.at(cd));else if(c==='FNET')efMin=Math.max(efMin,C.at(cd)+1);else if(c==='MSO')es=C.at(cd);else if(c==='MFO')es=C.at(cd)+1-dur[k]}
+      if(efMin-dur[k]>es)es=efMin-dur[k];
+      ES[k]=es;EF[k]=es+dur[k];
+    });
+    /* mundur: batas paling lambat tiap aktivitas terhadap tanggal selesai proyek */
+    function back(S,E,endIdx){
+      var LFx=new Int32Array(N),LSx=new Int32Array(N);
+      for(var n=order.length-1;n>=0;n--){
+        var k=order[n],a=A[k],d=E[k]-S[k],lf=endIdx,c=a[13],cd=parse(a[14]);
+        succ[k].forEach(function(e){var s=e.s;
+          if(e.t==='SS')lf=Math.min(lf,LSx[s]-e.lag+d);else if(e.t==='FF')lf=Math.min(lf,LFx[s]-e.lag);else if(e.t==='SF')lf=Math.min(lf,LFx[s]-e.lag+d);else lf=Math.min(lf,LSx[s]-e.lag)});
+        if(cd!==null){if(c==='FNLT'||c==='MFO')lf=Math.min(lf,C.at(cd)+1);else if(c==='SNLT'||c==='MSO')lf=Math.min(lf,C.at(cd)+d)}
+        LFx[k]=lf;LSx[k]=lf-d;
+      }
+      return LFx;
+    }
+    /* float dihitung terhadap tanggal jadwal di file (yang ditampilkan), bukan terhadap hasil hitung ulang */
+    var FS=new Int32Array(N),FE=new Int32Array(N),end=0,cycSet={};cyc.forEach(function(x){cycSet[x]=1});
+    for(i=0;i<N;i++){
+      var a=A[i],s0=parse(a[10]||a[8]||a[6]),f0=parse(a[11]||a[9]||a[7]);
+      if(s0===null||f0===null){FS[i]=ES[i];FE[i]=EF[i]}
+      else if(A[i][4]==='F'){FS[i]=FE[i]=C.at(f0)+1}
+      else{FS[i]=C.at(s0);FE[i]=A[i][4]==='T'?Math.max(FS[i]+1,C.at(f0)+1):FS[i]}
+      if(FE[i]>end)end=FE[i];
+    }
+    var LF=back(FS,FE,end),out=[],crit=0,early=0;
+    for(i=0;i<N;i++){
+      var tf=LF[i]-FE[i],done=lock[i]===2,cr=!done&&tf<=0&&!cycSet[i];if(cr)crit++;
+      if(!lock[i]&&ES[i]<FS[i])early++;
+      out.push({es:fmt(C.day(ES[i])),ef:fmt(C.day(dur[i]?EF[i]-1:(A[i][4]==='F'?ES[i]-1:ES[i]))),tf:done?null:tf,crit:cr,lock:lock[i]});
+    }
+    var fin=0;for(i=0;i<N;i++)if(EF[i]>fin)fin=EF[i];
+    return {rows:out,index:ix,pred:pred,succ:succ,critical:crit,cycle:cyc,badLinks:bad,finish:fmt(C.day(Math.max(0,end-1))),calcFinish:fmt(C.day(Math.max(0,fin-1))),early:early,cal:C};
+  }
+
+  function validate(model){
+    var v=[],A=model.acts,ids={},codes={},dup=0,noDate=0,hasP={},hasS={},orphan=0;
+    A.forEach(function(a){ids[a[0]]=1;if(codes[a[1]])dup++;codes[a[1]]=1;if(!a[6]||!a[7])noDate++});
+    model.links.forEach(function(l){if(!ids[l[0]]||!ids[l[1]]){orphan++;return}hasS[l[0]]=1;hasP[l[1]]=1});
+    var noP=0,noS=0;A.forEach(function(a){if(!hasP[a[0]])noP++;if(!hasS[a[0]])noS++});
+    var r=cpm(model);
+    if(!A.length)v.push({lv:'err',t:'File tidak berisi aktivitas.'});
+    if(r.cycle.length)v.push({lv:'err',t:r.cycle.length+' aktivitas berada dalam hubungan melingkar, misalnya '+r.cycle.slice(0,5).map(function(i){return A[i][1]}).join(', ')+'.'});
+    if(dup)v.push({lv:'warn',t:dup+' kode aktivitas ganda. Import ulang nanti mencocokkan aktivitas lewat kode ini.'});
+    if(noDate)v.push({lv:'warn',t:noDate+' aktivitas tanpa tanggal rencana lengkap.'});
+    if(orphan)v.push({lv:'warn',t:orphan+' hubungan menunjuk aktivitas yang tidak ada di file dan dilewati.'});
+    if(noP)v.push({lv:'info',t:noP+' aktivitas tanpa predecessor.'});
+    if(noS)v.push({lv:'info',t:noS+' aktivitas tanpa successor.'});
+    (model.warn||[]).forEach(function(w){v.push({lv:'info',t:w})});
+    return {list:v,blocked:v.some(function(x){return x.lv==='err'}),cpm:r,noPred:noP,noSucc:noS};
+  }
+  /* Dorong jadwal: tanggal file jadi batas paling awal, lalu logika predecessor mendorong ke belakang.
+     Dipakai simulasi: selisih hasil dengan/ tanpa perubahan = pergeseran tiap aktivitas. ov={dur:{id:hari},floor:{id:'yyyy-mm-dd'}} */
+  function push(model,ov){
+    ov=ov||{};var dv=ov.dur||{},fl=ov.floor||{},A=model.acts,N=A.length,ix={},i,mn=Infinity,mx=-Infinity;
+    for(i=0;i<N;i++)ix[A[i][0]]=i;
+    function see(s){var d=parse(s);if(d!==null){if(d<mn)mn=d;if(d>mx)mx=d}}
+    A.forEach(function(a){see(a[6]);see(a[7]);see(a[8]);see(a[9]);see(a[10]);see(a[11])});
+    Object.keys(fl).forEach(function(k){see(fl[k])});
+    if(!isFinite(mn)){mn=parse('2025-01-01');mx=mn+365}
+    var C=Cal(model.cal,mn,mx),succ=[],pred=[],deg=new Int32Array(N);
+    for(i=0;i<N;i++){succ.push([]);pred.push([])}
+    model.links.forEach(function(l){var p=ix[l[0]],s=ix[l[1]];if(p===undefined||s===undefined||p===s)return;var e={p:p,s:s,t:l[2],lag:Math.round(l[3]||0)};succ[p].push(e);pred[s].push(e);deg[s]++});
+    var order=[],q=[],dg=deg.slice();for(i=0;i<N;i++)if(!dg[i])q.push(i);
+    while(q.length){var x=q.pop();order.push(x);succ[x].forEach(function(e){if(--dg[e.s]===0)q.push(e.s)})}
+    var cyc=N-order.length;if(cyc)for(i=0;i<N;i++)if(dg[i]>0)order.push(i);
+    var S=new Int32Array(N),E=new Int32Array(N),FS=new Int32Array(N),FE=new Int32Array(N),lock=new Uint8Array(N);
+    for(i=0;i<N;i++){
+      var a=A[i],s0=parse(a[10]||a[8]||a[6]),f0=parse(a[11]||a[9]||a[7]);
+      if(s0===null||f0===null){FS[i]=FE[i]=C.at(mn);continue}
+      if(a[4]==='F'){FS[i]=FE[i]=C.at(f0)+1}
+      else{FS[i]=C.at(s0);FE[i]=a[4]==='T'?Math.max(FS[i]+1,C.at(f0)+1):FS[i]}
+    }
+    order.forEach(function(k){
+      var a=A[k];
+      if(a[10]){S[k]=FS[k];E[k]=FE[k];lock[k]=a[11]?2:1;return}
+      var d=a[4]==='T'?(dv[a[0]]!==undefined?Math.max(1,Math.round(dv[a[0]])):FE[k]-FS[k]):0,fd=parse(fl[a[0]]||''),es=fd!==null?C.at(fd)+(a[4]==='F'?1:0):FS[k],efMin=-1;
+      pred[k].forEach(function(e){var p=e.p;
+        if(e.t==='SS')es=Math.max(es,S[p]+e.lag);else if(e.t==='FF')efMin=Math.max(efMin,E[p]+e.lag);else if(e.t==='SF')efMin=Math.max(efMin,S[p]+e.lag);else es=Math.max(es,E[p]+e.lag)});
+      if(efMin-d>es)es=efMin-d;
+      S[k]=es;E[k]=es+d;
+    });
+    return {S:S,E:E,FS:FS,FE:FE,lock:lock,cal:C,index:ix,cycle:cyc};
+  }
+  return {parseFile:parseFile,cpm:cpm,validate:validate,push:push,parse:parse,fmt:fmt};
+})();
+</script>
+<script>
+/* ===== Jadwal CPM: Gantt, import XML (dengan perbandingan revisi), mode simulasi, layar penuh ===== */
+(function(){
+  var H=30,HEAD=44,BUF=12,MON=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  var CP={pid:'',data:null,loading:false,open:{},level:3,q:'',critOnly:false,links:true,showBase:false,zoom:'month',sel:-1,rows:[],req:0,base:null,sim:null};
+  var view=document.getElementById('cpmView'),desk=document.getElementById('desk');
+  if(!view||!desk||!window.MSC)return;
+  function E(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function D(s){if(!s)return '—';return s.slice(8,10)+' '+MON[+s.slice(5,7)-1]+' '+s.slice(2,4)}
+  function N(n){return Number(n||0).toLocaleString('id-ID')}
+  function dd(a,b){var x=MSC.parse(a),y=MSC.parse(b);return x===null||y===null?0:x-y}
+  function sg(n){return (n>0?'+':n<0?'−':'')+Math.abs(n)}
+  function pidNow(){try{return (MS&&MS.data&&MS.data.project&&MS.data.project.id)||''}catch(e){return ''}}
+  function tok(){try{return token}catch(e){return ''}}
+  function run(fn,args,ok,fail){
+    var r=google.script.run.withSuccessHandler(ok).withFailureHandler(function(e){var m=(e&&e.message)||'Gagal menghubungi server.';try{if(typeof sessionExpired_==='function'&&sessionExpired_(m))return}catch(x){}fail(m)});
+    r[fn].apply(r,args);
+  }
+
+  /* ---------- tab tampilan ---------- */
+  var tabs=document.getElementById('cpTabs');
+  function setView(v){
+    var on=v==='cpm';desk.classList.toggle('cpm-on',on);view.hidden=!on;
+    tabs.querySelectorAll('button').forEach(function(b){var a=b.getAttribute('data-cpv')===v;b.classList.toggle('on',a);b.setAttribute('aria-selected',a?'true':'false')});
+    try{sessionStorage.setItem('pmoMsView',v)}catch(e){}
+    if(on)sync();
+  }
+  tabs.addEventListener('click',function(e){var b=e.target.closest('button[data-cpv]');if(b)setView(b.getAttribute('data-cpv'))});
+  function sync(force){
+    var id=pidNow();if(!id||view.hidden)return;
+    if(!force&&id===CP.pid&&(CP.data||CP.loading))return;
+    load(id);
+  }
+  /* proyek berganti / data monitoring masuk → samakan jadwal CPM */
+  if(typeof window.msAccept==='function'){var acc=window.msAccept;window.msAccept=function(d){acc(d);try{sync()}catch(e){}}}
+  /* ganti proyek saat tab ini terbuka: langsung muat jadwal proyek baru, tanpa menunggu data monitoring */
+  var pj=document.getElementById('project');
+  if(pj)pj.addEventListener('change',function(){if(!view.hidden&&pj.value)load(pj.value)});
+  var SKEL='<div aria-busy="true" aria-label="Memuat jadwal CPM" style="display:grid;gap:14px"><div class="pmo-shim-block" style="height:62px"></div><div class="cp-kpis">'+new Array(7).join('<div class="pmo-shim-block" style="height:84px"></div>')+'</div><div class="pmo-shim-block" style="height:62px"></div><div class="pmo-shim-block" style="height:440px"></div></div>';
+
+  /* ---------- muat data ---------- */
+  function load(id){
+    var req=++CP.req;CP.pid=id;CP.data=null;CP.base=null;CP.sim=null;CP.loading=true;CP.sel=-1;CP.open={};
+    view.innerHTML=SKEL;
+    run('getMsCpm',[tok(),id],function(d){
+      if(req!==CP.req)return;CP.loading=false;
+      if(!d||!d.ok){view.innerHTML='<div class="panel cp-load">Data tidak tersedia. Silakan muat ulang.</div>';return}
+      accept(d);
+    },function(m){if(req!==CP.req)return;CP.loading=false;view.innerHTML='<div class="panel cp-load">'+E(m)+'</div>'});
+  }
+  function lkey(l){return l[0]+'>'+l[1]+'>'+l[2]}
+  function accept(d){
+    CP.data=d;
+    if(!d.rev){CP.model=null;CP.base=null;renderEmpty();return}
+    fixStatus(d);
+    var all=d.links.map(function(l){return [l[0],l[1],l[2],+l[3]||0,String(l[4]||'IMPORT').toUpperCase(),String(l[5]||'DISETUJUI').toUpperCase(),l[6]||'',l[7]||'',l[8]||'']});
+    var b={cal:d.rev.cal||{work:[1,1,1,1,1,1,1],hol:[]},dataDate:d.rev.dataDate,statusDate:d.rev.statusDate,
+      wbs:d.wbs.map(function(w){return [w[0],w[1],w[2],String(w[3]).trim(),+w[4]||0]}),
+      acts:d.acts.map(function(a){a=a.slice();a[1]=String(a[1]).trim();a[2]=String(a[2]).trim();a[5]=+a[5]||0;a[12]=+a[12]||0;return a}),
+      linksAll:all};
+    b.links=all.filter(function(l){return l[5]!=='NONAKTIF'}).map(function(l){return l.slice(0,4)});
+    CP.base=b;CP.sim=null;CP.bl={};(d.baseline||[]).forEach(function(r){CP.bl[String(r[0]).trim()]=[r[1],r[2]]});
+    CP.hasBl=(d.baseline||[]).length>0;
+    apply(true);fcSave();sumSave();
+  }
+  /* susun model yang ditampilkan: jadwal tersimpan, atau hasil simulasi bila mode simulasi aktif */
+  function effLinks(){
+    var b=CP.base,s=CP.sim,out=[];
+    b.linksAll.forEach(function(l){var k=lkey(l),act=l[5]!=='NONAKTIF';if(s){if(act&&s.off[k])act=false;else if(!act&&s.on[k])act=true}if(act)out.push(l.slice(0,4))});
+    if(s)s.add.forEach(function(l){out.push(l.slice(0,4))});
+    return out;
+  }
+  function apply(fresh){
+    var b=CP.base,s=CP.sim;
+    CP.meta={};b.linksAll.forEach(function(l){CP.meta[lkey(l)]={src:l[4],st:l[5],by:l[6],at:l[7],note:l[8]}});
+    if(!s){CP.model={cal:b.cal,dataDate:b.dataDate,statusDate:b.statusDate,wbs:b.wbs,acts:b.acts,links:b.links};CP.moved=null}
+    else{
+      s.add.forEach(function(l){CP.meta[lkey(l)]={src:'SIM',st:'DISETUJUI',note:l[4]||''}});
+      var links=effLinks(),P0=MSC.push({acts:b.acts,links:b.links,cal:b.cal},{}),P1=MSC.push({acts:b.acts,links:links,cal:b.cal},{dur:s.dur,floor:s.floor}),C=P1.cal,moved={},nm=0,mx=0;
+      var acts=b.acts.map(function(a,i){
+        if(P1.lock[i])return a;
+        var dS=P1.S[i]-P0.S[i],dE=P1.E[i]-P0.E[i],hd=s.dur[a[0]]!==undefined,hf=s.floor[a[0]]!==undefined;
+        if(!dS&&!dE&&!hd&&!hf)return a;
+        var c=a.slice(),ns=P0.FS[i]+dS,ne=P0.FE[i]+dE;
+        if(a[4]==='T'){c[8]=MSC.fmt(C.day(ns));c[9]=MSC.fmt(C.day(ne-1));c[5]=ne-ns}
+        else{c[8]=c[9]=MSC.fmt(C.day(a[4]==='F'?ne-1:ns))}
+        if(hf){c[13]='SNET';c[14]=s.floor[a[0]]}
+        if(dS||dE){moved[i]=dE;nm++;if(Math.abs(dE)>Math.abs(mx))mx=dE}
+        c._o=a;return c;
+      });
+      CP.model={cal:b.cal,dataDate:b.dataDate,statusDate:b.statusDate,wbs:b.wbs,acts:acts,links:links};CP.moved={map:moved,n:nm,max:mx};
+    }
+    CP.cpm=MSC.cpm(CP.model);build(fresh);
+    if(fresh)renderShell();else{renderTop();layout();detail()}
+  }
+
+  /* ---------- pohon WBS ---------- */
+  /* durasi menurut tanggal jadwal (hari kerja), dipakai sebagai nilai awal saat mengubah durasi */
+  function span(a){var s=MSC.parse(sOf(a)),f=MSC.parse(fOf(a)),C=CP.cpm.cal;return s===null||f===null?a[5]:Math.max(1,C.at(f)+1-C.at(s))}
+  function sOf(a){return a[10]||a[8]||a[6]}
+  function fOf(a){return a[11]||a[9]||a[7]}
+  function build(fresh){
+    var m=CP.model,map={},roots=[];
+    m.wbs.forEach(function(w){map[w[0]]={id:w[0],parent:w[1],code:w[2],name:w[3],seq:w[4],kids:[],acts:[],lvl:1,n:0,done:0,crit:0,s:'',f:''}});
+    Object.keys(map).forEach(function(k){var w=map[k],p=map[w.parent];if(p)p.kids.push(w);else roots.push(w)});
+    var none=null;
+    m.acts.forEach(function(a,i){var w=map[a[3]];if(!w){if(!none){none={id:'__none',parent:'',code:'',name:'Tanpa WBS',seq:1e9,kids:[],acts:[],lvl:1,n:0,done:0,crit:0,s:'',f:''};map.__none=none;roots.push(none)}w=none}w.acts.push(i)});
+    var maxL=1;
+    function walk(w,l){
+      w.lvl=l;if(l>maxL)maxL=l;
+      w.kids.sort(function(a,b){return a.seq-b.seq||String(a.code).localeCompare(String(b.code),undefined,{numeric:true})});
+      w.acts.sort(function(x,y){var a=m.acts[x],b=m.acts[y],sa=sOf(a),sb=sOf(b);return sa<sb?-1:sa>sb?1:String(a[1]).localeCompare(String(b[1]),undefined,{numeric:true})});
+      w.kids.forEach(function(k){walk(k,l+1);w.n+=k.n;w.done+=k.done;w.crit+=k.crit;if(k.s&&(!w.s||k.s<w.s))w.s=k.s;if(k.f&&k.f>w.f)w.f=k.f});
+      w.acts.forEach(function(i){var a=m.acts[i],s=sOf(a),f=fOf(a);w.n++;if(a[11])w.done++;if(CP.cpm.rows[i].crit)w.crit++;if(s&&(!w.s||s<w.s))w.s=s;if(f&&f>w.f)w.f=f});
+    }
+    roots.sort(function(a,b){return a.seq-b.seq});roots.forEach(function(r){walk(r,1)});
+    roots=roots.filter(function(r){return r.n>0||r.kids.length});
+    CP.map=map;CP.roots=roots;CP.maxL=maxL;
+    var mn='',mx='';m.acts.forEach(function(a){var s=sOf(a),f=fOf(a);if(s&&(!mn||s<mn))mn=s;if(f&&f>mx)mx=f});
+    CP.start=mn;CP.finish=mx;
+    if(fresh){CP.level=Math.min(3,maxL);setLevel(CP.level)}
+    CP.blFinish='';if(CP.hasBl)Object.keys(CP.bl).forEach(function(k){var f=CP.bl[k][1];if(f>CP.blFinish)CP.blFinish=f});
+  }
+  function setLevel(L){CP.open={};Object.keys(CP.map).forEach(function(k){if(L==='all'||CP.map[k].lvl<L)CP.open[k]=1})}
+  function flatten(){
+    var m=CP.model,rows=[],q=CP.q.trim().toLowerCase(),filt=!!q||CP.critOnly,keep=null;
+    if(filt){keep={};m.acts.forEach(function(a,i){if(CP.critOnly&&!CP.cpm.rows[i].crit)return;if(q&&(a[1]+' '+a[2]).toLowerCase().indexOf(q)<0)return;keep[i]=1})}
+    function has(w){if(w._k!==undefined)return w._k;var k=w.acts.some(function(i){return keep[i]})||w.kids.some(has);if(!k&&q&&(w.code+' '+w.name).toLowerCase().indexOf(q)>=0&&!CP.critOnly)k=true;return w._k=k}
+    function walk(w,d){
+      if(filt&&!has(w))return;
+      rows.push({w:w,d:d});
+      var whole=filt&&q&&!CP.critOnly&&(w.code+' '+w.name).toLowerCase().indexOf(q)>=0;
+      if(!(filt?(CP.open[w.id]!==0):CP.open[w.id]))return;
+      w.kids.forEach(function(k){walk(k,d+1)});
+      w.acts.forEach(function(i){if(!filt||keep[i]||whole)rows.push({a:i,d:d+1})});
+    }
+    CP.roots.forEach(function(r){walk(r,0)});
+    CP.rows=rows;CP.rowOf={};rows.forEach(function(r,i){if(r.a!==undefined)CP.rowOf[r.a]=i});
+  }
+
+  /* ---------- kerangka tampilan ---------- */
+  var SRC={P6:'Primavera P6',MSP:'MS Project',MANUAL:'Perubahan manual'};
+  function renderEmpty(){
+    var d=CP.data;
+    view.innerHTML='<div class="panel cp-empty"><h3>Belum ada jadwal CPM untuk proyek ini</h3><p>Impor jadwal dari Primavera P6 (File → Export → Primavera PM XML) atau MS Project (File → Save As → XML Format). Aktivitas, WBS, tanggal, dan predecessor diambil dari file.</p>'+
+      (d.canImport?'<button type="button" class="cp-btn pri" data-cp="import">Import XML</button>':'<p class="cp-note">Import dilakukan oleh Admin atau PIC proyek.</p>')+'</div>';
+  }
+  function kpi(l,v,s,c){return '<div class="cp-kpi '+(c||'')+'"><small>'+l+'</small><b>'+v+'</b><span>'+s+'</span></div>'}
+  function topHtml(){
+    var d=CP.data,r=d.rev,m=CP.model,c=CP.cpm,noP=0,noS=0,rn=0,done=0,neg=0,man=0,off=0;
+    m.acts.forEach(function(a,i){if(!c.pred[i].length)noP++;if(!c.succ[i].length)noS++;if(a[11])done++;else if(a[10])rn++;if(c.rows[i].tf!==null&&c.rows[i].tf<0)neg++});
+    CP.base.linksAll.forEach(function(l){if(l[5]==='NONAKTIF')off++;else if(l[4]==='MANUAL')man++});
+    var wd=(m.cal.work||[]).filter(function(x){return x}).length,bd=CP.blFinish?dd(CP.finish,CP.blFinish):0;
+    var h='<div class="panel cp-info"><b>Revisi '+r.no+'</b><span class="m">'+E(SRC[r.source]||r.source)+' · '+E(r.file)+'</span><span class="m">'+E(r.by)+' · '+E(r.at)+'</span><span class="m">Status file s.d. '+D(r.statusDate||r.dataDate)+(d.canImport&&!CP.sim?' <button type="button" class="cp-lnk" data-cp="status">ubah</button>':'')+'</span><span class="m">Kalender '+wd+' hari/minggu · '+(m.cal.hol||[]).length+' libur</span><span class="sp"></span>'+
+        '<button type="button" class="cp-btn" data-cp="history">Riwayat revisi</button>'+
+        (CP.sim?'':'<button type="button" class="cp-btn" data-cp="sim">Mode simulasi</button>')+
+        (d.canImport&&d.hasPrev&&!CP.sim?'<button type="button" class="cp-btn" data-cp="rollback">Batalkan revisi terakhir</button>':'')+(d.canImport&&!CP.sim?'<button type="button" class="cp-btn cp-danger" data-cp="delete">Hapus jadwal</button>':'')+(d.canImport&&!CP.sim?'<button type="button" class="cp-btn pri" data-cp="import">Import XML</button>':'')+'</div>'+
+      '<div class="cp-kpis">'+
+        kpi('Aktivitas',N(m.acts.length),N(m.wbs.length)+' WBS · '+CP.maxL+' level')+
+        kpi('Hubungan',N(m.links.length),(man?man+' manual · ':'')+(off?off+' nonaktif · ':'')+noP+' tanpa pred · '+noS+' tanpa succ')+
+        kpi('Mulai – selesai',D(CP.start)+' – '+D(CP.finish),CP.blFinish?'baseline '+D(CP.blFinish)+(bd?' · '+sg(bd)+' hari':' · sama'):'menurut jadwal file',bd>0?'bad':'')+
+        kpi('Status menurut file',N(done)+' selesai',N(rn)+' berjalan · '+N(m.acts.length-done-rn)+' belum mulai')+
+        kpi('Lintasan kritis',N(c.critical),'float ≤ 0'+(neg?' · '+neg+' float negatif':''),c.critical?'bad':'')+
+        kpi('Hitung ulang CPM',D(c.calcFinish),N(c.early)+' aktivitas bisa lebih awal')+
+      '</div>';
+    return h+t3Html();
+  }
+  function simHtml(){
+    var s=CP.sim;if(!s)return '';
+    var b=CP.base,ix=CP.cpm.index,chips=[],nm=function(id){var a=b.acts[ix[id]];return a?a[1]:id};
+    Object.keys(s.dur).forEach(function(id){chips.push(['dur',id,'Durasi '+nm(id)+' → '+s.dur[id]+' hari'])});
+    Object.keys(s.floor).forEach(function(id){chips.push(['floor',id,'Mulai '+nm(id)+' ≥ '+D(s.floor[id])])});
+    s.add.forEach(function(l,i){chips.push(['add',i,'+ '+nm(l[0])+' → '+nm(l[1])+' ('+l[2]+(l[3]?' '+sg(l[3]):'')+')'])});
+    Object.keys(s.off).forEach(function(k){var p=k.split('>');chips.push(['off',k,'− '+nm(p[0])+' → '+nm(p[1])+' ('+p[2]+')'])});
+    Object.keys(s.on).forEach(function(k){var p=k.split('>');chips.push(['on',k,'Aktifkan '+nm(p[0])+' → '+nm(p[1])])});
+    var df=dd(CP.finish,s.finish0),dc=CP.cpm.critical-s.crit0,mv=CP.moved||{n:0,max:0};
+    return '<div class="panel cp-sim"><div class="cp-sim-h"><b>Mode simulasi</b><span>'+(chips.length?chips.length+' perubahan':'Belum ada perubahan. Klik satu aktivitas, lalu ubah durasi, tanggal mulai, atau hubungannya di panel detail.')+'</span><span class="sp"></span>'+
+      '<button type="button" class="cp-btn" data-cp="simExit">'+(chips.length?'Buang simulasi':'Keluar')+'</button>'+(chips.length&&CP.data.canImport?'<button type="button" class="cp-btn pri" data-cp="simSave">Simpan sebagai revisi</button>':'')+'</div>'+
+      (chips.length?'<div class="cp-sim-r"><div><small>Selesai proyek</small><b class="'+(df>0?'bad':df<0?'ok':'')+'">'+D(CP.finish)+(df?' · '+sg(df)+' hari':' · tidak berubah')+'</b></div><div><small>Aktivitas bergeser</small><b>'+N(mv.n)+(mv.n?' · terjauh '+sg(mv.max)+' hari':'')+'</b></div><div><small>Lintasan kritis</small><b>'+N(CP.cpm.critical)+(dc?' · '+sg(dc):'')+'</b></div></div>'+
+        '<div class="cp-chips">'+chips.map(function(c){return '<span>'+E(c[2])+'<button type="button" data-undo="'+c[0]+'" data-k="'+E(c[1])+'" title="Batalkan perubahan ini" aria-label="Batalkan perubahan ini">×</button></span>'}).join('')+'</div>'+
+        (CP.data.canImport?'':'<p class="cp-note">Simulasi hanya untuk melihat dampak. Menyimpan perubahan dilakukan oleh Admin atau PIC proyek.</p>'):'')+'</div>';
+  }
+  function renderTop(){var t=document.getElementById('cpTop'),s=document.getElementById('cpSim');if(t){t.innerHTML=topHtml();t3Bind()}if(s)s.innerHTML=simHtml();var st=document.getElementById('cpStage');if(st)st.classList.toggle('cp-simon',!!CP.sim)}
+  function renderShell(){
+    var lv='';for(var i=1;i<=CP.maxL;i++)lv+='<option value="'+i+'"'+(CP.level===i?' selected':'')+'>WBS level '+i+'</option>';
+    view.innerHTML='<div id="cpTop" style="display:grid;gap:14px"></div>'+
+      '<div id="cpStage" class="cp-stage"><div id="cpSim"></div>'+
+      '<div class="panel cp-tools"><input type="search" id="cpQ" placeholder="Cari kode atau nama aktivitas / WBS…" aria-label="Cari aktivitas">'+
+        '<label>Tampilkan<select class="sel" id="cpLevel">'+lv+'<option value="all"'+(CP.level==='all'?' selected':'')+'>Semua aktivitas</option></select></label>'+
+        '<label>Skala<select class="sel" id="cpZoom"><option value="month">Bulanan</option><option value="week">Mingguan</option></select></label>'+
+        '<label><input type="checkbox" id="cpCrit"> Hanya lintasan kritis</label><label><input type="checkbox" id="cpLinks"> Garis hubungan</label>'+(CP.hasBl?'<label><input type="checkbox" id="cpBase"> Baseline</label>':'')+
+        '<span class="sp"></span><span id="cpCount" style="color:var(--muted);font-size:13px"></span><button type="button" class="cp-btn" data-cp="export">Ekspor</button><button type="button" class="cp-btn" data-cp="full" id="cpFullBtn">Layar penuh</button></div>'+
+      '<article class="panel" style="padding:0;overflow:hidden"><div class="cp-leg"><span><i></i>Belum mulai</span><span><i class="d"></i>Selesai / porsi selesai</span><span><i class="c"></i>Lintasan kritis</span><span><i class="w"></i>Ringkasan WBS</span><span><i class="m"></i>Milestone</span><span><i class="f"></i>Float</span><span><i class="g"></i>Baseline / sebelum simulasi</span><span><i class="s"></i>Status file</span><span><i class="n"></i>Hari ini</span></div>'+
+        '<div class="cp-grid" id="cpGrid" tabindex="0" aria-label="Gantt jadwal CPM"><div class="cp-inner" id="cpInner"></div></div></article>'+
+      '<section class="panel cp-det" id="cpDet" aria-live="polite"></section></div>';
+    document.getElementById('cpZoom').value=CP.zoom;document.getElementById('cpCrit').checked=CP.critOnly;document.getElementById('cpLinks').checked=CP.links;document.getElementById('cpQ').value=CP.q;
+    var cb=document.getElementById('cpBase');if(cb)cb.checked=CP.showBase;
+    document.getElementById('cpGrid').addEventListener('scroll',function(){if(!CP.raf)CP.raf=requestAnimationFrame(function(){CP.raf=0;paint()})});
+    renderTop();layout();detail();
+  }
+
+  /* ---------- skala waktu + baris ---------- */
+  function layout(){
+    Object.keys(CP.map).forEach(function(k){delete CP.map[k]._k});
+    flatten();
+    var grid=document.getElementById('cpGrid'),inner=document.getElementById('cpInner');if(!grid)return;
+    var px=CP.zoom==='week'?9:3,t0=MSC.parse(CP.start)-10,t1=Math.max(MSC.parse(CP.finish),CP.blFinish?MSC.parse(CP.blFinish):0,CP.sim?MSC.parse(CP.sim.finish0):0)+45;
+    var d0=new Date(t0*864e5);t0=Math.round(Date.UTC(d0.getUTCFullYear(),d0.getUTCMonth(),1)/864e5);
+    CP.px=px;CP.t0=t0;CP.tw=(t1-t0)*px;
+    var probe=document.createElement('div');probe.className='cp-hl';probe.style.cssText='position:absolute;visibility:hidden';probe.innerHTML='<div class="cp-c1"></div><div class="cp-c2"></div><div class="cp-c3"></div><div class="cp-c4"></div><div class="cp-c5"></div>';inner.appendChild(probe);CP.left=probe.offsetWidth||646;inner.removeChild(probe);
+    var sc='',bg='',d=new Date(t0*864e5);
+    while(true){
+      var day=Math.round(d.getTime()/864e5);if(day>=t1)break;
+      var nx=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,1)),w=(Math.min(t1,Math.round(nx.getTime()/864e5))-day)*px,x=(day-t0)*px;
+      sc+='<span style="left:'+x+'px;width:'+w+'px">'+MON[d.getUTCMonth()]+(w>44?' '+String(d.getUTCFullYear()).slice(2):'')+(d.getUTCMonth()===0||day===t0?'<small>'+d.getUTCFullYear()+'</small>':'')+'</span>';
+      bg+='<i style="left:'+x+'px"></i>';
+      if(px>=9){for(var k=day;k<Math.min(t1,Math.round(nx.getTime()/864e5));k++){if((k+4)%7===1)sc+='<em style="left:'+((k-t0)*px)+'px">'+new Date(k*864e5).getUTCDate()+'</em>'}}
+      d=nx;
+    }
+    var sd=MSC.parse(CP.data.rev.statusDate||CP.data.rev.dataDate),now=Math.floor((Date.now()+7*36e5)/864e5);
+    if(sd!==null&&sd>=t0&&sd<=t1)bg+='<i class="sd" style="left:'+((sd-t0+1)*px)+'px" title="Status file"></i>';
+    if(now>=t0&&now<=t1)bg+='<i class="now" style="left:'+((now-t0)*px)+'px"></i>';
+    var hgt=CP.rows.length*H,keepTop=grid.scrollTop,keepLeft=grid.scrollLeft;
+    inner.style.width=(CP.left+CP.tw)+'px';inner.style.height=(HEAD+hgt)+'px';
+    inner.innerHTML='<div class="cp-head" style="width:'+(CP.left+CP.tw)+'px"><div class="cp-hl"><div class="cp-c1">Pekerjaan</div><div class="cp-c2">Hari</div><div class="cp-c3">Mulai</div><div class="cp-c4">Selesai</div><div class="cp-c5">Float</div></div><div class="cp-scale" style="width:'+CP.tw+'px">'+sc+'</div></div>'+
+      '<div class="cp-bg" style="left:'+CP.left+'px;top:'+HEAD+'px;width:'+CP.tw+'px;height:'+hgt+'px">'+bg+'</div>'+
+      '<svg class="cp-svg" id="cpSvg" style="left:'+CP.left+'px;top:'+HEAD+'px" width="'+CP.tw+'" height="'+hgt+'"></svg>'+
+      '<div class="cp-rows" id="cpRows" style="top:'+HEAD+'px;height:'+hgt+'px"></div>';
+    grid.scrollTop=keepTop;grid.scrollLeft=keepLeft;
+    var na=0;CP.rows.forEach(function(r){if(r.a!==undefined)na++});
+    var cnt=document.getElementById('cpCount');if(cnt)cnt.textContent=N(CP.rows.length)+' baris · '+N(na)+' aktivitas tampil';
+    paint();
+  }
+  function X(day){return (day-CP.t0)*CP.px}
+  function ghost(s,f,t){var a=MSC.parse(s),b=MSC.parse(f);if(a===null||b===null)return '';return '<div class="cp-g" style="left:'+(CP.left+X(a))+'px;width:'+Math.max(3,(b-a+1)*CP.px)+'px" title="'+t+' '+D(s)+' – '+D(f)+'"></div>'}
+  function paint(){
+    var grid=document.getElementById('cpGrid'),host=document.getElementById('cpRows');if(!grid||!host)return;
+    var m=CP.model,c=CP.cpm,top=Math.max(0,grid.scrollTop-HEAD),a=Math.max(0,Math.floor(top/H)-BUF),b=Math.min(CP.rows.length,Math.ceil((top+grid.clientHeight)/H)+BUF),h='',W=CP.left+CP.tw;
+    var rel={};if(CP.sel>=0){c.pred[CP.sel].forEach(function(e){rel[e.p]=1});c.succ[CP.sel].forEach(function(e){rel[e.s]=1})}
+    for(var i=a;i<b;i++){
+      var r=CP.rows[i],pad=6+r.d*14;
+      if(r.w){
+        var w=r.w,op=(CP.q||CP.critOnly)?CP.open[w.id]!==0:!!CP.open[w.id],bar='';
+        if(w.s&&w.f){var s=MSC.parse(w.s),f=MSC.parse(w.f),bw=Math.max(3,(f-s+1)*CP.px);bar='<div class="cp-b cp-w" style="left:'+(CP.left+X(s))+'px;width:'+bw+'px" title="'+E(w.name)+' · '+D(w.s)+' – '+D(w.f)+' · '+w.done+'/'+w.n+' aktivitas selesai"><u style="width:'+(w.n?Math.round(w.done/w.n*100):0)+'%"></u></div>'}
+        h+='<div class="cp-row cp-wbs" data-w="'+E(w.id)+'" style="top:'+(i*H)+'px;width:'+W+'px"><div class="cp-l"><div class="cp-c1" style="padding-left:'+pad+'px" title="'+E((w.code?w.code+' · ':'')+w.name)+'"><span class="tw">'+(op?'▼':'▶')+'</span>'+E(w.name)+'<span class="n">'+N(w.n)+(w.crit?' · '+w.crit+' kritis':'')+'</span></div><div class="cp-c2"></div><div class="cp-c3">'+D(w.s)+'</div><div class="cp-c4">'+D(w.f)+'</div><div class="cp-c5"></div></div>'+bar+'</div>';
+      }else{
+        var x=m.acts[r.a],R=c.rows[r.a],s2=sOf(x),f2=fOf(x),mv=CP.moved&&CP.moved.map[r.a]!==undefined,cls=(R.crit?' cp-crit':'')+(x[11]?' cp-done':''),bar2='';
+        if(s2&&f2){
+          var sd=MSC.parse(s2),fd=MSC.parse(f2),tt=E(x[1]+' · '+x[2])+'&#10;'+D(s2)+' – '+D(f2)+' · '+(x[4]==='T'?x[5]+' hari':'milestone')+(R.tf!==null?'&#10;Float '+R.tf+' hari'+(R.crit?' (kritis)':''):'&#10;Selesai');
+          if(x[4]!=='T')bar2='<div class="cp-b cp-ms'+cls+'" style="left:'+(CP.left+X(x[4]==='F'?fd+1:sd))+'px" title="'+tt+'"></div>';
+          else{var bw2=Math.max(3,(fd-sd+1)*CP.px),pc=x[11]?0:(x[10]?Math.max(0,Math.min(100,x[12])):0);
+            bar2='<div class="cp-b'+cls+'" style="left:'+(CP.left+X(sd))+'px;width:'+bw2+'px" title="'+tt+'">'+(pc?'<u style="width:'+pc+'%"></u>':'')+'</div>';
+            if(R.tf>0&&!x[11]){var fe=c.cal.day(c.cal.at(fd)+R.tf),fw=Math.min(400,(fe-fd)*CP.px);bar2+='<div class="cp-f" style="left:'+(CP.left+X(fd+1))+'px;width:'+fw+'px"></div>'}}
+          if(x._o&&mv&&x[4]==='T')bar2+=ghost(sOf(x._o),fOf(x._o),'Sebelum simulasi:');
+          else if(!CP.sim&&CP.showBase&&x[4]==='T'){var bl=CP.bl[x[1]];if(bl&&(bl[0]!==s2||bl[1]!==f2))bar2+=ghost(bl[0],bl[1],'Baseline:')}
+        }
+        h+='<div class="cp-row cp-act'+(R.crit?' cp-crit':'')+(CP.sel===r.a?' cp-sel':rel[r.a]?' cp-rel':'')+(mv?' cp-mv':'')+'" data-a="'+r.a+'" style="top:'+(i*H)+'px;width:'+W+'px"><div class="cp-l"><div class="cp-c1" style="padding-left:'+(pad+22)+'px" title="'+E(x[1]+' · '+x[2])+'"><span class="cd">'+E(x[1])+'</span>'+E(x[2])+'</div><div class="cp-c2">'+(x[4]==='T'?x[5]:'◆')+'</div><div class="cp-c3">'+D(s2)+'</div><div class="cp-c4">'+D(f2)+'</div><div class="cp-c5">'+(R.tf===null?'✓':R.tf)+'</div></div>'+bar2+'</div>';
+      }
+    }
+    host.innerHTML=h;paintLinks(a,b);
+  }
+  function ends(i){var x=CP.model.acts[i],s=MSC.parse(sOf(x)),f=MSC.parse(fOf(x));if(s===null||f===null)return null;if(x[4]!=='T'){var p=X(x[4]==='F'?f+1:s);return [p-6,p+6]}return [X(s),X(s)+Math.max(3,(f-s+1)*CP.px)]}
+  function paintLinks(a,b){
+    var svg=document.getElementById('cpSvg');if(!svg)return;
+    if(!CP.links){svg.innerHTML='';return}
+    var c=CP.cpm,h='',hs='',seen={},n=0,ids=CP.model.acts;
+    function draw(e){
+      var k=e.p+'>'+e.s+e.t;if(seen[k])return;seen[k]=1;
+      var rp=CP.rowOf[e.p],rs=CP.rowOf[e.s];if(rp===undefined||rs===undefined)return;
+      var P=ends(e.p),S=ends(e.s);if(!P||!S)return;
+      var y1=rp*H+15,y2=rs*H+15,fromEnd=e.t==='FS'||e.t==='FF',toEnd=e.t==='FF'||e.t==='SF',x1=fromEnd?P[1]:P[0],x2=toEnd?S[1]:S[0],d,ar;
+      var o1=fromEnd?x1+7:x1-7,o2=toEnd?x2+9:x2-9;
+      if(!fromEnd&&!toEnd){var mx=Math.min(o1,o2);d='M'+x1+' '+y1+'H'+mx+'V'+y2+'H'+x2}
+      else if(fromEnd&&toEnd){var mz=Math.max(o1,o2);d='M'+x1+' '+y1+'H'+mz+'V'+y2+'H'+x2}
+      else if(fromEnd){if(o2>=o1)d='M'+x1+' '+y1+'H'+o1+'V'+y2+'H'+x2;else{var ym=y2>y1?y2-H/2:y2+H/2;d='M'+x1+' '+y1+'H'+o1+'V'+ym+'H'+o2+'V'+y2+'H'+x2}}
+      else{if(o2<=o1)d='M'+x1+' '+y1+'H'+o1+'V'+y2+'H'+x2;else{var yn=y2>y1?y2-H/2:y2+H/2;d='M'+x1+' '+y1+'H'+o1+'V'+yn+'H'+o2+'V'+y2+'H'+x2}}
+      ar=toEnd?(x2+' '+y2+' '+(x2+6)+' '+(y2-3.5)+' '+(x2+6)+' '+(y2+3.5)):(x2+' '+y2+' '+(x2-6)+' '+(y2-3.5)+' '+(x2-6)+' '+(y2+3.5));
+      var mt=CP.meta[ids[e.p][0]+'>'+ids[e.s][0]+'>'+e.t],man=mt&&mt.src!=='IMPORT';
+      var sel=CP.sel===e.p||CP.sel===e.s,cl=sel?'s':(c.rows[e.p].crit&&c.rows[e.s].crit?'c':'');
+      var out='<path class="'+cl+(man?' m':'')+'" d="'+d+'"/><polygon class="'+cl+'" points="'+ar+'"/>';
+      if(sel)hs+=out;else h+=out;n++;
+    }
+    if(CP.sel>=0){c.pred[CP.sel].forEach(draw);c.succ[CP.sel].forEach(draw)}
+    for(var i=a;i<b&&n<3000;i++){var r=CP.rows[i];if(r.a===undefined)continue;c.pred[r.a].forEach(draw);c.succ[r.a].forEach(draw)}
+    svg.innerHTML=h+hs;
+  }
+
+  /* ---------- detail aktivitas (+ alat ubah saat mode simulasi) ---------- */
+  var BT={SNET:'Mulai paling cepat',FNET:'Selesai paling cepat',MSO:'Harus mulai',MFO:'Harus selesai',SNLT:'Mulai paling lambat',FNLT:'Selesai paling lambat'};
+  function path(a){var p=[],w=CP.map[a[3]];while(w){p.unshift(w.name);w=CP.map[w.parent]}return p.join(' › ')}
+  function detail(){
+    var el=document.getElementById('cpDet');if(!el)return;
+    if(CP.sel<0||!CP.model.acts[CP.sel]){el.innerHTML='<span class="cp-note">'+(CP.sim?'Klik satu aktivitas untuk mengubah durasi, tanggal mulai, atau hubungannya.':'Klik satu aktivitas untuk melihat predecessor dan successor-nya.')+'</span>';return}
+    var m=CP.model,c=CP.cpm,x=m.acts[CP.sel],R=c.rows[CP.sel],sim=!!CP.sim,id=x[0];
+    function tbl(list,key){
+      var h=list.map(function(e){var o=m.acts[e[key]],r=c.rows[e[key]],k=m.acts[e.p][0]+'>'+m.acts[e.s][0]+'>'+e.t,mt=CP.meta[k]||{};
+        return '<tr data-jump="'+e[key]+'"><td class="k">'+E(o[1])+'</td><td>'+E(o[2])+(mt.src==='MANUAL'?' <span class="tg mn" title="'+E((mt.by||'')+' · '+(mt.at||'')+(mt.note?' · '+mt.note:''))+'">manual</span>':mt.src==='SIM'?' <span class="tg mn">simulasi</span>':'')+'</td><td class="k"><span class="tg">'+e.t+'</span>'+(e.lag?' '+sg(e.lag)+' hr':'')+'</td><td class="k">'+D(sOf(o))+' – '+D(fOf(o))+'</td><td class="k'+(r.crit?' cr':'')+'">'+(r.tf===null?'selesai':r.crit?'kritis':'float '+r.tf)+'</td>'+(sim?'<td><button type="button" class="cp-x" data-loff="'+E(k)+'" title="Lepas hubungan ini">×</button></td>':'')+'</tr>'}).join('');
+      if(sim){CP.base.linksAll.forEach(function(l){var k=lkey(l),mine=key==='p'?l[1]===id:l[0]===id;if(!mine)return;var act=l[5]!=='NONAKTIF';if(act&&CP.sim.off[k])act=false;else if(!act&&CP.sim.on[k])act=true;if(act)return;var o=m.acts[c.index[key==='p'?l[0]:l[1]]];if(!o)return;
+        h+='<tr class="off"><td class="k">'+E(o[1])+'</td><td>'+E(o[2])+'</td><td class="k"><span class="tg">'+l[2]+'</span></td><td class="k" colspan="2">nonaktif</td><td><button type="button" class="cp-x" data-lon="'+E(k)+'" title="Aktifkan lagi">↺</button></td></tr>'})}
+      else{var off=0;CP.base.linksAll.forEach(function(l){if(l[5]==='NONAKTIF'&&(key==='p'?l[1]===id:l[0]===id))off++});if(off)h+='<tr class="off"><td colspan="5" class="k">'+off+' hubungan dinonaktifkan (lihat di mode simulasi)</td></tr>'}
+      return h?'<table class="cp-t">'+h+'</table>':'<p class="cp-note">Tidak ada.</p>';
+    }
+    var st=x[11]?'Selesai '+D(x[11]):x[10]?'Berjalan sejak '+D(x[10])+' · '+x[12]+'%':'Belum mulai',bl=CP.bl[x[1]],bdv=bl?dd(fOf(x),bl[1]):0,o=x._o;
+    var edit='';
+    if(sim){
+      if(x[10])edit='<p class="cp-note">Aktivitas yang sudah mulai atau selesai tidak diubah di simulasi; hubungannya tetap bisa diubah.</p>';
+      else edit='<div class="cp-edit">'+(x[4]==='T'?'<label>Durasi (hari)<input type="number" id="cpEDur" min="1" max="3000" step="1" value="'+span(x)+'"></label>':'')+'<label>Mulai paling cepat<input type="date" id="cpEFloor" value="'+E(CP.sim.floor[id]||sOf(o||x))+'"></label><button type="button" class="cp-btn" data-cp="editApply">Terapkan</button>'+(o?'<span class="cp-note">Sebelum simulasi: '+D(sOf(o))+' – '+D(fOf(o))+'</span>':'')+'</div>';
+      edit+='<div class="cp-edit"><label>Tambah hubungan<select id="cpARole"><option value="p">sebagai predecessor</option><option value="s">sebagai successor</option></select></label><label class="grow">Aktivitas lain<input type="search" id="cpAFind" placeholder="Ketik kode atau nama…" autocomplete="off"></label><label>Tipe<select id="cpAType"><option>FS</option><option>SS</option><option>FF</option><option>SF</option></select></label><label>Lag (hari)<input type="number" id="cpALag" value="0" step="1" style="width:84px"></label></div><div class="cp-find" id="cpAList"></div><div class="cp-msg" id="cpAMsg" hidden></div>';
+    }
+    el.innerHTML='<h3>'+E(x[1])+' · '+E(x[2])+'</h3><div class="p">'+E(path(x))+'</div>'+
+      '<div class="cp-facts"><div><small>'+(sim&&o?'Jadwal simulasi':'Jadwal')+'</small><b>'+D(sOf(x))+' – '+D(fOf(x))+'</b></div><div><small>Durasi</small><b>'+(x[4]==='T'?x[5]+' hari':'Milestone')+'</b></div><div><small>Status menurut file</small><b>'+st+'</b></div><div><small>Float</small><b'+(R.crit?' style="color:var(--bad)"':'')+'>'+(R.tf===null?'—':R.tf+' hari'+(R.crit?' · kritis':''))+'</b></div><div><small>Baseline</small><b>'+(bl?D(bl[0])+' – '+D(bl[1])+(bdv?' · '+sg(bdv):''):'—')+'</b></div><div><small>Batasan</small><b>'+(x[13]?E(BT[x[13]]||x[13])+' '+D(x[14]):'—')+'</b></div></div>'+edit+
+      '<div class="cp-2"><div><h4>Predecessor ('+c.pred[CP.sel].length+')</h4>'+tbl(c.pred[CP.sel],'p')+'</div><div><h4>Successor ('+c.succ[CP.sel].length+')</h4>'+tbl(c.succ[CP.sel],'s')+'</div></div>';
+  }
+  function select(i,scroll){
+    CP.sel=i;
+    if(scroll){
+      if(CP.rowOf[i]===undefined){var w=CP.map[CP.model.acts[i][3]]||CP.map.__none;while(w){CP.open[w.id]=1;w=CP.map[w.parent]}if(CP.q||CP.critOnly){CP.q='';CP.critOnly=false;var q=document.getElementById('cpQ'),cc=document.getElementById('cpCrit');if(q)q.value='';if(cc)cc.checked=false}layout()}
+      var g=document.getElementById('cpGrid'),row=CP.rowOf[i];
+      if(g&&row!==undefined){var e=ends(i);g.scrollTop=Math.max(0,row*H-g.clientHeight/2+HEAD);if(e)g.scrollLeft=Math.max(0,e[0]-(g.clientWidth-CP.left)/3)}
+    }
+    paint();detail();
+  }
+
+  /* ---------- mode simulasi ---------- */
+  function simStart(){CP.sim={dur:{},floor:{},add:[],off:{},on:{},finish0:CP.finish,crit0:CP.cpm.critical};apply(false)}
+  function simEnd(){CP.sim=null;apply(false)}
+  function reaches(links,from,to){var adj={},seen={},st=[from];links.forEach(function(l){(adj[l[0]]=adj[l[0]]||[]).push(l[1])});while(st.length){var x=st.pop();if(x===to)return true;if(seen[x])continue;seen[x]=1;(adj[x]||[]).forEach(function(y){st.push(y)})}return false}
+  function simAdd(other){
+    var x=CP.model.acts[CP.sel],role=document.getElementById('cpARole').value,t=document.getElementById('cpAType').value,lag=Math.round(+document.getElementById('cpALag').value||0),msg=document.getElementById('cpAMsg');
+    var p=role==='p'?other:x[0],s=role==='p'?x[0]:other,links=effLinks();
+    function no(m){msg.hidden=false;msg.textContent=m}
+    if(p===s)return no('Aktivitas tidak bisa dihubungkan ke dirinya sendiri.');
+    if(links.some(function(l){return l[0]===p&&l[1]===s}))return no('Dua aktivitas ini sudah terhubung. Lepas dulu hubungan lama kalau ingin mengganti tipe atau lag.');
+    if(reaches(links,s,p))return no('Hubungan ini membuat urutan melingkar, jadi tidak bisa ditambahkan.');
+    var k=p+'>'+s+'>'+t;if(CP.sim.off[k]){delete CP.sim.off[k]}else CP.sim.add.push([p,s,t,lag,'']);
+    apply(false);
+  }
+  function simSave(btn){
+    var s=CP.sim;
+    ask({title:'Simpan sebagai revisi',body:'Hasil simulasi disimpan sebagai revisi manual baru. Revisi yang aktif sekarang tetap tersimpan satu langkah, jadi masih bisa dibatalkan.',input:'Catatan singkat (alasan perubahan)',ok:'Simpan revisi'}).then(function(note){if(note===null)return;
+    var acts=[];CP.model.acts.forEach(function(a){if(a._o)acts.push([a[0],a[5],a[8],a[9],s.floor[a[0]]?'SNET':'',s.floor[a[0]]||''])});
+    var sp=function(k){return k.split('>')};
+    btn.disabled=true;btn.textContent='Menyimpan…';
+    run('msCpmSaveManual',[tok(),CP.pid,CP.data.rev.no,{note:note,acts:acts,add:s.add.map(function(l){return [l[0],l[1],l[2],l[3],note]}),off:Object.keys(s.off).map(sp),on:Object.keys(s.on).map(sp)}],function(){load(CP.pid)},function(m){btn.disabled=false;btn.textContent='Simpan sebagai revisi';tell(m)});
+    });
+  }
+
+  /* ---------- layar penuh ---------- */
+  function fsEl(){return document.fullscreenElement||document.webkitFullscreenElement}
+  function fullToggle(){
+    var st=document.getElementById('cpStage');if(!st)return;
+    if(fsEl()||st.classList.contains('cp-full')){st.classList.remove('cp-full');try{if(fsEl())(document.exitFullscreen||document.webkitExitFullscreen).call(document)}catch(e){}fullSync();return}
+    var rq=st.requestFullscreen||st.webkitRequestFullscreen,done=function(){st.classList.add('cp-full');fullSync()};
+    try{if(rq){var p=rq.call(st);if(p&&p.then)p.then(fullSync,done);else fullSync()}else done()}catch(e){done()}
+  }
+  function fullSync(){var st=document.getElementById('cpStage'),b=document.getElementById('cpFullBtn');if(!st)return;var on=fsEl()===st||st.classList.contains('cp-full');st.classList.toggle('cp-fs',on);if(b)b.textContent=on?'Keluar layar penuh':'Layar penuh';setTimeout(paint,60)}
+  document.addEventListener('fullscreenchange',fullSync);
+  document.addEventListener('keydown',function(e){var st=document.getElementById('cpStage');if(e.key==='Escape'&&st&&st.classList.contains('cp-full')&&!document.querySelector('.cp-modal')){st.classList.remove('cp-full');fullSync()}});
+  function leaveFull(){var st=document.getElementById('cpStage');if(st&&(fsEl()||st.classList.contains('cp-full')))fullToggle()}
+
+  /* ---------- interaksi ---------- */
+  var qT=0;
+  view.addEventListener('input',function(e){
+    if(e.target.id==='cpQ'){clearTimeout(qT);qT=setTimeout(function(){CP.q=e.target.value;var g=document.getElementById('cpGrid');if(g)g.scrollTop=0;layout()},220)}
+    else if(e.target.id==='cpAFind'){
+      var q=e.target.value.trim().toLowerCase(),box=document.getElementById('cpAList'),out=[];
+      if(q.length>=2){var A=CP.model.acts;for(var i=0;i<A.length&&out.length<8;i++){if(i!==CP.sel&&(A[i][1]+' '+A[i][2]).toLowerCase().indexOf(q)>=0)out.push('<button type="button" data-addl="'+E(A[i][0])+'"><b>'+E(A[i][1])+'</b> '+E(A[i][2])+' <small>'+D(sOf(A[i]))+' – '+D(fOf(A[i]))+'</small></button>')}}
+      box.innerHTML=out.join('')||(q.length>=2?'<span class="cp-note">Tidak ada aktivitas yang cocok.</span>':'');
+    }
+  });
+  view.addEventListener('change',function(e){
+    var t=e.target;
+    if(t.id==='cpLevel'){CP.level=t.value==='all'?'all':+t.value;setLevel(CP.level);layout()}
+    else if(t.id==='cpZoom'){CP.zoom=t.value;layout()}
+    else if(t.id==='cpCrit'){CP.critOnly=t.checked;layout()}
+    else if(t.id==='cpLinks'){CP.links=t.checked;paint()}
+    else if(t.id==='cpBase'){CP.showBase=t.checked;paint()}
+  });
+  view.addEventListener('click',function(e){
+    var t=e.target,b=t.closest('[data-cp]'),s=CP.sim;
+    if(b){var k=b.getAttribute('data-cp');
+      if(k==='import'){leaveFull();openImport()}else if(k==='rollback')rollback(b);else if(k==='history')history();else if(k==='delete')removeAll(b);else if(k==='full')fullToggle();else if(k==='export')exportDlg();else if(k==='status')statusDlg();
+      else if(k==='sim')simStart();else if(k==='simExit'){if(!simCount())simEnd();else ask({title:'Buang simulasi?',body:'Semua perubahan simulasi ('+simCount()+') akan dibuang. Jadwal tersimpan tidak berubah.',ok:'Buang simulasi',danger:true}).then(function(v){if(v!==null)simEnd()})}else if(k==='simSave')simSave(b);
+      else if(k==='editApply'&&s){var x=CP.model.acts[CP.sel],o=x._o||x,du=document.getElementById('cpEDur'),fl=document.getElementById('cpEFloor'),id=x[0];
+        if(du){var v=Math.round(+du.value);if(v>=1&&v!==span(CP.base.acts[CP.cpm.index[id]]))s.dur[id]=v;else delete s.dur[id]}
+        if(fl&&fl.value&&fl.value!==sOf(o))s.floor[id]=fl.value;else delete s.floor[id];
+        apply(false)}
+      return}
+    var u=t.closest('[data-undo]');if(u&&s){var kind=u.getAttribute('data-undo'),key=u.getAttribute('data-k');if(kind==='add')s.add.splice(+key,1);else delete s[kind][key];apply(false);return}
+    var lo=t.closest('[data-loff]');if(lo&&s){var kk=lo.getAttribute('data-loff'),ai=-1;s.add.forEach(function(l,i){if(lkey(l)===kk)ai=i});if(ai>=0)s.add.splice(ai,1);else if(s.on[kk])delete s.on[kk];else s.off[kk]=1;apply(false);return}
+    var ln=t.closest('[data-lon]');if(ln&&s){var k2=ln.getAttribute('data-lon'),p2=k2.split('>');if(reaches(effLinks(),p2[1],p2[0])){tell('Hubungan ini membuat urutan melingkar, jadi tidak bisa diaktifkan.');return}if(s.off[k2])delete s.off[k2];else s.on[k2]=1;apply(false);return}
+    var al=t.closest('[data-addl]');if(al&&s){simAdd(al.getAttribute('data-addl'));return}
+    var j=t.closest('[data-jump]');if(j){select(+j.getAttribute('data-jump'),true);return}
+    var row=t.closest('.cp-row');if(!row)return;
+    if(row.hasAttribute('data-w')){var id2=row.getAttribute('data-w'),f=CP.q||CP.critOnly;if(f)CP.open[id2]=CP.open[id2]===0?1:0;else if(CP.open[id2])delete CP.open[id2];else CP.open[id2]=1;layout()}
+    else select(+row.getAttribute('data-a'),false);
+  });
+  function simCount(){var s=CP.sim;return s?Object.keys(s.dur).length+Object.keys(s.floor).length+s.add.length+Object.keys(s.off).length+Object.keys(s.on).length:0}
+  function rollback(btn){
+    ask({title:'Batalkan revisi terakhir?',body:'Jadwal kembali ke revisi sebelumnya. <b>Revisi '+CP.data.rev.no+'</b> yang aktif sekarang akan dihapus dan tidak bisa dikembalikan.',ok:'Batalkan revisi',danger:true}).then(function(v){
+      if(v===null)return;
+      btn.disabled=true;run('msCpmRollback',[tok(),CP.pid],function(){load(CP.pid)},function(m){btn.disabled=false;tell(m)});
+    });
+  }
+  /* hapus seluruh jadwal hasil import proyek ini dari database (semua revisi, hubungan manual, baseline) */
+  function removeAll(btn){
+    var m=CP.base,nm=(pj&&pj.selectedOptions&&pj.selectedOptions[0]&&pj.selectedOptions[0].textContent)||CP.pid;
+    ask({title:'Hapus jadwal CPM?',body:'Seluruh jadwal CPM proyek <b>'+E(nm)+'</b> akan dihapus dari database:<ul><li>semua revisi tersimpan ('+N(m.acts.length)+' aktivitas, '+N(m.linksAll.length)+' hubungan)</li><li>hubungan manual</li><li>baseline pembanding</li></ul><p style="margin:10px 0 0">Tindakan ini tidak bisa dibatalkan. File XML asli di komputer Anda tidak terpengaruh dan bisa diimport lagi.</p>',ok:'Hapus jadwal',danger:true}).then(function(v){
+      if(v===null)return;
+      btn.disabled=true;btn.textContent='Menghapus…';
+      run('msCpmDelete',[tok(),CP.pid],function(){load(CP.pid)},function(e){btn.disabled=false;btn.textContent='Hapus jadwal';tell(e)});
+    });
+  }
+  function modal(title,body,foot){
+    var ov=document.createElement('div');ov.className='cp-modal';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-label',title);
+    ov.innerHTML='<div class="cp-dlg"><header><h3>'+E(title)+'</h3><button type="button" class="cp-btn" data-x>Tutup</button></header><div class="bd">'+(body||'')+'</div><footer>'+(foot||'')+'</footer></div>';
+    (fsEl()||document.body).appendChild(ov);return ov;
+  }
+  /* dialog konfirmasi / pesan bergaya dashboard (pengganti confirm, prompt, alert bawaan browser) */
+  function ask(o){return new Promise(function(res){
+    var ov=modal(o.title,'<div class="cp-ask">'+o.body+'</div>'+(o.input?'<label class="cp-askin">'+E(o.input)+'<input type="text" id="cpAskIn" maxlength="140" autocomplete="off"></label>':''),(o.info?'':'<button type="button" class="cp-btn" data-no>Batal</button>')+'<button type="button" class="cp-btn '+(o.danger?'cp-dangerfill':'pri')+'" data-yes>'+E(o.ok||'OK')+'</button>');
+    ov.classList.add('cp-small');var hx=ov.querySelector('header [data-x]');if(hx)hx.remove();
+    var inp=ov.querySelector('#cpAskIn');function key(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();done(o.info?true:null)}else if(e.key==='Enter'&&inp&&e.target===inp){e.preventDefault();done(inp.value.trim())}}
+    function done(v){document.removeEventListener('keydown',key,true);ov.remove();res(v)}
+    document.addEventListener('keydown',key,true);
+    ov.addEventListener('click',function(e){if(e.target.closest('[data-yes]'))done(inp?inp.value.trim():true);else if(e.target===ov||e.target.closest('[data-no]'))done(o.info?true:null)});
+    setTimeout(function(){var f=inp||ov.querySelector(o.danger?'[data-no]':'[data-yes]')||ov.querySelector('[data-yes]');if(f)f.focus()},30);
+  })}
+  function tell(msg){return ask({title:'Tidak berhasil',body:E(msg),ok:'Tutup',info:true})}
+  function history(){
+    var ST={AKTIF:'Aktif',ARSIP:'Sebelumnya',DIBUANG:'Diganti',DIBATALKAN:'Dibatalkan',DIHAPUS:'Dihapus'};
+    var ov=modal('Riwayat revisi','<table class="cp-t cp-hist"><tr><th>Rev</th><th>Status</th><th>Sumber</th><th>File / catatan</th><th>Oleh</th><th>Waktu</th><th>Aktivitas</th><th>Hubungan</th></tr>'+(CP.data.revs||[]).map(function(r){return '<tr><td>'+r.no+'</td><td>'+E(ST[r.status]||r.status)+'</td><td>'+E(SRC[r.source]||r.source)+'</td><td>'+E(r.file)+'</td><td>'+E(r.by)+'</td><td class="k">'+E(r.at)+'</td><td>'+N(r.nActs)+'</td><td>'+N(r.nLinks)+'</td></tr>'}).join('')+'</table><p class="cp-note">Isi lengkap hanya disimpan untuk revisi aktif dan satu revisi sebelumnya. Baseline pembanding diambil dari revisi '+(CP.data.baseRev||'—')+'.</p>');
+    ov.addEventListener('click',function(e){if(e.target===ov||e.target.closest('[data-x]'))ov.remove()});
+  }
+
+  /* ---------- perbandingan revisi (per kode aktivitas) ---------- */
+  function diffModels(o,n,oc,nc){
+    var om={},nm={},oid={},nid={};
+    o.acts.forEach(function(a,i){if(!om[a[1]])om[a[1]]={a:a,i:i};oid[a[0]]=a[1]});n.acts.forEach(function(a,i){if(!nm[a[1]])nm[a[1]]={a:a,i:i};nid[a[0]]=a[1]});
+    var R={added:[],removed:[],changed:[],la:0,lr:0,lc:0,newCrit:0};
+    n.acts.forEach(function(a,i){var x=om[a[1]];if(!x){R.added.push(a);return}
+      var ds=dd(sOf(a),sOf(x.a)),df=dd(fOf(a),fOf(x.a));if(ds||df||a[5]!==x.a[5]||a[2]!==x.a[2])R.changed.push({a:a,o:x.a,ds:ds,df:df});
+      if(nc.rows[i].crit&&!oc.rows[x.i].crit)R.newCrit++});
+    o.acts.forEach(function(a){if(!nm[a[1]])R.removed.push(a)});
+    R.changed.sort(function(x,y){return Math.abs(y.df)-Math.abs(x.df)||Math.abs(y.ds)-Math.abs(x.ds)});
+    var ol={},nl={};o.links.forEach(function(l){ol[oid[l[0]]+'>'+oid[l[1]]]=l[2]+'|'+l[3]});n.links.forEach(function(l){nl[nid[l[0]]+'>'+nid[l[1]]]=l[2]+'|'+l[3]});
+    Object.keys(nl).forEach(function(k){if(ol[k]===undefined)R.la++;else if(ol[k]!==nl[k])R.lc++});Object.keys(ol).forEach(function(k){if(nl[k]===undefined)R.lr++});
+    return R;
+  }
+  /* hubungan manual / nonaktif pada revisi aktif dibawa ke file baru (dicocokkan lewat kode aktivitas) */
+  function carry(m){
+    var b=CP.base,code={},byCode={},out={links:m.links.map(function(l){return l.slice(0,4)}),man:0,off:0,lost:0};
+    if(!b)return out;
+    b.acts.forEach(function(a){code[a[0]]=a[1]});m.acts.forEach(function(a){if(!byCode[a[1]])byCode[a[1]]=a[0]});
+    var pair={};out.links.forEach(function(l,i){pair[l[0]+'>'+l[1]]=i});
+    b.linksAll.forEach(function(l){
+      var p=byCode[code[l[0]]],s=byCode[code[l[1]]],i;
+      if(l[4]==='MANUAL'&&l[5]!=='NONAKTIF'){if(!p||!s){out.lost++;return}i=pair[p+'>'+s];var row=[p,s,l[2],l[3],'MANUAL','DISETUJUI',l[6],l[7],l[8]];if(i!==undefined)out.links[i]=row;else{pair[p+'>'+s]=out.links.length;out.links.push(row)}out.man++}
+      else if(l[5]==='NONAKTIF'&&l[4]!=='MANUAL'){if(!p||!s)return;i=pair[p+'>'+s];if(i!==undefined&&out.links[i][2]===l[2]&&out.links[i].length===4){out.links[i]=out.links[i].concat(['IMPORT','NONAKTIF',l[6],l[7],l[8]]);out.off++}}
+    });
+    return out;
+  }
+
+  /* ---------- import XML ---------- */
+  function openImport(){
+    var pid=CP.pid,model=null,file=null,busy=false,cr=null,ov=modal('Import jadwal XML','','');
+    var bd=ov.querySelector('.bd'),ft=ov.querySelector('footer');
+    function close(){if(busy)return;ov.remove()}
+    ov.addEventListener('click',function(e){if(e.target===ov||e.target.closest('[data-x]'))close()});
+    ov.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
+    function pick(msg){
+      model=null;
+      bd.innerHTML=(msg?'<div class="cp-msg">'+E(msg)+'</div>':'')+'<label class="cp-drop" id="cpDrop"><b>Pilih file XML jadwal</b><span>Primavera P6 (Primavera PM XML) atau MS Project (XML Format). Bisa juga seret file ke sini.</span><input type="file" accept=".xml,text/xml,application/xml" hidden></label><p class="cp-note">File dibaca di browser ini; hanya aktivitas, WBS, tanggal, predecessor, dan kalender kerja yang dikirim ke dashboard. Resource dan biaya tidak diambil.</p>';
+      ft.innerHTML='<button type="button" class="cp-btn" data-x>Batal</button>';
+      var dz=bd.querySelector('#cpDrop'),inp=dz.querySelector('input');
+      inp.addEventListener('change',function(){if(inp.files[0])read(inp.files[0])});
+      ['dragenter','dragover'].forEach(function(t){dz.addEventListener(t,function(e){e.preventDefault();dz.classList.add('over')})});
+      ['dragleave','drop'].forEach(function(t){dz.addEventListener(t,function(e){e.preventDefault();dz.classList.remove('over')})});
+      dz.addEventListener('drop',function(e){var f=e.dataTransfer&&e.dataTransfer.files[0];if(f)read(f)});
+    }
+    function read(f){
+      file=f;busy=true;
+      bd.innerHTML='<div><b>'+E(f.name)+'</b> <span class="cp-note">· '+(f.size/1048576).toFixed(1)+' MB</span></div><div class="cp-prog"><i id="cpPg"></i></div><p class="cp-note" id="cpPt">Membaca file…</p>';ft.innerHTML='';
+      var pg=bd.querySelector('#cpPg'),pt=bd.querySelector('#cpPt');
+      MSC.parseFile({size:f.size,read:function(s,e){return f.slice(s,e).arrayBuffer()}},function(p){pg.style.width=Math.round(p*100)+'%';pt.textContent='Membaca file… '+Math.round(p*100)+'%'})
+        .then(function(m){busy=false;m.fileName=f.name;model=m;preview()})
+        .catch(function(e){busy=false;pick((e&&e.message)||'File tidak bisa dibaca.')});
+    }
+    function list(title,n,rows){return n?'<details class="cp-dt"><summary>'+title+' <b>'+N(n)+'</b></summary><table class="cp-t">'+rows.join('')+'</table>'+(n>rows.length?'<p class="cp-note">Menampilkan '+rows.length+' dari '+N(n)+'.</p>':'')+'</details>':''}
+    function preview(){
+      var m=model,v=MSC.validate(m),mn='',mx='',wm={};
+      m.acts.forEach(function(a){var s=sOf(a),f=fOf(a);if(s&&(!mn||s<mn))mn=s;if(f&&f>mx)mx=f});
+      m.wbs.forEach(function(w){wm[w[0]]=w});var maxL=0;m.wbs.forEach(function(w){var l=1,p=wm[w[1]];while(p&&l<50){l++;p=wm[p[1]]}if(l>maxL)maxL=l});
+      var wd=m.cal.work.filter(function(x){return x}).length,cmp='',extra=[];
+      cr=carry(m);
+      if(CP.base){
+        /* bandingkan terhadap jadwal tersimpan (tanpa simulasi) */
+        var ob={acts:CP.base.acts,links:CP.base.links,cal:CP.base.cal,dataDate:CP.base.dataDate},oc=MSC.cpm(ob),merged={acts:m.acts,links:cr.links.filter(function(l){return l[5]!=='NONAKTIF'}).map(function(l){return l.slice(0,4)}),cal:m.cal,dataDate:m.dataDate},nc=MSC.cpm(merged);
+        if(nc.cycle.length){cr={links:m.links.map(function(l){return l.slice(0,4)}),man:0,off:0,lost:cr.man+cr.lost};merged.links=cr.links;nc=MSC.cpm(merged);extra.push({lv:'warn',t:'Hubungan manual dari revisi aktif membuat urutan melingkar di file baru, jadi tidak dibawa.'})}
+        var of='';ob.acts.forEach(function(a){var f=fOf(a);if(f>of)of=f});
+        var df=diffModels(ob,merged,oc,nc),dfin=dd(mx,of),dcr=nc.critical-oc.critical;
+        var rowA=function(a){return '<tr><td class="k">'+E(a[1])+'</td><td>'+E(a[2])+'</td><td class="k">'+D(sOf(a))+' – '+D(fOf(a))+'</td></tr>'};
+        cmp='<h4 class="cp-h4">Perbandingan dengan revisi '+CP.data.rev.no+' yang aktif</h4>'+
+          '<div class="cp-sum"><div><small>Selesai proyek</small><b class="'+(dfin>0?'bad':dfin<0?'ok':'')+'">'+D(of)+' → '+D(mx)+(dfin?' · '+sg(dfin)+' hari':'')+'</b></div><div><small>Lintasan kritis</small><b>'+N(oc.critical)+' → '+N(nc.critical)+(dcr?' · '+sg(dcr):'')+'</b></div><div><small>Baru masuk kritis</small><b>'+N(df.newCrit)+' aktivitas</b></div>'+
+          '<div><small>Aktivitas</small><b>+'+N(df.added.length)+' · −'+N(df.removed.length)+' · '+N(df.changed.length)+' berubah</b></div><div><small>Hubungan</small><b>+'+N(df.la)+' · −'+N(df.lr)+' · '+N(df.lc)+' berubah</b></div><div><small>Hubungan manual</small><b>'+(cr.man||cr.off||cr.lost?cr.man+' dibawa'+(cr.off?' · '+cr.off+' tetap nonaktif':'')+(cr.lost?' · '+cr.lost+' gugur':''):'tidak ada')+'</b></div></div>'+
+          list('Aktivitas berubah tanggal atau durasi',df.changed.length,df.changed.slice(0,120).map(function(c){return '<tr><td class="k">'+E(c.a[1])+'</td><td>'+E(c.a[2])+'</td><td class="k">'+D(sOf(c.o))+' – '+D(fOf(c.o))+'</td><td class="k">→ '+D(sOf(c.a))+' – '+D(fOf(c.a))+'</td><td class="k'+(c.df>0?' cr':'')+'">'+(c.df?sg(c.df)+' hr':c.ds?'mulai '+sg(c.ds):'durasi')+'</td></tr>'}))+
+          list('Aktivitas baru',df.added.length,df.added.slice(0,120).map(rowA))+list('Aktivitas dihapus',df.removed.length,df.removed.slice(0,120).map(rowA))+
+          (cr.lost?'<p class="cp-note">'+cr.lost+' hubungan manual gugur karena aktivitasnya tidak ada lagi di file baru.</p>':'')+
+          '<p class="cp-note">Perubahan durasi atau tanggal yang dulu disimpan dari mode simulasi diganti oleh tanggal di file baru. Aktivitas dicocokkan lewat kode.</p>'+
+          '<label class="cp-chk"><input type="checkbox" id="cpNewBase"> Jadikan baseline baru (misalnya revisi resmi setelah addendum). Kalau tidak dicentang, baseline pembanding tetap dari revisi '+(CP.data.baseRev||CP.data.rev.no)+'.</label>';
+      }
+      var vl=v.list.concat(extra);
+      bd.innerHTML='<div><b>'+E(file.name)+'</b> <span class="cp-note">· '+E(SRC[m.source])+(m.projName?' · '+E(m.projName):'')+'</span></div>'+
+        '<div class="cp-sum"><div><small>Aktivitas</small><b>'+N(m.acts.length)+'</b></div><div><small>Hubungan</small><b>'+N(m.links.length)+'</b></div><div><small>WBS</small><b>'+N(m.wbs.length)+' · '+maxL+' level</b></div>'+
+        '<div><small>Rentang jadwal</small><b>'+D(mn)+' – '+D(mx)+'</b></div><div><small>Status file s.d.</small><b>'+D(m.statusDate||m.dataDate)+'</b></div><div><small>Kalender</small><b>'+wd+' hari/minggu · '+m.cal.hol.length+' libur</b></div></div>'+cmp+
+        '<ul class="cp-val">'+(vl.length?vl.map(function(x){return '<li class="'+x.lv+'">'+E(x.t)+'</li>'}).join(''):'<li class="ok">Tidak ada masalah yang ditemukan.</li>')+'</ul>'+
+        (v.blocked?'<div class="cp-msg">File belum bisa disimpan. Perbaiki masalah bertanda merah di jadwal sumber, lalu ekspor ulang.</div>':'<p class="cp-note">Disimpan sebagai revisi baru untuk proyek <b>'+E(pid)+'</b>. Revisi yang aktif sekarang tetap tersimpan satu langkah, sehingga import ini bisa dibatalkan.</p>');
+      ft.innerHTML='<button type="button" class="cp-btn" id="cpAgain">Pilih file lain</button>'+(v.blocked?'':'<button type="button" class="cp-btn pri" id="cpSave">Simpan sebagai revisi baru</button>');
+      ft.querySelector('#cpAgain').onclick=function(){pick()};
+      var sv=ft.querySelector('#cpSave');if(sv)sv.onclick=save;
+    }
+    function save(){
+      var m=model,nb=bd.querySelector('#cpNewBase'),opts={baseline:!!(nb&&nb.checked)},links=cr?cr.links:m.links;busy=true;
+      bd.innerHTML='<div><b>Menyimpan jadwal…</b></div><div class="cp-prog"><i id="cpPg"></i></div><p class="cp-note" id="cpPt">Menyiapkan revisi…</p><p class="cp-note">Jangan tutup halaman sampai selesai.</p>';ft.innerHTML='';
+      var pg=bd.querySelector('#cpPg'),pt=bd.querySelector('#cpPt'),jobs=[],total=m.wbs.length+m.acts.length+links.length,sent=0,rev=0;
+      function cut(kind,rows,size,label){for(var i=0;i<rows.length;i+=size)jobs.push({k:kind,r:rows.slice(i,i+size),l:label})}
+      cut('WBS',m.wbs,2500,'WBS');cut('ACT',m.acts,1200,'aktivitas');cut('LINK',links,2500,'hubungan');
+      function fail(msg){busy=false;bd.innerHTML='<div class="cp-msg">'+E(msg)+'</div><p class="cp-note">Jadwal yang aktif tidak berubah. Silakan coba lagi.</p>';ft.innerHTML='<button type="button" class="cp-btn" data-x>Tutup</button><button type="button" class="cp-btn pri" id="cpRetry">Coba lagi</button>';ft.querySelector('#cpRetry').onclick=save}
+      function next(){
+        if(!jobs.length){pt.textContent='Mengaktifkan revisi…';run('msCpmImportCommit',[tok(),pid,rev,opts],function(){busy=false;ov.remove();if(CP.pid===pid)load(pid)},fail);return}
+        var j=jobs.shift();pt.textContent='Menyimpan '+j.l+'… '+N(sent)+' / '+N(total)+' baris';
+        run('msCpmImportChunk',[tok(),pid,rev,j.k,j.r],function(){sent+=j.r.length;pg.style.width=Math.round(sent/total*100)+'%';next()},fail);
+      }
+      run('msCpmImportBegin',[tok(),pid,{source:m.source,fileName:m.fileName,projName:m.projName,dataDate:m.dataDate,statusDate:m.statusDate,cal:m.cal,nWbs:m.wbs.length,nActs:m.acts.length,nLinks:links.length}],function(r){rev=r.rev;next()},fail);
+    }
+    pick();
+  }
+
+  /* ---------- Tahap 3: progres menurut bacaan XML, forecast selesai (rentang + riwayat mingguan), ekspor Gantt ---------- */
+  var BID=[['ENG','Engineering',/ENGINEERING|ENJINIRING|REKAYASA/i],['PROC','Procurement',/PROCUREMENT|PENGADAAN/i],['CONS','Construction',/CONSTRUCTION|KONSTRUKSI/i],['COM','Commissioning',/COMMISSIONING|KOMISIONING/i]];
+  function isoOf(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+  function P1(n){return (Math.round((+n||0)*10)/10).toLocaleString('id-ID',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'}
+  function S2(n){return n===null||n===undefined||!isFinite(n)?'—':(Math.round(n*100)/100).toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2})}
+  /* rencana vs aktual dari isi file: bobot = durasi aktivitas (hari kerja), rencana disebar rata di antara tanggal rencana, aktual = persen selesai di file */
+  function t3(){
+    var m=CP.model;if(CP.t3&&CP.t3.m===m)return CP.t3;
+    var weighted=m.cal&&m.cal.progress,hasWeights=!!weighted&&m.acts.some(function(a){return a[15]!==''&&a[15]!=null&&Number(a[15])>0});
+    var d=CP.data,cutIso=m.statusDate||m.dataDate||isoOf(new Date()),T=MSC.parse(cutIso),useBl=!!(CP.hasBl&&d.baseRev&&d.rev&&+d.baseRev<+d.rev.no);
+    var top={};CP.roots.forEach(function(r){(function mk(w){top[w.id]=r;w.kids.forEach(mk)})(r)});
+    var G={},groups=[],tot={w:0,pl:0,ac:0,n:0},S=[],F=[],W=[],AS=[],AE=[],AV=[],mn=null,mx=null;
+    function grp(r){var g=G[r.id];if(!g){g=G[r.id]={id:r.id,name:r.name||r.code||'Tanpa WBS',w:0,pl:0,ac:0,n:0,fin:'',bid:'',bn:''};BID.some(function(b){if(b[2].test((r.name||'')+' '+(r.code||''))){g.bid=b[0];g.bn=b[1];return true}return false});groups.push(g)}return g}
+    m.acts.forEach(function(a){
+      if(a[4]!=='T')return;var w=hasWeights?(Number(a[15])||0):(+a[5]||0);if(w<=0)return;
+      var b=useBl?CP.bl[a[1]]:null,ps=MSC.parse(b?b[0]:(a[6]||a[8])),pf=MSC.parse(b?b[1]:(a[7]||a[9]));
+      if(ps===null||pf===null)return;if(pf<ps)pf=ps;
+      var fr=T<ps?0:T>=pf?1:(T-ps+1)/(pf-ps+1),ac=a[11]?1:Math.max(0,Math.min(100,+a[12]||0))/100;
+      if(hasWeights&&a[16]!==''&&a[16]!=null)ac=Math.max(0,Number(a[16])||0)/w;
+      var g=grp(top[a[3]]||{id:'__x',name:'Tanpa WBS',code:''});
+      g.w+=w;g.pl+=w*fr;g.ac+=w*ac;g.n++;tot.w+=w;tot.pl+=w*fr;tot.ac+=w*ac;tot.n++;
+      if(!a[11]){var f=fOf(a);if(f&&f>g.fin)g.fin=f}
+      S.push(ps);F.push(pf);W.push(w);if(mn===null||ps<mn)mn=ps;if(mx===null||pf>mx)mx=pf;
+      var as=MSC.parse(a[10]);if(as!==null&&ac>0){var ae=a[11]?MSC.parse(a[11]):T;AS.push(as);AE.push(ae===null||ae<as?as:ae);AV.push(w*ac);if(as<mn)mn=as}
+    });
+    var reportedActual=weighted&&weighted.actual!=null?Number(weighted.actual):null;
+    if(weighted&&weighted.groups)groups.forEach(function(g){var q=weighted.groups[g.id];if(q&&q.actual!=null){g.reportedActual=Number(q.actual);g.reportedWeight=Number(q.weight)||g.w}});
+    var pts=[];
+    if(tot.w>0){
+      var end=Math.max(mx,T),step=Math.max(7,Math.ceil((end-mn)/130/7)*7),ts=[],t;
+      for(t=mn;t<end;t+=step)ts.push(t);ts.push(end);if(T>mn&&T<end&&ts.indexOf(T)<0)ts.push(T);ts.sort(function(x,y){return x-y});
+      ts.forEach(function(t){
+        var p=0,i,a=null;for(i=0;i<W.length;i++){if(t>=F[i])p+=W[i];else if(t>=S[i])p+=W[i]*(t-S[i]+1)/(F[i]-S[i]+1)}
+        if(t<=T){a=0;for(i=0;i<AV.length;i++){if(t>=AE[i])a+=AV[i];else if(t>=AS[i])a+=AV[i]*(t-AS[i]+1)/(AE[i]-AS[i]+1)}if(t===T)a=tot.ac}
+        pts.push([t,p/tot.w*100,a===null?null:(t===T&&reportedActual!==null?reportedActual:a/tot.w*100)]);
+      });
+    }
+    return CP.t3={m:m,cutIso:cutIso,T:T,useBl:useBl,groups:groups,tot:tot,pts:pts,plan:tot.w?tot.pl/tot.w*100:0,actual:reportedActual!==null?reportedActual:(tot.w?tot.ac/tot.w*100:0),spi:tot.pl>0?(reportedActual!==null?reportedActual/(tot.pl/tot.w*100):tot.ac/tot.pl):null,weighted:hasWeights};
+  }
+  /* forecast per kelompok WBS level 1: sisa hari menurut jadwal ÷ SPI. SPI dari progres dashboard bila kelompok dikenali sebagai bidang EPCC, selain itu dari isi file */
+  function fcast(){
+    var x=t3();if(x.fc)return x.fc;
+    var epc={};(CP.data.epc||[]).forEach(function(r){epc[r.F]=r});
+    var rows=[],o=null,l=null,p=null;
+    x.groups.forEach(function(g){
+      if(!g.fin)return;
+      var R=Math.max(0,MSC.parse(g.fin)-x.T),e=g.bid?epc[g.bid]:null,spi=null,src='—';
+      if(e&&e.plan>=1){spi=e.real/e.plan;src='Dashboard W'+e.week}
+      else if(g.w>0&&g.pl/g.w>=0.01){spi=g.ac/g.pl;src='File XML'}
+      var s=spi===null?1:Math.max(0.5,Math.min(1.25,spi));
+      var r={g:g,R:R,spi:spi,src:src,opt:x.T+Math.ceil(R/Math.max(1,s)),lik:x.T+Math.ceil(R/s),pes:x.T+Math.ceil(R/(s*0.85))};
+      rows.push(r);if(o===null||r.opt>o)o=r.opt;if(l===null||r.lik>l)l=r.lik;if(p===null||r.pes>p)p=r.pes;
+    });
+    if(o===null){o=l=p=MSC.parse(CP.finish)}
+    rows.sort(function(a,b){return b.lik-a.lik});
+    return x.fc={rows:rows,opt:MSC.fmt(o),lik:MSC.fmt(l),pes:MSC.fmt(p)};
+  }
+  function curveSvg(x){
+    var P=x.pts;if(P.length<2)return '';
+    var W=560,Hh=190,L=34,R=10,Tp=10,B=24,t0=P[0][0],t1=P[P.length-1][0],sx=function(t){return L+(t-t0)/(t1-t0||1)*(W-L-R)},sy=function(v){return Tp+(100-v)/100*(Hh-Tp-B)};
+    var pl='',ac='';P.forEach(function(q){pl+=(pl?'L':'M')+sx(q[0]).toFixed(1)+' '+sy(q[1]).toFixed(1);if(q[2]!==null)ac+=(ac?'L':'M')+sx(q[0]).toFixed(1)+' '+sy(q[2]).toFixed(1)});
+    var g='';[0,25,50,75,100].forEach(function(v){g+='<line class="gl" x1="'+L+'" x2="'+(W-R)+'" y1="'+sy(v)+'" y2="'+sy(v)+'"/><text class="ax" x="'+(L-6)+'" y="'+(sy(v)+4)+'" text-anchor="end">'+v+'</text>'});
+    var cx=sx(Math.min(Math.max(x.T,t0),t1));
+    return '<svg class="cp-curve" viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Kurva rencana dan aktual menurut file">'+g+
+      '<line class="cut" x1="'+cx+'" x2="'+cx+'" y1="'+Tp+'" y2="'+(Hh-B)+'"/>'+
+      '<path class="pl" d="'+pl+'"/>'+(ac?'<path class="ac" d="'+ac+'"/><circle class="acd" cx="'+cx+'" cy="'+sy(x.actual)+'" r="4"/>':'')+
+      (cx-L>120?'<text class="ax" x="'+L+'" y="'+(Hh-6)+'">'+D(MSC.fmt(t0))+'</text>':'')+(W-R-cx>120?'<text class="ax" x="'+(W-R)+'" y="'+(Hh-6)+'" text-anchor="end">'+D(MSC.fmt(t1))+'</text>':'')+'<text class="ax" x="'+Math.min(W-R-40,Math.max(L+40,cx))+'" y="'+(Hh-6)+'" text-anchor="middle">status '+D(x.cutIso)+'</text></svg>';
+  }
+  function t3Html(){
+    var x=t3();if(!x.tot.w)return '';
+    var d=CP.data,f=fcast(),dev=x.actual-x.plan,ref=CP.blFinish||CP.finish,refL=CP.blFinish?'baseline':'jadwal file';
+    var rowsG=x.groups.filter(function(g){return g.w>0}).map(function(g){var pl=g.pl/g.w*100,ac=g.reportedActual!=null?g.reportedActual/g.reportedWeight*100:g.ac/g.w*100,dv=ac-pl;
+      return '<tr><td><b>'+E(g.name)+'</b>'+(g.bn&&g.bn.toLowerCase()!==String(g.name).toLowerCase()?' <span class="tg">'+g.bn+'</span>':'')+'</td><td class="r">'+P1(g.reportedWeight!=null?g.reportedWeight:g.w/x.tot.w*100)+'</td><td class="r">'+P1(pl)+'</td><td class="r">'+P1(ac)+'</td><td class="r '+(dv<-0.05?'cr':'')+'">'+(dv>0?'+':dv<0?'−':'')+P1(Math.abs(dv))+'</td><td class="bar"><span class="cp-pb"><i style="width:'+Math.min(100,ac).toFixed(1)+'%"></i><u style="left:'+Math.min(100,pl).toFixed(1)+'%"></u></span></td></tr>'}).join('');
+    var dl=function(iso){var n=dd(iso,ref);return n?sg(n)+' hari dari '+refL:'sama dengan '+refL};
+    var rowsF=f.rows.map(function(r){return '<tr><td><b>'+E(r.g.name)+'</b></td><td class="r">'+N(r.R)+'</td><td class="r '+(r.spi!==null&&r.spi<0.95?'cr':'')+'">'+S2(r.spi)+'</td><td class="k">'+E(r.src)+'</td><td class="r">'+D(MSC.fmt(r.lik))+'</td></tr>'}).join('');
+    var hist=(d.fc||[]).slice(-8),hl='';
+    hist.forEach(function(h,i){var pv=i?hist[i-1]:null,n=pv?dd(h[4],pv[4]):0;hl+='<span class="cp-fch'+(n>0?' up':n<0?' dn':'')+'"><small>Minggu '+D(h[0])+'</small><b>'+D(h[4])+'</b>'+(pv?'<em>'+(n?sg(n)+' hr':'tetap')+'</em>':'<em>awal</em>')+'</span>'});
+    return '<div class="cp-t3">'+
+      '<section class="panel cp-pg" aria-label="Progres menurut bacaan XML"><header><h3>Progres menurut bacaan XML</h3><span class="m">Status file s.d. '+D(x.cutIso)+' · Revisi '+d.rev.no+(CP.sim?' · simulasi':'')+'</span></header>'+
+        '<div class="cp-pg-n"><div><small>Rencana</small><b>'+P1(x.plan)+'</b></div><div><small>Aktual</small><b class="ac">'+P1(x.actual)+'</b></div><div class="'+(dev<-0.05?'bad':'')+'"><small>Deviasi</small><b>'+(dev>0?'+':dev<0?'−':'')+P1(Math.abs(dev))+'</b></div><div class="'+(x.spi!==null&&x.spi<0.95?'bad':'')+'"><small>SPI file</small><b>'+S2(x.spi)+'</b></div></div>'+
+        curveSvg(x)+'<div class="cp-lg2"><span><i class="pl"></i>Rencana</span><span><i class="ac"></i>Aktual</span><span><i class="ct"></i>Tanggal status file</span></div>'+
+        '<table class="cp-t cp-pt"><tr><th>WBS level 1</th><th class="r">Bobot</th><th class="r">Rencana</th><th class="r">Aktual</th><th class="r">Deviasi</th><th></th></tr>'+rowsG+'</table>'+
+        '<p class="cp-note">Dihitung dari '+N(x.tot.n)+' aktivitas di file. '+(x.weighted?'Bobot dibaca dari kolom Bobot Kontrak. Aktual kumulatif mengikuti Bobot Realisasi S/D Periode Ini pada file. Rencana kumulatif merupakan estimasi berbobot dari tanggal jadwal; Bobot Rencana Periode Ini adalah tambahan periode, bukan kumulatif.':'Bobot = durasi aktivitas karena bobot khusus tidak tersedia.')+' Rencana = '+(x.useBl?'tanggal baseline Revisi '+d.baseRev:'tanggal rencana di file')+', disebar rata sepanjang durasi. Kurva historis aktual diperkirakan dari tanggal aktual; titik periode laporan mengikuti realisasi kumulatif yang tersedia di file. Angka ini pembanding, bukan progres resmi dashboard.'+(d.rev.futureActs?' <b>'+N(d.rev.futureActs)+' tanggal aktual di file jatuh setelah hari ini'+(d.rev.futureEx?' (contoh '+E(d.rev.futureEx)+')':'')+' dan diabaikan saat menentukan tanggal status.</b>':'')+(d.rev.statusRaw?' Tanggal status di file tercatat '+D(d.rev.statusRaw)+', dipakai '+D(x.cutIso)+'.':'')+'</p></section>'+
+      '<section class="panel cp-fc" aria-label="Forecast selesai"><header><h3>Forecast selesai</h3><span class="m">dihitung dari tanggal status '+D(x.cutIso)+'</span></header>'+
+        '<div class="cp-fc-n"><div><small>Optimis</small><b>'+D(f.opt)+'</b><span>'+dl(f.opt)+'</span></div><div class="mid'+(dd(f.lik,ref)>0?' bad':'')+'"><small>Paling mungkin</small><b>'+D(f.lik)+'</b><span>'+dl(f.lik)+'</span></div><div><small>Pesimis</small><b>'+D(f.pes)+'</b><span>'+dl(f.pes)+'</span></div></div>'+
+        (rowsF?'<table class="cp-t cp-pt"><tr><th>WBS level 1</th><th class="r">Sisa (hari)</th><th class="r">SPI</th><th>Sumber SPI</th><th class="r">Paling mungkin</th></tr>'+rowsF+'</table>':'<p class="cp-note">Semua aktivitas sudah selesai menurut file.</p>')+
+        '<h4 class="cp-h4">Riwayat forecast mingguan (paling mungkin)</h4>'+(hl?'<div class="cp-fchs">'+hl+'</div>':'<p class="cp-note">Belum ada riwayat. Forecast dicatat sekali per minggu saat Admin atau PIC proyek membuka tab ini.</p>')+
+        '<p class="cp-note">Sisa hari = selesai menurut jadwal − tanggal status, per WBS level 1. Paling mungkin = sisa ÷ SPI; optimis = jadwal berjalan sesuai file; pesimis = SPI turun 15% lagi. SPI dibatasi 0,50–1,25. SPI diambil dari progres dashboard (EPCC Control) bila nama WBS level 1 cocok dengan bidang Procurement, Construction, atau Commissioning dan datanya ada; selain itu dari isi file.</p>'+(d.canImport&&!CP.sim?'<label class="cp-optl">Sumber Look Ahead 3 bulan di Executive<select class="sel" id="cpLaSrc"><option value="EPCC">EPCC Control</option><option value="XML">Jadwal XML</option></select></label>':'')+'</section></div>';
+  }
+  function monday(){var d=new Date();d.setDate(d.getDate()-((d.getDay()+6)%7));return isoOf(d)}
+  function fcSave(){
+    var d=CP.data;if(!d||!d.rev||!d.canImport||CP.sim||CP.fcBusy||!CP.model)return;
+    var x=t3();if(!x.tot.w)return;
+    var f=fcast(),wk=monday(),cur=(d.fc||[]).filter(function(r){return r[0]===wk})[0];
+    if(cur&&cur[3]===f.opt&&cur[4]===f.lik&&cur[5]===f.pes&&String(cur[1])===String(d.rev.no))return;
+    CP.fcBusy=true;var pid=CP.pid;
+    run('msCpmForecastSave',[tok(),pid,{week:wk,rev:d.rev.no,cut:x.cutIso,opt:f.opt,likely:f.lik,pess:f.pes,spi:x.spi,plan:x.plan,actual:x.actual}],function(r){CP.fcBusy=false;if(pid!==CP.pid||!CP.data||!r||!r.fc)return;CP.data.fc=r.fc;if(!CP.sim)renderTop()},function(){CP.fcBusy=false});
+  }
+
+  /* ---------- ekspor Gantt: PNG atau PDF A3 (digambar ulang di kanvas, tema terang) ---------- */
+  function exportRows(mode){
+    var keep={open:CP.open,q:CP.q,crit:CP.critOnly},clr=function(){Object.keys(CP.map).forEach(function(k){delete CP.map[k]._k})},rows;
+    if(mode!=='cur'){CP.q='';CP.critOnly=mode==='crit';CP.open={};if(mode!=='crit')Object.keys(CP.map).forEach(function(k){if(mode==='all'||CP.map[k].lvl<+mode)CP.open[k]=1})}
+    clr();flatten();rows=CP.rows.slice();
+    CP.open=keep.open;CP.q=keep.q;CP.critOnly=keep.crit;clr();flatten();
+    return rows;
+  }
+  function projName(){var s=document.getElementById('project'),o=s&&s.options[s.selectedIndex];return (o&&o.value?o.text:'')||(CP.data.rev&&CP.data.rev.projName)||CP.pid}
+  function fit(c,t,w){t=String(t==null?'':t);if(c.measureText(t).width<=w)return t;var lo=0,hi=t.length;while(lo<hi){var md=(lo+hi+1)>>1;if(c.measureText(t.slice(0,md)+'…').width<=w)lo=md;else hi=md-1}return lo?t.slice(0,lo)+'…':''}
+  /* satu halaman: rows = potongan baris; G = geometri bersama */
+  function drawPage(rows,G,pg,pages,label){
+    var cv=document.createElement('canvas');cv.width=G.W;cv.height=G.top+G.head+rows.length*G.rh+G.foot;
+    var c=cv.getContext('2d'),m=CP.model,M=G.mg,x0=M+G.left,xw=G.W-M-x0,X=function(day){return x0+(day-G.t0)*G.px},y0=G.top+G.head,yb=y0+rows.length*G.rh,x=t3();
+    c.fillStyle='#fff';c.fillRect(0,0,cv.width,cv.height);c.textBaseline='middle';
+    c.fillStyle='#073b63';c.font='700 36px Arial,sans-serif';c.fillText(fit(c,'Master Schedule · '+projName(),G.W-2*M-760),M,M+24);
+    c.fillStyle='#5b7085';c.font='22px Arial,sans-serif';c.fillText(fit(c,'Revisi '+CP.data.rev.no+' · status file s.d. '+D(x.cutIso)+' · '+label+(CP.sim?' · SIMULASI':''),G.W-2*M-760),M,M+66);
+    c.textAlign='right';c.fillText('Dicetak '+D(isoOf(new Date()))+' · halaman '+pg+' dari '+pages,G.W-M,M+24);
+    c.fillText('Mulai '+D(CP.start)+' · selesai '+D(CP.finish)+' · forecast '+D(fcast().lik),G.W-M,M+66);c.textAlign='left';
+    /* kepala tabel + skala waktu */
+    c.fillStyle='#0f2b46';c.fillRect(M,G.top,G.W-2*M,G.head);
+    c.fillStyle='#fff';c.font='700 20px Arial,sans-serif';var cols=G.cols,cx=M;[['Kode',cols[0]],['Uraian',cols[1]],['Mulai',cols[2]],['Selesai',cols[3]],['%',cols[4]]].forEach(function(k,i){c.textAlign=i>1?'center':'left';c.fillText(k[0],i>1?cx+k[1]/2:cx+10,G.top+G.head/2);cx+=k[1]});c.textAlign='left';
+    var d=new Date(G.t0*864e5);
+    while(true){var day=Math.round(d.getTime()/864e5);if(day>=G.t1)break;
+      var nx=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,1)),nd=Math.min(G.t1,Math.round(nx.getTime()/864e5)),xa=X(day),w=(nd-day)*G.px,jan=d.getUTCMonth()===0;
+      c.strokeStyle=jan?'#9fb3c6':'#e3eaf1';c.lineWidth=jan?2:1;c.beginPath();c.moveTo(xa,jan?G.top:G.top+G.head/2);c.lineTo(xa,yb);c.stroke();
+      c.fillStyle='#fff';if(jan||day===G.t0){c.font='700 20px Arial,sans-serif';c.fillText(String(d.getUTCFullYear()),xa+6,G.top+G.head*0.27)}
+      if(w>=30){c.font='17px Arial,sans-serif';c.textAlign='center';c.fillText(w>=46?MON[d.getUTCMonth()]:MON[d.getUTCMonth()].charAt(0),xa+w/2,G.top+G.head*0.74);c.textAlign='left'}
+      d=nx}
+    /* baris */
+    rows.forEach(function(r,i){
+      var y=y0+i*G.rh,mid=y+G.rh/2,isW=r.a===undefined,a=isW?null:m.acts[r.a],w=r.w,ind=Math.min(r.d,8)*16;
+      if(isW){c.fillStyle=w.lvl<=1?'#c9d8e6':w.lvl===2?'#dce6f0':'#eef3f8';c.fillRect(M,y,G.W-2*M,G.rh)}
+      c.strokeStyle='#e3eaf1';c.lineWidth=1;c.beginPath();c.moveTo(M,y+G.rh);c.lineTo(G.W-M,y+G.rh);c.stroke();
+      var s=isW?w.s:sOf(a),f=isW?w.f:fOf(a),crit=!isW&&CP.cpm.rows[r.a].crit,pc=isW?(w.n?Math.round(w.done/w.n*100):0):(a[11]?100:Math.round(+a[12]||0));
+      c.fillStyle=crit?'#b3261e':'#132b43';c.font=(isW?'700 ':'')+'19px Arial,sans-serif';
+      c.fillText(fit(c,isW?w.code:a[1],cols[0]-14),M+10,mid);c.fillText(fit(c,isW?w.name:a[2],cols[1]-ind-14),M+cols[0]+10+ind,mid);
+      c.fillStyle='#5b7085';c.font='18px Arial,sans-serif';c.textAlign='center';var tx=M+cols[0]+cols[1];
+      c.fillText(s?D(s):'',tx+cols[2]/2,mid);c.fillText(f?D(f):'',tx+cols[2]+cols[3]/2,mid);c.fillText(isW?(w.n?pc+'%':''):pc+'%',tx+cols[2]+cols[3]+cols[4]/2,mid);c.textAlign='left';
+      var ps=MSC.parse(s),pf=MSC.parse(f);if(ps===null||pf===null)return;
+      if(isW){var xa=X(ps),xb=X(pf+1);c.fillStyle='#31475c';c.fillRect(xa,mid-5,Math.max(3,xb-xa),7);c.beginPath();c.moveTo(xa,mid+2);c.lineTo(xa+7,mid+2);c.lineTo(xa,mid+10);c.fill();c.beginPath();c.moveTo(xb,mid+2);c.lineTo(xb-7,mid+2);c.lineTo(xb,mid+10);c.fill();return}
+      if(G.base&&CP.bl[a[1]]){var b=CP.bl[a[1]],bs=MSC.parse(b[0]),bf=MSC.parse(b[1]);if(bs!==null&&bf!==null){c.fillStyle='#aebdcb';c.fillRect(X(bs),y+G.rh-9,Math.max(3,X(bf+1)-X(bs)),5)}}
+      if(a[4]!=='T'){var mx=X(a[4]==='F'?pf+1:ps),hh=9;c.fillStyle=crit?'#d9483f':'#8a5cc2';c.beginPath();c.moveTo(mx,mid-hh);c.lineTo(mx+hh,mid);c.lineTo(mx,mid+hh);c.lineTo(mx-hh,mid);c.closePath();c.fill();return}
+      var ba=X(ps),bw=Math.max(3,X(pf+1)-ba),bh=G.base?12:16,by=mid-bh/2-(G.base?3:0);
+      c.fillStyle=crit?'#f3b6b1':'#b9d6f2';c.fillRect(ba,by,bw,bh);
+      if(pc>0){c.fillStyle='#16875d';c.fillRect(ba,by,bw*Math.min(100,pc)/100,bh)}
+      c.strokeStyle=crit?'#d9483f':'#2b82d9';c.lineWidth=crit?2:1;c.strokeRect(ba+0.5,by+0.5,bw-1,bh-1);
+    });
+    /* garis tanggal status + hari ini, bingkai */
+    [[x.T,'#8a5cc2','status file'],[MSC.parse(isoOf(new Date())),'#d6a014','hari ini']].forEach(function(k){if(k[0]===null||k[0]<G.t0||k[0]>G.t1)return;var lx=X(k[0]);c.strokeStyle=k[1];c.lineWidth=2;c.setLineDash([8,6]);c.beginPath();c.moveTo(lx,y0);c.lineTo(lx,yb);c.stroke();c.setLineDash([])});
+    c.strokeStyle='#9fb3c6';c.lineWidth=1;c.strokeRect(M+0.5,G.top+0.5,G.W-2*M-1,yb-G.top-1);c.beginPath();c.moveTo(x0,G.top);c.lineTo(x0,yb);c.stroke();
+    /* legenda */
+    var ly=yb+G.foot/2+4,lx=M;c.font='18px Arial,sans-serif';
+    [['#b9d6f2','Belum selesai'],['#16875d','Porsi selesai'],['#f3b6b1','Lintasan kritis'],['#31475c','Ringkasan WBS'],['#8a5cc2','Milestone / tanggal status file'],['#d6a014','Hari ini']].concat(G.base?[['#aebdcb','Baseline']]:[]).forEach(function(k){c.fillStyle=k[0];c.fillRect(lx,ly-8,26,14);c.fillStyle='#5b7085';c.fillText(k[1],lx+34,ly);lx+=34+c.measureText(k[1]).width+30});
+    return cv;
+  }
+  function geom(nRows,perPage){
+    var W=3508,mg=60,cols=[230,640,130,130,80],left=cols.reduce(function(a,b){return a+b},0),f=fcast();
+    var t0=MSC.parse(CP.start)-7,t1=Math.max(MSC.parse(CP.finish),CP.blFinish?MSC.parse(CP.blFinish):0,MSC.parse(f.pes)||0)+21;
+    var d0=new Date(t0*864e5);t0=Math.round(Date.UTC(d0.getUTCFullYear(),d0.getUTCMonth(),1)/864e5);
+    return {W:W,mg:mg,cols:cols,left:left,top:mg+100,head:76,rh:34,foot:56,t0:t0,t1:t1,px:(W-2*mg-left)/(t1-t0),base:CP.showBase&&CP.hasBl,per:perPage};
+  }
+  function saveBlob(blob,name){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},2000)}
+  function loadPdfLib(){return new Promise(function(res,rej){if(window.jspdf&&window.jspdf.jsPDF)return res(window.jspdf.jsPDF);var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';s.onload=function(){window.jspdf&&window.jspdf.jsPDF?res(window.jspdf.jsPDF):rej(new Error('Pustaka PDF tidak termuat.'))};s.onerror=function(){rej(new Error('Pustaka PDF tidak bisa dimuat. Periksa koneksi internet, atau pakai format PNG.'))};document.head.appendChild(s)})}
+  function exportDlg(){
+    var lv='<option value="cur">Tampilan saat ini (sesuai baris yang terbuka dan filter)</option>',i;for(i=1;i<=CP.maxL;i++)lv+='<option value="'+i+'">Sampai WBS level '+i+'</option>';
+    lv+='<option value="crit">Hanya lintasan kritis</option><option value="all">Semua aktivitas</option>';
+    var ov=modal('Ekspor Gantt','<label class="cp-askin">Isi<select class="sel" id="cpExM" style="max-width:none">'+lv+'</select></label><label class="cp-askin">Format<select class="sel" id="cpExF" style="max-width:none"><option value="pdf">PDF ukuran A3 mendatar (banyak halaman)</option><option value="png">PNG (satu gambar)</option></select></label><p class="cp-note" id="cpExN"></p>','<button type="button" class="cp-btn" data-x>Batal</button><button type="button" class="cp-btn pri" id="cpExGo">Ekspor</button>');
+    ov.classList.add('cp-small');
+    var selM=ov.querySelector('#cpExM'),selF=ov.querySelector('#cpExF'),note=ov.querySelector('#cpExN'),go=ov.querySelector('#cpExGo'),PER=62,busy=false;
+    function info(){var n=exportRows(selM.value).length,pg=Math.max(1,Math.ceil(n/PER));note.textContent=N(n)+' baris'+(selF.value==='pdf'?' · '+pg+' halaman A3':'')+(CP.showBase&&CP.hasBl?' · dengan baseline':'')+'. Warna mengikuti tema terang agar siap cetak.';return n}
+    selM.onchange=selF.onchange=info;info();
+    ov.addEventListener('click',function(e){if(busy)return;if(e.target===ov||e.target.closest('[data-x]'))ov.remove()});
+    go.onclick=function(){
+      if(busy)return;var mode=selM.value,fmt=selF.value,rows=exportRows(mode),n=rows.length;
+      if(!n){note.textContent='Tidak ada baris untuk diekspor.';return}
+      if(fmt==='png'&&n>420){note.textContent=N(n)+' baris terlalu panjang untuk satu gambar PNG (maksimum 420). Pilih PDF atau isi yang lebih ringkas.';return}
+      if(fmt==='pdf'&&n>PER*80){note.textContent=N(n)+' baris menjadi lebih dari 80 halaman. Pilih level WBS yang lebih ringkas atau hanya lintasan kritis.';return}
+      var label=mode==='cur'?'tampilan saat ini':mode==='crit'?'hanya lintasan kritis':mode==='all'?'semua aktivitas':'sampai WBS level '+mode,name='MASTER_SCHEDULE_'+CP.pid+'_REV'+CP.data.rev.no+'_'+isoOf(new Date());
+      busy=true;go.disabled=true;
+      var fail=function(e){busy=false;go.disabled=false;note.textContent=(e&&e.message)||'Ekspor gagal.'};
+      try{
+        if(fmt==='png'){note.textContent='Menggambar…';setTimeout(function(){try{drawPage(rows,geom(n,n),1,1,label).toBlob(function(b){if(!b)return fail(new Error('Gambar terlalu besar untuk browser ini. Pakai PDF.'));saveBlob(b,name+'.png');ov.remove()},'image/png')}catch(e){fail(e)}},30);return}
+        note.textContent='Memuat pustaka PDF…';
+        loadPdfLib().then(function(J){
+          var G=geom(n,PER),pages=Math.ceil(n/PER),doc=new J({orientation:'landscape',unit:'mm',format:'a3',compress:true}),p=0;
+          (function step(){
+            try{
+              if(p>=pages){doc.save(name+'.pdf');ov.remove();return}
+              note.textContent='Menyusun halaman '+(p+1)+' dari '+pages+'…';
+              var cv=drawPage(rows.slice(p*PER,(p+1)*PER),G,p+1,pages,label);
+              if(p)doc.addPage('a3','landscape');
+              doc.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',0,0,420,420*cv.height/cv.width,undefined,'FAST');
+              p++;setTimeout(step,10);
+            }catch(e){fail(e)}
+          })();
+        }).catch(fail);
+      }catch(e){fail(e)}
+    };
+  }
+
+  /* ---------- tanggal status: tanggal aktual setelah hari ini di file diabaikan; bisa dikoreksi Admin / PIC ---------- */
+  function fixStatus(d){
+    var r=d.rev,today=isoOf(new Date()),st=r.statusDate||r.dataDate||'',mx='',n=0,ex='';
+    (d.acts||[]).forEach(function(a){[a[10],a[11]].forEach(function(v){if(!v)return;if(v>today){n++;if(!ex)ex=String(a[1]).trim()}else if(v>mx)mx=v})});
+    r.futureActs=n;r.futureEx=ex;
+    if(st&&st<=today)return;
+    if(r.dataDate&&r.dataDate<=today&&r.dataDate>mx)mx=r.dataDate;
+    r.statusRaw=st;r.statusDate=mx||today;
+  }
+  function statusDlg(){
+    var d=CP.data,today=isoOf(new Date()),cur=d.rev.statusDate||today;
+    var ov=modal('Tanggal status file','<div class="cp-ask">Tanggal status adalah batas data aktual di file (cut-off laporan kontraktor). Rencana, deviasi, forecast, dan garis status di Gantt dihitung terhadap tanggal ini.</div>'+
+      (d.rev.futureActs?'<p class="cp-note">'+N(d.rev.futureActs)+' tanggal aktual di file jatuh setelah hari ini'+(d.rev.futureEx?' (contoh aktivitas '+E(d.rev.futureEx)+')':'')+'. Tanggal seperti itu diabaikan saat menentukan tanggal status.</p>':'')+
+      '<label class="cp-askin">Tanggal status<input type="date" id="cpStIn" max="'+today+'" value="'+E(cur)+'"></label><p class="cp-note" id="cpStN"></p>','<button type="button" class="cp-btn" data-x>Batal</button><button type="button" class="cp-btn pri" id="cpStGo">Simpan</button>');
+    ov.classList.add('cp-small');var busy=false,note=ov.querySelector('#cpStN'),go=ov.querySelector('#cpStGo');
+    ov.addEventListener('click',function(e){if(!busy&&(e.target===ov||e.target.closest('[data-x]')))ov.remove()});
+    go.onclick=function(){var v=ov.querySelector('#cpStIn').value;if(!/^\d{4}-\d{2}-\d{2}$/.test(v)){note.textContent='Isi tanggal status.';return}if(v>today){note.textContent='Tanggal status tidak boleh setelah hari ini.';return}
+      busy=true;go.disabled=true;var pid=CP.pid;run('msCpmSetStatusDate',[tok(),pid,v],function(){ov.remove();if(pid===CP.pid)load(pid)},function(m){busy=false;go.disabled=false;note.textContent=m})};
+  }
+  /* ---------- ringkasan jadwal untuk Weekly, Executive, Look Ahead, dan Sena ---------- */
+  function sumBuild(){
+    var m=CP.model,d=CP.data,x=t3(),f=fcast(),today=isoOf(new Date()),hz=MSC.fmt(MSC.parse(today)+60),top={},bid={};
+    CP.roots.forEach(function(r){var b='';BID.some(function(k){if(k[2].test((r.name||'')+' '+(r.code||''))){b=k[0];return true}return false});bid[r.id]=b;(function mk(w){top[w.id]=r;w.kids.forEach(mk)})(r)});
+    var crit=[],done=0,rn=0;
+    m.acts.forEach(function(a,i){if(a[11]){done++;return}if(a[10])rn++;if(!CP.cpm.rows[i].crit)return;var s=sOf(a),fn=fOf(a);if(!s||s>hz)return;var t=top[a[3]];crit.push([a[1],a[2],t?t.name:'',s,fn,Math.round(+a[12]||0),a[10]?1:0])});
+    /* yang paling dekat dengan hari ini lebih dulu (mulai berikutnya, atau tanggal selesai bila sudah berjalan / lewat) */
+    var tdn=MSC.parse(today),near=function(r){var k=MSC.parse(r[3]>=today?r[3]:(r[4]||r[3]));return k===null?1e9:Math.abs(k-tdn)};
+    crit.sort(function(p,q){return near(p)-near(q)||(p[3]<q[3]?-1:p[3]>q[3]?1:0)});
+    var umum={sig:d.rev.no+'|'+x.cutIso+'|'+today+'|'+f.lik+'|'+CP.cpm.critical+'|'+crit.length,rev:d.rev.no,cut:x.cutIso,finish:CP.finish,blFinish:CP.blFinish||'',fc:{opt:f.opt,lik:f.lik,pes:f.pes},xml:{plan:x.plan,actual:x.actual,spi:x.spi},n:{acts:m.acts.length,done:done,run:rn,crit:CP.cpm.critical},crit:crit.slice(0,60)};
+    /* Look Ahead: grup WBS level 3 (atau lebih dangkal bila aktivitas menempel di sana), rencana kumulatif tiap akhir bulan */
+    var LV=Math.min(3,CP.maxL),gOf={},G={},list=[],mn=null;
+    CP.roots.forEach(function(r){(function wk(w,g){var gg=w.lvl<=LV?w:g;gOf[w.id]=gg;w.kids.forEach(function(k){wk(k,gg)})})(r,r)});
+    var rows=[];
+    m.acts.forEach(function(a){
+      if(a[4]!=='T')return;var w=+a[5]||0;if(w<=0)return;var gw=gOf[a[3]];if(!gw||!bid[(top[gw.id]||{}).id])return;
+      var b=x.useBl?CP.bl[a[1]]:null,ps=MSC.parse(b?b[0]:(a[6]||a[8])),pf=MSC.parse(b?b[1]:(a[7]||a[9]));if(ps===null||pf===null)return;if(pf<ps)pf=ps;
+      rows.push([gw,w,ps,pf,a[11]?1:Math.max(0,Math.min(100,+a[12]||0))/100]);if(mn===null||ps<mn)mn=ps;
+    });
+    if(mn===null)return {umum:umum,la:{m0:'',g:[]}};
+    var d0=new Date(mn*864e5),y0=d0.getUTCFullYear(),mo0=d0.getUTCMonth(),mi=function(day){var q=new Date(day*864e5);return (q.getUTCFullYear()-y0)*12+q.getUTCMonth()-mo0},me=function(i){return Math.round(Date.UTC(y0,mo0+i+1,0)/864e5)};
+    rows.forEach(function(r){
+      var gw=r[0],g=G[gw.id];if(!g){var par=CP.map[gw.parent];g=G[gw.id]={c:gw.code,n:gw.name,gc:par?par.code:'',gn:par?par.name:'',b:bid[top[gw.id].id],w:0,ac:0,pn:0,s:null,full:{},part:{},lo:1e9,hi:0};list.push(g)}
+      var w=r[1],ps=r[2],pf=r[3];g.w+=w;g.ac+=w*r[4];g.pn+=w*(x.T<ps?0:x.T>=pf?1:(x.T-ps+1)/(pf-ps+1));if(g.s===null||ps<g.s)g.s=ps;
+      for(var i=mi(ps);i<=mi(pf)+1;i++){var te=me(i);if(i<g.lo)g.lo=i;if(i>g.hi)g.hi=i;if(te>=pf){g.full[i]=(g.full[i]||0)+w;break}g.part[i]=(g.part[i]||0)+w*(te-ps+1)/(pf-ps+1)}
+    });
+    var out=list.filter(function(g){return g.w>0}).map(function(g){var pl=[],acc=0;for(var i=g.lo;i<=g.hi&&pl.length<84;i++){acc+=g.full[i]||0;pl.push(Math.round((acc+(g.part[i]||0))/g.w*1000)/10)}
+      return {c:g.c,n:g.n,gc:g.gc,gn:g.gn,b:g.b,w:Math.round(g.w*100)/100,a:Math.round(g.ac/g.w*10000)/100,p:Math.round(g.pn/g.w*10000)/100,s:MSC.fmt(g.s),k:g.lo,pl:pl}});
+    return {umum:umum,la:{m0:y0+'-'+String(mo0+1).padStart(2,'0'),g:out}};
+  }
+  function sumSave(){
+    var d=CP.data;if(!d||!d.rev||!d.canImport||CP.sim||CP.sumBusy||!CP.model)return;
+    var x=t3();if(!x.tot.w)return;
+    var s;try{s=sumBuild()}catch(e){return}
+    if(d.sumSig===s.umum.sig)return;
+    CP.sumBusy=true;var pid=CP.pid;
+    run('msCpmSummarySave',[tok(),pid,s],function(){CP.sumBusy=false;if(pid===CP.pid&&CP.data)CP.data.sumSig=s.umum.sig},function(){CP.sumBusy=false});
+  }
+  function t3Bind(){
+    var ls=document.getElementById('cpLaSrc');if(!ls)return;
+    var cur=(CP.data.opt&&CP.data.opt.la)==='XML'?'XML':'EPCC';ls.value=cur;
+    ls.onchange=function(){var v=ls.value,pid=CP.pid;ls.disabled=true;run('msCpmSetOption',[tok(),pid,{la:v}],function(){ls.disabled=false;if(pid===CP.pid&&CP.data)CP.data.opt={la:v}},function(m){ls.disabled=false;ls.value=cur;tell(m)})};
+  }
+  var first='mon';try{first=sessionStorage.getItem('pmoMsView')==='cpm'?'cpm':'mon'}catch(e){}
+  setView(first);
+})();
+</script>
+<?!= include('AccountMenu') ?>
+<?!= include('AiWidget') ?>
+</body>
+</html>
+ 
