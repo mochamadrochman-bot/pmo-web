@@ -1204,17 +1204,19 @@ window.MSC=(function(){
   }
 
   function mspHandler(){
-    var R={source:'MSP',proj:{},tasks:[],cals:[]},t=null,lk=null,bl=null,cal=null,wd=null,ex=null;
+    var R={source:'MSP',proj:{},tasks:[],cals:[],fields:[]},t=null,lk=null,bl=null,cal=null,wd=null,ex=null,ea=null;
     return {res:R,
       open:function(st,n){
         var d=st.length;
         if(d===2&&st[1]==='Tasks'&&n==='Task'){t={links:[]};return}
+        if(n==='ExtendedAttribute'&&(t||(d===2&&st[1]==='ExtendedAttributes'))){ea={};return}
         if(t){if(n==='PredecessorLink')lk={};else if(n==='Baseline')bl={};return}
         if(d===2&&st[1]==='Calendars'&&n==='Calendar'){cal={uid:'',name:'',base:0,work:[0,1,1,1,1,1,0],hol:[]};return}
         if(cal){if(n==='WeekDay')wd={};else if(n==='Exception')ex={}}
       },
       leaf:function(st,n,x){
         var d=st.length,top=st[d-1];
+        if(ea){ea[n]=x;return}
         if(t){if(lk)lk[n]=x;else if(bl)bl[n]=x;else if(d===3)t[n]=x;return}
         if(cal){
           if(wd){if(top==='WeekDay'||top==='TimePeriod')wd[n]=x}
@@ -1225,6 +1227,7 @@ window.MSC=(function(){
         if(d===1)R.proj[n]=x;
       },
       close:function(st,n){
+        if(n==='ExtendedAttribute'&&ea){if(t)(t.ext||(t.ext={}))[ea.FieldID]=ea.Value;else R.fields.push(ea);ea=null;return}
         if(t){
           if(n==='PredecessorLink'&&lk){t.links.push(lk);lk=null}
           else if(n==='Baseline'&&bl){if(!t.bl||num(bl.Number)===0)t.bl=bl;bl=null}
@@ -1247,20 +1250,25 @@ window.MSC=(function(){
     R.cals.forEach(function(c){if(String(c.uid)===String(R.proj.CalendarUID))cal=c});
     if(!cal)cal=R.cals.filter(function(c){return c.base})[0]||{work:[0,1,1,1,1,1,0],hol:[],name:'Standard'};
     var hol=[];cal.hol.forEach(function(h){var a=parse(h[0]),b=parse(h[1]);if(a===null||b===null||b<a||b-a>400)return;for(var d=a;d<=b;d++)hol.push(fmt(d))});
+    var fields={};R.fields.forEach(function(f){fields[String(f.Alias||'').toLowerCase().replace(/[^a-z0-9]/g,'')]=f.FieldID});
+    var weightId=fields.bobotkontrak,actualId=fields.bobotrealisasisdperiodeini,periodId=fields.periodelaporan;
+    function custom(t,id){var v=id&&t.ext&&t.ext[id];if(v===undefined||v==='')return null;v=Number(String(v).replace(',','.'));return isFinite(v)?v:null}
+    var report={actual:null,groups:{},basis:'custom'},rootTask=null;
     var wbs=[],acts=[],links=[],summary={},stack=[],seq=0;
     R.tasks.forEach(function(t){
       if(num(t.IsNull)||t.UID===undefined)return;
-      var lv=num(t.OutlineLevel);if(lv<=0)return;
+      var lv=num(t.OutlineLevel);if(lv<=0){if(!rootTask)rootTask=t;report.actual=custom(t,actualId);return;}
       while(stack.length&&stack[stack.length-1].lv>=lv)stack.pop();
       var parent=stack.length?stack[stack.length-1].id:'';
-      if(num(t.Summary)){var id='W'+t.UID;summary[t.UID]=1;wbs.push([id,parent,t.WBS||t.OutlineNumber||'',t.Name||'',++seq]);stack.push({lv:lv,id:id});return}
+      if(num(t.Summary)){var id='W'+t.UID;summary[t.UID]=1;if(lv===1)report.groups[id]={actual:custom(t,actualId),weight:custom(t,weightId)};wbs.push([id,parent,t.WBS||t.OutlineNumber||'',t.Name||'',++seq]);stack.push({lv:lv,id:id});return}
       var ms=num(t.Milestone)?(String(t.Start||'').slice(11,13)>='12'?'F':'M'):'T',b=t.bl||{},s=iso(t.Start),f=iso(t.Finish);
-      acts.push([String(t.UID),String(t.WBS||t.OutlineNumber||t.ID||t.UID).trim(),String(t.Name||'').trim(),parent,ms,ms==='T'?r2(isoDur(t.Duration)/mpd):0,iso(b.Start)||s,iso(b.Finish)||f,s,f,iso(t.ActualStart),iso(t.ActualFinish),r2(num(t.PercentComplete)),MSC_C[num(t.ConstraintType)]||'',iso(t.ConstraintDate)]);
+      acts.push([String(t.UID),String(t.WBS||t.OutlineNumber||t.ID||t.UID).trim(),String(t.Name||'').trim(),parent,ms,ms==='T'?r2(isoDur(t.Duration)/mpd):0,iso(b.Start)||s,iso(b.Finish)||f,s,f,iso(t.ActualStart),iso(t.ActualFinish),r2(num(t.PercentComplete)),MSC_C[num(t.ConstraintType)]||'',iso(t.ConstraintDate),custom(t,weightId),custom(t,actualId)]);
       t.links.forEach(function(l){links.push([String(l.PredecessorUID),String(t.UID),MST[num(l.Type)]||'FS',r2(num(l.LinkLag)/10/mpd)])});
     });
     var before=links.length;links=links.filter(function(l){return !summary[l[0]]&&!summary[l[1]]});
     if(before-links.length)warn.push((before-links.length)+' hubungan ke summary task dilewati (CPM memakai aktivitas saja).');
-    return {source:'MSP',projName:R.proj.Title||R.proj.Name||'',projCode:'',dataDate:iso(R.proj.StatusDate)||iso(R.proj.CurrentDate),statusDate:statusOf(acts,iso(R.proj.StatusDate)),cal:{work:cal.work,hol:hol.sort(),hpd:mpd/60,name:cal.name||''},wbs:wbs,acts:acts,links:links};
+    var reportDate='';var period=rootTask&&rootTask.ext&&rootTask.ext[periodId]||'';var pm=/(\d{1,2})\s*[-–]\s*(\d{1,2})\s+([A-Z]+)\s+(\d{4})/i.exec(period);var months=['JANUARI','FEBRUARI','MARET','APRIL','MEI','JUNI','JULI','AGUSTUS','SEPTEMBER','OKTOBER','NOVEMBER','DESEMBER'];if(pm){var mi=months.indexOf(pm[3].toUpperCase());if(mi>=0)reportDate=pm[4]+'-'+String(mi+1).padStart(2,'0')+'-'+pm[2].padStart(2,'0')}
+    return {source:'MSP',projName:R.proj.Title||R.proj.Name||'',projCode:'',dataDate:iso(R.proj.StatusDate)||iso(R.proj.CurrentDate),statusDate:reportDate||statusOf(acts,iso(R.proj.StatusDate)),cal:{work:cal.work,hol:hol.sort(),hpd:mpd/60,name:cal.name||'',progress:actualId?report:null},wbs:wbs,acts:acts,links:links};
   }
 
   /* reader: {size, read(start,end)->Promise<ArrayBuffer>} ; onProgress(0..1) */
@@ -1957,21 +1965,25 @@ window.MSC=(function(){
   /* rencana vs aktual dari isi file: bobot = durasi aktivitas (hari kerja), rencana disebar rata di antara tanggal rencana, aktual = persen selesai di file */
   function t3(){
     var m=CP.model;if(CP.t3&&CP.t3.m===m)return CP.t3;
+    var weighted=m.cal&&m.cal.progress,hasWeights=!!weighted&&m.acts.some(function(a){return a[15]!==''&&a[15]!=null&&Number(a[15])>0});
     var d=CP.data,cutIso=m.statusDate||m.dataDate||isoOf(new Date()),T=MSC.parse(cutIso),useBl=!!(CP.hasBl&&d.baseRev&&d.rev&&+d.baseRev<+d.rev.no);
     var top={};CP.roots.forEach(function(r){(function mk(w){top[w.id]=r;w.kids.forEach(mk)})(r)});
     var G={},groups=[],tot={w:0,pl:0,ac:0,n:0},S=[],F=[],W=[],AS=[],AE=[],AV=[],mn=null,mx=null;
     function grp(r){var g=G[r.id];if(!g){g=G[r.id]={id:r.id,name:r.name||r.code||'Tanpa WBS',w:0,pl:0,ac:0,n:0,fin:'',bid:'',bn:''};BID.some(function(b){if(b[2].test((r.name||'')+' '+(r.code||''))){g.bid=b[0];g.bn=b[1];return true}return false});groups.push(g)}return g}
     m.acts.forEach(function(a){
-      if(a[4]!=='T')return;var w=+a[5]||0;if(w<=0)return;
+      if(a[4]!=='T')return;var w=hasWeights?(Number(a[15])||0):(+a[5]||0);if(w<=0)return;
       var b=useBl?CP.bl[a[1]]:null,ps=MSC.parse(b?b[0]:(a[6]||a[8])),pf=MSC.parse(b?b[1]:(a[7]||a[9]));
       if(ps===null||pf===null)return;if(pf<ps)pf=ps;
       var fr=T<ps?0:T>=pf?1:(T-ps+1)/(pf-ps+1),ac=a[11]?1:Math.max(0,Math.min(100,+a[12]||0))/100;
+      if(hasWeights&&a[16]!==''&&a[16]!=null)ac=Math.max(0,Number(a[16])||0)/w;
       var g=grp(top[a[3]]||{id:'__x',name:'Tanpa WBS',code:''});
       g.w+=w;g.pl+=w*fr;g.ac+=w*ac;g.n++;tot.w+=w;tot.pl+=w*fr;tot.ac+=w*ac;tot.n++;
       if(!a[11]){var f=fOf(a);if(f&&f>g.fin)g.fin=f}
       S.push(ps);F.push(pf);W.push(w);if(mn===null||ps<mn)mn=ps;if(mx===null||pf>mx)mx=pf;
       var as=MSC.parse(a[10]);if(as!==null&&ac>0){var ae=a[11]?MSC.parse(a[11]):T;AS.push(as);AE.push(ae===null||ae<as?as:ae);AV.push(w*ac);if(as<mn)mn=as}
     });
+    var reportedActual=weighted&&weighted.actual!=null?Number(weighted.actual):null;
+    if(weighted&&weighted.groups)groups.forEach(function(g){var q=weighted.groups[g.id];if(q&&q.actual!=null){g.reportedActual=Number(q.actual);g.reportedWeight=Number(q.weight)||g.w}});
     var pts=[];
     if(tot.w>0){
       var end=Math.max(mx,T),step=Math.max(7,Math.ceil((end-mn)/130/7)*7),ts=[],t;
@@ -1979,10 +1991,10 @@ window.MSC=(function(){
       ts.forEach(function(t){
         var p=0,i,a=null;for(i=0;i<W.length;i++){if(t>=F[i])p+=W[i];else if(t>=S[i])p+=W[i]*(t-S[i]+1)/(F[i]-S[i]+1)}
         if(t<=T){a=0;for(i=0;i<AV.length;i++){if(t>=AE[i])a+=AV[i];else if(t>=AS[i])a+=AV[i]*(t-AS[i]+1)/(AE[i]-AS[i]+1)}if(t===T)a=tot.ac}
-        pts.push([t,p/tot.w*100,a===null?null:a/tot.w*100]);
+        pts.push([t,p/tot.w*100,a===null?null:(t===T&&reportedActual!==null?reportedActual:a/tot.w*100)]);
       });
     }
-    return CP.t3={m:m,cutIso:cutIso,T:T,useBl:useBl,groups:groups,tot:tot,pts:pts,plan:tot.w?tot.pl/tot.w*100:0,actual:tot.w?tot.ac/tot.w*100:0,spi:tot.pl>0?tot.ac/tot.pl:null};
+    return CP.t3={m:m,cutIso:cutIso,T:T,useBl:useBl,groups:groups,tot:tot,pts:pts,plan:tot.w?tot.pl/tot.w*100:0,actual:reportedActual!==null?reportedActual:(tot.w?tot.ac/tot.w*100:0),spi:tot.pl>0?(reportedActual!==null?reportedActual/(tot.pl/tot.w*100):tot.ac/tot.pl):null,weighted:hasWeights};
   }
   /* forecast per kelompok WBS level 1: sisa hari menurut jadwal ÷ SPI. SPI dari progres dashboard bila kelompok dikenali sebagai bidang EPCC, selain itu dari isi file */
   function fcast(){
@@ -2016,8 +2028,8 @@ window.MSC=(function(){
   function t3Html(){
     var x=t3();if(!x.tot.w)return '';
     var d=CP.data,f=fcast(),dev=x.actual-x.plan,ref=CP.blFinish||CP.finish,refL=CP.blFinish?'baseline':'jadwal file';
-    var rowsG=x.groups.filter(function(g){return g.w>0}).map(function(g){var pl=g.pl/g.w*100,ac=g.ac/g.w*100,dv=ac-pl;
-      return '<tr><td><b>'+E(g.name)+'</b>'+(g.bn&&g.bn.toLowerCase()!==String(g.name).toLowerCase()?' <span class="tg">'+g.bn+'</span>':'')+'</td><td class="r">'+P1(g.w/x.tot.w*100)+'</td><td class="r">'+P1(pl)+'</td><td class="r">'+P1(ac)+'</td><td class="r '+(dv<-0.05?'cr':'')+'">'+(dv>0?'+':dv<0?'−':'')+P1(Math.abs(dv))+'</td><td class="bar"><span class="cp-pb"><i style="width:'+Math.min(100,ac).toFixed(1)+'%"></i><u style="left:'+Math.min(100,pl).toFixed(1)+'%"></u></span></td></tr>'}).join('');
+    var rowsG=x.groups.filter(function(g){return g.w>0}).map(function(g){var pl=g.pl/g.w*100,ac=g.reportedActual!=null?g.reportedActual/g.reportedWeight*100:g.ac/g.w*100,dv=ac-pl;
+      return '<tr><td><b>'+E(g.name)+'</b>'+(g.bn&&g.bn.toLowerCase()!==String(g.name).toLowerCase()?' <span class="tg">'+g.bn+'</span>':'')+'</td><td class="r">'+P1(g.reportedWeight!=null?g.reportedWeight:g.w/x.tot.w*100)+'</td><td class="r">'+P1(pl)+'</td><td class="r">'+P1(ac)+'</td><td class="r '+(dv<-0.05?'cr':'')+'">'+(dv>0?'+':dv<0?'−':'')+P1(Math.abs(dv))+'</td><td class="bar"><span class="cp-pb"><i style="width:'+Math.min(100,ac).toFixed(1)+'%"></i><u style="left:'+Math.min(100,pl).toFixed(1)+'%"></u></span></td></tr>'}).join('');
     var dl=function(iso){var n=dd(iso,ref);return n?sg(n)+' hari dari '+refL:'sama dengan '+refL};
     var rowsF=f.rows.map(function(r){return '<tr><td><b>'+E(r.g.name)+'</b></td><td class="r">'+N(r.R)+'</td><td class="r '+(r.spi!==null&&r.spi<0.95?'cr':'')+'">'+S2(r.spi)+'</td><td class="k">'+E(r.src)+'</td><td class="r">'+D(MSC.fmt(r.lik))+'</td></tr>'}).join('');
     var hist=(d.fc||[]).slice(-8),hl='';
@@ -2027,7 +2039,7 @@ window.MSC=(function(){
         '<div class="cp-pg-n"><div><small>Rencana</small><b>'+P1(x.plan)+'</b></div><div><small>Aktual</small><b class="ac">'+P1(x.actual)+'</b></div><div class="'+(dev<-0.05?'bad':'')+'"><small>Deviasi</small><b>'+(dev>0?'+':dev<0?'−':'')+P1(Math.abs(dev))+'</b></div><div class="'+(x.spi!==null&&x.spi<0.95?'bad':'')+'"><small>SPI file</small><b>'+S2(x.spi)+'</b></div></div>'+
         curveSvg(x)+'<div class="cp-lg2"><span><i class="pl"></i>Rencana</span><span><i class="ac"></i>Aktual</span><span><i class="ct"></i>Tanggal status file</span></div>'+
         '<table class="cp-t cp-pt"><tr><th>WBS level 1</th><th class="r">Bobot</th><th class="r">Rencana</th><th class="r">Aktual</th><th class="r">Deviasi</th><th></th></tr>'+rowsG+'</table>'+
-        '<p class="cp-note">Dihitung dari '+N(x.tot.n)+' aktivitas di file. Bobot = durasi aktivitas (file tidak membawa bobot progres). Rencana = '+(x.useBl?'tanggal baseline Revisi '+d.baseRev:'tanggal rencana di file')+', disebar rata sepanjang durasi. Aktual = persen selesai aktivitas di file; kurva aktual diperkirakan dari tanggal aktual. Angka ini pembanding, bukan progres resmi dashboard.'+(d.rev.futureActs?' <b>'+N(d.rev.futureActs)+' tanggal aktual di file jatuh setelah hari ini'+(d.rev.futureEx?' (contoh '+E(d.rev.futureEx)+')':'')+' dan diabaikan saat menentukan tanggal status.</b>':'')+(d.rev.statusRaw?' Tanggal status di file tercatat '+D(d.rev.statusRaw)+', dipakai '+D(x.cutIso)+'.':'')+'</p></section>'+
+        '<p class="cp-note">Dihitung dari '+N(x.tot.n)+' aktivitas di file. '+(x.weighted?'Bobot dibaca dari kolom Bobot Kontrak. Aktual kumulatif mengikuti Bobot Realisasi S/D Periode Ini pada file. Rencana kumulatif merupakan estimasi berbobot dari tanggal jadwal; Bobot Rencana Periode Ini adalah tambahan periode, bukan kumulatif.':'Bobot = durasi aktivitas karena bobot khusus tidak tersedia.')+' Rencana = '+(x.useBl?'tanggal baseline Revisi '+d.baseRev:'tanggal rencana di file')+', disebar rata sepanjang durasi. Kurva historis aktual diperkirakan dari tanggal aktual; titik periode laporan mengikuti realisasi kumulatif yang tersedia di file. Angka ini pembanding, bukan progres resmi dashboard.'+(d.rev.futureActs?' <b>'+N(d.rev.futureActs)+' tanggal aktual di file jatuh setelah hari ini'+(d.rev.futureEx?' (contoh '+E(d.rev.futureEx)+')':'')+' dan diabaikan saat menentukan tanggal status.</b>':'')+(d.rev.statusRaw?' Tanggal status di file tercatat '+D(d.rev.statusRaw)+', dipakai '+D(x.cutIso)+'.':'')+'</p></section>'+
       '<section class="panel cp-fc" aria-label="Forecast selesai"><header><h3>Forecast selesai</h3><span class="m">dihitung dari tanggal status '+D(x.cutIso)+'</span></header>'+
         '<div class="cp-fc-n"><div><small>Optimis</small><b>'+D(f.opt)+'</b><span>'+dl(f.opt)+'</span></div><div class="mid'+(dd(f.lik,ref)>0?' bad':'')+'"><small>Paling mungkin</small><b>'+D(f.lik)+'</b><span>'+dl(f.lik)+'</span></div><div><small>Pesimis</small><b>'+D(f.pes)+'</b><span>'+dl(f.pes)+'</span></div></div>'+
         (rowsF?'<table class="cp-t cp-pt"><tr><th>WBS level 1</th><th class="r">Sisa (hari)</th><th class="r">SPI</th><th>Sumber SPI</th><th class="r">Paling mungkin</th></tr>'+rowsF+'</table>':'<p class="cp-note">Semua aktivitas sudah selesai menurut file.</p>')+

@@ -2692,7 +2692,7 @@ function gabungSemuaHalamanHTML() {
 const MSCPM = {
   REV: ['MS_REVISI', ['PROYEK_ID','REVISI','STATUS','SUMBER','NAMA_FILE','NAMA_PROYEK_FILE','DATA_DATE','STATUS_DATE','JML_WBS','JML_AKTIVITAS','JML_LINK','KALENDER_JSON','DIUNGGAH_OLEH','WAKTU']],
   WBS: ['MS_WBS', ['PROYEK_ID','REVISI','WBS_ID','INDUK_ID','KODE','NAMA','URUT']],
-  ACT: ['MS_AKTIVITAS', ['PROYEK_ID','REVISI','AKT_ID','KODE','NAMA','WBS_ID','TIPE','DURASI_HARI','RENCANA_MULAI','RENCANA_SELESAI','MULAI','SELESAI','AKTUAL_MULAI','AKTUAL_SELESAI','PERSEN','BATAS','BATAS_TGL']],
+  ACT: ['MS_AKTIVITAS', ['PROYEK_ID','REVISI','AKT_ID','KODE','NAMA','WBS_ID','TIPE','DURASI_HARI','RENCANA_MULAI','RENCANA_SELESAI','MULAI','SELESAI','AKTUAL_MULAI','AKTUAL_SELESAI','PERSEN','BATAS','BATAS_TGL','BOBOT_KONTRAK_XML','BOBOT_REALISASI_XML']],
   LINK: ['MS_LINK', ['PROYEK_ID','REVISI','PRED','SUCC','TIPE','LAG_HARI','SUMBER','STATUS','OLEH','WAKTU','CATATAN']],
   BASE: ['MS_BASELINE', ['PROYEK_ID','REVISI_ASAL','KODE','MULAI','SELESAI']],
   FC: ['MS_FORECAST', ['PROYEK_ID','MINGGU','REVISI','TGL_STATUS','OPTIMIS','PALING_MUNGKIN','PESIMIS','SPI_FILE','RENCANA_FILE','AKTUAL_FILE','OLEH','WAKTU']],
@@ -2969,7 +2969,7 @@ function msCpmImportBegin(token, projectId, meta) {
     if (drafts.length) { const d = mscOf_(c.pid, drafts), keep = function(r) { return !d(r); }; [MSCPM.WBS, MSCPM.ACT, MSCPM.LINK, MSCPM.REV].forEach(function(def) { mscPurge_(c.ss, def, keep); }); }
     const no = revs.reduce(function(m, r) { return Math.max(m, r.no || 0); }, 0) + 1;
     const src = String(meta.source || '').toUpperCase() === 'MSP' ? 'MSP' : 'P6';
-    let cal = ''; try { cal = JSON.stringify({work: (meta.cal.work || []).slice(0, 7).map(function(x) { return x ? 1 : 0; }), hol: (meta.cal.hol || []).slice(0, 400).map(function(x) { return String(x).slice(0, 10); }), hpd: Number(meta.cal.hpd) || 8, name: mscText_(meta.cal.name, 80)}); } catch (e) {}
+    let cal = ''; try { cal = JSON.stringify({work: (meta.cal.work || []).slice(0, 7).map(function(x) { return x ? 1 : 0; }), hol: (meta.cal.hol || []).slice(0, 400).map(function(x) { return String(x).slice(0, 10); }), hpd: Number(meta.cal.hpd) || 8, name: mscText_(meta.cal.name, 80), progress: mscProgressMeta_(meta.cal.progress)}); } catch (e) {}
     mscAppend_(c.ss, MSCPM.REV, [[c.pid, String(no), 'DRAF', src, mscText_(meta.fileName, 150), mscText_(meta.projName, 200), String(meta.dataDate || '').slice(0, 10), String(meta.statusDate || '').slice(0, 10), String(Number(meta.nWbs) || 0), String(Number(meta.nActs) || 0), String(Number(meta.nLinks) || 0), cal, mscText_(c.user.name || c.user.username, 80), Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm')]]);
     return {ok: true, rev: no};
   } finally { lock.releaseLock(); }
@@ -3101,3 +3101,6 @@ function msCpmDelete(token, projectId) {
     return {ok: true};
   } finally { lock.releaseLock(); }
 }
+
+/** Metadata progres berbobot XML; hanya angka ringkasan, tanpa rumus. */
+function mscProgressMeta_(p){if(!p||typeof p!=='object')return null;const n=function(v){if(v===null||v===undefined||v==='')return null;v=Number(v);return isFinite(v)&&v>=0&&v<=100000?v:null;};const out={basis:'custom',actual:n(p.actual),groups:{}};Object.keys(p.groups||{}).slice(0,100).forEach(function(k){const q=p.groups[k]||{};out.groups[String(k).slice(0,80)]={actual:n(q.actual),weight:n(q.weight)};});return out;}
