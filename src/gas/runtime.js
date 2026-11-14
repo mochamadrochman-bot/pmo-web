@@ -387,6 +387,12 @@ const HTML_PATCHES = [
     find: '</style></head><body>',
     replace: '\nhtml.m-mode .table.pmo-cards>tbody>tr>td::before{display:block;margin-bottom:2px}\nhtml.m-mode .table.pmo-cards>tbody>tr>td:first-child::before{display:none}\nhtml.m-mode .table.pmo-cards>tbody>tr>td:first-child{display:block;margin:0 0 8px 0;padding-bottom:6px!important;border-bottom:1px solid var(--line)!important}\nhtml.m-mode #concerns>tr>td:nth-child(2){display:block;margin:0 0 8px 0}\nhtml.m-mode #concerns>tr>td:nth-child(2)::before{display:inline-block;margin-right:8px;margin-bottom:0}\n</style></head><body>',
   },
+  // Weekly Dashboard (mode mobile): Forecast selesai & aktivitas kritis (Jadwal CPM) hanya tampil di tab Kurva S.
+  {
+    file: 'Dashboard',
+    find: "function renderMscW(data){const v=data.schedule,sec=document.getElementById('sec-msc');if(!sec)return;if(!v||!v.likely){sec.hidden=true;return}sec.hidden=false;",
+    replace: "function renderMscW(data){const v=data.schedule,sec=document.getElementById('sec-msc');if(!sec)return;if(!v||!v.likely){sec.removeAttribute('data-mtab');sec.hidden=true;return}sec.setAttribute('data-mtab','kurva');sec.hidden=(typeof mIsOn==='function'&&mIsOn()&&typeof mTab!=='undefined'&&mTab!=='kurva');",
+  },
 ];
 
 /** Penghubung login baru (cookie) ke bentuk akun yang dikenal kode lama. */
