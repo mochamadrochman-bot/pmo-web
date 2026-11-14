@@ -216,4 +216,17 @@ function readOnly() {
   return mode() === 'baca';
 }
 
-module.exports = { state, load, flush, recalcNow, revertDirty, readOnly, mode, setMode, MODES, writableInReadOnly, book, replaceMain, lastImport, summary, MAIN_ID, ensureTables };
+function introEnabled() {
+  return state.props.get('SYS:INTRO') !== '0';
+}
+
+async function setIntroEnabled(on, actor) {
+  const val = on ? '1' : '0';
+  await db.query(
+    `insert into gas_props (key, value, updated_at) values ('SYS:INTRO', $1, now())
+     on conflict (key) do update set value = excluded.value, updated_at = now()`, [val]);
+  state.props.set('SYS:INTRO', val);
+  console.log(JSON.stringify({ ev: 'gas_intro', enabled: !!on, actor: actor || null }));
+}
+
+module.exports = { state, load, flush, recalcNow, revertDirty, readOnly, mode, setMode, MODES, introEnabled, setIntroEnabled, writableInReadOnly, book, replaceMain, lastImport, summary, MAIN_ID, ensureTables };

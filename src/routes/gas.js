@@ -10,6 +10,7 @@
 const express = require('express');
 const runtime = require('../gas/runtime');
 const store = require('../gas/store');
+const { PORTAL_INTRO_SNIPPET } = require('../gas/portal-intro');
 const groups = require('../lib/groups');
 const { clearCache } = require('../gas/services');
 const session = require('../session');
@@ -98,8 +99,9 @@ function clientShim() {
 
 const UJI_BANNER = '<div id="pmoUjiBanner" style="position:fixed;left:0;right:0;bottom:0;z-index:2147483000;background:#b45309;color:#fff;font:600 13px/1.4 system-ui,sans-serif;padding:6px 12px;text-align:center">MODE UJI COBA — data yang diisi di sini dapat dikembalikan ke versi Google Sheets oleh Admin.</div>';
 
-function wrapPage(out) {
+function wrapPage(out, opts) {
   let html = out.getContent();
+  if (opts && opts.intro) html = /<\/body>/i.test(html) ? html.replace(/<\/body>/i, PORTAL_INTRO_SNIPPET + '</body>') : html + PORTAL_INTRO_SNIPPET;
   if (store.mode() === 'uji') html = /<\/body>/i.test(html) ? html.replace(/<\/body>/i, UJI_BANNER + '</body>') : html + UJI_BANNER;
   const head = [
     '<meta charset="utf-8">',
@@ -157,7 +159,7 @@ router.get('/app', requireUser, async (req, res, next) => {
     if (store.readOnly() && hasSheetChanges()) { await store.revertDirty(); clearCache(); }
     await store.flush();
     res.set('Cache-Control', 'no-store');
-    res.type('html').send(wrapPage(out));
+    res.type('html').send(wrapPage(out, { intro: page === 'portal' && store.introEnabled() }));
   } catch (err) {
     next(err);
   }

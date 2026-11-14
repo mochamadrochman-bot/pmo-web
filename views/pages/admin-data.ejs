@@ -75,6 +75,17 @@
 </div>
 
 <div class="panel">
+  <h2>Animasi pembuka login</h2>
+  <p class="muted" style="margin:0 0 10px;font-size:13px">Animasi stop-motion 5 detik saat membuka Portal setelah login (berlaku untuk semua akun).</p>
+  <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer">
+    <input type="checkbox" id="introToggle" <%= introEnabled ? 'checked' : '' %> style="width:auto;margin:0;cursor:pointer" />
+    <span>Tampilkan animasi pembuka setelah login</span>
+  </label>
+  <div class="err" id="introErr" role="alert"></div>
+  <div class="ok" id="introOk" role="status"></div>
+</div>
+
+<div class="panel">
   <h2>Data saat ini</h2>
   <% if (last) { %>
     <p class="muted" style="margin:0 0 10px">Impor terakhir: <%= new Date(last.at).toLocaleString('id-ID', { timeZone: 'Asia/Bangkok' }) %> oleh <%= last.actor || '—' %><%= last.file_name ? ' · ' + last.file_name : '' %></p>
@@ -151,6 +162,22 @@
       setTimeout(function () { location.reload(); }, 1500);
     } catch (e) {
       ok.textContent = ''; err.textContent = e.message; go.disabled = false;
+    }
+  });
+})();
+(function () {
+  var cb = document.getElementById('introToggle'), err = document.getElementById('introErr'), ok = document.getElementById('introOk');
+  if (!cb) return;
+  cb.addEventListener('change', async function () {
+    err.textContent = ''; ok.textContent = 'Menyimpan…'; cb.disabled = true;
+    try {
+      var j = await (await fetch('/api/admin/intro', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ enabled: cb.checked }) })).json();
+      if (!j.ok) throw new Error(j.error || 'Gagal menyimpan.');
+      ok.textContent = j.data.enabled ? 'Animasi pembuka diaktifkan.' : 'Animasi pembuka dinonaktifkan.';
+    } catch (e) {
+      ok.textContent = ''; err.textContent = e.message; cb.checked = !cb.checked;
+    } finally {
+      cb.disabled = false;
     }
   });
 })();

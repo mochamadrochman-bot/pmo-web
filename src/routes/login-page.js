@@ -48,6 +48,7 @@ const PATCH = `<script>
       if(!j||!j.ok)throw new Error((j&&j.error)||'Login belum berhasil. Silakan coba lagi.');
       step(3);btn.textContent='LOGIN BERHASIL';
       var must=j.data&&j.data.mustChangePassword;
+      if(!must){try{sessionStorage.setItem('pmoIntro','1')}catch(x){}}
       say(must?'Login berhasil. Silakan ganti password sementara Anda…':'Login berhasil. Membuka Portal…',false);
       location.href=must?'/akun/password':'/';
     }catch(err){

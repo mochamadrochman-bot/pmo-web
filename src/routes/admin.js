@@ -211,7 +211,7 @@ router.get('/admin/data', onlyAdmin, async (req, res, next) => {
     const sheets = book ? book.list().map((d) => ({ name: d.name, rows: d.lastRow(), cols: d.lastCol() })) : [];
     renderPage(res, 'pages/admin-data', {
       title: 'Impor Data', user: req.user, sheets, last: await gasStore.lastImport(),
-      sync: gasSync.info(), google: gauth.status(),
+      sync: gasSync.info(), google: gauth.status(), introEnabled: gasStore.introEnabled(),
     });
   } catch (err) {
     next(err);
@@ -245,6 +245,17 @@ router.post('/api/admin/import-xlsx',
       next(err);
     }
   });
+
+router.post('/api/admin/intro', onlyAdmin, async (req, res, next) => {
+  try {
+    const enabled = Boolean(req.body && req.body.enabled);
+    await gasStore.setIntroEnabled(enabled, req.user.username);
+    await audit(req.user, 'intro_toggle', 'system', 'SYS:INTRO', { enabled });
+    res.json({ ok: true, data: { enabled } });
+  } catch (err) {
+    next(err);
+  }
+});
 
 // --- Kelompok proyek (Pengembangan / Rutin / Sub-proyek) ---------------------
 const groups = require('../lib/groups');
