@@ -215,6 +215,10 @@ router.get('/admin/data', onlyAdmin, async (req, res, next) => {
         db.query("SELECT pg_database_size(current_database())::bigint AS bytes, pg_size_pretty(pg_database_size(current_database())) AS pretty"),
         db.query("SELECT relname AS name, pg_total_relation_size(relid)::bigint AS bytes, pg_size_pretty(pg_total_relation_size(relid)) AS pretty, n_live_tup::bigint AS rows FROM pg_stat_user_tables ORDER BY pg_total_relation_size(relid) DESC LIMIT 8"),
       ]);
+      // Jumlah baris pasti (statistik pg_stat bisa 0 bila tabel belum di-ANALYZE).
+      for (const t of tbl.rows || []) {
+        try { t.rows = (await db.query('SELECT count(*)::bigint AS n FROM "' + String(t.name).replace(/"/g, '""') + '"')).rows[0].n; } catch (_) { /* biarkan */ }
+      }
       dbStats = { total: tot.rows[0] || null, tables: tbl.rows || [] };
     } catch (_) { dbStats = null; }
     renderPage(res, 'pages/admin-data', {

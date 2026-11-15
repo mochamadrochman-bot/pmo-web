@@ -124,7 +124,7 @@
   </p>
   <% if (dbStats.tables && dbStats.tables.length) { %>
     <table class="sheets">
-      <thead><tr><th>Tabel</th><th>Perkiraan baris</th><th>Ukuran (termasuk indeks)</th><th>Porsi</th></tr></thead>
+      <thead><tr><th>Tabel</th><th>Jumlah baris</th><th>Ukuran (termasuk indeks)</th><th>Porsi</th></tr></thead>
       <tbody>
         <% var totBytes = Number(dbStats.total.bytes) || 1; dbStats.tables.forEach(function (t) { var pct = Math.min(100, (Number(t.bytes) / totBytes) * 100); %>
           <tr>

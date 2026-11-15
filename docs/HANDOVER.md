@@ -20,7 +20,7 @@ Aplikasi **"WEB DASHBOARD PMO - MULTI PROYEK"** semula berjalan di **Google Apps
 
 **Pendekatan yang dipilih: "lapisan kompatibilitas" (bukan menulis ulang).** Kode asli Apps Script (`.gs` dan `.html`) disalin apa adanya ke folder `legacy/` dan **dijalankan di Node.js** dengan tiruan API Google (SpreadsheetApp, DriveApp, HtmlService, dll.). Tujuannya: tampilan dan perilaku **sama persis** dengan versi Apps Script, sambil pelan-pelan memindahkan data ke server sendiri.
 
-Status per 14 Nov 2026: server sudah live dan dipakai uji; Apps Script lama **masih menjadi sumber input utama**. Server mengikuti data Google Sheets lewat sinkron otomatis tiap 15 menit (mode **Baca**), dan sudah bisa diuji input di mode **Uji coba**.
+Status per 15 Nov 2026: server sudah live dan dipakai uji; Apps Script lama **masih menjadi sumber input utama**. Server mengikuti data Google Sheets lewat sinkron otomatis tiap 15 menit (mode **Baca**), dan sudah bisa diuji input di mode **Uji coba**.
 
 ---
 
@@ -210,25 +210,13 @@ node src/server.js                # migrasi otomatis saat start
 - **Portal & Narasi Eksekutif Direksi:** Kartu progres Portal memakai data cut-off bulanan dengan judul `Progres Proyek Cut off Bulan <Periode>`; Ringkasan Eksekutif di Portal & Executive menampilkan narasi Direksi (SPI `actual/plan`, CPI, serapan RKAP per kategori, status Proyek Selesai, Fokus Tindak Lanjut Direksi) tanpa kartu KPI atas, tanpa Mode Ringkas, dan tanpa badge `PERLU PERHATIAN`.
 - **Presentasi PDF & Kunci Slide Weekly:** Migrasi `db/migrations/004-pres-drive.sql`, `src/google/auth.js`, `src/routes/pres.js` menyimpan slide PDF baru ke Google Drive (`PMO Presentation Slides`), serta `src/gas/pres-extra.js` & `src/gas/runtime.js` memakai kunci `weekly:<PROJECT_ID>` dengan fallback nama lama.
 
-### R2 — Animasi pembuka "stop motion" Login → Portal · Minggu 15 Nov
-- **Sudah ada di `docs/apps-script-v243/Login.html`:**
-  - fungsi `pmoPortalIntro()`, dengan style `#pmoPortalIntroStyle` dan section `#pmoPortalIntro`;
-  - tema PLAN → BUILD → GROW, tombol "Lewati →", label aria "PLAN BUILD GROW — membuka Portal Proyek";
-  - dipanggil di handler sukses login lama, **hanya untuk role selain KONTRAKTOR**: `intro=pmoPortalIntro()`, lalu Portal dimuat di halaman yang sama.
-- **Masalah di server:** `src/routes/login-page.js` menangkap submit dan memanggil `/api/auth/login`, lalu `location.href='/'`. Jadi `pmoPortalIntro()` tidak pernah terpanggil.
-- **Konsep yang disepakati:**
-  - Animasi sekitar 5 detik, tampil di atas Portal sementara data Portal dimuat.
-  - Hanya sekali setelah login. Ada tombol Lewati, klik, dan Esc.
-  - `prefers-reduced-motion` menampilkan logo PMO dengan fade saja.
-  - Diakhiri **logo PMO** (Drive id `1JP0hqePxcaiFN0aZ2dv6WJ6qCNwrRLxf`) dengan tagline **PLAN • BUILD • GROW**.
-  - Warna navy, biru, dan hijau seperti dashboard. Admin bisa menonaktifkan.
-- **Opsi implementasi:**
-  - (a) Panggil `pmoPortalIntro()` dari tambalan login setelah fetch sukses, lalu navigasi ke `/` setelah animasi selesai. Perlu memastikan fungsinya bisa diakses, karena mungkin berada di dalam closure. Kalau begitu, tambahkan `window.pmoPortalIntro=pmoPortalIntro` lewat HTML_PATCH.
-  - (b) **Disarankan:** login menyimpan penanda `sessionStorage.pmoIntro=1`, lalu Portal memutar animasi di atas halaman sambil data dimuat. Waktu animasi tidak terbuang.
-- **Pertanyaan terbuka ke pemilik:**
-  - Animasi untuk semua akun atau hanya internal? Versi Apps Script mengecualikan KONTRAKTOR.
-  - Durasi 5 detik atau 3 detik?
-  - Buat pratinjau dulu sebelum dipasang.
+### Perbaikan audit 15 Nov 2026 (Claude)
+- Narasi Ringkasan Eksekutif di Executive kini memakai data yang sedang dirender (`window.__pmoBriefData`), sehingga kelompok Pengembangan/Rutin benar (sebelumnya CSU-3 ikut terhitung Pengembangan karena `renderBrief` dipanggil sebelum `currentReportData` diisi).
+- Kartu narasi Executive diberi padding (`#xbExec`); kalimat Fokus Tindak Lanjut tidak lagi berakhir "…." atau terpotong di tengah kata.
+- Portal: kartu cut-off bulanan **tanpa** baris "Naik … poin" (desktop & HP) — keputusan pemilik.
+- Kartu realisasi keuangan per kelompok: nominal ringkas (Rp x,xx T / Rp x,x M; nilai penuh di tooltip).
+- Peta deviasi: indentasi sub-proyek dihemat.
+- Admin → Kapasitas database: kolom "Jumlah baris" memakai hitungan pasti (`count(*)`).
 
 ### R3 — Kelompok proyek tahap 3 (ditunda atas permintaan pemilik)
 - Laporan Bulanan dan Pelaporan Manajemen dikelompokkan Pengembangan/Rutin. Sub-proyek ditaruh di bawah induk sebagai lampiran, tetap dihitung sendiri-sendiri.
