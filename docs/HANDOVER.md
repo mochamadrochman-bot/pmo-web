@@ -329,6 +329,19 @@ Semua perubahan ada di `src/gas/sena-extra.js`: `SENA_BRIDGE` dijalankan setelah
   - Di Materi tambahan → Susunan slide → "Slide video proyek": pilih proyek dan minggu. Item disimpan di `pres_sets` sebagai `{type:'video', project, week, pos, title}`.
   - Slide memakai iframe Drive preview, YouTube (nocookie), OneDrive embed, atau `<video>` mp4. Iframe hanya dipasang saat slide aktif, sehingga video berhenti saat slide berpindah.
 
+
+### Video pembuka & CCTV jaringan internal · 15 Nov 2026 (Claude)
+- **Video pembuka** (`portal-intro.js`, `login-page.js`):
+  - Video diunduh lebih awal di halaman Login, sehingga cache sudah terisi sebelum Portal dibuka.
+  - Selama video belum siap, tampil penanda "Memuat…" di atas poster.
+  - Intro dilewati bila video belum mulai dalam 4 detik, tersendat lebih dari 3 detik, galat, atau browser melarang putar otomatis. Batas keras 14 detik.
+  - Sumber video dipasang lewat `v.src` (bukan `<source>`), supaya event `error` terdeteksi.
+- **CCTV pilihan A** (`src/gas/live-lan.js`):
+  - Jenis **Tautan** boleh memakai `http://` khusus alamat LAN (10.x, 172.16–31.x, 192.168.x). Patch ini diterapkan ke `LiveApi.gs` lewat mekanisme baru **GS_PATCHES** di runtime.js.
+  - Halaman Live View menampilkan pesan "jaringan internal perusahaan" dengan tombol "Buka NVR di tab baru".
+  - Pada mode **Baca**, kamera ditambahkan sebagai baris baru di sheet `CCTV` di Google Sheets. Validasi `http` di Apps Script lama tidak ikut berubah, jadi jangan menambah lewat aplikasi lama.
+  - Pilihan B (jembatan RTSP→HLS + Cloudflare Tunnel) menunggu data dari tim CCTV/IT: merek/model NVR, port RTSP, akun lihat-saja, daftar channel, dan izin IT.
+
 ---
 
 ## 7. Preferensi kerja pemilik

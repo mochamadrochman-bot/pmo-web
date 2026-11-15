@@ -577,7 +577,7 @@ const HTML_PATCHES = [
     replace: "var __wpEl=document.getElementById('weeklyProjectName');__wpEl.textContent=selectedProject.toUpperCase();__wpEl.dataset.pid=data.projectId||'';window.__pmoWeeklyPid=data.projectId||'';",
   },
 ];
-HTML_PATCHES.push(...require('./nav-theme').NAV_PATCHES, ...require('./sena-extra').SENA_PATCHES);
+HTML_PATCHES.push(...require('./nav-theme').NAV_PATCHES, ...require('./sena-extra').SENA_PATCHES, ...require('./live-lan').LIVE_HTML_PATCHES);
 
 /** Penghubung login baru (cookie) ke bentuk akun yang dikenal kode lama. */
 const BRIDGE_CODE = `
@@ -716,6 +716,11 @@ function load() {
     else console.warn(JSON.stringify({ ev: 'gas_patch_miss', file: p.file }));
   }
 
+  for (const p of require('./live-lan').GS_PATCHES) {
+    const f = gsFiles.find((x) => x.name === p.file);
+    if (f && f.src.includes(p.find)) f.src = f.src.replace(p.find, () => p.replace);
+    else console.warn(JSON.stringify({ ev: 'gas_patch_miss', file: p.file + '.gs' }));
+  }
   const code = gsFiles.map((f) => '// ---- ' + f.name + '.gs\n' + f.src).join('\n;\n') +
     '\n;\n// ---- pres-video (server)\n' + require('./pres-video').PRES_VIDEO_GS;
   const fnNames = new Set();
