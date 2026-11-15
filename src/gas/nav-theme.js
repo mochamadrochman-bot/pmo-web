@@ -131,6 +131,16 @@ const NAV_SNIPPET = String.raw`<style id="pmoNavACss">
 @media (max-width:760px){.pmo-pbar:not(.is-epc){display:none!important}.pmo-pbar{padding:0 10px}.pmo-crumb,.pmo-pbar .pmo-r-isi{display:none!important}.pmo-tab{padding:0 10px;font-size:13px}}
 html.m-mode .pmo-pbar,html.pp-open .pmo-pbar{display:none!important}
 @media print{.pmo-pbar{display:none!important}}
+.pmo-fly{position:fixed;z-index:60;min-width:220px;max-width:280px;padding:8px;border-radius:12px;background:var(--pmo-side,#152435);color:var(--pmo-side-ink,#e3ecf4);box-shadow:0 12px 32px rgba(0,0,0,.28),0 0 0 1px rgba(255,255,255,.08);opacity:0;transform:translateX(-4px);transition:opacity .12s ease,transform .12s ease;pointer-events:none}
+.pmo-fly.on{opacity:1;transform:none;pointer-events:auto}
+.pmo-fly h5{margin:2px 6px 6px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;opacity:.75;display:flex;align-items:center;gap:6px}
+.pmo-fly button{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:0;border-radius:8px;background:transparent;color:inherit;font-family:inherit;font-size:13.5px;font-weight:500;text-align:left;cursor:pointer;min-height:0}
+.pmo-fly button:hover,.pmo-fly button:focus-visible{background:rgba(255,255,255,.12);outline:none}
+.pmo-fly button.on{background:var(--pmo-side-act,#1f6db3);color:#fff;font-weight:600}
+.pmo-fly .dot{width:8px;height:8px;border-radius:50%;flex:none}
+html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
+@media (prefers-reduced-motion:reduce){.pmo-fly{transition:none}}
+@media (max-width:760px){.pmo-fly{display:none!important}}
 </style>
 <script>
 (function(){
@@ -162,6 +172,69 @@ html.m-mode .pmo-pbar,html.pp-open .pmo-pbar{display:none!important}
       box.querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-acc')===curAcc())});
     });
   }
+
+  /* ---------- menu melayang saat sidebar diciutkan ---------- */
+  var fly=null,flyT=0,flyGrp=null;
+  function collapsed(){var a=document.querySelector('.app');return !!(a&&a.classList.contains('collapsed'))&&innerWidth>760}
+  function grpItems(w){
+    var out=[],seen={};
+    w.querySelectorAll('button.nav,.pmo-epc-pill').forEach(function(b){
+      if(b.closest('#subNav'))return;
+      if(b.classList.contains('pmo-epc-main')&&w.querySelector('.pmo-epc-sub,.pmo-epc-pill'))return;
+      if(b.hidden||b.style.display==='none'||b.closest('[hidden]'))return;
+      var sp=b.querySelector('span');var t=String((sp&&sp.textContent)||b.getAttribute('title')||b.textContent||'').replace(/\s+/g,' ').trim();
+      if(!t||seen[t])return;seen[t]=1;
+      var dot=b.querySelector('.dot');out.push({b:b,t:t,on:b.classList.contains('active')||b.classList.contains('on'),dot:dot?getComputedStyle(dot).backgroundColor:''});
+    });
+    return out;
+  }
+  function flyShow(w){
+    if(!collapsed())return;
+    var id=w.getAttribute('data-mod-grp');if(id==='isi')return;
+    var L=grpItems(w);if(!L.length)return;
+    if(!fly){fly=document.createElement('div');fly.className='pmo-fly';fly.setAttribute('role','menu');document.body.appendChild(fly);
+      fly.addEventListener('mouseenter',function(){clearTimeout(flyT)});fly.addEventListener('mouseleave',flyHideSoon);
+      fly.addEventListener('keydown',function(e){if(e.key==='Escape'){flyHide();if(flyGrp){var f=flyGrp.querySelector('button.nav');if(f)f.focus()}}});
+      fly.addEventListener('click',function(e){var x=e.target.closest('[data-fi]');if(!x||!fly.__items)return;var it=fly.__items[+x.getAttribute('data-fi')];flyHide();if(it)it.b.click()});}
+    clearTimeout(flyT);flyGrp=w;fly.__items=L;
+    fly.innerHTML='<h5>'+esc(TAG[id]||'')+' '+esc(GRP[id]||'')+'</h5>'+L.map(function(x,i){return '<button type="button" role="menuitem" data-fi="'+i+'" class="'+(x.on?'on':'')+'">'+(x.dot?'<i class="dot" style="background:'+x.dot+'"></i>':'')+esc(x.t)+'</button>'}).join('');
+    var side=document.querySelector('aside.side').getBoundingClientRect(),r=w.getBoundingClientRect();
+    fly.style.left=Math.round(side.right+8)+'px';fly.classList.add('on');
+    var h=fly.offsetHeight;fly.style.top=Math.max(8,Math.min(Math.round(r.top),innerHeight-h-8))+'px';
+  }
+  function flyHide(){clearTimeout(flyT);if(fly)fly.classList.remove('on');flyGrp=null}
+  function flyHideSoon(){clearTimeout(flyT);flyT=setTimeout(flyHide,220)}
+  function bindFly(){
+    var side=document.querySelector('aside.side');if(!side||side.__pmoFly)return;side.__pmoFly=true;
+    side.addEventListener('mouseover',function(e){var w=e.target.closest('.pmo-mgrp');if(!w){return}if(w!==flyGrp||!fly||!fly.classList.contains('on'))flyShow(w);else clearTimeout(flyT)});
+    side.addEventListener('mouseleave',flyHideSoon);
+    side.addEventListener('focusin',function(e){var w=e.target.closest('.pmo-mgrp');if(w&&collapsed())flyShow(w)});
+    side.addEventListener('focusout',function(e){if(!fly||!fly.contains(e.relatedTarget))flyHideSoon()});
+    side.addEventListener('keydown',function(e){if(e.key==='ArrowRight'&&fly&&fly.classList.contains('on')){var f=fly.querySelector('button');if(f){e.preventDefault();f.focus()}}});
+    document.addEventListener('click',function(e){if(fly&&!fly.contains(e.target)&&!side.contains(e.target))flyHide()});
+    window.addEventListener('scroll',flyHide,{passive:true});
+  }
+
+  /* ---------- daftar halaman untuk pencarian Ctrl K ---------- */
+  function role(){var r='';try{var u=JSON.parse(sessionStorage.getItem('pmoUser')||'null');r=u&&u.role||''}catch(e){}return String(r||'').trim().toUpperCase()}
+  function navPages(){
+    var r=role(),ktr=r==='KONTRAKTOR',mrB=document.querySelector('aside.side [data-mr]'),mr=['ADMIN','INPUT','PIC'].indexOf(r)>=0||!!(mrB&&!mrB.hidden&&mrB.style.display!=='none'),inp=['ADMIN','INPUT','PIC'].indexOf(r)>=0||mr,out=[];
+    function g(gn,list){list.forEach(function(x){out.push({name:x[1],route:x[0],grp:gn,kw:x[2]||''})})}
+    if(!ktr)g('Dashboard Proyek',[['portal','Portal','beranda ringkasan'],['executive','Executive Dashboard','eksekutif direksi'],['master','Master Schedule','jadwal baseline'],['weekly','Weekly Progress','mingguan']]);
+    else g('Dashboard Proyek',[['portal','Portal','beranda ringkasan']]);
+    g('EPCC Control',[['engineering','Engineering','dokumen ifr ifa ifc'],['epcc&field=PROC','Procurement','pengadaan po material'],['epcc&field=CONS','Construction','konstruksi fisik lapangan'],['epcc&field=COM','Commissioning','komisioning uji']]);
+    if(!ktr)g('Dokumen & Lapangan',[['documents','Document Control','dokumen kontrak'],['library','Library & Knowledge','pedoman prosedur'],['live','Live View','cctv kamera']]);
+    if(!ktr&&mr)g('Pelaporan Manajemen',[['report','Management Report · Pelaporan Manajemen','presentasi bulanan'],['weeklyprint','Buat Laporan Weekly','cetak pdf excel'],['monthlydoc','Buat Laporan Bulanan','word']]);
+    if(!ktr&&inp)g('Input & Data Proyek',[['input','Input Progress','isi mingguan'],['monthly','Laporan Bulanan','isian bulanan'],['project','Tambah / Edit Proyek','proyek baru']]);
+    return out;
+  }
+  window.pmoNavExtra=function(add,used){
+    navPages().forEach(function(x){
+      add(x.name,'Halaman · '+x.grp,document.body,function(){go(x.route)},x.name,x.kw);
+      used['Modul|'+x.name.toLowerCase()]=1;
+    });
+    isiBtns().forEach(function(b){var sp=b.querySelector('span');var t=String((sp&&sp.textContent)||b.textContent||'').trim();if(t)add(t,'Isi halaman ini',b,function(){b.click()},t)});
+  };
 
   /* ---------- baris navigasi (breadcrumb, tab EPCC, isi halaman) ---------- */
   var GRP={m1:'Dashboard Proyek',m3:'EPCC Control',m2:'Dokumen & Lapangan',m5:'Pelaporan Manajemen',minp:'Input & Data Proyek'};
@@ -228,7 +301,7 @@ html.m-mode .pmo-pbar,html.pp-open .pmo-pbar{display:none!important}
   var q=0;function queue(){if(!q)q=setTimeout(function(){q=0;render();addPicker()},120)}
   function init(){
     addPicker();
-    var tries=0;(function wait(){if(document.querySelector('aside.side nav[data-pmo-modular="1"]')||tries>40){build();
+    var tries=0;(function wait(){if(document.querySelector('aside.side nav[data-pmo-modular="1"]')||tries>40){build();bindFly();
       var side=document.querySelector('aside.side');
       if(side&&window.MutationObserver)new MutationObserver(queue).observe(side,{subtree:true,attributes:true,attributeFilter:['class','hidden','style','aria-current']});
       if(window.MutationObserver)new MutationObserver(function(){if(!document.querySelector('.pmo-acc')||document.querySelectorAll('.theme-switch,.acm-theme').length>document.querySelectorAll('.pmo-acc').length)queue()}).observe(document.body,{childList:true,subtree:true});
@@ -245,6 +318,40 @@ html.m-mode .pmo-pbar,html.pp-open .pmo-pbar{display:none!important}
  * Grup M1 (Dashboard Proyek) tetap selalu terbuka.
  */
 const NAV_PATCHES = [
+
+  {
+    file: 'AccountMenu',
+    find: "shown=entries.filter(function(x){return (x.name+' '+x.type).toLocaleLowerCase('id').includes(q)})",
+    replace: "shown=entries.filter(function(x){return (x.name+' '+x.type+' '+(x.kw||'')).toLocaleLowerCase('id').includes(q)})",
+  },
+  {
+    file: 'AccountMenu',
+    find: "search.placeholder='Cari proyek atau modul…';",
+    replace: "search.placeholder='Cari halaman, proyek, atau isi halaman…';",
+  },
+
+  {
+    file: 'PmoUi',
+    find: "shown=entries.filter(function(x){return (x.name+' '+x.type).toLocaleLowerCase('id').includes(q)})",
+    replace: "shown=entries.filter(function(x){return (x.name+' '+x.type+' '+(x.kw||'')).toLocaleLowerCase('id').includes(q)})",
+  },
+  {
+    file: 'PmoUi',
+    find: "search.placeholder='Cari proyek atau modul…';",
+    replace: "search.placeholder='Cari halaman, proyek, atau isi halaman…';",
+  },
+  {
+    // Ctrl K: tambah daftar halaman lengkap (sesuai hak akses) dan isi halaman aktif (nav-theme.js → pmoNavExtra).
+    file: 'AccountMenu',
+    find: "entries=[];var used={};function add(name,type,node,fn,key){if(!name)return;key=type+'|'+(key||name).toLowerCase();if(used[key])return;used[key]=1;entries.push({name:name,type:type,node:node,run:fn})}",
+    replace: "entries=[];var used={};function add(name,type,node,fn,key,kw){if(!name)return;key=type+'|'+(key||name).toLowerCase();if(used[key])return;used[key]=1;entries.push({name:name,type:type,node:node,run:fn,kw:kw||''})}if(window.pmoNavExtra)try{window.pmoNavExtra(add,used)}catch(e){}",
+  },
+  {
+    // Ctrl K: tambah daftar halaman lengkap (sesuai hak akses) dan isi halaman aktif (nav-theme.js → pmoNavExtra).
+    file: 'PmoUi',
+    find: "entries=[];var used={};function add(name,type,node,fn,key){if(!name)return;key=type+'|'+(key||name).toLowerCase();if(used[key])return;used[key]=1;entries.push({name:name,type:type,node:node,run:fn})}",
+    replace: "entries=[];var used={};function add(name,type,node,fn,key,kw){if(!name)return;key=type+'|'+(key||name).toLowerCase();if(used[key])return;used[key]=1;entries.push({name:name,type:type,node:node,run:fn,kw:kw||''})}if(window.pmoNavExtra)try{window.pmoNavExtra(add,used)}catch(e){}",
+  },
   {
     file: 'AccountMenu',
     find: 'st[g.id]=!st[g.id];',

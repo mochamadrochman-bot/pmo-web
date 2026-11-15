@@ -274,7 +274,13 @@ node src/server.js                # migrasi otomatis saat start
   - **Grup "Isi halaman"** disembunyikan dari sidebar dengan CSS, tetapi tetap ada di DOM karena dipakai menu HP (`isiItems()`). Gantinya adalah baris `#pmoPbar` yang menempel di bawah header: breadcrumb, tab EPCC (Engineering/Procurement/Construction/Commissioning), dan chip isi halaman yang memanggil `.click()` tombol aslinya.
   - **Tab EPCC:** di halaman `epcc`, berpindah bidang memakai tombol `data-field` bawaan halaman (tanpa reload) dan URL `field=` ikut diperbarui. Dari Engineering, tab berpindah halaman lewat `pmoGoWithProject`.
   - **HP (≤760px):** baris ini hanya tampil di halaman EPCC (tab saja). Isi halaman tetap ada di dok bawah.
-- **Belum dibuat:** menu melayang saat sidebar diciutkan (hover ikon grup).
+- **Menu melayang saat sidebar diciutkan** (`.app.collapsed`):
+  - Arahkan kursor atau fokus ke grup, lalu panel `.pmo-fly` muncul di kanan sidebar berisi daftar halaman grup itu. Klik pada panel menjalankan `.click()` tombol aslinya.
+  - Panel memakai `position:fixed`, karena sidebar memakai `overflow:hidden`.
+  - Tombol panah kanan masuk ke panel, Esc menutupnya. Panel tidak dipakai di HP.
+- **Ctrl K:**
+  - Pencarian (AccountMenu & PmoUi, patch `collect()`) sekarang memuat daftar halaman lengkap sesuai hak akses akun (`pmoNavExtra` di nav-theme.js), ditambah "Isi halaman ini" dari halaman aktif.
+  - Kata kunci Indonesia ikut dicari, misalnya "pengadaan" menemukan Procurement dan "cctv" menemukan Live View.
 
 ---
 
