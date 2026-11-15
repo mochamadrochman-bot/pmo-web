@@ -35,7 +35,7 @@ const PATCH = `<script>
     say('Lupa password? Hubungi Admin PMO. Admin akan membuatkan password sementara untuk Anda.',false);
   },true);
   /* video pembuka diunduh lebih awal selagi pengguna mengetik, agar langsung diputar setelah login */
-  setTimeout(function(){try{var im=new Image();im.src='/media/pmo-intro-poster.jpg';if(window.fetch)fetch('/media/pmo-intro.mp4',{credentials:'same-origin'}).then(function(r){return r.blob()}).catch(function(){})}catch(x){}},700);
+  setTimeout(function(){try{var pt=!!(window.matchMedia&&matchMedia('(orientation: portrait)').matches&&innerWidth<900);var im=new Image();im.src=pt?'/media/pmo-intro-portrait-poster.jpg':'/media/pmo-intro-poster.jpg';if(window.fetch)fetch(pt?'/media/pmo-intro-portrait.mp4':'/media/pmo-intro.mp4',{credentials:'same-origin'}).then(function(r){return r.blob()}).catch(function(){})}catch(x){}},700);
   document.addEventListener('submit',async function(e){
     if(e.target!==form)return;
     e.preventDefault();e.stopPropagation();

@@ -342,6 +342,17 @@ Semua perubahan ada di `src/gas/sena-extra.js`: `SENA_BRIDGE` dijalankan setelah
   - Pada mode **Baca**, kamera ditambahkan sebagai baris baru di sheet `CCTV` di Google Sheets. Validasi `http` di Apps Script lama tidak ikut berubah, jadi jangan menambah lewat aplikasi lama.
   - Pilihan B (jembatan RTSP→HLS + Cloudflare Tunnel) menunggu data dari tim CCTV/IT: merek/model NVR, port RTSP, akun lihat-saja, daftar channel, dan izin IT.
 
+
+### Sidebar ciut rapi + video pembuka versi HP · 16 Nov 2026 (Claude)
+- **Sidebar diciutkan** (`.app.collapsed`, nav-theme.js):
+  - Hanya tampil satu tombol ikon per grup (M1/M3/M2·M4/M5/INPUT), item halaman disembunyikan. Grup aktif disorot `.pmo-act`.
+  - Klik, Enter, atau arahkan kursor ke ikon grup membuka menu melayang `.pmo-fly` berisi halaman grup itu. Scrollbar disembunyikan.
+- **Video pembuka versi tegak:**
+  - File `public/media/pmo-intro-portrait.mp4` (1080×1920, 10 detik, ±2 MB), dengan poster dan gambar akhir `pmo-intro-portrait-*.jpg`.
+  - Dipakai bila layar portrait dan lebar < 900px. Ditampilkan dengan `object-fit:contain` di atas latar gradasi yang senada.
+  - Sumbernya komposisi Remotion `PmoDashboardMotion`, sekarang 10 detik dengan musik fade-out 1 detik. Render ulang dengan perintah:
+    `npx remotion render src/index.ts PmoDashboardMotion output/pmo-intro-portrait-10s.mp4 --crf=26`.
+
 ---
 
 ## 7. Preferensi kerja pemilik

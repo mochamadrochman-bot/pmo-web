@@ -16,6 +16,7 @@ const PORTAL_INTRO_SNIPPET = `<style id="pmoPortalIntroStyle">
 #pmoPortalIntro.is-leaving{opacity:0;pointer-events:none}
 #pmoPortalIntro video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:transparent;display:block;opacity:0;transition:opacity .25s ease}
 #pmoPortalIntro.is-playing video{opacity:1}
+#pmoPortalIntro.is-portrait video{object-fit:contain}
 #pmoPortalIntro .pi-load{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:12px;color:#0a2240;font-size:13px;font-weight:600;background:rgba(255,255,255,.82);padding:16px 22px;border-radius:16px;box-shadow:0 10px 30px rgba(10,34,64,.12)}
 #pmoPortalIntro .pi-load i{width:34px;height:34px;border-radius:50%;border:3px solid rgba(15,95,168,.18);border-top-color:#0f5fa8;animation:piSpin .8s linear infinite}
 #pmoPortalIntro.is-playing .pi-load{display:none}
@@ -34,15 +35,21 @@ const PORTAL_INTRO_SNIPPET = `<style id="pmoPortalIntroStyle">
 (function(){
   try { if (sessionStorage.getItem('pmoIntro') !== '1') return; sessionStorage.removeItem('pmoIntro'); } catch (e) { return; }
   var START_LIMIT = 4000, STALL_LIMIT = 3000, HARD_LIMIT = 14000;
+  var PORTRAIT = !!(window.matchMedia && window.matchMedia('(orientation: portrait)').matches && window.innerWidth < 900);
+  var VID = PORTRAIT ? '/media/pmo-intro-portrait.mp4' : '/media/pmo-intro.mp4';
+  var POSTER = PORTRAIT ? '/media/pmo-intro-portrait-poster.jpg' : '/media/pmo-intro-poster.jpg';
+  var END = PORTRAIT ? '/media/pmo-intro-portrait-end.jpg' : '/media/pmo-intro-end.jpg';
   function mount(){
     var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var el = document.createElement('section');
     el.id = 'pmoPortalIntro';
+    el.style.backgroundImage = 'url(' + POSTER + ')';
+    if (PORTRAIT) { el.classList.add('is-portrait'); el.style.background = 'linear-gradient(180deg,#e7eef4 0%,#ecf1f5 50%,#dde6ef 100%)'; }
     el.setAttribute('role', 'dialog');
     el.setAttribute('aria-modal', 'true');
     el.setAttribute('aria-label', 'PLAN BUILD GROW — membuka Portal Proyek');
     el.innerHTML = reduced
-      ? '<img src="/media/pmo-intro-end.jpg" alt="PMO Infrastructure & Process Plant — PLAN BUILD GROW" style="width:100%;height:100%;object-fit:contain"><div class="pi-ctl"><button type="button" data-skip>Lewati →</button></div>'
+      ? '<img src="' + END + '" alt="PMO Infrastructure & Process Plant — PLAN BUILD GROW" style="width:100%;height:100%;object-fit:contain"><div class="pi-ctl"><button type="button" data-skip>Lewati →</button></div>'
       : '<video muted playsinline autoplay preload="auto" aria-hidden="true"></video>'
         + '<div class="pi-load" role="status"><i aria-hidden="true"></i><span>Memuat…</span></div>'
         + '<div class="pi-ctl"><button type="button" data-sound aria-pressed="false">🔈 Suara</button><button type="button" data-skip>Lewati →</button></div><div class="pi-bar"></div>';
@@ -79,7 +86,7 @@ const PORTAL_INTRO_SNIPPET = `<style id="pmoPortalIntroStyle">
     v.addEventListener('timeupdate', function(){ if (v.duration) bar.style.width = (v.currentTime / v.duration * 100).toFixed(2) + '%'; });
     v.addEventListener('ended', close);
     v.addEventListener('error', function(){ timers.push(setTimeout(close, 200)); });
-    v.src = '/media/pmo-intro.mp4';
+    v.src = VID;
     var tryPlay = function(){ var p = v.play(); if (p && p.catch) p.catch(function(err){ if (!started && err && err.name === 'NotAllowedError') timers.push(setTimeout(close, 300)); }); };
     if (v.readyState >= 3) tryPlay(); else { v.addEventListener('canplay', function once(){ v.removeEventListener('canplay', once); tryPlay(); }); tryPlay(); }
     // Video belum mulai dalam 4 detik → langsung ke Portal.
