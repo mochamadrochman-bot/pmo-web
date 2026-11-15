@@ -16,6 +16,7 @@
   .b-off { background: #fee2e2; color: #991b1b; }
   .b-lock { background: #fde68a; color: #78350f; }
   .b-temp { background: #e0f2fe; color: #075985; }
+  .b-sena { background: #efe8fc; color: #6b35c4; }
   .muted { color: var(--muted); }
   .panel { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin: 0 0 18px; }
   .panel h2 { font-size: 16px; margin: 0 0 4px; color: var(--navy); }
@@ -87,6 +88,11 @@
           <label><input type="checkbox" class="cbProyek" value="<%= p.id %>" /> <span><%= p.name %> <span class="muted">(<%= p.id %>)</span></span></label>
         <% }); %>
       </div>
+
+      <label class="sena-cb" style="display:flex;align-items:flex-start;gap:8px;margin-top:14px;font-weight:500;cursor:pointer">
+        <input type="checkbox" id="fSena" style="width:auto;margin:3px 0 0" />
+        <span>Akses Sena (asisten AI)<span class="hint" style="display:block;font-weight:400" id="senaHint">Untuk pimpinan yang perlu bertanya ke Sena, misalnya direktur. Sena hanya membaca proyek yang boleh dibuka akun ini. Admin selalu punya akses.</span></span>
+      </label>
 
       <div class="aksi">
         <button class="btn utama" type="submit" id="btnSimpan">Simpan</button>
@@ -181,7 +187,7 @@
       return '<tr>' +
         '<td data-label="Username"><b>' + esc(u.username) + '</b>' + (u.id === ME ? ' <span class="muted">(Anda)</span>' : '') + '</td>' +
         '<td data-label="Nama">' + esc(u.full_name) + '</td>' +
-        '<td data-label="Peran"><span class="badge b-' + esc(u.role) + '">' + esc(ROLE_LABEL[u.role] || u.role) + '</span></td>' +
+        '<td data-label="Peran"><span class="badge b-' + esc(u.role) + '">' + esc(ROLE_LABEL[u.role] || u.role) + '</span>' + (u.sena_access && u.role !== 'admin' ? ' <span class="badge b-sena" title="Boleh memakai Sena">Sena</span>' : '') + '</td>' +
         '<td data-label="Proyek">' + projText(u.project_ids) + '</td>' +
         '<td data-label="Status">' + st + '</td>' +
         '<td data-label="Login terakhir">' + fmtDate(u.last_login_at) + '</td>' +
@@ -210,6 +216,9 @@
     $('proyekHint').textContent = PROYEK_HINT[r] || '';
     $('cbAll').parentElement.hidden = (r === 'kontraktor');
     if (r === 'kontraktor' && $('cbAll').checked) setChecks([]);
+    var adm = r === 'admin';
+    $('fSena').disabled = adm;
+    if (adm) $('fSena').checked = true;
   }
 
   function openPanel(u) {
@@ -233,6 +242,7 @@
       ? (self ? 'Ini akun Anda sendiri: peran dan status tidak bisa diubah dari sini.' : 'Perubahan peran, status, atau proyek langsung mengeluarkan akun ini dari semua perangkat.')
       : 'Password sementara dibuat otomatis. Akun baru wajib menggantinya saat login pertama.';
     setChecks(u ? u.project_ids : []);
+    $('fSena').checked = !!(u && (u.sena_access || u.role === 'admin'));
     updateHints();
     $('panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
     (u ? $('fNama') : $('fUsername')).focus();
@@ -261,7 +271,7 @@
     btn.disabled = true;
     try {
       if (editing) {
-        var body = { full_name: $('fNama').value, project_ids: getChecks() };
+        var body = { full_name: $('fNama').value, project_ids: getChecks(), sena_access: $('fSena').checked };
         if (editing.id !== ME) { body.role = $('fPeran').value; body.status = $('fStatus').value; }
         await api('PATCH', '/api/admin/users/' + encodeURIComponent(editing.id), body);
         $('panel').hidden = true;
@@ -269,7 +279,7 @@
       } else {
         var username = $('fUsername').value.trim().toLowerCase();
         var data = await api('POST', '/api/admin/users', {
-          username: username, full_name: $('fNama').value, role: $('fPeran').value, project_ids: getChecks()
+          username: username, full_name: $('fNama').value, role: $('fPeran').value, project_ids: getChecks(), sena_access: $('fSena').checked
         });
         if (data.tempPassword) showTemp(username, data.tempPassword);
         $('fUsername').disabled = true;

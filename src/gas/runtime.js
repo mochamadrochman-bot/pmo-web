@@ -577,7 +577,7 @@ const HTML_PATCHES = [
     replace: "var __wpEl=document.getElementById('weeklyProjectName');__wpEl.textContent=selectedProject.toUpperCase();__wpEl.dataset.pid=data.projectId||'';window.__pmoWeeklyPid=data.projectId||'';",
   },
 ];
-HTML_PATCHES.push(...require('./nav-theme').NAV_PATCHES);
+HTML_PATCHES.push(...require('./nav-theme').NAV_PATCHES, ...require('./sena-extra').SENA_PATCHES);
 
 /** Penghubung login baru (cookie) ke bentuk akun yang dikenal kode lama. */
 const BRIDGE_CODE = `
@@ -725,7 +725,7 @@ function load() {
   const ret = 'return {' + exportList.map((n) => JSON.stringify(n) + ': (typeof ' + n + ' === "undefined" ? undefined : ' + n + ')').join(',') + '};';
 
   // Layanan pengganti diberikan sebagai parameter fungsi (lebih cepat daripada 'with').
-  const body = code + '\n' + BRIDGE_CODE + '\n' + ret;
+  const body = code + '\n' + BRIDGE_CODE + '\n' + require('./sena-extra').SENA_BRIDGE + '\n' + ret;
   // eslint-disable-next-line no-new-func
   factory = new Function(...GLOBAL_NAMES, '__bridge', body);
   // Fungsi yang boleh dipanggil dari halaman: sama seperti google.script.run,

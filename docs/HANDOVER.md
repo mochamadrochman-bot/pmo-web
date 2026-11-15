@@ -282,6 +282,35 @@ node src/server.js                # migrasi otomatis saat start
   - Pencarian (AccountMenu & PmoUi, patch `collect()`) sekarang memuat daftar halaman lengkap sesuai hak akses akun (`pmoNavExtra` di nav-theme.js), ditambah "Isi halaman ini" dari halaman aktif.
   - Kata kunci Indonesia ikut dicari, misalnya "pengadaan" menemukan Procurement dan "cctv" menemukan Live View.
 
+
+### Peningkatan Sena · 15 Nov 2026 (Claude)
+Semua perubahan ada di `src/gas/sena-extra.js`: `SENA_BRIDGE` dijalankan setelah `BRIDGE_CODE`, dan `SENA_PATCHES` dimasukkan ke HTML_PATCHES.
+- **Klarifikasi:**
+  - Alat baru `tanya_balik`. `aiCall_` dibungkus: bila Claude memanggil alat ini, `askAssistant` mengembalikan `{clarify:{question, options}}`.
+  - Widget menampilkan tombol pilihan. Status di log `KLARIFIKASI`, sehingga tidak dihitung kuota.
+- **Tautan "Buka di halaman":**
+  - Claude menulis `[[teks|KODE|BIDANG|PROYEK_ID]]`, dengan BIDANG = ENG/PROC/CONS/COM/DOC/WEEKLY.
+  - Server hanya menerima KODE yang muncul di hasil alat. Pemeriksaannya lewat `aiRunTool_` yang dibungkus untuk mencatat nilai `id/kode/no/nomor`. Kode karangan berubah jadi teks biasa.
+  - Respons berisi `answer` (teks polos untuk riwayat dan suara), `answerLinked` (berpenanda ⟦Ln⟧), dan `links[]`.
+- **Sorot item:** URL `?sena=<kode>` ditangani di nav-theme.js (`senaFocus`): cari baris berisi kode → buka tab "Item…/Dokumen" → isi kotak cari halaman → sorot. Bila tetap tidak ketemu setelah 14 detik, muncul toast.
+- **Draf:**
+  - Tombol "Buat draf" di atas kotak tanya mengirim `req.draft` = `ringkasan | concern | highlight | email`. Prompt mode draf mengatur format.
+  - Jawaban tampil di textarea yang bisa diedit, dengan tombol Salin. Draf memakai kuota.
+- **Peringatan dini** (`getNotifications` dibungkus, kind `alert`, hanya ADMIN/INPUT/PIC, cache `perfCached_('senaAl|…')`):
+  - deviasi memburuk 3 minggu berturut-turut (dan sudah negatif);
+  - grup "lintasan kritis" CPM dengan item tertinggal (perlu sheet LOGIKA terisi);
+  - dokumen engineering menunggu review > 14 hari;
+  - jaminan berakhir ≤ 30 hari (digabung per proyek).
+
+  Setiap peringatan punya `action` (+ `sena` untuk sorot) dan `ask` untuk tombol "Tanya Sena" (tombol hanya muncul bila akun punya akses Sena).
+- **Akses Sena:**
+  - Kolom `users.sena_access` (`db/migrations/006-sena-access.sql`) dicentang di Kelola Akun ("Akses Sena"), misalnya untuk direktur.
+  - `aiIsAdmin_` diganti: ADMIN atau `senaAccess`. Data tetap dibatasi `userCanAccess_` akun tersebut.
+- **Perbaikan kuota:** sebelumnya kuota harian tidak pernah bertambah, karena status log `OK · n putaran` ≠ `OK`. Sekarang dihitung lewat `aiLog_` yang dibungkus.
+- **Uji lokal tanpa kunci asli:**
+  - set `ANTHROPIC_API_KEY=apa-saja` dan `SENA_TEST_API_URL=http://127.0.0.1:4555/v1/messages` (hanya alamat localhost yang diterima), lalu jalankan server Claude tiruan;
+  - JANGAN isi `SENA_TEST_API_URL` di Coolify.
+
 ---
 
 ## 7. Preferensi kerja pemilik

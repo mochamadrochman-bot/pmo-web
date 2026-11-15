@@ -131,6 +131,10 @@ const NAV_SNIPPET = String.raw`<style id="pmoNavACss">
 @media (max-width:760px){.pmo-pbar:not(.is-epc){display:none!important}.pmo-pbar{padding:0 10px}.pmo-crumb,.pmo-pbar .pmo-r-isi{display:none!important}.pmo-tab{padding:0 10px;font-size:13px}}
 html.m-mode .pmo-pbar,html.pp-open .pmo-pbar{display:none!important}
 @media print{.pmo-pbar{display:none!important}}
+.pmo-sena-hit{outline:3px solid var(--pri,#0f5fa8)!important;outline-offset:2px;border-radius:6px;background-color:color-mix(in srgb,var(--soft,#e8f3fb) 80%,transparent)!important;transition:outline-color 1.2s ease .8s}
+.pmo-sena-toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:70;padding:10px 16px;border-radius:12px;background:var(--ink,#132b43);color:var(--card,#fff);font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:min(560px,92vw)}
+.ntf-it.k-alert .ntf-av{background:#fde8e6;color:#b42318}
+html[data-theme="dark"] .ntf-it.k-alert .ntf-av{background:#3d1d20;color:#ff8c86}
 .pmo-fly{position:fixed;z-index:60;min-width:220px;max-width:280px;padding:8px;border-radius:12px;background:var(--pmo-side,#152435);color:var(--pmo-side-ink,#e3ecf4);box-shadow:0 12px 32px rgba(0,0,0,.28),0 0 0 1px rgba(255,255,255,.08);opacity:0;transform:translateX(-4px);transition:opacity .12s ease,transform .12s ease;pointer-events:none}
 .pmo-fly.on{opacity:1;transform:none;pointer-events:auto}
 .pmo-fly h5{margin:2px 6px 6px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;opacity:.75;display:flex;align-items:center;gap:6px}
@@ -236,6 +240,41 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
     isiBtns().forEach(function(b){var sp=b.querySelector('span');var t=String((sp&&sp.textContent)||b.textContent||'').trim();if(t)add(t,'Isi halaman ini',b,function(){b.click()},t)});
   };
 
+  /* ---------- sorot item dari tautan Sena / peringatan (?sena=<kode>) ---------- */
+  function senaFocus(){
+    var code=qp('sena');if(!code)return;
+    var norm=function(t){return String(t||'').toLowerCase().replace(/\s+/g,' ').trim()},key=norm(code),t0=Date.now(),phase=0;
+    function toast(msg){var d=document.createElement('div');d.className='pmo-sena-toast';d.setAttribute('role','status');d.textContent=msg;document.body.appendChild(d);setTimeout(function(){d.remove()},5200)}
+    function main(){return document.querySelector('main')||document.querySelector('.content')||document.body}
+    function find(){
+      var root=main(),best=null,cands=root.querySelectorAll('tr,li,.row,.it,.item,.card,.doc,[data-id],.gr,.grp-row,.tree-row');
+      for(var i=0;i<cands.length;i++){var el=cands[i];if(!el.offsetParent)continue;if(el.closest('.pmo-pbar,aside.side,.aic-pan,.pmo-qs-dialog'))continue;
+        var txt=norm(el.textContent);if(txt.indexOf(key)<0||txt.length>1600)continue;if(!best||el.textContent.length<best.textContent.length)best=el}
+      return best;
+    }
+    function hit(el){el.scrollIntoView({block:'center',behavior:'smooth'});el.classList.add('pmo-sena-hit');setTimeout(function(){el.classList.remove('pmo-sena-hit')},4500);
+      try{var u=new URL(location.href);u.searchParams.delete('sena');history.replaceState(history.state,'',u.toString())}catch(e){}}
+    function search(){
+      var inp=main().querySelector('input.q:not([disabled]),input[type="search"]:not(#pmoQuickDialog input):not([disabled])');
+      if(!inp||!inp.offsetParent)return false;
+      inp.value=code;['input','keyup','change'].forEach(function(ev){inp.dispatchEvent(new Event(ev,{bubbles:true}))});return true;
+    }
+    function openList(){
+      var L=isiBtns(),pick=null;
+      L.forEach(function(b){var t=norm(b.textContent);if(!pick&&(/^item\b/.test(t)||t==='dokumen'||/^register/.test(t)||/^dokumen proyek/.test(t)))pick=b});
+      if(pick&&!pick.classList.contains('on')){pick.click();return true}return false;
+    }
+    (function step(){
+      var el=find();if(el){hit(el);return}
+      if(Date.now()-t0>14000){toast('"'+code+'" tidak terlihat di halaman ini. Coba cari lewat kotak pencarian halaman.');return}
+      if(Date.now()-t0>2500){
+        if(phase===0){phase=1;if(openList()){setTimeout(step,900);return}}
+        if(phase===1){phase=2;if(search()){setTimeout(step,900);return}}
+      }
+      setTimeout(step,400);
+    })();
+  }
+
   /* ---------- baris navigasi (breadcrumb, tab EPCC, isi halaman) ---------- */
   var GRP={m1:'Dashboard Proyek',m3:'EPCC Control',m2:'Dokumen & Lapangan',m5:'Pelaporan Manajemen',minp:'Input & Data Proyek'};
   var TAG={m1:'M1',m3:'M3',m2:'M2·M4',m5:'M5',minp:'INPUT'};
@@ -301,7 +340,7 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
   var q=0;function queue(){if(!q)q=setTimeout(function(){q=0;render();addPicker()},120)}
   function init(){
     addPicker();
-    var tries=0;(function wait(){if(document.querySelector('aside.side nav[data-pmo-modular="1"]')||tries>40){build();bindFly();
+    var tries=0;(function wait(){if(document.querySelector('aside.side nav[data-pmo-modular="1"]')||tries>40){build();bindFly();setTimeout(senaFocus,600);
       var side=document.querySelector('aside.side');
       if(side&&window.MutationObserver)new MutationObserver(queue).observe(side,{subtree:true,attributes:true,attributeFilter:['class','hidden','style','aria-current']});
       if(window.MutationObserver)new MutationObserver(function(){if(!document.querySelector('.pmo-acc')||document.querySelectorAll('.theme-switch,.acm-theme').length>document.querySelectorAll('.pmo-acc').length)queue()}).observe(document.body,{childList:true,subtree:true});

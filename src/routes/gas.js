@@ -49,6 +49,7 @@ function legacyUser(u) {
     project: u.team || projectId,
     projectId,
     mustChangePassword: false,
+    senaAccess: u.role === 'admin' || u.sena_access === true,
   };
 }
 

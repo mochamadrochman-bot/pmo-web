@@ -60,7 +60,7 @@ router.get('/api/admin/users', onlyAdmin, async (req, res, next) => {
   try {
     const rows = await db.query(
       `select id, username, full_name, role, legacy_role, project_ids, status,
-              last_login_at, locked_until, must_change_password, created_at,
+              last_login_at, locked_until, must_change_password, created_at, sena_access,
               (locked_until is not null and locked_until > now()) as locked
          from users order by role, username`
     );
@@ -99,10 +99,10 @@ router.post('/api/admin/users', onlyAdmin, async (req, res, next) => {
     const hash = await argon2.hash(password);
     const row = await db.query(
       `insert into users (username, full_name, role, project_ids, hash, algo, status,
-                          must_change_password, access_migrated)
-       values ($1, $2, $3, $4, $5, 'argon2id', 'aktif', true, true)
+                          must_change_password, access_migrated, sena_access)
+       values ($1, $2, $3, $4, $5, 'argon2id', 'aktif', true, true, $6)
        returning id`,
-      [username, fullName || username, role, scope.ids, hash]
+      [username, fullName || username, role, scope.ids, hash, b.sena_access === true]
     );
     await audit(req.user, 'user_create', 'user', username, { role, project_ids: scope.ids });
     res.json({ ok: true, data: { id: row.rows[0].id, tempPassword: generated ? password : null } });
@@ -144,9 +144,11 @@ router.patch('/api/admin/users/:id', onlyAdmin, async (req, res, next) => {
     await db.query(
       `update users set full_name = $2, role = $3, status = $4, project_ids = $5,
               locked_until = case when $6 then null else locked_until end,
-              failed_count = case when $6 then 0 else failed_count end
+              failed_count = case when $6 then 0 else failed_count end,
+              sena_access = $7
         where id = $1`,
-      [target.id, fullName || target.username, role, status, projectIds, b.unlock === true]
+      [target.id, fullName || target.username, role, status, projectIds, b.unlock === true,
+       b.sena_access !== undefined ? b.sena_access === true : target.sena_access === true]
     );
     // Hak yang berubah langsung berlaku: sesi lama dikeluarkan.
     if (role !== target.role || status !== target.status ||
@@ -155,7 +157,7 @@ router.patch('/api/admin/users/:id', onlyAdmin, async (req, res, next) => {
     }
     await audit(req.user, 'user_update', 'user', target.username, {
       from: { role: target.role, status: target.status, project_ids: target.project_ids },
-      to: { role, status, project_ids: projectIds },
+      to: { role, status, project_ids: projectIds, sena_access: b.sena_access !== undefined ? b.sena_access === true : target.sena_access === true },
       unlock: b.unlock === true,
     });
     res.json({ ok: true, data: null });
