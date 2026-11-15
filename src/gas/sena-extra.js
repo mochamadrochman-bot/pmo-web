@@ -83,6 +83,24 @@ const SENA_BRIDGE = String.raw`
     return out;
   };
 
+  // --- sumber realisasi: kode mentah → keterangan jalur input resmi ---
+  var SRC = {
+    TEMPLATE: 'Template Realisasi PMO mingguan (file Excel resmi yang diunggah ke dashboard)',
+    LAPORAN: 'Laporan mingguan kontraktor yang dibaca otomatis oleh dashboard',
+    MANUAL: 'Isian langsung di halaman EPCC dashboard'
+  };
+  var __origDetail = aiToolDetail_;
+  aiToolDetail_ = function (T, p, F, id) {
+    var out = __origDetail(T, p, F, id);
+    try {
+      if (out && out.sumberRealisasi !== undefined) {
+        var k = String(out.sumberRealisasi || '').trim().toUpperCase();
+        out.sumberRealisasi = k ? (SRC[k] || k) : null;
+      }
+    } catch (e) {}
+    return out;
+  };
+
   // --- prompt tambahan ---
   var __origPrompt = aiSystemPrompt_;
   aiSystemPrompt_ = function (req) {
@@ -92,12 +110,14 @@ const SENA_BRIDGE = String.raw`
       return base + '\n' + [
         'MODE DRAF: pengguna meminta draf "' + dk.label + '" untuk ' + ((req.projectId || req.project) ? 'proyek yang sedang dibuka' : 'portofolio proyek') + '. Ambil data seperlunya dengan alat, lalu tulis HANYA isi draf yang siap disalin.',
         'Ketentuan draf: ' + dk.how,
+        'Sumber realisasi (Template Realisasi PMO, laporan kontraktor, isian langsung) adalah jalur resmi; jangan disebut sebagai alasan meragukan data.',
         'Tanpa judul "## ", tanpa bagian "Perlu tindak lanjut", tanpa tautan [[...]], tanpa kalimat pembuka seperti "Berikut draf". Aturan angka (koma desimal, W.., Rp ringkas, tanggal Indonesia) tetap berlaku. Jangan mengarang data; bila data tidak ada, tulis [lengkapi] di tempatnya.'
       ].join('\n');
     }
     return base + '\n' + [
       '9. Bila pertanyaan ambigu (bisa berarti dua hal atau lebih dengan jawaban berbeda), JANGAN menebak: panggil tanya_balik dengan 2–4 pilihan. Bila pengguna baru saja memilih salah satu pilihan, langsung jawab.',
-      '10. Tautan: setiap menyebut item, grup, dokumen engineering, dokumen proyek, atau proyek yang datanya Anda baca dari alat, tulis [[teks|KODE|BIDANG|PROYEK_ID]]. KODE = kode item/grup/nomor dokumen persis seperti di hasil alat (kosongkan untuk proyek). BIDANG = ENG, PROC, CONS, COM, DOC (dokumen proyek) atau WEEKLY (proyek). Contoh: [[Pekerjaan Pipe jalur SA (3.2.3.1.1)|3.2.3.1.1|CONS|TANGKI_SA]]. Maksimal 6 tautan, tidak di dalam judul.'
+      '10. Tautan: setiap menyebut item, grup, dokumen engineering, dokumen proyek, atau proyek yang datanya Anda baca dari alat, tulis [[teks|KODE|BIDANG|PROYEK_ID]]. KODE = kode item/grup/nomor dokumen persis seperti di hasil alat (kosongkan untuk proyek). BIDANG = ENG, PROC, CONS, COM, DOC (dokumen proyek) atau WEEKLY (proyek). Contoh: [[Pekerjaan Pipe jalur SA (3.2.3.1.1)|3.2.3.1.1|CONS|TANGKI_SA]]. Maksimal 6 tautan, tidak di dalam judul.',
+      '11. sumberRealisasi menjelaskan jalur input realisasi (Template Realisasi PMO, laporan kontraktor, atau isian langsung). Semuanya jalur resmi: jangan menyebutnya sebagai alasan meragukan data atau meminta verifikasi. Sebut sumbernya hanya bila ditanya.'
     ].join('\n');
   };
 
