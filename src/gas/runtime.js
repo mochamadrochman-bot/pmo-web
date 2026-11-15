@@ -519,7 +519,7 @@ const HTML_PATCHES = [
     find: "if(window.pmoIcons)pmoIcons(document.getElementById('reports'));\n}\ndocument.addEventListener('click',function(event){if(!event.target.closest('.period-control'))",
     replace: "if(window.pmoIcons)pmoIcons(document.getElementById('reports'));\ntry{pmoExecGroups(data)}catch(e){console.warn('pmoExecGroups',e)}\n}\ndocument.addEventListener('click',function(event){if(!event.target.closest('.period-control'))",
   },
-  { file: 'ExecutiveDashboard', find: "document.addEventListener('DOMContentLoaded',init);else init();\n})();\n</script>\n</body>", replace: "document.addEventListener('DOMContentLoaded',init);else init();\n})();\n</script>\n" + EXEC_GROUPS_JS + '</body>' },
+  { file: 'ExecutiveDashboard', find: "document.addEventListener('DOMContentLoaded',init);else init();\n})();\n</script>\n</body>", replace: "document.addEventListener('DOMContentLoaded',init);else init();\n})();\n</script>\n" + EXEC_GROUPS_JS + require('./groups-r3').EXEC_MOBILE_GROUPS_JS + '</body>' },
   // Tambah/Edit Proyek: label pilihan sub-proyek diperjelas.
   {
     file: 'ProjectSetup',
@@ -716,7 +716,8 @@ function load() {
     else console.warn(JSON.stringify({ ev: 'gas_patch_miss', file: p.file }));
   }
 
-  const code = gsFiles.map((f) => '// ---- ' + f.name + '.gs\n' + f.src).join('\n;\n');
+  const code = gsFiles.map((f) => '// ---- ' + f.name + '.gs\n' + f.src).join('\n;\n') +
+    '\n;\n// ---- pres-video (server)\n' + require('./pres-video').PRES_VIDEO_GS;
   const fnNames = new Set();
   const varNames = new Set();
   for (const m of code.matchAll(/^function\s+([A-Za-z_$][\w$]*)\s*\(/gm)) fnNames.add(m[1]);
@@ -725,7 +726,7 @@ function load() {
   const ret = 'return {' + exportList.map((n) => JSON.stringify(n) + ': (typeof ' + n + ' === "undefined" ? undefined : ' + n + ')').join(',') + '};';
 
   // Layanan pengganti diberikan sebagai parameter fungsi (lebih cepat daripada 'with').
-  const body = code + '\n' + BRIDGE_CODE + '\n' + require('./sena-extra').SENA_BRIDGE + '\n' + ret;
+  const body = code + '\n' + BRIDGE_CODE + '\n' + require('./sena-extra').SENA_BRIDGE + '\n' + require('./groups-r3').GROUPS_BRIDGE + '\n' + ret;
   // eslint-disable-next-line no-new-func
   factory = new Function(...GLOBAL_NAMES, '__bridge', body);
   // Fungsi yang boleh dipanggil dari halaman: sama seperti google.script.run,

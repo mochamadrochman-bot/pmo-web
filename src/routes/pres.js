@@ -237,6 +237,9 @@ router.get('/api/pres/set', requireUser, async (req, res, next) => {
       )).rows;
     }
     const full = items.map((x) => {
+      if (x && x.type === 'video') {
+        return { type: 'video', project: String(x.project || ''), week: Number(x.week) || 0, pos: x.pos || 'end', title: String(x.title || '') };
+      }
       const m = meta.find((y) => y.deck_id === Number(x.deck) && y.page_no === Number(x.page));
       return m ? { deck: m.deck_id, page: m.page_no, pos: x.pos || 'end', width: m.width, height: m.height, title: m.title } : null;
     }).filter(Boolean);
@@ -251,9 +254,14 @@ router.put('/api/pres/set', requireUser, onlyManager, async (req, res, next) => 
     const b = req.body || {};
     const key = String(b.key || '').toUpperCase().replace(/^EXECUTIVE$/, 'executive').replace(/^WEEKLY:/, 'weekly:');
     if (!KEY_RE.test(key) || key === '_settings') return bad(res, 'Kunci presentasi tidak valid.');
-    const items = (Array.isArray(b.items) ? b.items : []).slice(0, 200).map((x) => ({
-      deck: Number(x.deck), page: Number(x.page), pos: String(x.pos || 'end').slice(0, 200),
-    })).filter((x) => Number.isInteger(x.deck) && Number.isInteger(x.page));
+    const items = (Array.isArray(b.items) ? b.items : []).slice(0, 200).map((x) => {
+      if (x && x.type === 'video') {
+        const project = String(x.project || '').trim().slice(0, 60), week = Number(x.week);
+        if (!/^[A-Za-z0-9_\- .]+$/.test(project) || !Number.isInteger(week) || week < 1 || week > 2000) return null;
+        return { type: 'video', project, week, pos: String(x.pos || 'end').slice(0, 200), title: String(x.title || '').slice(0, 160) };
+      }
+      return { deck: Number(x.deck), page: Number(x.page), pos: String(x.pos || 'end').slice(0, 200) };
+    }).filter((x) => x && (x.type === 'video' || (Number.isInteger(x.deck) && Number.isInteger(x.page))));
     await db.query(
       `insert into pres_sets (key, data, updated_by, updated_at) values ($1, $2, $3, now())
        on conflict (key) do update set data = excluded.data, updated_by = excluded.updated_by, updated_at = now()`,

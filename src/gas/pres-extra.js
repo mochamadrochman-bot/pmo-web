@@ -89,6 +89,11 @@ const PRES_EXTRA_JS = String.raw`<script>
       '.px-up-box{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px;border:1px dashed #9fb7cc;border-radius:12px;background:#fff;margin-bottom:14px}',
       '.px-prog{height:6px;border-radius:99px;background:#e2e8f0;overflow:hidden;flex:1;min-width:160px}.px-prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,#38bdf8,#4fd1a0);transition:width .3s}',
       '.px-f{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.px-f label{font-size:12px;font-weight:600;color:#5b7085}.px-f label input{margin-top:4px}',
+      '.px-video{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:24px;overflow:hidden}.px-video iframe,.px-video video{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}',
+      '.px-vcap{position:absolute;left:0;right:0;top:0;z-index:2;display:flex;align-items:center;gap:10px;padding:14px 20px;background:linear-gradient(180deg,rgba(0,0,0,.65),transparent);color:#fff;font:700 16px Inter,system-ui,sans-serif;pointer-events:none}.px-vcap small{font-weight:500;opacity:.8}',
+      '.px-vempty{position:absolute;inset:0;display:grid;place-items:center;color:#cfd8e3;font:600 16px Inter,system-ui,sans-serif;text-align:center;padding:24px}',
+      '.px-vic{width:96px;aspect-ratio:16/9;border-radius:6px;background:#111;color:#fff;display:grid;place-items:center}.px-vic svg{width:26px;height:26px}',
+      '.px-vadd{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px;border:1px dashed #c9d6e2;border-radius:12px;background:#fff;margin-bottom:10px}.px-vadd select{padding:8px 10px;border:1px solid #c9d6e2;border-radius:9px;font:13px Inter,system-ui,sans-serif;background:#fff;color:#132b43;min-width:200px;flex:1}',
       '@media (max-width:760px){.px-row{grid-template-columns:72px minmax(0,1fr)}.px-row img{width:72px}.px-row select,.px-row .px-acts{grid-column:1/-1}.px-f{grid-template-columns:minmax(0,1fr)}}'
     ].join('');
     document.head.appendChild(st);
@@ -146,6 +151,30 @@ const PRES_EXTRA_JS = String.raw`<script>
     return {title:x.title+' · hal. '+x.page,extra:true,html:'<div class="px-pdf" style="aspect-ratio:'+x.width+'/'+x.height+'"><img src="/api/pres/img/'+x.deck+'/'+x.page+'" alt="'+esc(x.title)+' halaman '+x.page+'" loading="eager"></div>',
       after:function(card){card.classList.add('px-bleed')}};
   }
+  /* ---------- slide video proyek (Executive) ---------- */
+  function embedOf(raw){
+    raw=String(raw||'').trim();if(!/^https:\/\//i.test(raw))return null;var u;try{u=new URL(raw)}catch(e){return null}
+    if(u.hostname==='drive.google.com'){var m=u.pathname.match(/\/file\/d\/([^/]+)/i),id=(m&&m[1])||u.searchParams.get('id');return id?{src:'https://drive.google.com/file/d/'+encodeURIComponent(id)+'/preview',file:false}:null}
+    if(u.hostname==='youtu.be'||/(^|\.)youtube\.com$/i.test(u.hostname)){var y=u.hostname==='youtu.be'?u.pathname.split('/').filter(Boolean)[0]:(u.searchParams.get('v')||((u.pathname.match(/\/(?:embed|shorts|live)\/([^/]+)/)||[])[1]));return y?{src:'https://www.youtube-nocookie.com/embed/'+encodeURIComponent(y)+'?rel=0',file:false}:null}
+    if(/\.(mp4|webm|ogg)$/i.test(u.pathname))return {src:raw,file:true};
+    if(u.hostname==='1drv.ms'||u.hostname==='onedrive.live.com'||/(^|\.)sharepoint\.com$/i.test(u.hostname)){u.searchParams.set('action','embedview');return {src:u.href,file:false}}
+    return null;
+  }
+  function vidInfo(x){var p=(cache.vids||{})[x.project];if(!p)return null;var v=(p.videos||[]).filter(function(y){return y.week===Number(x.week)})[0];return v?{name:p.name,week:v.week,range:v.range,url:v.url}:null}
+  function videoSlide(x){
+    var v=vidInfo(x),e=v&&embedOf(v.url),nm=v?v.name:(x.title||x.project),cap=esc(nm)+' <small>· Video W'+esc(x.week)+(v&&v.range?' · '+esc(v.range):'')+'</small>';
+    var inner=e?'':'<div class="px-vempty">Video '+esc(nm)+' minggu W'+esc(x.week)+' tidak ditemukan atau tautannya tidak bisa diputar.</div>';
+    return {title:'Video · '+nm+' · W'+x.week,extra:true,html:'<div class="px-video" data-src="'+esc(e?e.src:'')+'" data-file="'+(e&&e.file?1:0)+'"><div class="px-vcap">'+cap+'</div>'+inner+'</div>',
+      after:function(card){card.classList.add('px-bleed');
+        var box=card.querySelector('.px-video');if(!box||!box.getAttribute('data-src'))return;
+        var slide=card.closest('.pp-slide')||card.parentNode;
+        var sync=function(){var on=slide&&!slide.classList.contains('prev')&&!slide.classList.contains('next');var cur=box.querySelector('iframe,video');
+          if(on&&!cur){var src=box.getAttribute('data-src');box.insertAdjacentHTML('beforeend',box.getAttribute('data-file')==='1'?'<video controls playsinline preload="metadata" src="'+esc(src)+'"></video>':'<iframe title="Video proyek" src="'+esc(src)+'" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>')}
+          else if(!on&&cur)cur.remove()};
+        if(slide&&window.MutationObserver)new MutationObserver(sync).observe(slide,{attributes:true,attributeFilter:['class']});
+        setTimeout(sync,50)}};
+  }
+  function slideOf(x){return x&&x.type==='video'?videoSlide(x):pdfSlide(x)}
   function decorate(cfg,slides){
     css();
     var S=cache.settings||{},bn=banners(),mine=cache.key===keyOf(cfg);
@@ -163,9 +192,9 @@ const PRES_EXTRA_JS = String.raw`<script>
       else end.push(x);
     });
     var out=[coverSlide(cfg,S,bn)];
-    start.forEach(function(x){out.push(pdfSlide(x))});
-    ord.forEach(function(x){if(!hid[x.t])out.push(x.sl);(after[x.t]||[]).forEach(function(y){out.push(pdfSlide(y))})});
-    end.forEach(function(x){out.push(pdfSlide(x))});
+    start.forEach(function(x){out.push(slideOf(x))});
+    ord.forEach(function(x){if(!hid[x.t])out.push(x.sl);(after[x.t]||[]).forEach(function(y){out.push(slideOf(y))})});
+    end.forEach(function(x){out.push(slideOf(x))});
     out.push(thanksSlide(cfg,S,bn));
     return out;
   }
@@ -196,6 +225,8 @@ const PRES_EXTRA_JS = String.raw`<script>
     var key=keyOf(cfg);cache.key=key;
     var proj=key&&key.indexOf('weekly:')===0?key.slice(7):'';
     var vids=Promise.race([galleryPhotos(proj),new Promise(function(r){setTimeout(function(){r(null)},7000)})]).then(function(a){cache.photos=a||galMemo[proj||'*']||[]}).catch(function(){cache.photos=[]});
+    var vv=key==='executive'?Promise.race([gs('getPresVideoOptions',[tok()]),new Promise(function(r){setTimeout(function(){r(null)},8000)})]).then(function(d){var m={};((d&&d.projects)||[]).forEach(function(p){m[p.id]=p});cache.vids=m;cache.vidList=(d&&d.projects)||[]}).catch(function(){cache.vids={};cache.vidList=[]}):Promise.resolve(cache.vids={});
+    vids=Promise.all([vids,vv]);
     if(!key){cache.items=[];return vids}
     cache.err='';
     var fb=nameKeyOf(cfg);
@@ -222,7 +253,8 @@ const PRES_EXTRA_JS = String.raw`<script>
   function manage(cfg){
     css();
     var key=cache.key||keyOf(cfg);if(!key)return;
-    var items=cache.items.map(function(x){return {deck:x.deck,page:x.page,pos:x.pos,title:x.title,width:x.width,height:x.height}});
+    var items=cache.items.map(function(x){return x.type==='video'?{type:'video',project:x.project,week:x.week,pos:x.pos,title:x.title}:{deck:x.deck,page:x.page,pos:x.pos,title:x.title,width:x.width,height:x.height}});
+    var VIC='<span class="px-vic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 8l6 4-6 4z"/><rect x="2" y="4" width="20" height="16" rx="3"/></svg></span>';
     var S=Object.assign({},cache.settings||{}),dirty=false,lib=[];
     var hid0={};((cache.layout&&cache.layout.hidden)||[]).forEach(function(t){hid0[t]=1});
     var base=cache.base.map(function(t){return {t:t,show:!hid0[t]}});
@@ -244,9 +276,17 @@ const PRES_EXTRA_JS = String.raw`<script>
         '<h4 class="px-h4">Slide dashboard <span>'+nShow+' dari '+base.length+' ditampilkan</span></h4><p class="px-note">Centang untuk menampilkan, atur urutan dengan ↑ ↓. Halaman sampul selalu pertama dan halaman Terima Kasih selalu terakhir.</p>'+
         base.map(function(b,i){return '<div class="px-brow'+(b.show?'':' off')+'" data-b="'+i+'"><label><input type="checkbox"'+(b.show?' checked':'')+'><span>'+esc(b.t||'Slide '+(i+1))+'</span></label><div class="px-acts"><button type="button" class="px-btn sm" data-bm="-1" title="Naik"'+(i===0?' disabled':'')+'>↑</button><button type="button" class="px-btn sm" data-bm="1" title="Turun"'+(i===base.length-1?' disabled':'')+'>↓</button></div></div>'}).join('')+
         '<div style="display:flex;gap:8px;margin:8px 0 22px"><button type="button" class="px-btn sm" data-bx="all">Tampilkan semua</button><button type="button" class="px-btn sm" data-bx="reset">Kembalikan urutan bawaan</button></div>'+
-        '<h4 class="px-h4">Slide tambahan (PDF) <span>'+items.length+' slide</span></h4><p class="px-note">Tambah slide dari tab <b>Pustaka PDF</b>.</p>'+
-        (items.length?items.map(function(x,i){return '<div class="px-row" data-i="'+i+'"><img src="/api/pres/img/'+x.deck+'/'+x.page+'?t=1" alt=""><div><b>'+esc(x.title||'Materi')+'</b><small>Halaman '+x.page+'</small></div><select aria-label="Posisi slide">'+posOpts(x.pos)+'</select><div class="px-acts"><button type="button" class="px-btn sm" data-m="-1" title="Naik"'+(i===0?' disabled':'')+'>↑</button><button type="button" class="px-btn sm" data-m="1" title="Turun"'+(i===items.length-1?' disabled':'')+'>↓</button><button type="button" class="px-btn sm" data-m="del" title="Hapus dari presentasi">✕</button></div></div>'}).join(''):'<div class="px-empty">Belum ada slide tambahan untuk presentasi ini.</div>');
+        (key==='executive'?vidAddHtml():'')+
+        '<h4 class="px-h4">Slide tambahan <span>'+items.length+' slide</span></h4><p class="px-note">Tambah slide PDF dari tab <b>Pustaka PDF</b>'+(key==='executive'?', atau video proyek dari bagian di atas':'')+'.</p>'+
+        (items.length?items.map(function(x,i){return '<div class="px-row" data-i="'+i+'">'+(x.type==='video'?VIC+'<div><b>'+esc(x.title||x.project)+'</b><small>Video proyek · W'+esc(x.week)+'</small></div>':'<img src="/api/pres/img/'+x.deck+'/'+x.page+'?t=1" alt=""><div><b>'+esc(x.title||'Materi')+'</b><small>Halaman '+x.page+'</small></div>')+'<select aria-label="Posisi slide">'+posOpts(x.pos)+'</select><div class="px-acts"><button type="button" class="px-btn sm" data-m="-1" title="Naik"'+(i===0?' disabled':'')+'>↑</button><button type="button" class="px-btn sm" data-m="1" title="Turun"'+(i===items.length-1?' disabled':'')+'>↓</button><button type="button" class="px-btn sm" data-m="del" title="Hapus dari presentasi">✕</button></div></div>'}).join(''):'<div class="px-empty">Belum ada slide tambahan untuk presentasi ini.</div>');
     }
+    function vidAddHtml(){
+      var L=cache.vidList||[];
+      if(!L.length)return '<h4 class="px-h4">Slide video proyek <span>opsional</span></h4><div class="px-empty" style="margin-bottom:22px">Belum ada video proyek. Isi tautan video di Input Progress (kolom video minggu itu), lalu buka panel ini lagi.</div>';
+      return '<h4 class="px-h4">Slide video proyek <span>opsional</span></h4><p class="px-note">Pilih proyek dan minggunya. Hanya minggu yang punya video yang muncul.</p>'+
+        '<div class="px-vadd"><select data-vp aria-label="Proyek">'+L.map(function(p){return '<option value="'+esc(p.id)+'">'+esc(p.name)+' ('+p.videos.length+' video)</option>'}).join('')+'</select><select data-vw aria-label="Minggu">'+weekOpts(L[0])+'</select><button type="button" class="px-btn pri" data-vadd="1">Tambah video</button></div><div style="height:12px"></div>';
+    }
+    function weekOpts(p){return ((p&&p.videos)||[]).map(function(v){return '<option value="'+v.week+'">W'+v.week+(v.range?' · '+esc(v.range):'')+'</option>'}).join('')}
     function drawTxt(){
       bd.innerHTML='<p class="px-note">Teks ini dipakai di halaman sampul dan halaman Terima Kasih pada semua presentasi (Executive dan Weekly). Kosongkan untuk memakai teks bawaan.</p><div class="px-f">'+
         [['coverTitle','Judul sampul','Rapat Progres Proyek'],['coverSub','Subjudul sampul','otomatis: nama halaman · periode'],['thanksSub','Subjudul terima kasih','Sesi diskusi & tanya jawab'],['thanksContact','Kontak / keterangan penutup','mis. PMO Infrastruktur · ext. 1234']].map(function(f){return '<label>'+f[1]+'<input data-k="'+f[0]+'" maxlength="200" placeholder="'+esc(f[2])+'" value="'+esc(S[f[0]]||'')+'"></label>'}).join('')+'</div>';
@@ -304,10 +344,13 @@ const PRES_EXTRA_JS = String.raw`<script>
     }
     function show(t){tab=t;m.querySelectorAll('.px-tabs button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-t')===t)});if(t==='set')drawSet();else if(t==='lib')drawLib();else drawTxt()}
     m.querySelector('.px-tabs').onclick=function(e){var b=e.target.closest('button[data-t]');if(b)show(b.getAttribute('data-t'))};
-    bd.addEventListener('change',function(e){var br=e.target.closest('.px-brow');if(br&&e.target.type==='checkbox'){base[Number(br.getAttribute('data-b'))].show=e.target.checked;mark();drawSet();return}var r=e.target.closest('.px-row');if(r&&e.target.tagName==='SELECT'){items[Number(r.getAttribute('data-i'))].pos=e.target.value;mark()}});
+    bd.addEventListener('change',function(e){if(e.target.hasAttribute&&e.target.hasAttribute('data-vp')){var pp=(cache.vids||{})[e.target.value];var ws=bd.querySelector('[data-vw]');if(ws)ws.innerHTML=weekOpts(pp);return}var br=e.target.closest('.px-brow');if(br&&e.target.type==='checkbox'){base[Number(br.getAttribute('data-b'))].show=e.target.checked;mark();drawSet();return}var r=e.target.closest('.px-row');if(r&&e.target.tagName==='SELECT'){items[Number(r.getAttribute('data-i'))].pos=e.target.value;mark()}});
     bd.addEventListener('input',function(e){var k=e.target.getAttribute&&e.target.getAttribute('data-k');if(k){S[k]=e.target.value;mark()}});
     bd.addEventListener('click',function(e){
       var b=e.target.closest('button');if(!b)return;
+      if(b.getAttribute('data-vadd')){var ps=bd.querySelector('[data-vp]'),wsel=bd.querySelector('[data-vw]');if(!ps||!wsel||!wsel.value)return;var pj=(cache.vids||{})[ps.value];
+        if(items.some(function(x){return x.type==='video'&&x.project===ps.value&&Number(x.week)===Number(wsel.value)})){say('Video ini sudah ada di presentasi.',true);return}
+        items.push({type:'video',project:ps.value,week:Number(wsel.value),pos:'end',title:(pj?pj.name:ps.value)});mark();say('Video ditambahkan di akhir presentasi. Atur posisinya bila perlu, lalu Simpan.');drawSet();return}
       var bb=b.closest('.px-brow');
       if(bb&&b.getAttribute('data-bm')){var bi=Number(bb.getAttribute('data-b')),bj=bi+Number(b.getAttribute('data-bm'));var bt=base[bi];base[bi]=base[bj];base[bj]=bt;mark();drawSet();return}
       if(b.getAttribute('data-bx')==='all'){base.forEach(function(x){x.show=true});mark();drawSet();return}
@@ -329,7 +372,7 @@ const PRES_EXTRA_JS = String.raw`<script>
     m.querySelector('.px-x').onclick=close;m.querySelector('[data-x=close]').onclick=close;
     saveBtn.onclick=function(){
       saveBtn.disabled=true;say('Menyimpan…');
-      api('/api/pres/set',{method:'PUT',body:JSON.stringify({key:key,items:items.map(function(x){return {deck:x.deck,page:x.page,pos:x.pos}}),layout:{order:base.map(function(x){return x.t}),hidden:base.filter(function(x){return !x.show}).map(function(x){return x.t})},settings:S})})
+      api('/api/pres/set',{method:'PUT',body:JSON.stringify({key:key,items:items.map(function(x){return x.type==='video'?{type:'video',project:x.project,week:x.week,pos:x.pos,title:x.title}:{deck:x.deck,page:x.page,pos:x.pos}}),layout:{order:base.map(function(x){return x.t}),hidden:base.filter(function(x){return !x.show}).map(function(x){return x.t})},settings:S})})
       .then(function(){dirty=false;window.removeEventListener('keydown',onKey,true);m.remove();
         if(window.pmoPresent&&pmoPresent.isOpen()){pmoPresent.close();setTimeout(function(){if(typeof window.pmoPresentStart==='function')window.pmoPresentStart()},650)}})
       .catch(function(e){saveBtn.disabled=false;say(e.message,true)});

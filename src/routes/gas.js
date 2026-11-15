@@ -12,6 +12,7 @@ const runtime = require('../gas/runtime');
 const store = require('../gas/store');
 const { PORTAL_INTRO_SNIPPET } = require('../gas/portal-intro');
 const navTheme = require('../gas/nav-theme');
+const groupsR3 = require('../gas/groups-r3');
 const db = require('../db');
 const groups = require('../lib/groups');
 const { clearCache } = require('../gas/services');
@@ -50,6 +51,7 @@ function legacyUser(u) {
     projectId,
     mustChangePassword: false,
     senaAccess: u.role === 'admin' || u.sena_access === true,
+    projectIds: ids.slice(),
   };
 }
 
@@ -105,8 +107,12 @@ const UJI_BANNER = '<div id="pmoUjiBanner" style="position:fixed;left:0;right:0;
 function wrapPage(out, opts) {
   let html = out.getContent();
   if (opts && opts.intro) html = /<\/body>/i.test(html) ? html.replace(/<\/body>/i, PORTAL_INTRO_SNIPPET + '</body>') : html + PORTAL_INTRO_SNIPPET;
-  if (/<\/body>/i.test(html)) html = html.replace(/<\/body>(?![\s\S]*<\/body>)/i, navTheme.NAV_SNIPPET + '</body>');
-  else html += navTheme.NAV_SNIPPET;
+  let tail = navTheme.NAV_SNIPPET;
+  if (opts && ['monthly', 'report', 'monthlydoc', 'weeklyprint', 'input'].includes(opts.page)) {
+    tail += groupsR3.selectGroupsSnippet(groups.all(), opts.page);
+  }
+  if (/<\/body>/i.test(html)) html = html.replace(/<\/body>(?![\s\S]*<\/body>)/i, () => tail + '</body>');
+  else html += tail;
   if (store.mode() === 'uji') html = /<\/body>/i.test(html) ? html.replace(/<\/body>/i, UJI_BANNER + '</body>') : html + UJI_BANNER;
   const head = [
     '<meta charset="utf-8">',
@@ -167,6 +173,7 @@ router.get('/app', requireUser, async (req, res, next) => {
     res.set('Cache-Control', 'no-store');
     res.type('html').send(wrapPage(out, {
       intro: page === 'portal' && store.introEnabled(),
+      page,
       accent: navTheme.cleanAccent(req.user.ui_accent) || store.defaultAccent(),
     }));
   } catch (err) {

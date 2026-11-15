@@ -100,10 +100,53 @@ aside.side .pmo-mgrp[data-mod-grp="isi"]{display:none!important}
 .pmo-acc-note{font-size:11.5px;color:var(--muted,#5b7085);margin:6px 2px 0;line-height:1.4}
 </style>`;
 
+
+/** Mode presentasi (Executive & Weekly): lapisan, sampul, penutup, layar pembuka, dan panel materi ikut tema. */
+function presCss() {
+  const T = {
+    sage: { d: '15,42,29', dh: '#0F2A1D', ah: '#375534', hero: '#24452f', acc: '#AEC3B0', accRgb: '174,195,176', acc2: '#E3EED4', mut: '#AEC3B0', act: '55,85,52' },
+    mocha: { d: '59,42,31', dh: '#3B2A1F', ah: '#6F4E37', hero: '#5b4231', acc: '#D4B996', accRgb: '212,185,150', acc2: '#EDE3D4', mut: '#D4B996', act: '111,78,55' },
+  };
+  return Object.keys(T).map((k) => {
+    const t = T[k], A = 'html[data-accent="' + k + '"]:not([data-theme="dark"]) ';
+    return [
+      A + '.pp{background:rgba(' + t.d + ',.62)!important}',
+      A + '.pp-k small,' + A + '.pp-hint,' + A + '.pp-list button small{color:' + t.mut + '!important}',
+      A + '.pp-cnt,' + A + '.pp-scroll-hint{color:' + t.acc2 + '!important}',
+      A + '.pp-scroll-hint{background:rgba(' + t.d + ',.7)!important}',
+      A + '.pp-nav{background:rgba(' + t.d + ',.6)!important}',
+      A + '.pp-nav:hover{background:rgba(' + t.act + ',.85)!important}',
+      A + '.pp-dots button.on{background:' + t.acc + '!important}',
+      A + '.pp-list{background:rgba(' + t.d + ',.92)!important}',
+      A + '.pp-list button.on{border-color:' + t.acc + '!important;background:rgba(' + t.accRgb + ',.18)!important}',
+      A + '.pp-boot{background:radial-gradient(900px 600px at 50% 42%,' + t.hero + ' 0%,rgba(' + t.d + ',.97) 68%)!important}',
+      A + '.pp-boot-ring,' + A + '.px-ring{background:conic-gradient(from 0deg,rgba(' + t.accRgb + ',0) 0 55%,' + t.acc + ' 80%,' + t.acc2 + ' 100%)!important}',
+      A + '.pp-boot-logo,' + A + '.px-logo{box-shadow:0 0 0 10px rgba(' + t.accRgb + ',.10),0 24px 70px rgba(0,0,0,.45)!important}',
+      A + '.pp-boot-sub,' + A + '.pp-boot-step,' + A + '.px-meta,' + A + '.px-foot{color:' + t.mut + '!important}',
+      A + '.pp-boot-bar i,' + A + '.px-bar{background:linear-gradient(90deg,' + t.acc + ',' + t.acc2 + ')!important;box-shadow:0 0 14px rgba(' + t.accRgb + ',.45)!important}',
+      A + '.pp-card.px-bleed,' + A + '.px-bleed{background:' + t.dh + '!important}',
+      A + '.px-hero{background:radial-gradient(120% 90% at 50% 40%,' + t.hero + ' 0%,' + t.dh + ' 72%)!important;color:#fff!important}',
+      A + '.px-shade{background:linear-gradient(180deg,rgba(' + t.d + ',.50) 0%,rgba(' + t.d + ',.70) 55%,rgba(' + t.d + ',.94) 100%),radial-gradient(70% 60% at 50% 45%,rgba(' + t.accRgb + ',.16),transparent 70%)!important}',
+      A + '.px-eye,' + A + '.px-sub{color:' + t.acc2 + '!important}',
+      A + '.px-h{background-image:linear-gradient(100deg,#ffffff 0%,' + t.acc2 + ' 40%,' + t.acc + ' 55%,#ffffff 75%)!important}',
+      A + '.px-hd{background:' + t.dh + '!important}',
+      A.trim() + ':is([data-page="weekly"],[data-page="input"],[data-page="monthly"],[data-page="project"]) .hero h1 span{color:' + t.acc2 + '!important}',
+      A.trim() + ':is([data-page="weekly"],[data-page="input"],[data-page="monthly"],[data-page="project"]) .hero small{color:' + t.mut + '!important}',
+      A + '.px-hd small{color:' + t.mut + '!important}',
+      A + '.px-btn.pri{background:' + t.ah + '!important;border-color:' + t.ah + '!important;color:#fff!important}',
+      A + '.px-h4{color:' + t.dh + '!important}',
+      A + '.px-mg input[type=checkbox]{accent-color:' + t.ah + '}',
+      A + '.px-tabs button.on{color:' + t.dh + '!important;border-bottom-color:' + t.ah + '!important}',
+      A + '.px-tabs{background:color-mix(in srgb,' + t.acc2 + ' 45%,#fff)!important}',
+    ].join('\n');
+  }).join('\n');
+}
+
 /** Disisipkan di <head> (paling awal) supaya tidak ada kedipan warna saat halaman dibuka. */
 function accentHead(accent) {
   const a = cleanAccent(accent) || 'blue';
-  return `<script>(function(d){d.setAttribute('data-accent','${a}');try{d.setAttribute('data-page',(new URLSearchParams(location.search).get('page')||'').toLowerCase())}catch(e){}})(document.documentElement);window.__pmoAccent='${a}';</script>\n${ACCENT_CSS}`;
+  const css = ACCENT_CSS.replace('</style>', presCss() + '\n</style>');
+  return `<script>(function(d){d.setAttribute('data-accent','${a}');try{d.setAttribute('data-page',(new URLSearchParams(location.search).get('page')||'').toLowerCase())}catch(e){}})(document.documentElement);window.__pmoAccent='${a}';</script>\n${css}`;
 }
 
 const NAV_SNIPPET = String.raw`<style id="pmoNavACss">
@@ -121,7 +164,7 @@ const NAV_SNIPPET = String.raw`<style id="pmoNavACss">
 .pmo-tab.on{color:var(--pri-ink,#0f5fa8);border-bottom-color:var(--pri,#0f5fa8)}
 .pmo-tab:focus-visible,.pmo-chip:focus-visible{outline:2px solid var(--pri,#0f5fa8);outline-offset:-2px;border-radius:8px}
 .pmo-isi-l{flex:none;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#5b7085)}
-.pmo-chips{display:flex;gap:6px;align-items:center}
+.pmo-chips{display:flex;gap:6px;align-items:center;flex:none}
 .pmo-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;border:1px solid var(--line,#e0e8f0);background:var(--card,#fff);color:var(--ink,#132b43);font-family:inherit;font-size:12.5px;font-weight:500;line-height:1.2;cursor:pointer;white-space:nowrap;min-height:0}
 .pmo-chip:hover{border-color:var(--pri,#0f5fa8);color:var(--pri-ink,#0f5fa8)}
 .pmo-chip.on{background:var(--soft,#e8f3fb);border-color:var(--pri,#0f5fa8);color:var(--pri-ink,#0f5fa8);font-weight:600}

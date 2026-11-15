@@ -219,7 +219,7 @@ node src/server.js                # migrasi otomatis saat start
 - Admin → Kapasitas database: kolom "Jumlah baris" memakai hitungan pasti (`count(*)`).
 - **Animasi pembuka diganti video motion graphics** (Remotion) landscape 1920×1080, 10 detik: `public/media/pmo-intro.mp4` (+ poster). Sumber: `OneDrive\Documents\REMOTION PROJECT\vid-remotion`, komposisi `PmoIntroLandscape` (`src/PmoIntroLandscape.tsx`; timeline asli 15 dtk dimampatkan lewat `src/timing.ts`, `TIME_SCALE = 10/15`). Render ulang: `npx remotion render src/index.ts PmoIntroLandscape output/pmo-intro-landscape-10s.mp4 --crf=24`, lalu salin ke `public/media/pmo-intro.mp4`. Diputar tanpa suara (aturan autoplay browser) dengan tombol **Suara** dan **Lewati**; Esc juga menutup; pengaman maksimal 13 detik; `prefers-reduced-motion` → gambar penutup 1,5 detik. Disajikan via `app.use('/media', express.static(public/media))`; Dockerfile menyalin folder `public`.
 
-### R3 — Kelompok proyek tahap 3 (ditunda atas permintaan pemilik)
+### R3 — Kelompok proyek tahap 3 · **SELESAI (15 Nov 2026, Claude — lihat bagian di bawah)**
 - Laporan Bulanan dan Pelaporan Manajemen dikelompokkan Pengembangan/Rutin. Sub-proyek ditaruh di bawah induk sebagai lampiran, tetap dihitung sendiri-sendiri.
 - PIC proyek induk otomatis bisa melihat sub-proyeknya (`src/lib/access.js` dan `userCanAccess_`/`userCanOperateProject_` di bridge).
 - Executive versi HP (mode ponsel `mRender`) ikut dikelompokkan.
@@ -310,6 +310,24 @@ Semua perubahan ada di `src/gas/sena-extra.js`: `SENA_BRIDGE` dijalankan setelah
 - **Uji lokal tanpa kunci asli:**
   - set `ANTHROPIC_API_KEY=apa-saja` dan `SENA_TEST_API_URL=http://127.0.0.1:4555/v1/messages` (hanya alamat localhost yang diterima), lalu jalankan server Claude tiruan;
   - JANGAN isi `SENA_TEST_API_URL` di Coolify.
+
+
+### R3 + presentasi bertema + slide video · 15 Nov 2026 (Claude)
+- **R3** (`src/gas/groups-r3.js`):
+  - **Hak ubah PIC/INPUT** (bridge `userCanOperateProject_`):
+    - semua proyek di `project_ids`; sebelumnya hanya proyek pertama, karena `legacyUser` hanya mengirim satu `projectId`. Sekarang `projectIds` ikut dikirim;
+    - sub-proyek dari induk yang dipegang.
+  - **Pilihan proyek dikelompokkan:** optgroup "Proyek Pengembangan" / "Proyek Investasi Rutin", sub-proyek dengan tanda "↳" di bawah induknya, atau "(sub-proyek INDUK)" bila induk tidak ada di daftar. Berlaku di halaman `monthly`, `report`, `monthlydoc`, `weeklyprint`, dan `input`. Snippet disisipkan oleh `wrapPage` lewat `opts.page`.
+  - **Kartu `#pmoSubx`** di Laporan Bulanan, Pelaporan Manajemen, dan Buat Laporan Bulanan:
+    - induk → "Lampiran sub-proyek" dengan tombol "Buka laporannya";
+    - sub → "Sub-proyek dari …" dengan tombol "Buka laporan induk".
+  - **Executive versi HP:** `mRender` dibungkus. Kartu proyek dikelompokkan dan sub-proyek diberi label (memakai `pmoExecOrder`).
+  - Ringkasan hero Portal per kelompok belum dibuat (opsional, bila diminta).
+- **Mode presentasi ikut tema** (`presCss()` di nav-theme.js): lapisan `.pp`, layar pembuka `.pp-boot`, sampul/penutup `.px-*`, panel Materi tambahan, dan teks sorotan banner (`.hero h1 span`) memakai warna Sage/Mocha. Tema Biru dan mode gelap tidak berubah.
+- **Slide video proyek di presentasi Executive** (`src/gas/pres-video.js`, `pres-extra.js`, `routes/pres.js`):
+  - Fungsi Apps Script baru `getPresVideoOptions` (ditambahkan ke kode saat runtime dimuat) membaca `LINK_VIDEO` DATA MINGGUAN per proyek per minggu.
+  - Di Materi tambahan → Susunan slide → "Slide video proyek": pilih proyek dan minggu. Item disimpan di `pres_sets` sebagai `{type:'video', project, week, pos, title}`.
+  - Slide memakai iframe Drive preview, YouTube (nocookie), OneDrive embed, atau `<video>` mp4. Iframe hanya dipasang saat slide aktif, sehingga video berhenti saat slide berpindah.
 
 ---
 
