@@ -28,9 +28,16 @@ const PRES_MOTION_JS = String.raw`<style>
   function skip(card){return !card||!!card.querySelector('.px-pdf,.px-video,.px-hero')}
   /* Semua animasi dibuat lebih dulu dalam keadaan dijeda di titik awal (isi slide kosong),
      lalu diputar bersamaan saat slide sudah tampil. Selesai → efek dilepas (isi kembali normal). */
+  /* Bersihkan SEMUA sisa animasi gerak di overlay presentasi (termasuk slide lain / overlay lama),
+     bukan hanya yang tercatat, supaya tidak ada isi slide yang tertahan tak terlihat. */
+  function sweep(){
+    try{(document.getAnimations?document.getAnimations():[]).forEach(function(a){
+      if(!a.__pm)return;try{a.cancel()}catch(e){}})}catch(e){}
+    document.querySelectorAll('[data-pm-num]').forEach(function(el){var tn=el.__pmTn;if(tn&&el.__pmOrig!=null)tn.nodeValue=el.__pmOrig;el.removeAttribute('data-pm-num')});
+  }
   function stop(){tok++;clearTimeout(safety);anims.forEach(function(a){try{a.cancel()}catch(e){}});anims=[];timers.forEach(clearTimeout);timers=[];
-    nums.forEach(function(c){try{c.tn.nodeValue=c.orig}catch(e){}});nums=[]}
-  function A(el,kf,o){if(!el.animate)return;var a=el.animate(kf,Object.assign({easing:EASE,fill:'both'},o));a.pause();a.currentTime=0;a.onfinish=function(){try{a.cancel()}catch(e){}};anims.push(a);return a}
+    nums.forEach(function(c){try{c.tn.nodeValue=c.orig}catch(e){}});nums=[];sweep()}
+  function A(el,kf,o){if(!el.animate)return;var a=el.animate(kf,Object.assign({easing:EASE,fill:'both'},o));a.__pm=1;a.pause();a.currentTime=0;a.onfinish=function(){try{a.cancel()}catch(e){}};anims.push(a);return a}
   function later(fn,ms){timers.push(setTimeout(fn,ms))}
 
   /* ---------- blok muncul bertahap ---------- */
@@ -68,8 +75,9 @@ const PRES_MOTION_JS = String.raw`<style>
     if(!isFinite(to)||to===0)return;
     var lead=c.orig.match(/^\s*/)[0],tail=c.orig.match(/\s*$/)[0],sign=m[2];
     function put(v){c.tn.nodeValue=lead+m[1]+sign+fmt(v,dec,group)+m[5]+tail}
+    c.el.__pmTn=c.tn;c.el.__pmOrig=c.orig;c.el.setAttribute('data-pm-num','1');
     put(0);nums.push(c);
-    c.run=function(my){var t0=null;function f(t){if(my!==tok||!c.el.isConnected)return;if(t0===null)t0=t+delay;var p=Math.min(1,Math.max(0,(t-t0)/dur)),e=1-Math.pow(1-p,3);put(to*e);if(p<1)requestAnimationFrame(f);else c.tn.nodeValue=c.orig}requestAnimationFrame(f)};
+    c.run=function(my){var t0=null;function f(t){if(my!==tok||!c.el.isConnected)return;if(t0===null)t0=t+delay;var p=Math.min(1,Math.max(0,(t-t0)/dur)),e=1-Math.pow(1-p,3);put(to*e);if(p<1)requestAnimationFrame(f);else{c.tn.nodeValue=c.orig;c.el.removeAttribute('data-pm-num')}}requestAnimationFrame(f)};
   }
 
   /* ---------- grafik SVG ---------- */
@@ -140,11 +148,14 @@ const PRES_MOTION_JS = String.raw`<style>
     var base=Math.min(bl.length,8)*40;
     counters(card).forEach(function(c,i){count(c,base+150+Math.min(i,12)*50,1100)});
     charts(card,base);bars(card,base);chips(card,base);
+    /* pengaman: kalau karena sesuatu animasi tidak sempat diputar, tampilkan isi slide apa adanya */
+    var my=tok;clearTimeout(safety);safety=setTimeout(function(){if(my===tok)stop()},3500);
     return true;
   }
   function start(){var my=tok;anims.forEach(function(a){try{a.play()}catch(e){}});nums.forEach(function(c){c.run&&c.run(my)});
     /* pengaman: apa pun yang terjadi, isi slide tampil normal setelah 5 detik */
-    clearTimeout(safety);safety=setTimeout(function(){if(my===tok){anims.forEach(function(a){try{a.cancel()}catch(e){}});nums.forEach(function(c){try{c.tn.nodeValue=c.orig}catch(e){}})}},5000)}
+    var end=0;anims.forEach(function(a){try{var t=a.effect.getComputedTiming();end=Math.max(end,(t.delay||0)+(t.duration||0))}catch(e){}});
+    clearTimeout(safety);safety=setTimeout(function(){if(my===tok){anims.forEach(function(a){try{a.cancel()}catch(e){}});nums.forEach(function(c){try{c.tn.nodeValue=c.orig}catch(e){}});sweep()}},Math.min(4500,Math.max(1500,end+500)))}
   function play(card){if(prepare(card))start()}
 
   function toast(ov,t){var x=ov.querySelector('.pm-toast');if(!x){x=document.createElement('div');x.className='pm-toast';ov.appendChild(x)}x.textContent=t;x.style.opacity=1;clearTimeout(x.__t);x.__t=setTimeout(function(){x.style.opacity=0},1400)}
@@ -165,6 +176,7 @@ const PRES_MOTION_JS = String.raw`<style>
       if(!prepare(card))return;var tries=0;(function wait(){if(cur!==card)return;if(ov&&!ov.classList.contains('on')&&tries++<60){later(wait,100);return}later(function(){if(cur===card)start()},ov&&tries?400:120)})()},
     replay:function(){if(cur)play(cur)},stop:stop,enabled:on
   };
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&anims.length){setTimeout(function(){stop()},50)}});
   document.addEventListener('keydown',function(e){
     if((e.key==='r'||e.key==='R')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&window.pmoPresent&&pmoPresent.isOpen()){
       var t=e.target;if(t&&(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable))return;

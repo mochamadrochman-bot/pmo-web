@@ -13,6 +13,7 @@
  */
 
 const PRES_PREP_JS = String.raw`<style>
+.pp-pj .ph .pp-per{display:inline-flex;align-items:center;gap:6px;margin-left:12px;padding:4px 11px;border-radius:99px;background:var(--tint,#eef4fa);border:1px solid var(--line,#dbe5ee);color:var(--muted,#4f6478);font-size:12.5px;font-weight:600;white-space:nowrap}
 .pq{position:fixed;inset:0;z-index:2147482400;display:flex;align-items:center;justify-content:center;background:rgba(3,10,20,.66);font-family:Inter,"Segoe UI",system-ui,sans-serif;color:#132b43}
 .pq-box{width:min(1240px,96vw);height:min(860px,92vh);display:flex;flex-direction:column;background:#f6f9fc;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.5);overflow:hidden}
 .pq-hd{display:flex;align-items:center;gap:12px;padding:14px 20px;background:#0f2f52;color:#fff}

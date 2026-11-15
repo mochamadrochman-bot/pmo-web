@@ -431,6 +431,18 @@ const { PRES_PREP_JS } = require('./pres-prep');
 
 const HTML_PATCHES = [
   {
+    // Presentasi: hapus overlay lama yang mungkin masih tertinggal sebelum membuat yang baru.
+    file: 'AccountMenu',
+    find: "var ov=mk('div','pp');ov.setAttribute('role','dialog');",
+    replace: "document.querySelectorAll('body>.pp').forEach(function(o){o.remove()});var ov=mk('div','pp');ov.setAttribute('role','dialog');",
+  },
+  {
+    // Slide per proyek (Executive): periode & cut-off proyek di sebelah judul.
+    file: 'ExecutiveDashboard',
+    find: "<h3>'+E(p.name)+'</h3><span class=\"pp-st '+cls+'\">",
+    replace: "<h3>'+E(p.name)+'</h3>'+(function(){var per=String((document.querySelector('#periodValue')||{}).textContent||d.period||'').trim();var t=[p.cutWeek?'Cut-off W'+p.cutWeek+(p.cutRange?' · '+p.cutRange:''):(per?'Periode '+per:''),p.pending&&p.latestWeek?'input s.d. W'+p.latestWeek:''].filter(Boolean);return t.length?'<span class=\"pp-per\"><svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\"/><path d=\"M16 2v4M8 2v4M3 10h18\"/></svg>'+E(t.join(' · '))+'</span>':''})()+'<span class=\"pp-st '+cls+'\">",
+  },
+  {
     // Siapkan presentasi: tombol Presentasi membuka layar persiapan dulu (lihat pres-prep.js).
     file: 'AccountMenu',
     find: "if(st||busy)return;busy=true;cfg=cfg||{};enterFs();",

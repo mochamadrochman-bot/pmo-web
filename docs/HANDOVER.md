@@ -400,6 +400,13 @@ Tujuan: video dan materi weekly yang tautannya mengarah ke Drive kontraktor atau
   - Tombol "Animasi" di toolbar presentasi, tersimpan di `localStorage` dengan key `pmoMotion` (0 = mati).
   - Tombol **R** memutar ulang animasi slide.
   - Animasi otomatis mati bila perangkat memakai `prefers-reduced-motion`.
+- **Pengaman isi slide tertahan:**
+  - Setiap pindah slide, semua animasi gerak di overlay presentasi dibersihkan (`sweep`, ditandai `a.__pm`).
+  - Animasi dipaksa selesai paling lambat pada akhir durasi + 0,5 detik (maks 4,5 detik).
+  - Kalau animasi tidak sempat diputar, isi slide dimunculkan setelah 3,5 detik.
+  - Animasi juga dibersihkan saat tab kembali aktif.
+  - Overlay `.pp` lama dihapus sebelum overlay baru dibuat.
+- **Slide proyek Executive:** chip `.pp-per` "Cut-off W<n> · <tanggal awal> – <tanggal akhir minggu itu>" di samping judul. Rentang tanggal dari field `cutRange` (GS_PATCHES di `live-lan.js`, dihitung dari tanggal mulai proyek).
 - **Lisensi:** sengaja tidak memakai Remotion Player, karena untuk perusahaan 4+ orang wajib Company License dengan minimum $100/bulan.
 
 

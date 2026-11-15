@@ -14,6 +14,13 @@ const LAN_RE_JS = '^http:\\/\\/(10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|192\\.168\\.
 /** Patch kode .gs (diterapkan saat runtime dimuat). */
 const GS_PATCHES = [
   {
+    // Executive: rentang tanggal minggu cut-off per proyek (dipakai label periode di slide proyek).
+    file: 'Code',
+    find: "      cutWeek: info.startDate ? cutWeekOf_(db, p, selected) : null,",
+    replace: "      cutWeek: info.startDate ? cutWeekOf_(db, p, selected) : null,\n" +
+      "      cutRange: (function () { try { if (!info.startDate) return ''; var w = cutWeekOf_(db, p, selected), st = info.startDate; if (!w) return ''; var a = new Date(st.getFullYear(), st.getMonth(), st.getDate() + (w - 1) * 7), b = new Date(a.getFullYear(), a.getMonth(), a.getDate() + 6); return formatDateId_(a) + ' – ' + formatDateId_(b); } catch (e) { return ''; } })(),",
+  },
+  {
     file: 'LiveApi',
     find: "  if (!/^https:\\/\\/[^\\s]+$/i.test(url)) throw new Error('Alamat kamera harus diawali https:// (browser memblokir alamat http).');",
     replace: "  const lanOk = type === 'TAUTAN' && new RegExp('" + LAN_RE_JS.replace(/\\/g, '\\\\') + "', 'i').test(url);\n" +
