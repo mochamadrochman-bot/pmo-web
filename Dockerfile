@@ -19,6 +19,7 @@ COPY src ./src
 COPY views ./views
 COPY db ./db
 COPY legacy ./legacy
+COPY public ./public
 COPY package.json ./
 
 USER node

@@ -217,6 +217,7 @@ node src/server.js                # migrasi otomatis saat start
 - Kartu realisasi keuangan per kelompok: nominal ringkas (Rp x,xx T / Rp x,x M; nilai penuh di tooltip).
 - Peta deviasi: indentasi sub-proyek dihemat.
 - Admin → Kapasitas database: kolom "Jumlah baris" memakai hitungan pasti (`count(*)`).
+- **Animasi pembuka diganti video motion graphics** (Remotion) landscape 1920×1080, 10 detik: `public/media/pmo-intro.mp4` (+ poster). Sumber: `OneDrive\Documents\REMOTION PROJECT\vid-remotion`, komposisi `PmoIntroLandscape` (`src/PmoIntroLandscape.tsx`; timeline asli 15 dtk dimampatkan lewat `src/timing.ts`, `TIME_SCALE = 10/15`). Render ulang: `npx remotion render src/index.ts PmoIntroLandscape output/pmo-intro-landscape-10s.mp4 --crf=24`, lalu salin ke `public/media/pmo-intro.mp4`. Diputar tanpa suara (aturan autoplay browser) dengan tombol **Suara** dan **Lewati**; Esc juga menutup; pengaman maksimal 13 detik; `prefers-reduced-motion` → gambar penutup 1,5 detik. Disajikan via `app.use('/media', express.static(public/media))`; Dockerfile menyalin folder `public`.
 
 ### R3 — Kelompok proyek tahap 3 (ditunda atas permintaan pemilik)
 - Laporan Bulanan dan Pelaporan Manajemen dikelompokkan Pengembangan/Rutin. Sub-proyek ditaruh di bawah induk sebagai lampiran, tetap dihitung sendiri-sendiri.

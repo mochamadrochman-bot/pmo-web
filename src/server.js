@@ -38,6 +38,8 @@ const jsonSmall = express.json({ limit: '1mb' });
 const jsonLarge = express.json({ limit: '40mb' });
 app.use((req, res, next) => ((req.path.startsWith('/app/rpc/') || /^\/api\/pres\/decks\/\d+\/pages\//.test(req.path)) ? jsonLarge : jsonSmall)(req, res, next));
 // pdf.js untuk merender PDF materi presentasi di browser.
+// Media statis (video animasi pembuka Portal, poster).
+app.use('/media', express.static(path.join(__dirname, '..', 'public', 'media'), { maxAge: '7d', index: false }));
 app.use('/vendor/pdfjs', express.static(path.join(__dirname, '..', 'node_modules', 'pdfjs-dist', 'build'), { maxAge: '7d', index: false }));
 app.use(express.urlencoded({ extended: false, limit: '1mb' }));
 
