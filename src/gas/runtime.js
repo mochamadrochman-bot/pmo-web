@@ -427,8 +427,21 @@ function pmoGrpFill(p){
  */
 const { PRES_EXTRA_JS } = require('./pres-extra');
 const { PRES_MOTION_JS } = require('./pres-motion');
+const { PRES_PREP_JS } = require('./pres-prep');
 
 const HTML_PATCHES = [
+  {
+    // Siapkan presentasi: tombol Presentasi membuka layar persiapan dulu (lihat pres-prep.js).
+    file: 'AccountMenu',
+    find: "if(st||busy)return;busy=true;cfg=cfg||{};enterFs();",
+    replace: "if(st||busy)return;cfg=cfg||{};if(!cfg.direct&&window.pmoPresPrep&&window.pmoPresPrep.want(cfg)){window.pmoPresPrep.show(cfg);return}busy=true;enterFs();",
+  },
+  {
+    // Tombol P: langsung mulai dengan susunan tersimpan.
+    file: 'AccountMenu',
+    find: "e.preventDefault();window.pmoPresentStart()}",
+    replace: "e.preventDefault();window.__ppDirect=1;try{window.pmoPresentStart()}finally{window.__ppDirect=0}}",
+  },
   {
     // Presentasi Bergerak: putar animasi setiap kali slide tampil.
     file: 'AccountMenu',
@@ -542,7 +555,7 @@ const HTML_PATCHES = [
   {
     file: 'AccountMenu',
     find: "var slides=[];try{slides=(cfg.build?cfg.build():[])||[]}catch(e){console.warn('pmoPresent',e)}",
-    replace: "var slides=[];try{slides=(cfg.build?cfg.build():[])||[]}catch(e){console.warn('pmoPresent',e)}if(window.pmoPresExtra){try{slides=window.pmoPresExtra.decorate(cfg,slides.filter(Boolean))}catch(e){console.warn('pmoPresExtra',e)}}",
+    replace: "var slides=[];if(cfg.__final){slides=cfg.__final.slice()}else{try{slides=(cfg.build?cfg.build():[])||[]}catch(e){console.warn('pmoPresent',e)}if(window.pmoPresExtra){try{slides=window.pmoPresExtra.decorate(cfg,slides.filter(Boolean))}catch(e){console.warn('pmoPresExtra',e)}}}",
   },
   {
     file: 'AccountMenu',
@@ -552,12 +565,12 @@ const HTML_PATCHES = [
   {
     file: 'AccountMenu',
     find: "else if(k==='fs')toggleFs()});",
-    replace: "else if(k==='fs')toggleFs();else if(k==='extra'&&window.pmoPresExtra)window.pmoPresExtra.manage(st.cfg)});",
+    replace: "else if(k==='fs')toggleFs();else if(k==='extra'){var ct=st.items[st.i]&&st.items[st.i].s.title;if(window.pmoPresPrep)window.pmoPresPrep.reopen(st.cfg,ct);else if(window.pmoPresExtra)window.pmoPresExtra.manage(st.cfg)}});",
   },
   {
     file: 'AccountMenu',
     find: "window.pmoPresent={open:open,close:close,go:function(n){go(n)},isOpen:function(){return !!st}};\n})();\n</script>",
-    replace: "window.pmoPresent={open:open,close:close,go:function(n){go(n)},isOpen:function(){return !!st}};\n})();\n</script>\n" + PRES_EXTRA_JS + PRES_MOTION_JS,
+    replace: "window.pmoPresent={open:open,close:close,go:function(n){go(n)},isOpen:function(){return !!st}};\n})();\n</script>\n" + PRES_EXTRA_JS + PRES_MOTION_JS + PRES_PREP_JS,
   },
   // Panel "Permintaan Akun" lama tidak dipakai lagi: akun dikelola di /admin/akun.
   ...['Portal', 'ExecutiveDashboard'].map((file) => ({

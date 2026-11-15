@@ -94,6 +94,7 @@ const PRES_EXTRA_JS = String.raw`<script>
       '.px-vempty{position:absolute;inset:0;display:grid;place-items:center;color:#cfd8e3;font:600 16px Inter,system-ui,sans-serif;text-align:center;padding:24px}',
       '.px-vic{width:96px;aspect-ratio:16/9;border-radius:6px;background:#111;color:#fff;display:grid;place-items:center}.px-vic svg{width:26px;height:26px}',
       '.px-vadd{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px;border:1px dashed #c9d6e2;border-radius:12px;background:#fff;margin-bottom:10px}.px-vadd select{padding:8px 10px;border:1px solid #c9d6e2;border-radius:9px;font:13px Inter,system-ui,sans-serif;background:#fff;color:#132b43;min-width:200px;flex:1}',
+      '.px-mg.pick .px-pick select{display:none}',
       '@media (max-width:760px){.px-row{grid-template-columns:72px minmax(0,1fr)}.px-row img{width:72px}.px-row select,.px-row .px-acts{grid-column:1/-1}.px-f{grid-template-columns:minmax(0,1fr)}}'
     ].join('');
     document.head.appendChild(st);
@@ -234,8 +235,8 @@ const PRES_EXTRA_JS = String.raw`<script>
     return api('/api/pres/set?'+q).then(function(d){cache.items=d.items||[];cache.settings=d.settings||{};cache.layout=d.layout||{order:[],hidden:[]};cache.canManage=!!d.canManage}).catch(function(e){cache.items=[];cache.layout={order:[],hidden:[]};cache.err=(e&&e.message)||'Data materi tambahan tidak dapat dimuat.';try{console.warn('pmoPresExtra',cache.err)}catch(x){}}).then(function(){return vids});
   }
   function btn(){
-    if(!cache.key||!(cache.canManage||cache.err))return '';
-    return '<button type="button" class="pp-ic" data-a="extra" title="Materi tambahan (PDF)" aria-label="Materi tambahan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5M12 11v6M9 14h6"/></svg></button>';
+    if(!cache.key)return '';
+    return '<button type="button" class="pp-ic" data-a="extra" title="Ubah susunan slide" aria-label="Ubah susunan slide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M4 12h10M4 18h7"/><path d="M18 9v9M15 15l3 3 3-3"/></svg></button>';
   }
 
   /* ---------- panel materi tambahan ---------- */
@@ -250,7 +251,8 @@ const PRES_EXTRA_JS = String.raw`<script>
     var g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);
     return page.render({canvasContext:g,viewport:vp}).promise.then(function(){var u=c.toDataURL('image/jpeg',q);c.width=c.height=0;return {url:u,w:Math.round(vp.width),h:Math.round(vp.height)}});
   }
-  function manage(cfg){
+  function manage(cfg,OPT){
+    OPT=OPT||{};
     css();
     var key=cache.key||keyOf(cfg);if(!key)return;
     var items=cache.items.map(function(x){return x.type==='video'?{type:'video',project:x.project,week:x.week,pos:x.pos,title:x.title}:{deck:x.deck,page:x.page,pos:x.pos,title:x.title,width:x.width,height:x.height}});
@@ -316,6 +318,7 @@ const PRES_EXTRA_JS = String.raw`<script>
         body.querySelectorAll('.px-th').forEach(function(t){var tg=function(){t.classList.toggle('on');t.setAttribute('aria-checked',String(t.classList.contains('on')));upd()};t.onclick=tg;t.onkeydown=function(e){if(e.key===' '||e.key==='Enter'){e.preventDefault();tg()}}});
         body.querySelector('[data-a=all]').onclick=function(){var all=Array.prototype.every.call(body.querySelectorAll('.px-th'),function(t){return t.classList.contains('on')});body.querySelectorAll('.px-th').forEach(function(t){t.classList.toggle('on',!all)});upd()};
         body.querySelector('[data-a=add]').onclick=function(){
+          if(OPT.onAdd){var got=[];body.querySelectorAll('.px-th.on').forEach(function(t){got.push({deck:id,page:Number(t.getAttribute('data-p')),pos:'end',title:d.title,width:Number(t.getAttribute('data-w')),height:Number(t.getAttribute('data-h'))})});OPT.onAdd(got);dirty=false;window.removeEventListener('keydown',onKey,true);m.remove();return}
           var pos=body.querySelector('.px-pick select').value;
           body.querySelectorAll('.px-th.on').forEach(function(t){items.push({deck:id,page:Number(t.getAttribute('data-p')),pos:pos,title:d.title,width:Number(t.getAttribute('data-w')),height:Number(t.getAttribute('data-h'))});t.classList.remove('on')});
           upd();mark();say(items.length+' slide tambahan disusun. Klik Simpan & terapkan.');
@@ -377,9 +380,11 @@ const PRES_EXTRA_JS = String.raw`<script>
         if(window.pmoPresent&&pmoPresent.isOpen()){pmoPresent.close();setTimeout(function(){if(typeof window.pmoPresentStart==='function')window.pmoPresentStart()},650)}})
       .catch(function(e){saveBtn.disabled=false;say(e.message,true)});
     };
-    show('set');
+    if(OPT.onAdd){m.classList.add('pick');m.querySelector('.px-tabs').style.display='none';saveBtn.style.display='none';m.querySelector('.px-hd b').textContent='Tambah halaman PDF';m.style.zIndex='2147483000';show('lib')}
+    else show('set');
   }
-  window.pmoPresExtra={load:load,decorate:decorate,btn:btn,manage:manage};
+  window.pmoPresExtra={load:load,decorate:decorate,btn:btn,manage:manage,keyOf:keyOf,state:function(){return cache},
+    parts:{coverSlide:coverSlide,thanksSlide:thanksSlide,slideOf:slideOf,banners:banners,embedOf:embedOf,vidInfo:vidInfo,css:css}};
 })();
 </script>`;
 

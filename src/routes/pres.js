@@ -85,9 +85,10 @@ async function deleteDriveFile(token, fileId) {
   } catch (_) { /* abaikan */ }
 }
 
-const canManage = (u) => !!u && (u.role === 'admin' || u.role === 'input');
+// Mengubah susunan & pustaka presentasi: Admin dan PIC saja.
+const canManage = (u) => !!u && (u.role === 'admin' || (u.role === 'input' && String(u.legacy_role || '').toUpperCase() === 'PIC'));
 function onlyManager(req, res, next) {
-  if (!canManage(req.user)) return res.status(403).json({ ok: false, error: 'Hanya Admin dan PIC/Input yang dapat mengatur materi presentasi.' });
+  if (!canManage(req.user)) return res.status(403).json({ ok: false, error: 'Hanya Admin dan PIC yang dapat mengatur susunan presentasi.' });
   next();
 }
 const bad = (res, msg) => res.status(400).json({ ok: false, error: msg });

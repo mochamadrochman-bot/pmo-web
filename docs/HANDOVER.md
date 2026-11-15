@@ -402,6 +402,24 @@ Tujuan: video dan materi weekly yang tautannya mengarah ke Drive kontraktor atau
   - Animasi otomatis mati bila perangkat memakai `prefers-reduced-motion`.
 - **Lisensi:** sengaja tidak memakai Remotion Player, karena untuk perusahaan 4+ orang wajib Company License dengan minimum $100/bulan.
 
+
+### Siapkan presentasi · 16 Nov 2026 (Claude)
+- **File:** `src/gas/pres-prep.js` (`PRES_PREP_JS`), disisipkan setelah PRES_EXTRA_JS dan PRES_MOTION_JS.
+- **Tombol Presentasi** membuka layar persiapan dulu. Caranya lewat patch di `open(cfg)` AccountMenu: kalau `!cfg.direct` dan `pmoPresPrep.want()`, yang dipanggil `pmoPresPrep.show(cfg)`.
+- **Tombol P** langsung memulai presentasi (`window.__ppDirect`). Pilihan "Lain kali langsung mulai" disimpan di `localStorage` dengan key `pmoPresSkip`.
+- **Isi layar persiapan:**
+  - satu daftar terpadu: sampul, slide dashboard, halaman PDF, video, dan terima kasih;
+  - urutan diubah dengan seret atau ↑↓;
+  - slide dashboard bisa disembunyikan lewat centang, slide tambahan dihapus dengan ×;
+  - pratinjau di kanan, termasuk isian teks sampul dan penutup.
+- **Menyimpan susunan:** posisi slide tambahan diturunkan dari urutan daftar menjadi `pos` (`start` / `after:<judul slide dashboard>`), lalu dikirim lewat `PUT /api/pres/set`. Format datanya tidak berubah.
+- **Saat mulai:** daftar final dikirim sebagai `cfg.__final`. Patch `decorate` di `open()` memakai daftar ini langsung, tanpa membangun ulang.
+- **Ubah susunan:** tombol toolbar `data-a="extra"` menutup presentasi lalu membuka layar persiapan pada slide yang sedang tampil (`pmoPresPrep.reopen`).
+- **Tambah PDF** memakai panel pustaka lama dalam mode pilih: `pmoPresExtra.manage(cfg,{onAdd})`, dengan tab dan tombol simpan disembunyikan.
+- **Hak akses:**
+  - Admin dan PIC bisa menyimpan susunan. `canManage` di `routes/pres.js` sekarang mensyaratkan `role admin`, atau `role input` dengan `legacy_role PIC`.
+  - Akun lain tetap bisa mengatur susunan, tapi hanya untuk sesi itu (tidak disimpan).
+
 ---
 
 ## 7. Preferensi kerja pemilik
