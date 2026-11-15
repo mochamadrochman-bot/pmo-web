@@ -34,6 +34,8 @@ const PATCH = `<script>
     if(!t)return;e.preventDefault();e.stopPropagation();
     say('Lupa password? Hubungi Admin PMO. Admin akan membuatkan password sementara untuk Anda.',false);
   },true);
+  /* video pembuka diunduh lebih awal selagi pengguna mengetik, agar langsung diputar setelah login */
+  setTimeout(function(){try{var im=new Image();im.src='/media/pmo-intro-poster.jpg';if(window.fetch)fetch('/media/pmo-intro.mp4',{credentials:'same-origin'}).then(function(r){return r.blob()}).catch(function(){})}catch(x){}},700);
   document.addEventListener('submit',async function(e){
     if(e.target!==form)return;
     e.preventDefault();e.stopPropagation();
