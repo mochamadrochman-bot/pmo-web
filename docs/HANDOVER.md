@@ -353,6 +353,37 @@ Semua perubahan ada di `src/gas/sena-extra.js`: `SENA_BRIDGE` dijalankan setelah
   - Sumbernya komposisi Remotion `PmoDashboardMotion`, sekarang 10 detik dengan musik fade-out 1 detik. Render ulang dengan perintah:
     `npx remotion render src/index.ts PmoDashboardMotion output/pmo-intro-portrait-10s.mp4 --crf=26`.
 
+
+### Arsip Materi Weekly · 16 Nov 2026 (Claude)
+Tujuan: video dan materi weekly yang tautannya mengarah ke Drive kontraktor atau perorangan disalin ke Drive tim proyek, supaya tautan tidak putus kalau kontraktor menghapus atau memindah file.
+
+**Lokasi dan hak akses**
+- Halaman `/arsip`, ada di menu akun dan header admin.
+- Hanya Admin, atau PIC proyek itu. PIC dari proyek induk juga boleh untuk sub-proyeknya.
+- File terkait: `src/arsip/service.js`, `src/routes/arsip.js`, `views/pages/arsip.ejs`, `db/migrations/007-arsip.sql`.
+
+**Alur**
+1. PIC menghubungkan akun Google **tim proyek** per proyek (tabel `google_project_auth`). Callback OAuth: `/arsip/google/callback`, wajib ditambahkan ke Authorized redirect URIs di OAuth client Google Cloud.
+2. PIC memilih folder tujuan. Sistem memeriksa bahwa akun tim boleh menambah file ke folder itu.
+3. Inventaris dibaca dari LINK_VIDEO dan LINK_MATERI di DATA MINGGUAN PROYEK. Status tiap tautan:
+   - `tim`: pemiliknya akun tim, dilewati;
+   - `salin`;
+   - `onedrive` / `akses` / `folder` / `lain`: unggah manual.
+   Sisa kuota Drive dicek dan proses ditolak kalau ruangnya kurang.
+4. Proses latar belakang menjalankan langkah berikut per file:
+   - `files.copy` di dalam Google (tidak lewat VPS) ke subfolder per minggu, misalnya `W103/`;
+   - izin "anyone with link: reader";
+   - verifikasi salinan;
+   - ganti tautan sel.
+   File yang sama di beberapa sel disalin sekali saja.
+5. Ganti tautan:
+   - selalu ditulis ke data server (store + flush);
+   - kalau mode bukan `produksi` dan Koneksi Google utama aktif, juga ditulis ke Google Sheets induk (`spreadsheets.batchUpdate` updateCells, link sel), supaya sinkron 15 menit tidak mengembalikan tautan lama.
+6. Riwayat disimpan di `arsip_items`, yang berisi tautan lama dan baru. Tombol "Pulihkan tautan lama" mengembalikan sel yang tautannya masih menunjuk ke salinan. Salinan di Drive tidak dihapus.
+7. Unggah manual: server membuat sesi *resumable upload* (header Origin), lalu browser mengunggah langsung ke Google, bukan lewat VPS. Setelah itu `upload-done` mengganti tautan.
+
+**Uji lokal:** env `GOOGLE_DRIVE_API`, `GOOGLE_DRIVE_UPLOAD`, `GOOGLE_SHEETS_API`, `GOOGLE_TOKEN_URL` dan `GOOGLE_USERINFO_URL` bisa diarahkan ke server tiruan.
+
 ---
 
 ## 7. Preferensi kerja pemilik

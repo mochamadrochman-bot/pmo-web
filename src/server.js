@@ -98,6 +98,7 @@ app.get('/akun/password', requireUser, (req, res) => {
 });
 app.get('/privasi', (req, res) => renderPage(res, 'pages/privasi', { title: 'Kebijakan Privasi', user: req.user }));
 app.use('/', adminRoutes);
+app.use('/', require('./routes/arsip'));
 app.use('/', require('./routes/pres'));
 app.use('/', gasRoutes);
 app.use('/api', projectRoutes);
