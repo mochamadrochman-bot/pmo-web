@@ -426,8 +426,15 @@ function pmoGrpFill(p){
  * tetap identik dengan Apps Script (mudah disinkronkan ulang).
  */
 const { PRES_EXTRA_JS } = require('./pres-extra');
+const { PRES_MOTION_JS } = require('./pres-motion');
 
 const HTML_PATCHES = [
+  {
+    // Presentasi Bergerak: putar animasi setiap kali slide tampil.
+    file: 'AccountMenu',
+    find: "else if(hint)hint.hidden=true;",
+    replace: "else if(hint)hint.hidden=true;\n    if(window.pmoMotion)try{window.pmoMotion.enter(it[n].card,it[n].s)}catch(e){}",
+  },
   {
     file: 'AccountMenu',
     find: "b.innerHTML=SV(kind==='admin'?USR:KEY)+'<span>'+(kind==='admin'?'Reset password pengguna':'Ganti password')+'</span>';b.onclick=function(e){e.stopPropagation();kind==='admin'?admin():change()};",
@@ -550,7 +557,7 @@ const HTML_PATCHES = [
   {
     file: 'AccountMenu',
     find: "window.pmoPresent={open:open,close:close,go:function(n){go(n)},isOpen:function(){return !!st}};\n})();\n</script>",
-    replace: "window.pmoPresent={open:open,close:close,go:function(n){go(n)},isOpen:function(){return !!st}};\n})();\n</script>\n" + PRES_EXTRA_JS,
+    replace: "window.pmoPresent={open:open,close:close,go:function(n){go(n)},isOpen:function(){return !!st}};\n})();\n</script>\n" + PRES_EXTRA_JS + PRES_MOTION_JS,
   },
   // Panel "Permintaan Akun" lama tidak dipakai lagi: akun dikelola di /admin/akun.
   ...['Portal', 'ExecutiveDashboard'].map((file) => ({

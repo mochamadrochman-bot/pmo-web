@@ -384,6 +384,24 @@ Tujuan: video dan materi weekly yang tautannya mengarah ke Drive kontraktor atau
 
 **Uji lokal:** env `GOOGLE_DRIVE_API`, `GOOGLE_DRIVE_UPLOAD`, `GOOGLE_SHEETS_API`, `GOOGLE_TOKEN_URL` dan `GOOGLE_USERINFO_URL` bisa diarahkan ke server tiruan.
 
+
+### Presentasi Bergerak · 16 Nov 2026 (Claude)
+- **File:** `src/gas/pres-motion.js` (`PRES_MOTION_JS`), disisipkan setelah `PRES_EXTRA_JS` di AccountMenu.
+- **Kaitan:** patch pada `go(n)` di `pmoPresent` memanggil `pmoMotion.enter(card)` setiap kali slide tampil. Animasi menunggu sampai overlay presentasi tampil penuh (`.pp.on`).
+- **Cara kerja:** Web Animations API langsung pada card yang dikloning ke slide, tanpa pustaka tambahan.
+  - Blok dan kartu muncul bertahap.
+  - Angka ≥17px naik dari 0 dengan format Indonesia tetap. Teks asli dikembalikan setelah selesai (atribut `data-pm-txt`).
+  - Garis SVG tergambar lewat stroke-dashoffset, area SVG memudar masuk, dan rect SVG tumbuh (scaleY dari bawah, atau scaleX untuk batang horizontal).
+  - Lingkaran ber-dasharray mengisi.
+  - Bilah HTML dengan `width:%` tumbuh (scaleX).
+  - Label status meletup.
+- **Dilewati:** slide PDF, video, dan sampul (`.px-pdf`, `.px-video`, `.px-hero`).
+- **Kontrol:**
+  - Tombol "Animasi" di toolbar presentasi, tersimpan di `localStorage` dengan key `pmoMotion` (0 = mati).
+  - Tombol **R** memutar ulang animasi slide.
+  - Animasi otomatis mati bila perangkat memakai `prefers-reduced-motion`.
+- **Lisensi:** sengaja tidak memakai Remotion Player, karena untuk perusahaan 4+ orang wajib Company License dengan minimum $100/bulan.
+
 ---
 
 ## 7. Preferensi kerja pemilik
