@@ -11,6 +11,8 @@ const express = require('express');
 const runtime = require('../gas/runtime');
 const store = require('../gas/store');
 const { PORTAL_INTRO_SNIPPET } = require('../gas/portal-intro');
+const navTheme = require('../gas/nav-theme');
+const db = require('../db');
 const groups = require('../lib/groups');
 const { clearCache } = require('../gas/services');
 const session = require('../session');
@@ -102,6 +104,8 @@ const UJI_BANNER = '<div id="pmoUjiBanner" style="position:fixed;left:0;right:0;
 function wrapPage(out, opts) {
   let html = out.getContent();
   if (opts && opts.intro) html = /<\/body>/i.test(html) ? html.replace(/<\/body>/i, PORTAL_INTRO_SNIPPET + '</body>') : html + PORTAL_INTRO_SNIPPET;
+  if (/<\/body>/i.test(html)) html = html.replace(/<\/body>(?![\s\S]*<\/body>)/i, navTheme.NAV_SNIPPET + '</body>');
+  else html += navTheme.NAV_SNIPPET;
   if (store.mode() === 'uji') html = /<\/body>/i.test(html) ? html.replace(/<\/body>/i, UJI_BANNER + '</body>') : html + UJI_BANNER;
   const head = [
     '<meta charset="utf-8">',
@@ -110,6 +114,7 @@ function wrapPage(out, opts) {
       .map(([n, c]) => '<meta name="' + n + '" content="' + String(c).replace(/"/g, '&quot;') + '">'),
     out._favicon ? '<link rel="icon" href="' + out._favicon + '">' : '',
     clientShim(),
+    navTheme.accentHead((opts && opts.accent) || 'blue'),
   ].filter(Boolean).join('\n');
   if (/<head[^>]*>/i.test(html)) html = html.replace(/<head[^>]*>/i, (m) => m + '\n' + head);
   else if (/<html[^>]*>/i.test(html)) html = html.replace(/<html[^>]*>/i, (m) => m + '\n<head>' + head + '</head>');
@@ -159,7 +164,22 @@ router.get('/app', requireUser, async (req, res, next) => {
     if (store.readOnly() && hasSheetChanges()) { await store.revertDirty(); clearCache(); }
     await store.flush();
     res.set('Cache-Control', 'no-store');
-    res.type('html').send(wrapPage(out, { intro: page === 'portal' && store.introEnabled() }));
+    res.type('html').send(wrapPage(out, {
+      intro: page === 'portal' && store.introEnabled(),
+      accent: navTheme.cleanAccent(req.user.ui_accent) || store.defaultAccent(),
+    }));
+  } catch (err) {
+    next(err);
+  }
+});
+
+// --- Preferensi tampilan per akun ------------------------------------------
+router.post('/api/prefs/accent', requireUser, async (req, res, next) => {
+  try {
+    const accent = navTheme.cleanAccent(req.body && req.body.accent);
+    if (!accent) return res.status(400).json({ ok: false, error: 'Pilihan tema tidak dikenal.' });
+    await db.query('update users set ui_accent = $1 where id = $2', [accent, req.user.id]);
+    res.json({ ok: true, data: { accent } });
   } catch (err) {
     next(err);
   }

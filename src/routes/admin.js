@@ -223,7 +223,7 @@ router.get('/admin/data', onlyAdmin, async (req, res, next) => {
     } catch (_) { dbStats = null; }
     renderPage(res, 'pages/admin-data', {
       title: 'Impor Data', user: req.user, sheets, last: await gasStore.lastImport(),
-      sync: gasSync.info(), google: gauth.status(), introEnabled: gasStore.introEnabled(),
+      sync: gasSync.info(), google: gauth.status(), introEnabled: gasStore.introEnabled(), defaultAccent: gasStore.defaultAccent(),
       dbStats,
     });
   } catch (err) {
@@ -258,6 +258,18 @@ router.post('/api/admin/import-xlsx',
       next(err);
     }
   });
+
+router.post('/api/admin/accent', onlyAdmin, async (req, res, next) => {
+  try {
+    const accent = String((req.body && req.body.accent) || '').toLowerCase();
+    if (!['blue', 'sage', 'mocha'].includes(accent)) return res.status(400).json({ ok: false, error: 'Pilihan tema tidak dikenal.' });
+    await gasStore.setDefaultAccent(accent, req.user.username);
+    await audit(req.user, 'accent_default', 'system', 'SYS:ACCENT', { accent });
+    res.json({ ok: true, data: { accent } });
+  } catch (err) {
+    next(err);
+  }
+});
 
 router.post('/api/admin/intro', onlyAdmin, async (req, res, next) => {
   try {

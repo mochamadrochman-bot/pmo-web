@@ -229,4 +229,18 @@ async function setIntroEnabled(on, actor) {
   console.log(JSON.stringify({ ev: 'gas_intro', enabled: !!on, actor: actor || null }));
 }
 
-module.exports = { state, load, flush, recalcNow, revertDirty, readOnly, mode, setMode, MODES, introEnabled, setIntroEnabled, writableInReadOnly, book, replaceMain, lastImport, summary, MAIN_ID, ensureTables };
+function defaultAccent() {
+  const v = String(state.props.get('SYS:ACCENT') || '').toLowerCase();
+  return ['blue', 'sage', 'mocha'].includes(v) ? v : 'blue';
+}
+
+async function setDefaultAccent(v, actor) {
+  const val = ['blue', 'sage', 'mocha'].includes(v) ? v : 'blue';
+  await db.query(
+    `insert into gas_props (key, value, updated_at) values ('SYS:ACCENT', $1, now())
+     on conflict (key) do update set value = excluded.value, updated_at = now()`, [val]);
+  state.props.set('SYS:ACCENT', val);
+  console.log(JSON.stringify({ ev: 'gas_accent_default', accent: val, actor: actor || null }));
+}
+
+module.exports = { state, load, flush, recalcNow, revertDirty, readOnly, mode, setMode, MODES, introEnabled, setIntroEnabled, defaultAccent, setDefaultAccent, writableInReadOnly, book, replaceMain, lastImport, summary, MAIN_ID, ensureTables };

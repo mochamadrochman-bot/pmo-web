@@ -577,6 +577,7 @@ const HTML_PATCHES = [
     replace: "var __wpEl=document.getElementById('weeklyProjectName');__wpEl.textContent=selectedProject.toUpperCase();__wpEl.dataset.pid=data.projectId||'';window.__pmoWeeklyPid=data.projectId||'';",
   },
 ];
+HTML_PATCHES.push(...require('./nav-theme').NAV_PATCHES);
 
 /** Penghubung login baru (cookie) ke bentuk akun yang dikenal kode lama. */
 const BRIDGE_CODE = `

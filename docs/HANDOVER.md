@@ -261,6 +261,21 @@ node src/server.js                # migrasi otomatis saat start
 - Ringkasan Eksekutif (Portal & Executive) memakai narasi Direksi dengan SPI (`actual/plan`), CPI, dan serapan RKAP per kategori Pengembangan & Rutin.
 - Pemantauan kapasitas database (`pg_database_size` & 8 tabel terbesar) tersedia di `/admin/data`.
 
+
+### Tema warna + navigasi Tipe A · 15 Nov 2026 (Claude)
+- **Tema mode terang:** Biru (bawaan), Sage (hijau), dan Mocha (coklat). Semuanya ada di `src/gas/nav-theme.js`.
+  - `<html data-accent>` diisi server di `<head>`, sehingga tidak ada kedipan warna. Variabel `--bg/--card/--ink/--pri/...` ditimpa dengan selektor `html[data-accent=..]:not([data-theme=dark])`. Mode gelap tidak berubah.
+  - Sidebar berwarna gelap di mode terang untuk ketiga tema: biru `#0B3A66`, sage `#0F2A1D`, mocha `#3B2A1F`. Variabelnya di-scope ke `aside.side`.
+  - Hero/banner ikut tema hanya di halaman `portal, executive, weekly, input, project, monthly` (lewat atribut `data-page`). Master Schedule memakai class `.hero` untuk banner terang, jadi jangan disamakan.
+  - Pilihan per akun ada di menu akun → "Warna tema". Nilainya tersimpan di kolom `users.ui_accent` (`db/migrations/005-ui-accent.sql`) melalui `POST /api/prefs/accent`.
+  - Tema bawaan untuk akun yang belum memilih diatur Admin di `/admin/data` (`gas_props 'SYS:ACCENT'`, `POST /api/admin/accent`).
+- **Navigasi Tipe A:**
+  - **Sidebar akordeon** (patch ke `setupModularSidebar` di AccountMenu, `NAV_PATCHES`): grup halaman aktif terbuka, sedangkan membuka satu grup menutup grup lain. M1 tetap selalu terbuka. Judul grup ditulis utuh.
+  - **Grup "Isi halaman"** disembunyikan dari sidebar dengan CSS, tetapi tetap ada di DOM karena dipakai menu HP (`isiItems()`). Gantinya adalah baris `#pmoPbar` yang menempel di bawah header: breadcrumb, tab EPCC (Engineering/Procurement/Construction/Commissioning), dan chip isi halaman yang memanggil `.click()` tombol aslinya.
+  - **Tab EPCC:** di halaman `epcc`, berpindah bidang memakai tombol `data-field` bawaan halaman (tanpa reload) dan URL `field=` ikut diperbarui. Dari Engineering, tab berpindah halaman lewat `pmoGoWithProject`.
+  - **HP (≤760px):** baris ini hanya tampil di halaman EPCC (tab saja). Isi halaman tetap ada di dok bawah.
+- **Belum dibuat:** menu melayang saat sidebar diciutkan (hover ikon grup).
+
 ---
 
 ## 7. Preferensi kerja pemilik

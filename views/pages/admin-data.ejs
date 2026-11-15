@@ -86,6 +86,19 @@
 </div>
 
 <div class="panel">
+  <h2>Warna tema bawaan</h2>
+  <p class="muted" style="margin:0 0 10px;font-size:13px">Dipakai di tampilan terang untuk akun yang belum memilih warna sendiri. Setiap pengguna tetap bisa mengganti warnanya lewat menu akun (pojok kanan atas).</p>
+  <label for="accentDefault" style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Tema bawaan</label>
+  <select id="accentDefault" style="max-width:260px">
+    <option value="blue" <%= defaultAccent === 'blue' ? 'selected' : '' %>>Biru (bawaan)</option>
+    <option value="sage" <%= defaultAccent === 'sage' ? 'selected' : '' %>>Sage (hijau)</option>
+    <option value="mocha" <%= defaultAccent === 'mocha' ? 'selected' : '' %>>Mocha (coklat)</option>
+  </select>
+  <div class="err" id="accentErr" role="alert"></div>
+  <div class="ok" id="accentOk" role="status"></div>
+</div>
+
+<div class="panel">
   <h2>Backup &amp; pulihkan data aplikasi (.json)</h2>
   <p class="muted" style="margin:0 0 12px;font-size:13px">Unduh salinan seluruh data spreadsheet, kelompok proyek, dan pengaturan ke laptop Anda, atau pulihkan kembali dari berkas backup <code>.json</code>.</p>
   <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
@@ -203,6 +216,23 @@
       setTimeout(function () { location.reload(); }, 1500);
     } catch (e) {
       ok.textContent = ''; err.textContent = e.message; go.disabled = false;
+    }
+  });
+})();
+(function () {
+  var sel = document.getElementById('accentDefault'), err = document.getElementById('accentErr'), ok = document.getElementById('accentOk');
+  if (!sel) return;
+  var prev = sel.value;
+  sel.addEventListener('change', async function () {
+    err.textContent = ''; ok.textContent = 'Menyimpan…'; sel.disabled = true;
+    try {
+      var j = await (await fetch('/api/admin/accent', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ accent: sel.value }) })).json();
+      if (!j.ok) throw new Error(j.error || 'Gagal menyimpan.');
+      prev = sel.value; ok.textContent = 'Tema bawaan disimpan.';
+    } catch (e) {
+      ok.textContent = ''; err.textContent = e.message; sel.value = prev;
+    } finally {
+      sel.disabled = false;
     }
   });
 })();
