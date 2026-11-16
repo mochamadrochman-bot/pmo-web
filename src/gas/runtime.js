@@ -199,7 +199,7 @@ const PORTAL_GROUPS_JS = `function pmoGroupedCards(items,b,card,esc,thumb){
   $('pulse').classList.add('pulse-g');
   return block('Proyek Pengembangan',dev)+block('Proyek Investasi Rutin',rut);
 }
-` + EXEC_BRIEF_NARR_JS + `
+` + EXEC_BRIEF_NARR_JS + require('./portal-latest').PORTAL_LATEST_JS + `
 `;
 
 /** Executive: pengelompokan Pengembangan / Rutin (disisipkan ke ExecutiveDashboard.html). */
@@ -609,7 +609,7 @@ const HTML_PATCHES = [
     replace: "var __wpEl=document.getElementById('weeklyProjectName');__wpEl.textContent=selectedProject.toUpperCase();__wpEl.dataset.pid=data.projectId||'';window.__pmoWeeklyPid=data.projectId||'';",
   },
 ];
-HTML_PATCHES.push(...require('./nav-theme').NAV_PATCHES, ...require('./sena-extra').SENA_PATCHES, ...require('./live-lan').LIVE_HTML_PATCHES);
+HTML_PATCHES.push(...require('./portal-latest').PORTAL_LATEST_PATCHES, ...require('./nav-theme').NAV_PATCHES, ...require('./sena-extra').SENA_PATCHES, ...require('./live-lan').LIVE_HTML_PATCHES);
 
 /** Penghubung login baru (cookie) ke bentuk akun yang dikenal kode lama. */
 const BRIDGE_CODE = `
@@ -644,7 +644,27 @@ ${RETIRED.map((n) => `  ${n} = function () { throw new Error('Akun kini dikelola
         hl = String(hl || '').split(/\\n+/).map(function (x) { return x.replace(/^\\s*(?:\\d+[.)]|[-\\u2022*])\\s*/, '').trim(); }).filter(Boolean)[0] || '';
         if (hl.length > 150) hl = hl.slice(0, 147).replace(/\\s+\\S*$/, '') + '\\u2026';
         var status = dev === null ? 'Data tidak tersedia' : dev < DB_CONFIG.CRITICAL_DEVIATION ? 'Critical' : dev <= 0 ? 'At risk' : 'On track';
-        return Object.assign({}, i, { lw: { week: w, actual: act, plan: plan, deviation: dev, status: status, highlight: hl || i.highlight } });
+        var lw = { week: w, actual: act, plan: plan, deviation: dev, status: status, highlight: hl || i.highlight };
+        try {
+          var raw = weekText_(db.weekly, i.projectId, 'HIGHLIGHT_ACTIVITY', w) || weekText_(db.weekly, i.projectId, 'HIGHLIGHT', w);
+          lw.lines = String(raw || '').split(/\\n+/).map(function (x) { return x.replace(/^\\s*(?:\\d+[.)]|[-\\u2022*])\\s*/, '').trim(); }).filter(Boolean).slice(0, 10).map(function (x) { return x.length > 400 ? x.slice(0, 397) + '\\u2026' : x; });
+          var pj = (db.projects || []).filter(function (x) { return x.id === i.projectId; })[0];
+          if (pj) {
+            var inf = weeklyInfo_(db, pj), sd = inf && inf.startDate;
+            if (sd) {
+              var a = new Date(sd.getFullYear(), sd.getMonth(), sd.getDate() + (w - 1) * 7), b2 = new Date(a.getFullYear(), a.getMonth(), a.getDate() + 6);
+              var iso = function (d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); };
+              lw.from = iso(a); lw.to = iso(b2);
+              var now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+              var late = Math.floor((today - b2) / 6048e5);
+              lw.stale = late >= 2 ? late : 0;
+            }
+            var cs = execCause_(db, pj, w);
+            if (cs) { var cut = function (t) { t = String(t || ''); return t.length > 400 ? t.slice(0, 397) + '\\u2026' : t; }; lw.cause = { field: cs.field, concern: cut(cs.concern), mitigation: cut(cs.mitigation) }; }
+          }
+          if (w > 1) { var pa = pct(weekPercent_(db.weekly, i.projectId, 'KOMULATIF_REALISASI', w - 1)); if (pa !== null) lw.prev = { week: w - 1, actual: pa }; }
+        } catch (e2) { /* rincian tambahan opsional */ }
+        return Object.assign({}, i, { lw: lw });
       }) }) });
     } catch (e) { /* kalau gagal, Portal tetap tampil dengan data cut-off */ }
     try {
@@ -748,6 +768,13 @@ function load() {
     else console.warn(JSON.stringify({ ev: 'gas_patch_miss', file: p.file }));
   }
 
+  // Ganti nama halaman: "Executive Dashboard" → "Monthly Executive Review" (alamat ?page=executive tetap).
+  for (const [k, v] of htmlFiles) {
+    let t = v.split('Executive Dashboard').join('Monthly Executive Review').split('EXECUTIVE DASHBOARD').join('MONTHLY EXECUTIVE REVIEW');
+    t = t.split("'Buat Laporan Bulanan'").join("'Buat Laporan Bulanan (dokumen)'");
+    if (t !== v) htmlFiles.set(k, t);
+  }
+  for (const f of gsFiles) f.src = f.src.split('Executive Dashboard').join('Monthly Executive Review');
   for (const p of require('./live-lan').GS_PATCHES) {
     const f = gsFiles.find((x) => x.name === p.file);
     if (f && f.src.includes(p.find)) f.src = f.src.replace(p.find, () => p.replace);

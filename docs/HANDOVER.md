@@ -427,6 +427,33 @@ Tujuan: video dan materi weekly yang tautannya mengarah ke Drive kontraktor atau
   - Admin dan PIC bisa menyimpan susunan. `canManage` di `routes/pres.js` sekarang mensyaratkan `role admin`, atau `role input` dengan `legacy_role PIC`.
   - Akun lain tetap bisa mengatur susunan, tapi hanya untuk sesi itu (tidak disimpan).
 
+
+### Portal = posisi paling update; Executive menjadi "Monthly Executive Review" · 16 Nov 2026 (Claude)
+Masukan Direktur Pengembangan: saat portal dibuka, progres aktual vs plan dan resume pekerjaan tiap proyek di minggu terakhir yang diinput harus langsung terlihat.
+
+**Pembagian peran halaman**
+- **Portal:** tiap proyek memakai minggu terakhir yang sudah diinput (bisa berbeda antar proyek). Tidak ada rata-rata portofolio.
+- **Monthly Executive Review** (`?page=executive`, alamat tidak berubah): cut-off bulanan, SPI/CPI rata-rata, serapan RKAP.
+
+**Portal** (`src/gas/portal-latest.js`, disisipkan lewat `PORTAL_GROUPS_JS`; patch `PORTAL_LATEST_PATCHES`)
+- Server: `getPortalData` (BRIDGE di runtime.js) mengirim `lw` per proyek: `week, from, to, actual, plan, deviation, status, highlight, lines[], prev{week,actual}, cause{field,concern,mitigation}, stale`.
+  - `stale` = jumlah minggu sejak akhir minggu terakhir yang diinput, diisi bila ≥ 2.
+- Kartu (`pmoPortalLatest`, `pmoPortalAfter`):
+  - angka, status, dan resume dari `lw`; label "W104 · 4–10 Nov";
+  - baris "+x poin dari W<n-1>";
+  - tanda "Input terakhir n minggu lalu";
+  - "Selengkapnya" membuka semua butir highlight + kendala + tindak lanjut di dalam kartu;
+  - kartu induk tanpa data menjadi strip tipis selebar baris;
+  - proyek critical / at risk diurutkan di depan (`pmoPortalSort`);
+  - blok kartu dipindah ke atas ringkasan.
+- Ringkasan (`pmoPortalBrief`): jumlah on track / at risk per kelompok berdasarkan `lw`, daftar "Perlu perhatian" (deviasi < 0) dengan kendala dan tindak lanjut, daftar input tertinggal, lalu satu baris "Kinerja bulanan (cut-off <periode>): SPI · CPI · serapan RKAP" dengan tautan ke Monthly Executive Review.
+- Hero di bagian paling atas portal belum diubah (masih angka cut-off bulanan).
+
+**Ganti nama**
+- Di `runtime.js`, setelah semua patch HTML: semua teks "Executive Dashboard" di file HTML dan .gs diganti "Monthly Executive Review". File `legacy/` tidak diubah.
+- `nav-theme.js` (Ctrl K) ikut diganti.
+- Menu "Buat Laporan Bulanan" menjadi "Buat Laporan Bulanan (dokumen)".
+
 ---
 
 ## 7. Preferensi kerja pemilik
