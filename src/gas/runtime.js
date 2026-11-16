@@ -52,6 +52,9 @@ const EXEC_BRIEF_NARR_JS = `(function(){
       '#briefBox.xb{padding:18px 20px!important}',
       '#xbExec{padding:16px 20px 14px!important;box-sizing:border-box}',
       '@media (max-width:640px){#xbExec{padding:14px 14px 12px!important}}',
+      '.xbn-h{margin:14px 0 8px!important}.xbn-h:first-child{margin-top:0!important}.xbn-h .xbn-tag{font-size:13.5px;padding:4px 12px}.xbn-memo a{color:var(--pri,#0f5fa8);font-weight:700;text-decoration:underline;text-underline-offset:3px}',
+      '.xv{font-weight:800}.xv.g{color:#16875d}.xv.w{color:#b45309}.xv.b{color:#b42318}.xv.f{color:var(--pri,#0f5fa8)}.xv.p{color:inherit}',
+      '[data-theme=dark] .xv.g{color:#4ade80}[data-theme=dark] .xv.w{color:#fbbf24}[data-theme=dark] .xv.b{color:#f87171}[data-theme=dark] .xv.f,[data-theme=dark] .xbn-memo a{color:#7cc4ff}',
       '.xbn-wrap .xb-act{margin-top:2px}',
       '.xbn-wrap .xb-foot{margin-top:2px;padding-top:10px;border-top:1px solid var(--line,#e2e8f0)}'
     ].join('');
@@ -102,48 +105,60 @@ const EXEC_BRIEF_NARR_JS = `(function(){
 
     var dev=calcGroup('PENGEMBANGAN'),rut=calcGroup('RUTIN');
 
+    var V=function(t,c){return '<b class="xv '+c+'">'+t+'</b>'};
+    var P2=function(v){return v==null||!isFinite(v)?'\\u2014':(v*100).toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2})+'%'};
+    var pts=function(v){return (v>0?'+':v<0?'\\u2212':'')+(Math.abs(v)*100).toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2})};
+    var rpL=function(m){var t=rpM(m);return / M$/.test(t)?t.slice(0,-2)+' Miliar':/ T$/.test(t)?t.slice(0,-2)+' Triliun':t};
+    var tidy=function(t){t=String(t||'').split(/[ \\n\\t]+/).join(' ').trim();while(/[ .;,]$/.test(t))t=t.slice(0,-1);return t};
+    var joinNames=function(a){return a.length<=1?a.join(''):a.length===2?a.join(' dan '):a.slice(0,-1).join(', ')+', dan '+a[a.length-1]};
+    var mon=String(base.period||'').split(' ')[0];
+    var pjById={};projs.forEach(function(p){if(p.projectId)pjById[p.projectId]=p});
+    var finA=(base.attention||[]).filter(function(a){return a.g==='keuangan'});
+    var LINK_P='<a href="#sec-progress" data-xgo="sec-progress">Pencapaian Progress Proyek</a>',LINK_F='<a href="#financeDetailSection" data-xgo="financeDetailSection">Realisasi Keuangan Proyek</a>';
+    var blockNo=0,firstBlock=true;
+
     function grpMemo(g){
       if(!g.run)return '';
-      var stList=[g.onT+' <i>on track</i>'];
-      if(g.risk)stList.push(g.risk+' <i>at risk</i>');
-      if(g.crit)stList.push(g.crit+' <i>critical</i>');
-      var tag='<span class="xbn-tag'+(g.code==='RUTIN'?' rut':'')+'">'+esc(g.label)+'</span>';
+      blockNo++;
+      var list=items.filter(function(i){return grpOf(i.projectId)===g.code});
+      var names=list.map(function(i){return esc(nm(i.name))});
+      var riskL=list.filter(function(i){return i.status==='At risk'}),critL=list.filter(function(i){return i.status==='Critical'});
+      var stTxt=[];
+      if(critL.length)stTxt.push(V(critL.length+' berstatus critical','b')+', yaitu '+joinNames(critL.map(function(i){return esc(nm(i.name))})));
+      if(riskL.length)stTxt.push(V(riskL.length+' berstatus at risk','w')+', yaitu '+joinNames(riskL.map(function(i){return esc(nm(i.name))})));
+      var txt='<p class="xbn-h"><span class="xbn-tag'+(g.code==='RUTIN'?' rut':'')+'">'+blockNo+'. '+esc(g.label)+'</span></p>';
+      txt+='<p>Sesuai pelaporan cut-off bulan <b>'+esc(base.period)+'</b>, terdapat <b>'+g.run+' proyek berjalan</b>'+(names.length?', yaitu '+joinNames(names):'')
+        +(stTxt.length?'; '+stTxt.join(' dan '):(g.run===1?', dengan status '+V('on track','g'):'; seluruhnya berstatus '+V('on track','g')))+'.';
       var perf=[];
-      if(g.spi!=null){
-        var spiNote=g.spi>=0.995?'sesuai jadwal':'sedikit tertinggal dari jadwal';
-        if(g.spiLow)spiNote+=', terendah pada '+esc(nm(g.spiLow.i.name))+' ('+f2(g.spiLow.v)+')';
-        perf.push('kinerja jadwal rata-rata <b>SPI '+f2(g.spi)+'</b> ('+spiNote+')');
+      if(g.spi!=null)perf.push('nilai '+(g.run>1?'rata-rata ':'')+'<b>SPI</b>'+(firstBlock?' (<i>Schedule Performance Index</i>)':'')+' '+V(f2(g.spi),g.spi>=0.995?'g':g.spi>=0.95?'w':'b'));
+      if(g.cpi!=null)perf.push((g.run>1?'rata-rata ':'')+'<b>CPI</b>'+(firstBlock?' (<i>Cost Performance Index</i>)':'')+' '+V(f2(g.cpi),g.cpi>=0.995?'g':g.cpi>=0.95?'w':'b'));
+      if(perf.length)txt+=' '+(g.run>1?'Dari '+g.run+' proyek tersebut, ':'Capaian ')+perf.join(' dan ')+'.';
+      if(g.hasFin&&g.rYr>0)txt+=' Secara total, serapan anggaran terhadap total RKAP 2026 pada bulan '+esc(mon)+' yaitu '+V(pc(g.pctYr,0),'f')+' atau sebesar <b>'+esc(rpL(g.act))+'</b> dari '+esc(rpL(g.rYr))+' (nilai yang dikelola Dashboard).';
+      txt+=' Rincian tiap proyek dapat dilihat pada '+LINK_P+' dan '+LINK_F+'.</p>';
+      firstBlock=false;
+      var late=list.filter(function(i){return !i.pending&&i.deviation!=null&&i.deviation<0}).sort(function(a,c){return a.deviation-c.deviation});
+      var absG=finA.filter(function(x){return list.some(function(i){return nm(i.name)===x.name})});
+      if(late.length||absG.length){
+        txt+='<p><b>Yang perlu diperhatikan:</b></p><ul>';
+        late.forEach(function(i){
+          var pj=pjById[i.projectId]||{},cs=i.cause||{},lw=i.lagWeeks!=null&&isFinite(i.lagWeeks)&&i.lagWeeks>=0.5?Math.max(1,Math.round(i.lagWeeks)):null;
+          var cut='pada cut-off '+esc(mon)+(i.cutWeek?' (W'+esc(i.cutWeek)+(pj.cutRange?', periode '+esc(pj.cutRange):'')+')':'');
+          txt+='<li><b>'+esc(nm(i.name))+'</b>: '+cut+' terlambat '+V(pts(i.deviation)+' poin',i.status==='Critical'?'b':'w')+(lw?' atau sekitar '+lw+' minggu dari jadwal':'')
+            +' (plan '+V(P2(i.plan),'p')+' vs aktual '+V(P2(i.actual),i.status==='Critical'?'b':'w')+')'
+            +(cs.concern?', dengan kendala'+(cs.field?' ('+esc(cs.field)+')':'')+' yaitu '+esc(tidy(cs.concern)):'')
+            +(cs.mitigation?(cs.concern?', dan akan ditindaklanjuti dengan ':', dengan tindak lanjut ')+esc(tidy(cs.mitigation)):'')+'.</li>';
+        });
+        if(absG.length)txt+='<li><b>Serapan RKAP 2026</b> yang perlu menjadi perhatian yaitu '+joinNames(absG.map(function(x){var w=String(x.what||'');var m=w.match(/([0-9.,]+%)/);return '<b>'+esc(x.name)+'</b>'+(m?' ('+V(esc(m[1]),'f')+' dari rencana s.d. '+esc(mon)+')':'')}))+', dengan detail pada '+LINK_F+'.</li>';
+        txt+='</ul>';
+      }else{
+        txt+='<p><b>Yang perlu diperhatikan:</b> tidak ada proyek yang terlambat dari jadwal, dan serapan RKAP sesuai rencana s.d. bulan laporan.</p>';
       }
-      if(g.cpi!=null){
-        perf.push('efisiensi biaya <b>CPI rata-rata '+f2(g.cpi)+'</b>');
-      }
-      var txt='<p>'+tag+' ('+g.run+' proyek berjalan: '+stList.join(', ')+') pada periode '+esc(base.period)+' ';
-      txt+=perf.length?'mencatatkan '+perf.join(' dan ')+'.':'sedang dalam pemantauan berkala.';
-      if(g.hasFin){
-        txt+=' Dari sisi anggaran, serapan RKAP mencapai <b>'+pc(g.pctYr,0)+'</b> (<b>'+esc(rpM(g.act))+'</b> dari target RKAP tahunan '+esc(rpM(g.rYr))+(g.pctTo!=null?'; atau <b>'+pc(g.pctTo,0)+'</b> terhadap RKAP s.d. bulan laporan':'')+').';
-      }
-      txt+='</p>';
+      var doneG=doneProjs.filter(function(p){return grpOf(p.projectId)===g.code});
+      if(doneG.length)txt+='<p><span class="xbn-done">Proyek Selesai</span> <b>'+doneG.map(function(p){return esc(nm(p.name))}).join(', ')+'</b> telah mencapai progres fisik 100% dan berstatus selesai.</p>';
       return txt;
     }
 
     var memo=grpMemo(dev)+grpMemo(rut);
-    if(doneProjs.length){
-      memo+='<p><span class="xbn-done">Proyek Selesai</span> <b>'+doneProjs.map(function(p){return esc(nm(p.name))}).join(', ')+'</b> telah mencapai progres fisik 100% dan berstatus selesai.</p>';
-    }
-    var ask=(base.attention||[]).filter(function(a){return a.g==='jadwal'}),finA=(base.attention||[]).filter(function(a){return a.g==='keuangan'});
-    if(ask.length){
-      memo+='<p><b>Fokus Tindak Lanjut Direksi:</b></p><ul>'+ask.map(function(x){
-        var sn=function(t){t=String(t||'').trim().replace(/[\\s.]+$/,'');if(/\\u2026$/.test(t)){var k=t.lastIndexOf('. ');t=k>20?t.slice(0,k):t.replace(/\\s*\\S*\\u2026$/,'')+'\\u2026';if(/\\u2026$/.test(t))return t}return t+'.'};
-        return '<li><b>'+esc(x.name)+'</b> \\u2014 '+esc(sn(x.what))
-          +(x.why?' <i>Kendala'+(x.fld?' ('+esc(x.fld)+')':'')+':</i> '+esc(sn(x.why)):'')
-          +(x.act?' <i>Tindak lanjut:</i> '+esc(sn(x.act)):'')+'</li>';
-      }).join('')+'</ul>';
-    }else{
-      memo+='<p><b>Fokus Tindak Lanjut:</b> Dari sisi jadwal, seluruh proyek berjalan berada dalam kendali dan belum memerlukan eskalasi khusus Direksi bulan ini.</p>';
-    }
-    if(finA.length){
-      memo+='<p><b>Catatan Serapan RKAP:</b> Realisasi anggaran pada '+finA.map(function(x){return '<b>'+esc(x.name)+'</b> ('+esc(x.what.replace(/^Serapan RKAP\\s*/i,''))+')'}).join(', ')+' masih di bawah rencana s.d. bulan laporan sehingga perlu pengawalan penagihan/termin agar serapan akhir tahun sesuai RKAP.</p>';
-    }
 
     var plain=memo.replace(/<\\/p>|<\\/ul>/g,'\\n\\n').replace(/<li>/g,'\\u2022 ').replace(/<\\/li>/g,'\\n').replace(/<[^>]+>/g,'').replace(/\\n{3,}/g,'\\n\\n').trim();
 
@@ -157,6 +172,7 @@ const EXEC_BRIEF_NARR_JS = `(function(){
       +'</div>';
     el.innerHTML=h;
 
+    el.querySelectorAll('[data-xgo]').forEach(function(l){l.addEventListener('click',function(e){var t=document.getElementById(l.getAttribute('data-xgo'));if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'})}})});
     var msg=el.querySelector('.xb-msg'),say=function(t){if(msg){msg.textContent=t;clearTimeout(msg._t);msg._t=setTimeout(function(){msg.textContent=''},3500)}};
     var cp=el.querySelector('[data-xb-copy]');
     if(cp)cp.onclick=function(){

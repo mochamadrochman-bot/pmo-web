@@ -445,6 +445,10 @@ Masukan Direktur Pengembangan: saat portal dibuka, progres aktual vs plan dan re
   - Isi: aktivitas utama (3 butir highlight pertama), kendala + tindak lanjut (hanya bila deviasi < 0), target milestone bulan berikutnya + statusnya (`brief.msMap`, dari `PROGRESS_MILESTONE_MONTHLY`), keuangan s.d. akhir bulan cut-off = realisasi dan % terhadap RKAP tahunan (`brief.finRows`).
   - Per kelompok: total serapan RKAP tahunan. SPI/CPI tidak ditampilkan di portal; ada tautan ke Monthly Executive Review.
   - Nilai progres dan % RKAP dicetak tebal berwarna (`.xpl-v`).
+- **Narasi Ringkasan Eksekutif di Monthly Executive Review** (revisi 17 Nov, `grpMemo` di `EXEC_BRIEF_NARR_JS`, runtime.js): blok bernomor per kelompok ("1. Proyek Pengembangan", "2. Proyek Investasi Rutin").
+  - Paragraf: cut-off bulan, jumlah dan nama proyek berjalan, yang at risk / critical, SPI dan CPI rata-rata (kepanjangan hanya di blok pertama), total serapan RKAP tahunan "(nilai yang dikelola Dashboard)", lalu tautan gulir ke `#sec-progress` dan `#financeDetailSection`.
+  - "Yang perlu diperhatikan": satu butir per proyek dengan deviasi negatif (minggu cut-off + rentang tanggal dari `cutRange`, deviasi poin, perkiraan minggu, plan vs aktual, kendala, tindak lanjut) dan satu butir serapan RKAP di bawah rencana.
+  - Nilai dicetak tebal berwarna lewat kelas `.xv` (ada varian tema gelap).
 - Hero di bagian paling atas portal belum diubah (masih angka cut-off bulanan).
 
 **Ganti nama**
