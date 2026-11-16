@@ -34,21 +34,21 @@ function pmoPortalRange(a,b){
 }
 function pmoPortalPts(v){return (v>0?'+':v<0?'−':'')+(Math.abs(v)*100).toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2})}
 function pmoPortalAfter(b){
-  var E=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
   if(!document.getElementById('pmoPlCss')){var st=document.createElement('style');st.id='pmoPlCss';st.textContent=
-    '.pc .pc-wk{white-space:nowrap}.pc .pc-stale{display:block;text-align:left;margin:0 20px 8px;padding:5px 10px;border-radius:8px;background:#fef3c7;color:#92400e;font-size:12px;font-weight:700}.pg-grid:has(.pl-open){align-items:start}'+
-    '.pc .pc-img{position:relative}.pc .pc-dl{color:var(--muted,#5b7085)}.pc .pc-dl b{font-weight:700}.pc .pc-dl.up b{color:#16875d}.pc .pc-dl.dn b{color:#b42318}'+
-    '.pc .pc-more{display:inline-block;margin:2px 0 0;padding:2px 0;font-size:12.5px;font-weight:700;color:var(--pri,#0f5fa8);cursor:pointer;text-decoration:underline;text-underline-offset:3px}'+
-    '.pc .pc-moreW{padding:0 20px;margin-top:-6px;text-align:left}.pc .pc-full{display:none;text-align:left;padding:2px 20px 4px;font-size:13.5px;line-height:1.55;color:var(--ink,#13324f)}'+
-    '.pc .pc-full ol{margin:0;padding-left:18px}.pc .pc-full li{margin:0 0 4px}.pc .pc-full .k{margin-top:8px;padding:8px 10px;border-radius:10px;background:var(--tint,#f3f7fb);font-size:13px}.pc .pc-full .k b{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#5b7085);margin-bottom:2px}'+
-    '.pc.pl-open .pc-hl{display:none}.pc.pl-open .pc-full{display:block}'+
-    '.pg-grid .pce{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-start;text-align:left;gap:12px;min-height:0;padding:10px 16px;border-radius:14px;border:1px dashed var(--line,#cfdbe6);background:transparent}'+
-    '.pg-grid .pce .pc-img{display:none}.pg-grid .pce .pce-b{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:0}.pg-grid .pce .pce-n{display:inline;font-size:14px}.pg-grid .pce p{margin:0;font-size:13px;color:var(--muted,#5b7085)}'+
-    '.xpl-memo p{margin:0 0 12px;line-height:1.75}.xpl-memo ul{margin:0 0 12px;padding-left:20px}.xpl-memo li{margin:0 0 8px;line-height:1.65}.xpl-mon{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:4px 0 14px;padding:12px 16px;border-radius:12px;background:var(--tint,#f3f7fb);border:1px solid var(--line,#dbe5ee);font-size:14px}.xpl-mon b{font-weight:700}.xpl-mon a{margin-left:auto;font-weight:700;color:var(--pri,#0f5fa8);text-decoration:none;white-space:nowrap}.xpl-mon a:hover{text-decoration:underline}';
+    '.pc .pc-wk{white-space:nowrap}.pc .pc-stale{display:block;text-align:left;margin:0 20px 8px;padding:5px 10px;border-radius:8px;background:#fef3c7;color:#92400e;font-size:12px;font-weight:700}'+
+    '.pc .pc-dl{color:var(--muted,#5b7085)}.pc .pc-dl b{font-weight:700}.pc .pc-dl.up b{color:#16875d}.pc .pc-dl.dn b{color:#b42318}'+
+    '.xpl-lead{margin:0 0 12px;line-height:1.7;color:var(--muted,#5b7085);font-size:14px}.xpl-g{margin:14px 0 8px}'+
+    '.xpl-p{border:1px solid var(--line,#dbe5ee);border-radius:12px;margin:0 0 8px;background:var(--card,#fff)}'+
+    '.xpl-p>summary{list-style:none;cursor:pointer;padding:11px 14px 11px 38px;position:relative;line-height:1.65}.xpl-p>summary::-webkit-details-marker{display:none}'+
+    '.xpl-p>summary:before{content:"";position:absolute;left:16px;top:19px;width:7px;height:7px;border-right:2px solid var(--muted,#5b7085);border-bottom:2px solid var(--muted,#5b7085);transform:rotate(-45deg);transition:transform .15s}.xpl-p[open]>summary:before{transform:rotate(45deg)}'+
+    '.xpl-p>summary:focus-visible{outline:2px solid var(--pri,#0f5fa8);outline-offset:2px;border-radius:12px}'+
+    '.xpl-p .xpl-b{padding:0 14px 12px 38px;line-height:1.7}.xpl-p .xpl-b p{margin:0 0 6px}.xpl-p .xpl-b p:last-child{margin:0}.xpl-p .xpl-b i{color:var(--muted,#5b7085)}'+
+    '.xpl-v{font-weight:800}.xpl-v.good{color:#16875d}.xpl-v.warn{color:#b45309}.xpl-v.bad{color:#b42318}.xpl-v.pl{color:var(--ink,#13324f)}.xpl-v.fin{color:var(--pri,#0f5fa8)}.xpl-s{font-weight:700}.xpl-s.good{color:#16875d}.xpl-s.warn{color:#b45309}.xpl-s.bad{color:#b42318}'+
+    '.xpl-tools{display:flex;gap:14px;margin:0 0 8px;font-size:12.5px}.xpl-tools button{background:none;border:0;padding:0;color:var(--pri,#0f5fa8);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:3px}'+
+    '.xpl-mon{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:10px 0 14px;padding:12px 16px;border-radius:12px;background:var(--tint,#f3f7fb);border:1px solid var(--line,#dbe5ee);font-size:14px}.xpl-mon b{font-weight:700}.xpl-mon a{margin-left:auto;font-weight:700;color:var(--pri,#0f5fa8);text-decoration:none;white-space:nowrap}.xpl-mon a:hover{text-decoration:underline}';
     document.head.appendChild(st)}
   var by={};(b.items||[]).forEach(function(i){by[i.name]=i});
   var box=document.getElementById('pulse');if(!box)return;
-  box.querySelectorAll('.pce p').forEach(function(p){p.textContent='Belum ada data progres mingguan di tingkat induk. Sub-proyeknya ada di bawah ini.'});
   box.querySelectorAll('.pc').forEach(function(c){
     var i=by[c.getAttribute('data-name')],L=i&&i.lw;if(!L||L.actual==null)return;
     var rg=pmoPortalRange(L.from,L.to),wk=c.querySelector('.pc-wk');
@@ -58,59 +58,65 @@ function pmoPortalAfter(b){
     if(L.prev&&L.prev.actual!=null){var d=L.actual-L.prev.actual,txt='<span class="pc-dl '+(d>0?'up':d<0?'dn':'')+'"><b>'+pmoPortalPts(d)+' poin</b> dari W'+L.prev.week+'</span>';
       var m=c.querySelector('.pc-meta');if(m)m.insertAdjacentHTML('beforeend','<br>'+txt);
       var mm=c.querySelector('.pc-meta-m');if(mm)mm.insertAdjacentHTML('beforeend',' · '+txt)}
-    var lines=L.lines||[],cs=L.cause,hl=c.querySelector('.pc-hl');
-    if(hl&&(lines.length>1||(lines[0]&&lines[0].length>120)||(cs&&(cs.concern||cs.mitigation)))){
-      var full='<div class="pc-full">'+(lines.length?'<ol>'+lines.map(function(t){return '<li>'+E(t)+'</li>'}).join('')+'</ol>':'')+
-        (cs&&cs.concern?'<div class="k"><b>Kendala'+(cs.field?' · '+E(cs.field):'')+'</b>'+E(cs.concern)+'</div>':'')+(cs&&cs.mitigation?'<div class="k"><b>Tindak lanjut</b>'+E(cs.mitigation)+'</div>':'')+'</div>';
-      hl.insertAdjacentHTML('afterend',full+'<div class="pc-moreW"><span class="pc-more" role="button" tabindex="0" aria-expanded="false">Selengkapnya</span></div>');
-      var more=c.querySelector('.pc-more'),tg=function(e){e.preventDefault();e.stopPropagation();var o=c.classList.toggle('pl-open');more.textContent=o?'Ringkas':'Selengkapnya';more.setAttribute('aria-expanded',String(o))};
-      more.addEventListener('click',tg);more.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' ')tg(e)});
-      c.querySelector('.pc-full').addEventListener('click',function(e){e.stopPropagation()});
-    }
   });
   var pt=document.getElementById('portalPulseTitle');if(pt)pt.textContent='Posisi proyek · minggu terakhir yang diinput';
-  var sp=box.closest('section'),bb=document.getElementById('briefBox'),sb=bb&&bb.closest('section');
-  if(sp&&sb&&sp.parentNode===sb.parentNode&&(sb.compareDocumentPosition(sp)&Node.DOCUMENT_POSITION_FOLLOWING))sb.parentNode.insertBefore(sp,sb);
 }
 function pmoPortalBrief(el,s,b){
   if(!el)return;
   var E=function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
   var nm=function(n){return typeof pmoProjName==='function'?pmoProjName(n):n};
   var P=function(v){return v==null||!isFinite(v)?'—':(v*100).toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2})+'%'};
-  var items=Array.isArray(b&&b.items)?b.items:[],G=(b.groups&&b.groups.map)||{};
+  var P0=function(v){return v==null||!isFinite(v)?'—':(v*100).toLocaleString('id-ID',{maximumFractionDigits:0})+'%'};
+  var rp=function(m){m=Number(m);if(!isFinite(m))return '—';return Math.abs(m)>=1e6?'Rp '+(m/1e6).toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2})+' T':'Rp '+(m/1e3).toLocaleString('id-ID',{minimumFractionDigits:1,maximumFractionDigits:1})+' M'};
+  var MON=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  var D=function(x){var m=String(x||'').match(/^(\d{4})-(\d{2})-(\d{2})/);return m?{y:+m[1],m:+m[2]-1,d:+m[3]}:null};
+  var sen=function(t){t=String(t||'').replace(/\s+/g,' ').trim().replace(/[\s.;,]+$/,'');return t};
+  var short=function(t,n){t=sen(t);return t.length>n?t.slice(0,n-1).replace(/\s+\S*$/,'')+'…':t};
+  var items=Array.isArray(b&&b.items)?b.items:[],G=(b.groups&&b.groups.map)||{},MS=b.msMap||{};
+  var fin={};(b.finRows||[]).forEach(function(r){if(r.projectId)fin[r.projectId]=r});
   var grp=function(id){return (G[id]&&G[id].type)==='RUTIN'?'RUTIN':'PENGEMBANGAN'};
-  var st=function(i){return (i.lw&&i.lw.status)||i.status};
-  var sen=function(t){t=String(t||'').replace(/\s+/g,' ').trim().replace(/[\s.]+$/,'');return t?t+'.':''};
-  var memo='';
+  var finPer=b.period||'',nx=String(b.nextPeriod||'').split(' ')[0];
+  var ends=items.map(function(i){return i.lw&&D(i.lw.to)}).filter(Boolean).sort(function(a,c){return (c.y*12+c.m)-(a.y*12+a.m)});
+  var run=ends[0]?MON[ends[0].m]+' '+ends[0].y:'';
+  var plainParts=[];
+  var lead='Periode berjalan '+(run||'—')+'. Progres memakai minggu terakhir yang diinput tiap proyek; keuangan memakai posisi akhir '+(finPer||'bulan laporan terakhir')+' terhadap RKAP tahun berjalan.';
+  plainParts.push(lead);
+  function one(i){
+    var L=i.lw||{},t=D(L.to),f=fin[i.projectId],ms=MS[i.projectId]||{},cs=L.cause||{};
+    var act=L.actual!=null?L.actual:i.actual,plan=L.plan!=null?L.plan:i.plan,dev=L.deviation!=null?L.deviation:i.deviation,stt=L.status||i.status;
+    var cls=stt==='Critical'?'bad':stt==='At risk'?'warn':'good',done=act!=null&&act>=0.99995;
+    var when=t?'sampai dengan minggu ke-'+Math.min(5,Math.ceil(t.d/7))+' '+MON[t.m]+' '+t.y+' (W'+L.week+')':(L.week?'sampai dengan W'+L.week:'');
+    var prog=done?'progres fisik telah <b class="xpl-v good">selesai 100%</b>'+(plan!=null&&plan<0.99995?' (rencana '+P(plan)+')':'')
+      :'progres fisik <b class="xpl-v '+cls+'">'+P(act)+'</b> dari rencana <b class="xpl-v pl">'+P(plan)+'</b>'+(dev!=null?' (<span class="xpl-s '+cls+'">'+pmoPortalPts(dev)+' poin, '+E(String(stt||'').toLowerCase())+'</span>)':'');
+    var head='<b>'+E(nm(i.name))+'</b> — '+(when?when+': ':'')+prog+'.'+(L.stale>=1?' <i>(input terakhir '+L.stale+' minggu lalu)</i>':'');
+    var body=[];
+    var acts=(L.lines&&L.lines.length?L.lines:(L.highlight?[L.highlight]:[])).slice(0,3).map(function(x){return short(x,140)}).filter(Boolean);
+    if(acts.length)body.push('<i>Aktivitas utama:</i> '+acts.map(E).join('; ')+'.');
+    if(dev!=null&&dev<0&&cs.concern)body.push('<i>Kendala'+(cs.field?' ('+E(cs.field)+')':'')+':</i> '+E(short(cs.concern,260))+'.'+(cs.mitigation?' <i>Tindak lanjut:</i> '+E(short(cs.mitigation,260))+'.':''));
+    var msName=sen(ms.milestone||i.nextMilestone||'');
+    if(msName)body.push('<i>Target milestone '+E(nx||'bulan berikutnya')+':</i> '+E(msName)+(sen(ms.status)?' — status <b>'+E(sen(ms.status))+'</b>':(done?' — <b>selesai</b>':''))+'.');
+    if(f&&f.rkap2026!=null&&Number(f.rkap2026)>0&&f.actualToDate!=null)body.push('<i>Keuangan s.d. akhir '+E(finPer)+':</i> realisasi '+E(rp(f.actualToDate))+', <b class="xpl-v fin">'+P0(Number(f.actualToDate)/Number(f.rkap2026))+'</b> dari RKAP tahunan '+E(rp(f.rkap2026))+'.');
+    else body.push('<i>Keuangan s.d. akhir '+E(finPer)+':</i> data RKAP belum tersedia.');
+    plainParts.push((head+' '+body.join(' ')).replace(/<[^>]+>/g,''));
+    return '<details class="xpl-p"'+(cls!=='good'?' open':'')+'><summary>'+head+'</summary><div class="xpl-b">'+body.map(function(x){return '<p>'+x+'</p>'}).join('')+'</div></details>';
+  }
+  var rk=function(i){var x=(i.lw&&i.lw.status)||i.status;return x==='Critical'?0:x==='At risk'?1:2};
+  var memo='<p class="xpl-lead">'+E(lead)+'</p><div class="xpl-tools"><button type="button" data-xpl="1">Buka semua</button><button type="button" data-xpl="0">Lipat semua</button></div>';
   [['PENGEMBANGAN','Proyek Pengembangan',''],['RUTIN','Proyek Investasi Rutin',' rut']].forEach(function(g){
     var list=items.filter(function(i){return grp(i.projectId)===g[0]});if(!list.length)return;
-    var on=list.filter(function(i){return st(i)==='On track'}).length,rk=list.filter(function(i){return st(i)==='At risk'}).length,cr=list.filter(function(i){return st(i)==='Critical'}).length;
-    var parts=[on+' <i>on track</i>'];if(rk)parts.push(rk+' <i>at risk</i>');if(cr)parts.push(cr+' <i>critical</i>');
-    memo+='<p><span class="xbn-tag'+g[2]+'">'+g[1]+'</span> '+list.length+' proyek berjalan: '+parts.join(', ')+', berdasarkan minggu terakhir yang diinput tiap proyek.</p>';
+    list=list.map(function(i,k){return {i:i,k:k}}).sort(function(a,c){return rk(a.i)-rk(c.i)||a.k-c.k}).map(function(x){return x.i});
+    var a=0,r=0,any=false;list.forEach(function(i){var f=fin[i.projectId];if(!f)return;if(f.actualToDate!=null||f.rkap2026!=null)any=true;a+=Number(f.actualToDate||0);r+=Number(f.rkap2026||0)});
+    var tot=any&&r>0?' Serapan RKAP tahunan <b class="xpl-v fin">'+P0(a/r)+'</b> ('+E(rp(a))+' dari '+E(rp(r))+') s.d. akhir '+E(finPer)+'.':'';
+    memo+='<p class="xpl-g"><span class="xbn-tag'+g[2]+'">'+g[1]+'</span> '+list.length+' proyek berjalan.'+tot+'</p>'+list.map(one).join('');
+    if(tot)plainParts.push(g[1]+': '+tot.replace(/<[^>]+>/g,'').trim());
   });
-  var bad=items.filter(function(i){var L=i.lw;return L&&L.deviation!=null&&L.deviation<0}).sort(function(a,c){return a.lw.deviation-c.lw.deviation});
-  if(bad.length){
-    memo+='<p><b>Perlu perhatian:</b></p><ul>'+bad.map(function(i){var L=i.lw,rg=pmoPortalRange(L.from,L.to),cs=L.cause||{};
-      return '<li><b>'+E(nm(i.name))+'</b> (W'+L.week+(rg?', '+rg:'')+') — aktual '+P(L.actual)+' dari rencana '+P(L.plan)+' ('+pmoPortalPts(L.deviation)+' poin).'+
-        (cs.concern?' <i>Kendala'+(cs.field?' ('+E(cs.field)+')':'')+':</i> '+E(sen(cs.concern)):'')+(cs.mitigation?' <i>Tindak lanjut:</i> '+E(sen(cs.mitigation)):'')+'</li>'}).join('')+'</ul>';
-  }else if(items.length){
-    memo+='<p><b>Perlu perhatian:</b> tidak ada. Semua proyek berada di atas atau sama dengan rencana pada minggu terakhirnya.</p>';
-  }
-  var late=items.filter(function(i){return i.lw&&i.lw.stale>=1});
-  if(late.length)memo+='<p><b>Input tertinggal:</b> '+late.map(function(i){return E(nm(i.name))+' (terakhir W'+i.lw.week+', '+i.lw.stale+' minggu lalu)'}).join('; ')+'.</p>';
-  var x=null;try{x=typeof pmoExecBrief==='function'?pmoExecBrief(s,b):null}catch(e){x=null}
-  var per=(x&&x.period)||b.period||'',mon='',monTxt='';
-  if(x&&x.tiles){var t=x.tiles,bits=[];
-    if(/SPI/.test(t[0].k)&&t[0].v!=='—')bits.push('SPI <b>'+E(t[0].v)+'</b>');
-    if(t[3]&&t[3].v!=='—')bits.push('CPI <b>'+E(t[3].v)+'</b>');
-    if(t[2]&&t[2].v!=='—')bits.push('serapan RKAP <b>'+E(t[2].v)+'</b>');
-    if(bits.length){mon='<div class="xpl-mon"><span>Kinerja bulanan (cut-off '+E(per)+'): '+bits.join(' · ')+'</span><a href="/app?page=executive">Buka Monthly Executive Review →</a></div>';
-      monTxt='Kinerja bulanan cut-off '+per+': '+bits.join(', ').replace(/<[^>]+>/g,'')+'.'}}
-  var plain=memo.replace(/<\/p>|<\/ul>/g,'\n\n').replace(/<li>/g,'• ').replace(/<\/li>/g,'\n').replace(/<[^>]+>/g,'').replace(/\n{3,}/g,'\n\n').trim()+(monTxt?'\n\n'+monTxt:'');
-  var pt=document.getElementById('portalBriefTitle');if(pt)pt.textContent='Ringkasan · posisi minggu terakhir';
+  var mon='<div class="xpl-mon"><span>SPI, CPI, dan rincian keuangan bulanan (cut-off '+E(finPer)+') ada di halaman bulanan.</span><a href="/app?page=executive">Buka Monthly Executive Review →</a></div>';
+  var plain=plainParts.join('\n\n');
+  var pt=document.getElementById('portalBriefTitle');if(pt)pt.textContent='Ringkasan · progres minggu terakhir & keuangan bulanan';
   el.innerHTML='<div class="xbn-wrap"><div class="xbn-memo xpl-memo">'+memo+'</div>'+mon+
     '<div class="xb-act"><button type="button" data-xb-copy>Salin narasi</button>'+(window.speechSynthesis?'<button type="button" data-xb-say>Dengarkan</button>':'')+'<span class="xb-msg" role="status"></span></div>'+
     (b.asOfText?'<div class="xb-foot"><span>Data mingguan s.d. '+E(b.asOfText)+'</span></div>':'')+'</div>';
+  el.querySelectorAll('[data-xpl]').forEach(function(bt){bt.onclick=function(){var o=bt.getAttribute('data-xpl')==='1';el.querySelectorAll('details.xpl-p').forEach(function(d){d.open=o})}});
   var msg=el.querySelector('.xb-msg'),say=function(t){if(msg){msg.textContent=t;clearTimeout(msg._t);msg._t=setTimeout(function(){msg.textContent=''},3500)}};
   var cp=el.querySelector('[data-xb-copy]');
   if(cp)cp.onclick=function(){var done=function(){say('Narasi disalin.')};
@@ -135,7 +141,7 @@ const PORTAL_LATEST_PATCHES = [
   {
     file: 'Portal',
     find: "$('pulse').innerHTML=pmoGroupedCards(items,b,__card,esc,thumb);",
-    replace: "$('pulse').innerHTML=pmoGroupedCards(pmoPortalSort(items),b,__card,esc,thumb);try{pmoPortalAfter(b)}catch(e){console.warn('pmoPortalAfter',e)}",
+    replace: "$('pulse').innerHTML=pmoGroupedCards(items,b,__card,esc,thumb);try{pmoPortalAfter(b)}catch(e){console.warn('pmoPortalAfter',e)}",
   },
   {
     file: 'Portal',

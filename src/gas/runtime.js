@@ -681,16 +681,19 @@ ${RETIRED.map((n) => `  ${n} = function () { throw new Error('Akun kini dikelola
             if (p) parents[pid] = { name: p.name, banner: (function () { try { return projectBannerId_(db2, p); } catch (e) { return ''; } })() };
           });
         }
-        var finRows = [], doneProjects = [];
+        var finRows = [], doneProjects = [], msMap = {};
         try {
           var ex = getExecutiveDashboardData(token);
           if (ex && ex.financial && Array.isArray(ex.financial.rows)) finRows = ex.financial.rows;
+          if (ex && Array.isArray(ex.projects) && Array.isArray(ex.milestones)) {
+            ex.milestones.forEach(function (m) { var pj = ex.projects[m.projectIndex]; if (pj && pj.projectId) msMap[pj.projectId] = { milestone: String(m.milestone || ''), status: String(m.status || ''), note: String(m.note || '') }; });
+          }
           if (ex && Array.isArray(ex.projects)) {
             doneProjects = ex.projects.filter(function (p) { return String(p.stage || '').toUpperCase() === 'SELESAI'; })
               .map(function (p) { return { projectId: p.projectId, name: p.name }; });
           }
         } catch (e2) { /* abaikan jika gagal */ }
-        r = Object.assign({}, r, { brief: Object.assign({}, r.brief, { groups: { map: gmap, parents: parents }, finRows: finRows, doneProjects: doneProjects }) });
+        r = Object.assign({}, r, { brief: Object.assign({}, r.brief, { groups: { map: gmap, parents: parents }, finRows: finRows, doneProjects: doneProjects, msMap: msMap }) });
       }
     } catch (e) { /* tanpa kelompok, kartu tampil seperti biasa */ }
     return r;

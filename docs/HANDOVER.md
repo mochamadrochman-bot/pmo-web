@@ -438,15 +438,13 @@ Masukan Direktur Pengembangan: saat portal dibuka, progres aktual vs plan dan re
 **Portal** (`src/gas/portal-latest.js`, disisipkan lewat `PORTAL_GROUPS_JS`; patch `PORTAL_LATEST_PATCHES`)
 - Server: `getPortalData` (BRIDGE di runtime.js) mengirim `lw` per proyek: `week, from, to, actual, plan, deviation, status, highlight, lines[], prev{week,actual}, cause{field,concern,mitigation}, stale`.
   - `stale` = jumlah minggu sejak akhir minggu terakhir yang diinput, diisi bila ≥ 2.
-- Kartu (`pmoPortalLatest`, `pmoPortalAfter`):
-  - angka, status, dan resume dari `lw`; label "W104 · 4–10 Nov";
-  - baris "+x poin dari W<n-1>";
-  - tanda "Input terakhir n minggu lalu";
-  - "Selengkapnya" membuka semua butir highlight + kendala + tindak lanjut di dalam kartu;
-  - kartu induk tanpa data menjadi strip tipis selebar baris;
-  - proyek critical / at risk diurutkan di depan (`pmoPortalSort`);
-  - blok kartu dipindah ke atas ringkasan.
-- Ringkasan (`pmoPortalBrief`): jumlah on track / at risk per kelompok berdasarkan `lw`, daftar "Perlu perhatian" (deviasi < 0) dengan kendala dan tindak lanjut, daftar input tertinggal, lalu satu baris "Kinerja bulanan (cut-off <periode>): SPI · CPI · serapan RKAP" dengan tautan ke Monthly Executive Review.
+- Urutan halaman: Story Lapangan → Ringkasan → Kartu proyek (revisi 17 Nov).
+- Kartu (`pmoPortalLatest`, `pmoPortalAfter`): bentuk kartu seperti semula (highlight 3 baris, tanpa "Selengkapnya"), urutan sesuai kelompok Pengembangan lalu Rutin. Tambahannya hanya: angka dan status dari `lw`, label "W104 · 4–10 Nov", baris "+x poin dari W<n-1>", dan tanda "Input terakhir n minggu lalu".
+- Ringkasan (`pmoPortalBrief`), revisi 17 Nov: narasi per proyek dalam `<details>` yang bisa dilipat (proyek at risk / critical terbuka otomatis).
+  - Kalimat kepala: "sampai dengan minggu ke-n <bulan> (W..): progres fisik x% dari rencana y% (deviasi, status)". Minggu ke-n = ceil(tanggal akhir minggu / 7).
+  - Isi: aktivitas utama (3 butir highlight pertama), kendala + tindak lanjut (hanya bila deviasi < 0), target milestone bulan berikutnya + statusnya (`brief.msMap`, dari `PROGRESS_MILESTONE_MONTHLY`), keuangan s.d. akhir bulan cut-off = realisasi dan % terhadap RKAP tahunan (`brief.finRows`).
+  - Per kelompok: total serapan RKAP tahunan. SPI/CPI tidak ditampilkan di portal; ada tautan ke Monthly Executive Review.
+  - Nilai progres dan % RKAP dicetak tebal berwarna (`.xpl-v`).
 - Hero di bagian paling atas portal belum diubah (masih angka cut-off bulanan).
 
 **Ganti nama**
