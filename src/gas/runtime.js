@@ -610,7 +610,7 @@ const HTML_PATCHES = [
   {
     file: 'Dashboard',
     find: '</style></head><body>',
-    replace: '\nhtml,body{overflow-x:clip}.app>*,.main,.content,.topbar,.grid,.panel{min-width:0;max-width:100%}' +
+    replace: '\nhtml,body{overflow-x:clip}.app>*,.main,.content,.topbar,.grid,.panel{min-width:0;max-width:100%}.life-banner[hidden],#lifeBanner[hidden]{display:none!important}' +
       '\nhtml.m-mode body{padding-bottom:140px!important}' +
       '\nhtml.m-mode .m-dock{padding:0!important;background:linear-gradient(to bottom,transparent 0,var(--bg) 56%)}' +
       '\nhtml.m-mode .m-period{margin:0 auto 8px 10px!important}' +
@@ -629,14 +629,14 @@ const HTML_PATCHES = [
   // Monthly Executive Review (Mobile): rapikan dok bawah, cegah tabrakan pil PERIODE vs Sena, dan perbesar target sentuh HP.
   {
     file: 'ExecutiveDashboard',
-    find: '</style></head>',
-    replace: '\nhtml.m-mode body{padding-bottom:140px!important}' +
+    find: '</head><body>',
+    replace: '<style>\nhtml.m-mode body{padding-bottom:140px!important}' +
       '\nhtml.m-mode .m-dock{padding:0!important;background:linear-gradient(to bottom,transparent 0,var(--bg) 56%)}' +
       '\nhtml.m-mode .m-period{margin:0 auto 8px 10px!important}' +
       '\nhtml.m-mode .m-period button{height:44px!important}' +
       '\nhtml.m-mode .m-tabs{border-radius:18px 18px 0 0!important;border-bottom:0!important;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))!important}' +
       '\nhtml.m-mode .aic-fab{bottom:calc(74px + env(safe-area-inset-bottom,0px))!important;right:12px!important}' +
-      '\n@media (max-width:760px){.ntf-btn,.search-btn,.xb-act button{min-height:44px!important;min-width:44px!important}}\n</style></head>',
+      '\n@media (max-width:760px){.ntf-btn,.search-btn,.xb-act button{min-height:44px!important;min-width:44px!important}}\n</style>\n</head><body>',
   },
   // Portal Proyek (Mobile): geser titik carousel menjauhi Sena, judul 1 baris, titik status bulat, dan target sentuh >= 44px.
   {
