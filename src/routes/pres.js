@@ -237,7 +237,13 @@ router.get('/api/pres/set', requireUser, async (req, res, next) => {
         'select p.deck_id, p.page_no, p.width, p.height, d.title from pres_pages p join pres_decks d on d.id = p.deck_id where d.ready and p.deck_id = any($1::int[])', [ids]
       )).rows;
     }
+    const mids = [...new Set(items.filter((x) => x && x.type === 'model3d').map((x) => Number(x.model)).filter(Boolean))];
+    const mrows = mids.length ? (await db.query('select id, project_id, title from model3d where id = any($1::bigint[])', [mids])).rows : [];
     const full = items.map((x) => {
+      if (x && x.type === 'model3d') {
+        const m = mrows.find((y) => Number(y.id) === Number(x.model));
+        return { type: 'model3d', model: Number(x.model) || 0, pos: x.pos || 'end', title: m ? m.title : String(x.title || ''), project: m ? m.project_id : '', missing: !m };
+      }
       if (x && x.type === 'video') {
         return { type: 'video', project: String(x.project || ''), week: Number(x.week) || 0, pos: x.pos || 'end', title: String(x.title || '') };
       }
@@ -256,13 +262,18 @@ router.put('/api/pres/set', requireUser, onlyManager, async (req, res, next) => 
     const key = String(b.key || '').toUpperCase().replace(/^EXECUTIVE$/, 'executive').replace(/^WEEKLY:/, 'weekly:');
     if (!KEY_RE.test(key) || key === '_settings') return bad(res, 'Kunci presentasi tidak valid.');
     const items = (Array.isArray(b.items) ? b.items : []).slice(0, 200).map((x) => {
+      if (x && x.type === 'model3d') {
+        const model = Number(x.model);
+        if (!Number.isInteger(model) || model < 1) return null;
+        return { type: 'model3d', model, pos: String(x.pos || 'end').slice(0, 200), title: String(x.title || '').slice(0, 160) };
+      }
       if (x && x.type === 'video') {
         const project = String(x.project || '').trim().slice(0, 60), week = Number(x.week);
         if (!/^[A-Za-z0-9_\- .]+$/.test(project) || !Number.isInteger(week) || week < 1 || week > 2000) return null;
         return { type: 'video', project, week, pos: String(x.pos || 'end').slice(0, 200), title: String(x.title || '').slice(0, 160) };
       }
       return { deck: Number(x.deck), page: Number(x.page), pos: String(x.pos || 'end').slice(0, 200) };
-    }).filter((x) => x && (x.type === 'video' || (Number.isInteger(x.deck) && Number.isInteger(x.page))));
+    }).filter((x) => x && (x.type === 'video' || x.type === 'model3d' || (Number.isInteger(x.deck) && Number.isInteger(x.page))));
     await db.query(
       `insert into pres_sets (key, data, updated_by, updated_at) values ($1, $2, $3, now())
        on conflict (key) do update set data = excluded.data, updated_by = excluded.updated_by, updated_at = now()`,

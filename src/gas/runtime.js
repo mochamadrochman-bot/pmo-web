@@ -781,7 +781,9 @@ function load() {
   fs.readdirSync(LEGACY_DIR).filter((f) => f.endsWith('.html')).forEach((f) => {
     htmlFiles.set(f.replace(/\.html$/, ''), fs.readFileSync(path.join(LEGACY_DIR, f), 'utf8'));
   });
-  for (const p of HTML_PATCHES) {
+  const v3d = require('./visual3d');
+  htmlFiles.set('Visual3D', v3d.VISUAL3D_HTML);
+  for (const p of HTML_PATCHES.concat(v3d.HTML_PATCHES)) {
     const src = htmlFiles.get(p.file);
     if (src && src.includes(p.find)) htmlFiles.set(p.file, src.replace(p.find, p.replace));
     else console.warn(JSON.stringify({ ev: 'gas_patch_miss', file: p.file }));
@@ -799,7 +801,7 @@ function load() {
     const { rewrite } = require('../routes/brand');
     for (const [k, v] of htmlFiles) { const t = rewrite(v); if (t !== v) htmlFiles.set(k, t); }
   } catch (e) { console.log(JSON.stringify({ ev: 'brand_rewrite_skip', message: String(e.message || e) })); }
-  for (const p of require('./live-lan').GS_PATCHES) {
+  for (const p of require('./live-lan').GS_PATCHES.concat(require('./visual3d').GS_PATCHES)) {
     const f = gsFiles.find((x) => x.name === p.file);
     if (f && f.src.includes(p.find)) f.src = f.src.replace(p.find, () => p.replace);
     else console.warn(JSON.stringify({ ev: 'gas_patch_miss', file: p.file + '.gs' }));

@@ -175,7 +175,23 @@ const PRES_EXTRA_JS = String.raw`<script>
         if(slide&&window.MutationObserver)new MutationObserver(sync).observe(slide,{attributes:true,attributeFilter:['class']});
         setTimeout(sync,50)}};
   }
-  function slideOf(x){return x&&x.type==='video'?videoSlide(x):pdfSlide(x)}
+  /* ---------- slide model 3D (Visual 3D Proyek) ---------- */
+  function m3dInfo(x){return (cache.m3d||[]).filter(function(m){return m.id===Number(x.model)})[0]||null}
+  function model3dSlide(x){
+    var m=m3dInfo(x),nm=m?m.title:(x.title||'Model 3D');
+    var src=m?'/model3d/'+m.id+'/view?theme=light&v='+encodeURIComponent(m.updatedAt||''):'';
+    var inner=m?'':'<div class="px-vempty">Model 3D "'+esc(nm)+'" tidak ditemukan (mungkin sudah dihapus).</div>';
+    return {title:'3D · '+nm,extra:true,html:'<div class="px-video px-m3d" data-src="'+esc(src)+'">'+inner+'</div>',
+      after:function(card){card.classList.add('px-bleed');
+        var box=card.querySelector('.px-m3d');if(!box||!box.getAttribute('data-src'))return;
+        var slide=card.closest('.pp-slide')||card.parentNode;
+        var sync=function(){var on=slide&&!slide.classList.contains('prev')&&!slide.classList.contains('next');var cur=box.querySelector('iframe');
+          if(on&&!cur){box.insertAdjacentHTML('beforeend','<iframe title="'+esc(nm)+'" src="'+esc(box.getAttribute('data-src'))+'" sandbox="allow-scripts allow-popups allow-pointer-lock" allow="fullscreen" referrerpolicy="no-referrer" style="background:#fff"></iframe>')}
+          else if(!on&&cur)cur.remove()};
+        if(slide&&window.MutationObserver)new MutationObserver(sync).observe(slide,{attributes:true,attributeFilter:['class']});
+        setTimeout(sync,50)}};
+  }
+  function slideOf(x){return x&&x.type==='video'?videoSlide(x):x&&x.type==='model3d'?model3dSlide(x):pdfSlide(x)}
   function decorate(cfg,slides){
     css();
     var S=cache.settings||{},bn=banners(),mine=cache.key===keyOf(cfg);
@@ -227,7 +243,8 @@ const PRES_EXTRA_JS = String.raw`<script>
     var proj=key&&key.indexOf('weekly:')===0?key.slice(7):'';
     var vids=Promise.race([galleryPhotos(proj),new Promise(function(r){setTimeout(function(){r(null)},7000)})]).then(function(a){cache.photos=a||galMemo[proj||'*']||[]}).catch(function(){cache.photos=[]});
     var vv=key==='executive'?Promise.race([gs('getPresVideoOptions',[tok()]),new Promise(function(r){setTimeout(function(){r(null)},8000)})]).then(function(d){var m={};((d&&d.projects)||[]).forEach(function(p){m[p.id]=p});cache.vids=m;cache.vidList=(d&&d.projects)||[]}).catch(function(){cache.vids={};cache.vidList=[]}):Promise.resolve(cache.vids={});
-    vids=Promise.all([vids,vv]);
+    var mm=Promise.race([fetch('/api/model3d',{credentials:'same-origin'}).then(function(r){return r.json()}),new Promise(function(r){setTimeout(function(){r(null)},8000)})]).then(function(j){var d=j&&j.ok?j.data:null,pm={};((d&&d.projects)||[]).forEach(function(p){pm[p.id]=p.name});cache.m3d=(d&&d.models)||[];cache.m3dProj=pm}).catch(function(){cache.m3d=[];cache.m3dProj={}});
+    vids=Promise.all([vids,vv,mm]);
     if(!key){cache.items=[];return vids}
     cache.err='';
     var fb=nameKeyOf(cfg);
@@ -255,7 +272,7 @@ const PRES_EXTRA_JS = String.raw`<script>
     OPT=OPT||{};
     css();
     var key=cache.key||keyOf(cfg);if(!key)return;
-    var items=cache.items.map(function(x){return x.type==='video'?{type:'video',project:x.project,week:x.week,pos:x.pos,title:x.title}:{deck:x.deck,page:x.page,pos:x.pos,title:x.title,width:x.width,height:x.height}});
+    var items=cache.items.map(function(x){return x.type==='model3d'?{type:'model3d',model:x.model,pos:x.pos,title:x.title}:x.type==='video'?{type:'video',project:x.project,week:x.week,pos:x.pos,title:x.title}:{deck:x.deck,page:x.page,pos:x.pos,title:x.title,width:x.width,height:x.height}});
     var VIC='<span class="px-vic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 8l6 4-6 4z"/><rect x="2" y="4" width="20" height="16" rx="3"/></svg></span>';
     var S=Object.assign({},cache.settings||{}),dirty=false,lib=[];
     var hid0={};((cache.layout&&cache.layout.hidden)||[]).forEach(function(t){hid0[t]=1});
@@ -280,7 +297,7 @@ const PRES_EXTRA_JS = String.raw`<script>
         '<div style="display:flex;gap:8px;margin:8px 0 22px"><button type="button" class="px-btn sm" data-bx="all">Tampilkan semua</button><button type="button" class="px-btn sm" data-bx="reset">Kembalikan urutan bawaan</button></div>'+
         (key==='executive'?vidAddHtml():'')+
         '<h4 class="px-h4">Slide tambahan <span>'+items.length+' slide</span></h4><p class="px-note">Tambah slide PDF dari tab <b>Pustaka PDF</b>'+(key==='executive'?', atau video proyek dari bagian di atas':'')+'.</p>'+
-        (items.length?items.map(function(x,i){return '<div class="px-row" data-i="'+i+'">'+(x.type==='video'?VIC+'<div><b>'+esc(x.title||x.project)+'</b><small>Video proyek · W'+esc(x.week)+'</small></div>':'<img src="/api/pres/img/'+x.deck+'/'+x.page+'?t=1" alt=""><div><b>'+esc(x.title||'Materi')+'</b><small>Halaman '+x.page+'</small></div>')+'<select aria-label="Posisi slide">'+posOpts(x.pos)+'</select><div class="px-acts"><button type="button" class="px-btn sm" data-m="-1" title="Naik"'+(i===0?' disabled':'')+'>↑</button><button type="button" class="px-btn sm" data-m="1" title="Turun"'+(i===items.length-1?' disabled':'')+'>↓</button><button type="button" class="px-btn sm" data-m="del" title="Hapus dari presentasi">✕</button></div></div>'}).join(''):'<div class="px-empty">Belum ada slide tambahan untuk presentasi ini.</div>');
+        (items.length?items.map(function(x,i){return '<div class="px-row" data-i="'+i+'">'+(x.type==='model3d'?VIC+'<div><b>'+esc(x.title||'Model 3D')+'</b><small>Model 3D</small></div>':x.type==='video'?VIC+'<div><b>'+esc(x.title||x.project)+'</b><small>Video proyek · W'+esc(x.week)+'</small></div>':'<img src="/api/pres/img/'+x.deck+'/'+x.page+'?t=1" alt=""><div><b>'+esc(x.title||'Materi')+'</b><small>Halaman '+x.page+'</small></div>')+'<select aria-label="Posisi slide">'+posOpts(x.pos)+'</select><div class="px-acts"><button type="button" class="px-btn sm" data-m="-1" title="Naik"'+(i===0?' disabled':'')+'>↑</button><button type="button" class="px-btn sm" data-m="1" title="Turun"'+(i===items.length-1?' disabled':'')+'>↓</button><button type="button" class="px-btn sm" data-m="del" title="Hapus dari presentasi">✕</button></div></div>'}).join(''):'<div class="px-empty">Belum ada slide tambahan untuk presentasi ini.</div>');
     }
     function vidAddHtml(){
       var L=cache.vidList||[];
@@ -375,7 +392,7 @@ const PRES_EXTRA_JS = String.raw`<script>
     m.querySelector('.px-x').onclick=close;m.querySelector('[data-x=close]').onclick=close;
     saveBtn.onclick=function(){
       saveBtn.disabled=true;say('Menyimpan…');
-      api('/api/pres/set',{method:'PUT',body:JSON.stringify({key:key,items:items.map(function(x){return x.type==='video'?{type:'video',project:x.project,week:x.week,pos:x.pos,title:x.title}:{deck:x.deck,page:x.page,pos:x.pos}}),layout:{order:base.map(function(x){return x.t}),hidden:base.filter(function(x){return !x.show}).map(function(x){return x.t})},settings:S})})
+      api('/api/pres/set',{method:'PUT',body:JSON.stringify({key:key,items:items.map(function(x){return x.type==='model3d'?{type:'model3d',model:x.model,pos:x.pos,title:x.title}:x.type==='video'?{type:'video',project:x.project,week:x.week,pos:x.pos,title:x.title}:{deck:x.deck,page:x.page,pos:x.pos}}),layout:{order:base.map(function(x){return x.t}),hidden:base.filter(function(x){return !x.show}).map(function(x){return x.t})},settings:S})})
       .then(function(){dirty=false;window.removeEventListener('keydown',onKey,true);m.remove();
         if(window.pmoPresent&&pmoPresent.isOpen()){pmoPresent.close();setTimeout(function(){if(typeof window.pmoPresentStart==='function')window.pmoPresentStart()},650)}})
       .catch(function(e){saveBtn.disabled=false;say(e.message,true)});

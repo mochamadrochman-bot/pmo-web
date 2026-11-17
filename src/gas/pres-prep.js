@@ -70,6 +70,7 @@ const PRES_PREP_JS = String.raw`<style>
     pdf:'<path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/>',
     vid:'<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M10 9l5 3-5 3z"/>',
     cover:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="12" cy="11" r="3"/>',
+    cube:'<path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 22V12M21 7l-9 5-9-5"/>',
     play:'<path d="M7 5l12 7-12 7z"/>',plus:'<path d="M12 5v14M5 12h14"/>'
   };
   function sv(p){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>'}
@@ -92,7 +93,7 @@ const PRES_PREP_JS = String.raw`<style>
     var base=(C.base||[]).filter(function(t){return byT.hasOwnProperty(t)});
     var start=[],end=[],after={};
     (mine?C.items:[]).forEach(function(x){
-      var p=String(x.pos||'end'),it={k:x.type==='video'?'vid':'pdf',x:Object.assign({},x)};
+      var p=String(x.pos||'end'),it={k:x.type==='video'?'vid':x.type==='model3d'?'m3d':'pdf',x:Object.assign({},x)};
       if(p==='start')start.push(it);
       else if(p.indexOf('after:')===0&&base.indexOf(p.slice(6))>=0)(after[p.slice(6)]=after[p.slice(6)]||[]).push(it);
       else end.push(it);
@@ -105,6 +106,7 @@ const PRES_PREP_JS = String.raw`<style>
   function titleOf(r){
     if(r.k==='cover')return 'Sampul';if(r.k==='thanks')return 'Terima kasih';if(r.k==='dash')return r.t||'Slide';
     if(r.k==='vid')return 'Video · '+(r.x.title||r.x.project)+' · W'+r.x.week;
+    if(r.k==='m3d')return '3D · '+(r.x.title||'Model 3D');
     return (r.x.title||'Materi PDF')+' · hal. '+r.x.page;
   }
   function slideOf(r){
@@ -148,7 +150,7 @@ const PRES_PREP_JS = String.raw`<style>
     var ld=box.querySelector('.pq-load');if(ld)ld.remove();
     if(!box.querySelector('.pq-main')){
       box.insertAdjacentHTML('beforeend','<div class="pq-main"><div class="pq-left"><div class="pq-tools">'+
-        (can?'<button type="button" class="pq-btn sm" data-q="pdf">'+sv(I.plus)+'Tambah PDF</button>'+(isExec?'<button type="button" class="pq-btn sm" data-q="vid">'+sv(I.plus)+'Tambah video</button>':''):'')+
+        (can?'<button type="button" class="pq-btn sm" data-q="pdf">'+sv(I.plus)+'Tambah PDF</button>'+(isExec?'<button type="button" class="pq-btn sm" data-q="vid">'+sv(I.plus)+'Tambah video</button>':'')+'<button type="button" class="pq-btn sm" data-q="m3d">'+sv(I.plus)+'Tambah 3D</button>':'')+
         '<button type="button" class="pq-btn sm" data-q="all">Tampilkan semua</button><button type="button" class="pq-btn sm" data-q="reset">Urutan bawaan</button><span class="pq-n"></span></div>'+
         '<div class="pq-vadd" hidden></div><div class="pq-list" role="listbox" aria-label="Susunan slide"></div></div>'+
         '<div class="pq-right"></div></div>'+
@@ -160,15 +162,15 @@ const PRES_PREP_JS = String.raw`<style>
     box.querySelector('.pq-n').textContent=n+' slide';
     var list=box.querySelector('.pq-list'),last=P.rows.length-1;
     list.innerHTML=P.rows.map(function(r,i){
-      var ic=r.k==='pdf'?I.pdf:r.k==='vid'?I.vid:(r.k==='cover'||r.k==='thanks')?I.cover:/^Proyek ·/.test(r.t||'')?I.proj:I.dash;
-      var tag=r.k==='pdf'?'<span class="pq-tag pdf">PDF</span>':r.k==='vid'?'<span class="pq-tag vid">Video</span>':r.fix?'<span class="pq-tag fix">Tetap</span>':'';
+      var ic=r.k==='pdf'?I.pdf:r.k==='vid'?I.vid:r.k==='m3d'?I.cube:(r.k==='cover'||r.k==='thanks')?I.cover:/^Proyek ·/.test(r.t||'')?I.proj:I.dash;
+      var tag=r.k==='pdf'?'<span class="pq-tag pdf">PDF</span>':r.k==='vid'?'<span class="pq-tag vid">Video</span>':r.k==='m3d'?'<span class="pq-tag vid">3D</span>':r.fix?'<span class="pq-tag fix">Tetap</span>':'';
       var up=!r.fix&&i>1,dn=!r.fix&&i<last-1;
       return '<div class="pq-row'+(i===P.sel?' sel':'')+(shown(r)?'':' off')+'" data-i="'+i+'" role="option" aria-selected="'+(i===P.sel)+'"'+(r.fix?'':' draggable="true"')+'>'+
         '<span class="pq-g'+(r.fix?' fix':'')+'" title="Seret untuk memindah">'+sv(I.grip)+'</span>'+
         (r.k==='dash'?'<input type="checkbox" '+(r.show?'checked':'')+' aria-label="Tampilkan slide">':'<span style="width:16px"></span>')+
         '<span class="pq-ic">'+sv(ic)+'</span><span class="pq-t" title="'+esc(titleOf(r))+'">'+esc(titleOf(r))+'</span>'+tag+
         (r.fix?'':'<span class="pq-mv"><button type="button" data-mv="-1" '+(up?'':'disabled')+' aria-label="Naikkan">↑</button><button type="button" data-mv="1" '+(dn?'':'disabled')+' aria-label="Turunkan">↓</button></span>')+
-        ((r.k==='pdf'||r.k==='vid')?'<button type="button" class="pq-del" data-del="1" title="Hapus dari presentasi" aria-label="Hapus">×</button>':'')+'</div>';
+        ((r.k==='pdf'||r.k==='vid'||r.k==='m3d')?'<button type="button" class="pq-del" data-del="1" title="Hapus dari presentasi" aria-label="Hapus">×</button>':'')+'</div>';
     }).join('');
     preview();
   }
@@ -235,13 +237,15 @@ const PRES_PREP_JS = String.raw`<style>
       else if(q==='reset'){var o0=window.pmoPresExtra.state().orig||[],dash=P.rows.filter(function(r){return r.k==='dash'}).sort(function(a,b){return o0.indexOf(a.t)-o0.indexOf(b.t)}),k=0;P.rows=P.rows.map(function(r){if(r.k==='dash'){var d=dash[k++];d.show=true;return d}return r});mark();draw()}
       else if(q==='pdf')window.pmoPresExtra.manage(P.cfg,{onAdd:function(got){if(!P||!got.length)return;var at=Math.min(P.sel+1,P.rows.length-1);got.forEach(function(x,k){P.rows.splice(at+k,0,{k:'pdf',x:x})});P.sel=at;mark();draw();say(got.length+' halaman PDF ditambahkan setelah slide terpilih.','ok')}});
       else if(q==='vid')toggleVid();
+      else if(q==='m3d')toggleM3d();
     });
     m.querySelector('.pq-ft').addEventListener('click',function(e){var b=e.target.closest('[data-q]');if(!b)return;if(b.getAttribute('data-q')==='save')save();else go()});
   }
   function weekOpts(p){return ((p&&p.videos)||[]).map(function(v){return '<option value="'+v.week+'">W'+v.week+(v.range?' · '+esc(v.range):'')+'</option>'}).join('')}
   function toggleVid(){
     var w=P.m.querySelector('.pq-vadd');
-    if(!w.hidden){w.hidden=true;return}
+    if(!w.hidden&&w.getAttribute('data-m')!=='m3d'){w.hidden=true;return}
+    w.setAttribute('data-m','vid');
     var L=P.vidList;
     w.innerHTML=L.length?'<select data-vp aria-label="Proyek">'+L.map(function(p){return '<option value="'+esc(p.id)+'">'+esc(p.name)+' ('+p.videos.length+' video)</option>'}).join('')+'</select><select data-vw aria-label="Minggu">'+weekOpts(L[0])+'</select><button type="button" class="pq-btn pri sm" data-va="1">Tambahkan</button>'
       :'<span class="pq-note">Belum ada video proyek. Isi tautan video di Input Progress terlebih dahulu.</span>';
@@ -253,13 +257,27 @@ const PRES_PREP_JS = String.raw`<style>
     };
   }
 
+  function toggleM3d(){
+    var w=P.m.querySelector('.pq-vadd');
+    if(!w.hidden&&w.getAttribute('data-m')==='m3d'){w.hidden=true;return}
+    var C=window.pmoPresExtra.state(),L=C.m3d||[],PN=C.m3dProj||{};
+    w.setAttribute('data-m','m3d');
+    w.innerHTML=L.length?'<select data-mm aria-label="Model 3D">'+L.map(function(m){return '<option value="'+m.id+'">'+esc((PN[m.pid]||m.pid)+' · '+m.title)+'</option>'}).join('')+'</select><button type="button" class="pq-btn pri sm" data-ma="1">Tambahkan</button>'
+      :'<span class="pq-note">Belum ada model 3D. Unggah di menu Visual 3D Proyek terlebih dahulu.</span>';
+    w.hidden=false;
+    var b=w.querySelector('[data-ma]');if(b)b.onclick=function(){
+      var id=Number(w.querySelector('[data-mm]').value),m=L.filter(function(x){return x.id===id})[0];if(!m)return;
+      if(P.rows.some(function(r){return r.k==='m3d'&&Number(r.x.model)===id})){say('Model ini sudah ada di susunan.','bad');return}
+      var at=Math.min(P.sel+1,P.rows.length-1);P.rows.splice(at,0,{k:'m3d',x:{type:'model3d',model:id,title:m.title}});P.sel=at;w.hidden=true;mark();draw();say('Model 3D ditambahkan setelah slide terpilih.','ok');
+    };
+  }
   function payload(){
     var items=[],last=null,order=[],hidden=[];
     P.rows.forEach(function(r){
       if(r.k==='dash'){order.push(r.t);if(!r.show)hidden.push(r.t);last=r.t;return}
-      if(r.k!=='pdf'&&r.k!=='vid')return;
+      if(r.k!=='pdf'&&r.k!=='vid'&&r.k!=='m3d')return;
       var pos=last?'after:'+last:'start',x=r.x;
-      items.push(r.k==='vid'?{type:'video',project:x.project,week:x.week,pos:pos,title:x.title}:{deck:x.deck,page:x.page,pos:pos});
+      items.push(r.k==='m3d'?{type:'model3d',model:x.model,pos:pos,title:x.title}:r.k==='vid'?{type:'video',project:x.project,week:x.week,pos:pos,title:x.title}:{deck:x.deck,page:x.page,pos:pos});
     });
     return {key:P.key,items:items,layout:{order:order,hidden:hidden},settings:P.S};
   }

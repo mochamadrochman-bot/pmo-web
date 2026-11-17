@@ -483,6 +483,15 @@ Keputusan pemilik: dashboard internal **tidak diindeks** mesin pencari; alamat u
   - Env: `CSP_MODE=report|enforce|off`, `CSP_EXTRA_FRAME` (sumber frame tambahan, mis. alamat NVR CCTV).
   - Uji lokal: Portal, Monthly, Weekly, Input, Live, dan presentasi tidak menghasilkan laporan.
 - **Belum dikerjakan:** penegakan CSP setelah beberapa hari pemantauan; logo Petrokimia pada gambar latar login yang terpotong di lebar ±1000px.
+- **Visual 3D Proyek** (17 Nov), halaman `?page=visual3d`:
+  - Letak menu: sidebar kelompok Dokumen & Lapangan (setelah Live View CCTV), menu HP, dan Ctrl K. Akun kontraktor tidak melihatnya.
+  - Berkas: `src/gas/visual3d.html` (templat virtual "Visual3D"), `src/gas/visual3d.js` (rute Code.gs, patch sidebar, tombol Weekly), `src/routes/model3d.js` (API), migrasi `009-model3d.sql`.
+  - Tim mengunggah **satu berkas .html mandiri** per model (mis. three.js), maks 15 MB, disimpan di Postgres (tabel `model3d`). Hanya versi terbaru: judul sama di proyek yang sama, atau pilihan "Ganti: …", menimpa berkas lama.
+  - Yang boleh unggah, ganti, ubah judul, unduh asli, dan hapus: **Admin**, dan **PIC** untuk proyeknya sendiri serta sub-proyeknya (aturan sama dengan Arsip). Semua akun lain (kecuali kontraktor) hanya melihat.
+  - Keamanan: `/model3d/:id/view` selalu disajikan dengan header `Content-Security-Policy: sandbox allow-scripts …` (tanpa allow-same-origin), dan iframe juga diberi `sandbox`. Skrip model tidak bisa membaca cookie sesi, memanggil API, atau menyentuh halaman induk (sudah diuji). Skrip hanya dari cdnjs, jsdelivr, unpkg; font dari Google Fonts.
+  - Tema terang/gelap dashboard diteruskan ke model (`?theme=` dan postMessage `pmoTheme`).
+  - Weekly Progress: tombol **Lihat model 3D** muncul di kartu judul bila proyek itu punya model.
+  - Presentasi: tombol **Tambah 3D** di layar Siapkan presentasi (Executive & Weekly). Jenis item `{type:'model3d', model, pos}` di `pres_sets`. Model dimuat hanya saat slidenya tampil.
 
 ---
 

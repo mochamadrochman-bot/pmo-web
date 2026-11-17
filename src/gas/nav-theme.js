@@ -302,7 +302,7 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
     if(!ktr)g('Dashboard Proyek',[['portal','Portal','beranda ringkasan'],['executive','Monthly Executive Review','eksekutif direksi'],['master','Master Schedule','jadwal baseline'],['weekly','Weekly Progress','mingguan']]);
     else g('Dashboard Proyek',[['portal','Portal','beranda ringkasan']]);
     g('EPCC Control',[['engineering','Engineering','dokumen ifr ifa ifc'],['epcc&field=PROC','Procurement','pengadaan po material'],['epcc&field=CONS','Construction','konstruksi fisik lapangan'],['epcc&field=COM','Commissioning','komisioning uji']]);
-    if(!ktr)g('Dokumen & Lapangan',[['documents','Document Control','dokumen kontrak'],['library','Library & Knowledge','pedoman prosedur'],['live','Live View','cctv kamera']]);
+    if(!ktr)g('Dokumen & Lapangan',[['documents','Document Control','dokumen kontrak'],['library','Library & Knowledge','pedoman prosedur'],['live','Live View','cctv kamera'],['visual3d','Visual 3D Proyek','model 3d tiga dimensi three']]);
     if(!ktr&&mr)g('Pelaporan Manajemen',[['report','Management Report · Pelaporan Manajemen','presentasi bulanan'],['weeklyprint','Buat Laporan Weekly','cetak pdf excel'],['monthlydoc','Buat Laporan Bulanan (dokumen)','word']]);
     if(!ktr&&inp)g('Input & Data Proyek',[['input','Input Progress','isi mingguan'],['monthly','Laporan Bulanan','isian bulanan'],['project','Tambah / Edit Proyek','proyek baru']]);
     return out;

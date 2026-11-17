@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="id">
+<head>
+<?!= include('PmoCore') ?>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Visual 3D Proyek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+:root{--r:16px;color-scheme:light}
+:root[data-theme="dark"]{color-scheme:dark}
+*{box-sizing:border-box}html,body{margin:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 Inter,"Segoe UI",system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:default;opacity:.6}
+:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+.ic{display:inline-grid;width:20px;height:20px;flex:none}.ic svg{width:100%;height:100%}
+.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;padding:12px 28px;background:var(--topbar);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.back{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--pri-ink);font-weight:600}
+.top .t{flex:1;min-width:0}.top .t small{display:block;font-size:12px;color:var(--muted)}.top .t b{display:block;font-size:18px;color:var(--navy)}
+.icon-btn{width:40px;height:40px;border:1px solid var(--line);border-radius:10px;background:var(--card);display:grid;place-items:center;color:var(--muted)}
+.icon-btn .ic{width:18px;height:18px}
+.av{width:36px;height:36px;border-radius:50%;background:var(--pri);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700;flex:none}
+.wrap{max-width:1380px;margin:0 auto;padding:18px 28px 40px}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;flex:1;min-width:0}
+.chips button{flex:none;min-height:40px;padding:0 14px;border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--muted);font-size:13px;font-weight:600;white-space:nowrap}
+.chips button.on{background:var(--pri);border-color:var(--pri);color:#fff}
+.chips button small{opacity:.8;font-weight:600;margin-left:4px}
+.btn{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font-weight:600;font-size:13px;text-decoration:none}
+.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff}
+.btn .ic{width:16px;height:16px}
+.lv{display:grid;grid-template-columns:minmax(0,2.4fr) minmax(280px,1fr);gap:14px;align-items:start}
+.stage{position:relative;border-radius:var(--r);overflow:hidden;background:#0b1825;aspect-ratio:16/9;box-shadow:var(--shadow)}
+.stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:transparent}
+.stage:fullscreen{border-radius:0;aspect-ratio:auto}
+.msg{position:absolute;inset:0;z-index:1;display:grid;place-items:center;text-align:center;color:#c7d6e3;padding:24px;font-size:14px;line-height:1.5}
+.msg b{display:block;color:#fff;font-size:16px;margin-bottom:4px}
+.msg button{display:inline-flex;align-items:center;gap:6px;margin-top:12px;min-height:44px;padding:0 18px;border-radius:10px;background:#fff;color:#073b63;font-weight:700;border:0}
+.under{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:10px;color:var(--muted);font-size:13px}
+.under b{color:var(--ink);font-size:15px}
+.under .meta{flex:1;min-width:220px;display:grid}.under .meta span{font-size:12px}
+.under .nt{flex-basis:100%;color:var(--muted)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px}
+.panel h3{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:14px;color:var(--navy)}
+.panel h3 .n{margin-left:auto;font-size:12px;color:var(--muted);font-weight:600}
+.mods{display:grid;gap:8px}
+.mod{border:1px solid var(--line);border-radius:12px;background:var(--tint)}
+.mod.on{border-color:var(--pri);background:var(--soft)}
+.mod>button{display:flex;align-items:center;gap:10px;width:100%;padding:10px;border:0;background:none;text-align:left;min-height:60px;border-radius:12px}
+.mod .ci{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:var(--card);color:var(--pri-ink);flex:none}
+.mod b{display:block;font-size:13px;line-height:1.3}.mod small{display:block;font-size:12px;color:var(--muted)}
+.mod .acts{display:flex;flex-wrap:wrap;gap:6px;padding:0 10px 10px 60px}
+.mod .acts button,.mod .acts a{min-height:32px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);font-size:12px;font-weight:600;color:var(--pri-ink);display:inline-flex;align-items:center;text-decoration:none}
+.mod .acts .del{color:var(--bad)}
+.empty{padding:22px 10px;text-align:center;color:var(--muted);font-size:13px;line-height:1.55}
+.note{margin-top:12px;padding:10px 12px;border-radius:10px;font-size:12px;line-height:1.5;background:var(--tint);border:1px solid var(--line);color:var(--muted)}
+.error{margin:0 0 14px;padding:12px 14px;background:var(--bad-bg);border:1px solid var(--bad-line);border-radius:10px;color:var(--bad);font-size:13px}
+.loading{padding:40px;text-align:center;color:var(--muted)}
+.modal{position:fixed;inset:0;z-index:80;background:rgba(7,20,36,.55);display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow:auto}
+.dialog{width:min(620px,100%);background:var(--card);color:var(--ink);border-radius:18px;box-shadow:0 20px 60px rgba(7,20,36,.4)}
+.dh{display:flex;align-items:center;gap:10px;padding:18px 20px;border-bottom:1px solid var(--line)}
+.dh h2{margin:0;font-size:17px;color:var(--navy);flex:1}
+.db{padding:16px 20px 20px}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.f{display:grid;gap:5px;min-width:0}
+.f.full{grid-column:1/-1}
+.f>span{font-size:12px;font-weight:600;color:var(--muted)}
+.f>span em{color:var(--bad);font-style:normal}
+.inp{width:100%;min-height:42px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+textarea.inp{min-height:64px;resize:vertical}
+.hint{font-size:12px;color:var(--muted);line-height:1.45}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:16px}
+.row .sp{flex:1}
+.drop{display:grid;place-items:center;gap:4px;min-height:96px;padding:14px;border:2px dashed var(--line);border-radius:12px;background:var(--tint);text-align:center;color:var(--muted);font-size:13px;cursor:pointer}
+.drop.over{border-color:var(--pri);background:var(--soft)}
+.drop b{color:var(--ink)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:95;max-width:calc(100vw - 32px);background:var(--navy);color:var(--card);padding:12px 18px;border-radius:12px;font-size:14px;font-weight:600;box-shadow:0 14px 40px rgba(0,0,0,.3)}
+@media (max-width:980px){.lv{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){
+  .top{padding:10px 12px;gap:8px}.top .t small{display:none}.top .t b{font-size:16px}.back span,#upBtn span{display:none}
+  .wrap{padding:12px 12px 32px}
+  .form{grid-template-columns:minmax(0,1fr)}
+  .stage{border-radius:12px;aspect-ratio:4/5}
+}
+:root[data-theme="dark"] select option{background:#152435;color:#e3ecf4}
+</style>
+</head>
+<body>
+<script>try{if(localStorage.getItem('pmoExecutiveTheme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<header class="top">
+  <button type="button" class="back" onclick="go('portal')"><i class="ic" data-ic="left"></i><span>Portal</span></button>
+  <div class="t"><small>PMO Infrastruktur &amp; Process Plant</small><b>Visual 3D Proyek</b></div>
+  <button type="button" class="btn" id="upBtn" hidden onclick="openUp()"><i class="ic" data-ic="up"></i><span>Unggah model</span></button>
+  <button type="button" class="icon-btn" id="themeBtn" aria-label="Ganti tema terang/gelap" title="Ganti tema" onclick="toggleTheme()"><i class="ic" data-ic="moon"></i></button>
+  <span class="av" id="userAv" title="">–</span>
+</header>
+
+<main class="wrap">
+  <div id="error" class="error" hidden></div>
+  <div id="loading" class="loading">Memuat daftar model…</div>
+  <div id="content" hidden>
+    <div class="bar"><div class="chips" id="projChips" role="tablist" aria-label="Pilih proyek"></div></div>
+    <div class="lv">
+      <div>
+        <div class="stage" id="stage"><div class="msg">Pilih model</div></div>
+        <div class="under" id="under"></div>
+      </div>
+      <aside class="panel">
+        <h3><i class="ic" data-ic="cube"></i>Model 3D <span class="n" id="modCount"></span></h3>
+        <div class="mods" id="modList"></div>
+        <div class="note">Model ditampilkan terpisah dari dashboard (mode aman): putar dengan seret, perbesar dengan scroll/cubit. Tekan <b>Layar penuh</b> untuk presentasi.</div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<div class="modal" id="up" hidden role="dialog" aria-modal="true" aria-labelledby="upTitle">
+  <div class="dialog">
+    <div class="dh"><h2 id="upTitle">Unggah model 3D</h2><button type="button" class="icon-btn" aria-label="Tutup" onclick="closeUp()"><i class="ic" data-ic="x"></i></button></div>
+    <div class="db">
+      <div class="form">
+        <label class="f"><span>Proyek <em>*</em></span><select class="inp" id="fProject" onchange="fillTargets()"></select></label>
+        <label class="f"><span>Simpan sebagai</span><select class="inp" id="fTarget" onchange="targetChanged()"></select></label>
+        <label class="f full"><span>Judul model <em>*</em></span><input class="inp" id="fTitle" maxlength="120" placeholder="mis. Ship Unloader ATCL1000B"></label>
+        <label class="f full"><span>Keterangan</span><textarea class="inp" id="fNote" maxlength="500" placeholder="mis. Model CSU-3 untuk penjelasan area kerja & urutan erection"></textarea></label>
+        <div class="f full"><span>Berkas .html <em>*</em></span>
+          <label class="drop" id="drop" for="fFile"><b id="fName">Pilih atau seret berkas .html ke sini</b><span class="hint" id="fInfo">Satu berkas HTML mandiri (mis. three.js), maks <span id="fMax">15</span> MB.</span></label>
+          <input type="file" id="fFile" accept=".html,.htm,text/html" hidden onchange="pickFile(this.files[0])">
+        </div>
+      </div>
+      <p class="hint" id="fRule" style="margin:12px 0 0">Satu model hanya menyimpan versi terbaru. Mengunggah dengan judul yang sama, atau memilih model lama di "Simpan sebagai", akan menggantikan berkas sebelumnya.</p>
+      <div class="row"><span class="sp"></span><button type="button" class="btn" onclick="closeUp()">Batal</button><button type="button" class="btn pri" id="fSave" onclick="saveUp()"><i class="ic" data-ic="up"></i>Unggah</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const appUrl=<?!= JSON.stringify(appUrl || '') ?>;
+const initialProjectName=<?!= JSON.stringify(initialProjectName || '') ?>;
+const initialModel=<?!= JSON.stringify(initialModel || '') ?>;
+let D=null,curProject='',curId=0,file=null,fileText='';
+const P={left:'<path d="M15 6l-6 6 6 6"/>',x:'<path d="M18 6L6 18M6 6l12 12"/>',moon:'<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  cube:'<path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 22V12M21 7l-9 5-9-5"/>',up:'<path d="M12 16V4M6 10l6-6 6 6"/><path d="M4 20h16"/>',full:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',ext:'<path d="M14 4h6v6M20 4l-9 9"/><path d="M19 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1h5"/>',reload:'<path d="M21 12a9 9 0 11-3-6.7L21 8"/><path d="M21 3v5h-5"/>'};
+function paint(root){(root||document).querySelectorAll('[data-ic]').forEach(function(el){const p=P[el.getAttribute('data-ic')];if(p)el.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>'})}
+paint();
+function $(id){return document.getElementById(id)}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function go(page){if(typeof window.pmoGoWithProject==='function'&&page!=='portal')return window.pmoGoWithProject(page);window.top.location.href=(appUrl||'/app')+'?page='+page}
+function toast(msg){let t=$('toast');if(!t){t=document.createElement('div');t.id='toast';t.className='toast';t.setAttribute('role','status');document.body.appendChild(t)}t.textContent=msg;t.hidden=false;clearTimeout(window.__tt);window.__tt=setTimeout(function(){t.hidden=true},3200)}
+function isDark(){return document.documentElement.getAttribute('data-theme')==='dark'}
+function setThemeIcon(){$('themeBtn').firstElementChild.setAttribute('data-ic',isDark()?'sun':'moon');paint($('themeBtn'))}
+function toggleTheme(){const dark=!isDark();document.documentElement.setAttribute('data-theme',dark?'dark':'light');try{localStorage.setItem('pmoExecutiveTheme',dark?'dark':'light')}catch(e){}setThemeIcon()}
+setThemeIcon();
+// Tema bisa diganti dari menu akun: teruskan ke model di iframe.
+new MutationObserver(function(){const f=$('stage').querySelector('iframe');if(f&&f.contentWindow)f.contentWindow.postMessage({pmoTheme:isDark()?'dark':'light'},'*')}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+function api(path,body){return fetch(path,body?{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(body)}:{credentials:'same-origin'}).then(function(r){if(r.status===401){location.href='/login';throw new Error('Sesi berakhir.')}return r.json().catch(function(){throw new Error('Server tidak merespons dengan benar ('+r.status+').')})}).then(function(j){if(!j.ok)throw new Error(j.error||'Gagal.');return j.data})}
+function fmtSize(b){return b>=1048576?(b/1048576).toFixed(1).replace('.',',')+' MB':Math.max(1,Math.round(b/1024))+' KB'}
+function fmtDate(s){try{return new Date(s).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}catch(e){return ''}}
+function key(v){return String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'')}
+function projName(id){const p=D.projects.find(function(x){return x.id===id});return p?p.name:id}
+function modsOf(pid){return D.models.filter(function(m){return m.pid===pid})}
+
+function init(){
+  api('/api/auth/me').then(function(u){const nm=u.name||u.username||'Pengguna';$('userAv').textContent=nm.trim().split(/\s+/).slice(0,2).map(function(p){return p.charAt(0)}).join('').toUpperCase();$('userAv').title=nm}).catch(function(){});
+  load(function(){
+    let pid='';
+    if(initialProjectName){const p=D.projects.find(function(x){return key(x.id)===key(initialProjectName)||key(x.name)===key(initialProjectName)});if(p)pid=p.id}
+    const im=Number(initialModel)||0;const mm=im&&D.models.find(function(m){return m.id===im});if(mm)pid=mm.pid;
+    if(!pid){const w=D.projects.find(function(p){return modsOf(p.id).length})||D.projects.find(function(p){return p.canUpload})||D.projects[0];pid=w?w.id:''}
+    selectProject(pid,mm?mm.id:0);
+  });
+}
+function load(done){
+  api('/api/model3d').then(function(d){
+    D=d;$('loading').hidden=true;$('content').hidden=false;$('upBtn').hidden=!d.canUploadAny;$('fMax').textContent=Math.round(d.maxBytes/1048576);
+    if(done)done();else{renderChips();renderList()}
+  }).catch(function(e){$('loading').hidden=true;const el=$('error');el.hidden=false;el.textContent=e.message})
+}
+function canUp(pid){const p=D.projects.find(function(x){return x.id===pid});return !!(p&&p.canUpload)}
+function chipProjects(){return D.projects.filter(function(p){return modsOf(p.id).length||p.id===curProject})}
+function renderChips(){
+  const list=chipProjects();
+  $('projChips').innerHTML=list.map(function(p){const n=modsOf(p.id).length;return '<button type="button" role="tab" aria-selected="'+(p.id===curProject)+'" class="'+(p.id===curProject?'on':'')+'" data-pid="'+esc(p.id)+'">'+esc(p.name)+'<small>'+n+'</small></button>'}).join('');
+  $('projChips').querySelectorAll('button').forEach(function(b){b.onclick=function(){selectProject(b.getAttribute('data-pid'))}});
+}
+function selectProject(pid,mid){
+  curProject=pid;renderChips();
+  const ms=modsOf(pid);
+  const m=(mid&&ms.find(function(x){return x.id===mid}))||ms[0];
+  if(m)show(m.id);else{curId=0;emptyStage()}
+  renderList();
+}
+function emptyStage(){
+  const up=canUp(curProject);
+  $('stage').innerHTML='<div class="msg"><div><b>'+(D.models.length?'Belum ada model 3D untuk proyek ini':'Belum ada model 3D')+'</b>'+(up?'Unggah berkas .html model 3D (mis. dari tim engineering) agar bisa dibuka semua tim.<br><button type="button" onclick="openUp()">Unggah model</button>':'Model 3D diunggah oleh Admin atau PIC proyek.')+'</div></div>';
+  $('under').innerHTML='';
+}
+function show(id){
+  const m=D.models.find(function(x){return x.id===id});if(!m)return;
+  curId=id;
+  const src='/model3d/'+m.id+'/view?theme='+(isDark()?'dark':'light')+'&v='+encodeURIComponent(m.updatedAt||'');
+  $('stage').innerHTML='<iframe title="'+esc(m.title)+'" src="'+esc(src)+'" sandbox="allow-scripts allow-popups allow-pointer-lock allow-downloads" allow="fullscreen" referrerpolicy="no-referrer"></iframe>';
+  $('under').innerHTML='<span class="meta"><b>'+esc(m.title)+'</b><span>'+esc(projName(m.pid))+' · diperbarui '+esc(fmtDate(m.updatedAt))+(m.by?' oleh '+esc(m.by):'')+'</span></span>'+
+    '<button type="button" class="btn" onclick="reloadModel()"><i class="ic" data-ic="reload"></i>Muat ulang</button>'+
+    '<a class="btn" href="'+esc(src)+'" target="_blank" rel="noopener noreferrer"><i class="ic" data-ic="ext"></i>Tab baru</a>'+
+    '<button type="button" class="btn pri" onclick="fullscreen()"><i class="ic" data-ic="full"></i>Layar penuh</button>'+
+    (m.note?'<span class="nt">'+esc(m.note)+'</span>':'');
+  paint($('under'));renderList();
+  try{const u=new URL(location.href);u.searchParams.set('project',m.pid);u.searchParams.set('model',m.id);history.replaceState(null,'',u)}catch(e){}
+}
+function reloadModel(){if(curId)show(curId)}
+function fullscreen(){const s=$('stage');if(document.fullscreenElement){document.exitFullscreen();return}if(s.requestFullscreen)s.requestFullscreen().catch(function(){toast('Layar penuh tidak didukung browser ini.')});else if(s.webkitRequestFullscreen)s.webkitRequestFullscreen()}
+function renderList(){
+  const ms=modsOf(curProject);
+  $('modCount').textContent=ms.length?ms.length+' model':'';
+  $('modList').innerHTML=ms.length?ms.map(function(m){return '<div class="mod'+(m.id===curId?' on':'')+'"><button type="button" data-id="'+m.id+'" aria-pressed="'+(m.id===curId)+'"><span class="ci"><i class="ic" data-ic="cube"></i></span><span><b>'+esc(m.title)+'</b><small>'+esc(fmtSize(m.size))+' · '+esc(fmtDate(m.updatedAt))+'</small></span></button>'+
+    (m.canEdit?'<div class="acts"><button type="button" onclick="openUp('+m.id+')">Ganti berkas</button><button type="button" onclick="editMeta('+m.id+')">Ubah judul</button><a href="/model3d/'+m.id+'/file">Unduh</a><button type="button" class="del" onclick="delModel('+m.id+',this)">Hapus</button></div>':'')+'</div>'}).join(''):'<div class="empty">Belum ada model.'+(canUp(curProject)?'<br><button type="button" class="btn pri" style="margin-top:10px" onclick="openUp()"><i class="ic" data-ic="up"></i>Unggah model</button>':'')+'</div>';
+  $('modList').querySelectorAll('.mod>button').forEach(function(b){b.onclick=function(){show(Number(b.getAttribute('data-id')))}});
+  paint($('modList'));
+}
+function editMeta(id){
+  const m=D.models.find(function(x){return x.id===id});if(!m)return;
+  const t=prompt('Judul model',m.title);if(t==null)return;
+  const n=prompt('Keterangan (boleh kosong)',m.note||'');if(n==null)return;
+  api('/api/model3d/'+id+'/meta',{title:t,note:n}).then(function(r){Object.assign(m,r);toast('Judul diperbarui.');renderList();if(curId===id)show(id)}).catch(function(e){toast(e.message)});
+}
+function delModel(id,btn){
+  if(btn.getAttribute('data-sure')!=='1'){btn.setAttribute('data-sure','1');btn.textContent='Yakin hapus?';setTimeout(function(){if(btn.isConnected){btn.removeAttribute('data-sure');btn.textContent='Hapus'}},3500);return}
+  api('/api/model3d/'+id+'/delete',{}).then(function(){D.models=D.models.filter(function(x){return x.id!==id});toast('Model dihapus.');selectProject(curProject)}).catch(function(e){toast(e.message)});
+}
+
+/* ---------- unggah ---------- */
+function openUp(replaceId){
+  const ups=D.projects.filter(function(p){return p.canUpload});if(!ups.length)return;
+  const rm=replaceId&&D.models.find(function(x){return x.id===replaceId});
+  const pid=rm?rm.pid:(canUp(curProject)?curProject:ups[0].id);
+  $('fProject').innerHTML=ups.map(function(p){return '<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>'}).join('');
+  $('fProject').value=pid;fillTargets(rm?rm.id:0);
+  file=null;fileText='';$('fFile').value='';$('fName').textContent='Pilih atau seret berkas .html ke sini';$('fInfo').innerHTML='Satu berkas HTML mandiri (mis. three.js), maks '+Math.round(D.maxBytes/1048576)+' MB.';
+  $('up').hidden=false;document.body.style.overflow='hidden';$('fProject').focus();
+}
+function fillTargets(sel){
+  const pid=$('fProject').value;
+  $('fTarget').innerHTML='<option value="0">Model baru</option>'+modsOf(pid).map(function(m){return '<option value="'+m.id+'">Ganti: '+esc(m.title)+'</option>'}).join('');
+  $('fTarget').value=String(sel||0);targetChanged();
+}
+function targetChanged(){
+  const id=Number($('fTarget').value)||0;const m=id&&D.models.find(function(x){return x.id===id});
+  $('fTitle').value=m?m.title:'';$('fNote').value=m?(m.note||''):'';
+  if(!m&&file)$('fTitle').value=titleFrom(file.name);
+  $('upTitle').textContent=m?'Ganti berkas model 3D':'Unggah model 3D';
+}
+function titleFrom(n){return String(n||'').replace(/\.html?$/i,'').replace(/^model[_\s-]*3d[_\s-]*/i,'').replace(/[_-]+/g,' ').trim()}
+function closeUp(){$('up').hidden=true;document.body.style.overflow=''}
+function pickFile(f){
+  if(!f)return;
+  if(!/\.html?$/i.test(f.name)){toast('Pilih berkas .html');return}
+  if(f.size>D.maxBytes){toast('Berkas terlalu besar (maks '+Math.round(D.maxBytes/1048576)+' MB).');return}
+  file=f;$('fName').textContent=f.name;$('fInfo').textContent=fmtSize(f.size)+' · siap diunggah';
+  if(!$('fTitle').value.trim())$('fTitle').value=titleFrom(f.name);
+  const r=new FileReader();r.onload=function(){fileText=String(r.result||'')};r.onerror=function(){toast('Berkas tidak bisa dibaca.');file=null};r.readAsText(f);
+}
+(function(){const d=$('drop');['dragenter','dragover'].forEach(function(ev){d.addEventListener(ev,function(e){e.preventDefault();d.classList.add('over')})});['dragleave','drop'].forEach(function(ev){d.addEventListener(ev,function(e){e.preventDefault();d.classList.remove('over')})});d.addEventListener('drop',function(e){const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];pickFile(f)});d.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();$('fFile').click()}});d.tabIndex=0})();
+function saveUp(){
+  const pid=$('fProject').value,title=$('fTitle').value.trim(),replaceId=Number($('fTarget').value)||0;
+  if(!title){toast('Isi judul model.');$('fTitle').focus();return}
+  if(!file){toast('Pilih berkas .html dulu.');return}
+  if(!fileText){toast('Berkas masih dibaca, coba lagi sebentar.');return}
+  const b=$('fSave');b.disabled=true;b.lastChild.textContent='Mengunggah…';
+  api('/api/model3d',{pid:pid,title:title,note:$('fNote').value.trim(),fileName:file.name,html:fileText,replaceId:replaceId}).then(function(m){
+    b.disabled=false;b.lastChild.textContent='Unggah';closeUp();
+    D.models=D.models.filter(function(x){return x.id!==m.id});D.models.push(m);D.models.sort(function(a,c){return a.title.localeCompare(c.title,'id')});
+    toast(replaceId?'Berkas model diganti.':'Model 3D tersimpan.');selectProject(m.pid,m.id);
+  }).catch(function(e){b.disabled=false;b.lastChild.textContent='Unggah';toast(e.message)});
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('up').hidden)closeUp()});
+init();
+</script>
+<script>window.pmoAiPage='visual3d';</script>
+<?!= include('AccountMenu') ?>
+<?!= include('AiWidget') ?>
+</body>
+</html>
