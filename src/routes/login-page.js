@@ -56,7 +56,7 @@ const PATCH = `<script>
     }catch(err){
       step(2,true);$('password').value='';
       say(err.message||'Login belum berhasil. Silakan coba lagi.',true);
-      busy=false;btn.disabled=false;btn.textContent='LOGIN';
+      busy=false;btn.disabled=false;btn.textContent='MASUK KE PORTAL';
     }
   },true);
 })();
@@ -78,6 +78,7 @@ function headMeta(base) {
     b ? '<link rel="canonical" href="' + escAttr(b + '/login') + '">' : '',
     '<link rel="icon" type="image/png" href="/media/brand/icon.png">',
     '<link rel="apple-touch-icon" href="/media/brand/icon.png">',
+    '<meta name="theme-color" content="#07131f">',
     '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
     '<meta property="og:type" content="website"><meta property="og:locale" content="id_ID">',
     '<meta property="og:site_name" content="PMO PT Petrokimia Gresik">',
@@ -90,11 +91,18 @@ function headMeta(base) {
   ].filter(Boolean).join('\n');
 }
 
-// Perbaikan tampilan: kartu muat di layar laptop pendek (tanpa dua scrollbar), tombol tema tidak menimpa logo di HP.
+// Perbaikan tampilan: kontras tombol >= 4.5:1, lencana logo Petrokimia, kartu muat 1 layar di desktop & HP, target sentuh >= 44px.
 const FIX_CSS = `<style>
 html,body{margin:0}
 .pmo-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.company-logo{aspect-ratio:220/201;height:auto!important;width:min(220px,56vw)!important;max-width:100%}
+.company-logo{aspect-ratio:220/201;height:auto!important;width:min(170px,52vw)!important;max-width:100%}
+:root[data-theme="dark"] .brand-mark{padding:6px 14px!important;border-radius:14px!important;background:rgba(255,255,255,.95)!important;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+:root[data-theme="dark"] .login-card{--pri:#1b68b3!important}
+#loginButton{background:#1b68b3!important;min-height:44px}
+#loginButton:hover{background:#155391!important}
+:root[data-theme="dark"] .theme-switch button[aria-pressed="true"]{background:#1b68b3!important;color:#fff!important}
+.pmo-pg-badge{position:fixed;top:16px;left:18px;z-index:20;display:inline-flex;align-items:center;padding:6px 12px;border-radius:12px;background:rgba(255,255,255,.92);box-shadow:0 6px 18px rgba(0,0,0,.22);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.pmo-pg-badge img{height:38px;width:auto;display:block}
 @media (max-height:800px){
   .login-wrapper{padding-top:10px!important;padding-bottom:10px!important}
   .login-card{padding-top:16px!important;padding-bottom:14px!important;max-height:none!important;overflow:visible!important}
@@ -107,10 +115,19 @@ html,body{margin:0}
 }
 @media (max-height:660px){.brand-mark .company-logo,.company-logo{width:96px!important;max-width:96px!important}}
 @media (max-width:560px){
-  .theme-switch{position:absolute!important;top:10px!important;right:10px!important;padding:3px!important}
-  .theme-switch button{padding:6px 9px!important;font-size:0!important;gap:0!important}
+  .pmo-pg-badge{top:12px;left:12px;padding:5px 10px}
+  .pmo-pg-badge img{height:30px}
+  .theme-switch{position:fixed!important;top:12px!important;right:12px!important;padding:3px!important}
+  .theme-switch button{min-height:44px!important;min-width:44px!important;padding:0 12px!important;font-size:0!important;gap:0!important;justify-content:center}
   .theme-switch button svg{width:16px;height:16px}
-  .login-wrapper{padding-top:58px!important}
+  .login-wrapper{padding:64px 14px 14px!important;min-height:100svh!important;align-items:center!important}
+  .login-card{padding:18px 18px 14px!important}
+  .brand-mark .company-logo,.company-logo{width:124px!important;max-width:124px!important}
+  .login-card h1{margin:4px 0 2px!important}.login-card .subtitle{margin-bottom:8px!important}
+  .login-card input:not([type=checkbox]){min-height:44px!important;padding:10px 12px!important}
+  #showResetButton,label[for="showPassword"]{min-height:44px!important;display:inline-flex!important;align-items:center!important;margin-top:0!important}
+  .pmo-login-steps{margin:12px 0 4px!important}
+  .login-footer{margin-top:8px!important;padding-top:8px!important}
 }
 </style>`;
 
@@ -130,7 +147,9 @@ function render(appUrl, base) {
   html = html.replace('<form id="loginForm">', '<form id="loginForm" method="post" action="/login">');
   // Satu judul utama yang bermakna untuk pembaca layar; tampilan tidak berubah.
   html = html.replace('<h1>DASHBOARD</h1>', '<h1>DASHBOARD<span class="pmo-sr"> — Project Monitoring, PMO PT Petrokimia Gresik</span></h1>')
-    .replace('<p class="subtitle">PROJECT MONITORING</p>', '<p class="subtitle" aria-hidden="true">PROJECT MONITORING</p>');
+    .replace('<p class="subtitle">PROJECT MONITORING</p>', '<p class="subtitle" aria-hidden="true">PROJECT MONITORING</p>')
+    .replace('<main class="login-wrapper">', '<main class="login-wrapper">\n    <div class="pmo-pg-badge"><img src="/media/brand/petro.png" alt="PT Petrokimia Gresik"></div>')
+    .replace('>LOGIN</button>', '>MASUK KE PORTAL</button>');
   html = html.replace(/<div class="login-footer">Project Management Office<br>/, '<div class="login-footer">Project Management Office <br>');
   html = /<head[^>]*>/i.test(html)
     ? html.replace(/<head[^>]*>/i, (m) => m + '\n' + headMeta(base) + STUB)
