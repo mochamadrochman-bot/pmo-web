@@ -54,6 +54,18 @@ const GS_PATCHES = [
 ];
 
 const HTML_PATCHES = [
+  {
+    // Portal · Modul 4: judul "Overview Proyek" + tombol Visual 3D Proyek.
+    file: 'Portal',
+    find: '<span class="no">MODUL 4</span><h3>Spotlight Lapangan</h3>',
+    replace: '<span class="no">MODUL 4</span><h3>Overview Proyek</h3>',
+  },
+  {
+    file: 'Portal',
+    find: 'untuk eksekutif.</p>\n        <div class="subs"><button type="button" class="pri" onclick="go(\'live\')"><i class="ic" data-ic="play"></i>Buka Live View</button>',
+    replace: 'untuk eksekutif, serta model 3D tiap proyek.</p>\n        <div class="subs"><button type="button" class="pri" onclick="go(\'live\')"><i class="ic" data-ic="play"></i>Buka Live View</button>' +
+      '<button type="button" class="pri" onclick="go(\'visual3d\')"><i class="ic">' + CUBE_SVG + '</i>Visual 3D Proyek</button>',
+  },
   { file: 'Dashboard', find: '</body>', replace: WEEKLY_V3D_JS + '</body>' },
   {
     // Sidebar: tombol "Visual 3D Proyek" tepat setelah Live View CCTV (kelompok Dokumen & Lapangan).
