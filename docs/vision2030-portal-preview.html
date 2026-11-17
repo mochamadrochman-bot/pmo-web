@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="id" data-mode="dark" data-accent="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pratinjau Portal PMO — Gaya Vision 2030 + Tema</title>
+<style>
+  :root {
+    --canvas-bg: #161618;
+    --canvas-ink: #f3f5f8;
+    --canvas-muted: #9aa8b8;
+    --card-bg: #1e2127;
+    --card-line: rgba(255,255,255,.13);
+    --pill-bg: #262629;
+    --pill-ink: #d5dbe3;
+    --pill-act-bg: #ffffff;
+    --pill-act-ink: #161618;
+    --accent: #0f5fa8;
+    --accent2: #0f8a5f;
+    --bar-grad: linear-gradient(90deg, #38bdf8, #4fd1a0);
+    --nav-stuck: rgba(13, 21, 34, .96);
+    --foot-bg: #0d1324;
+  }
+  html[data-mode="light"][data-accent="blue"] {
+    --canvas-bg: #f2f5f9;
+    --canvas-ink: #132b43;
+    --canvas-muted: #5b7085;
+    --card-bg: #ffffff;
+    --card-line: #dce4ee;
+    --pill-bg: #e5edf6;
+    --pill-ink: #132b43;
+    --pill-act-bg: #0f5fa8;
+    --pill-act-ink: #ffffff;
+    --accent: #0f5fa8;
+    --accent2: #0f8a5f;
+    --bar-grad: linear-gradient(90deg, #0f5fa8, #0f8a5f);
+    --nav-stuck: rgba(7, 59, 99, .96);
+    --foot-bg: #073b63;
+  }
+  html[data-mode="light"][data-accent="sage"] {
+    --canvas-bg: #F3F7EC;
+    --canvas-ink: #0F2A1D;
+    --canvas-muted: #4F6B52;
+    --card-bg: #ffffff;
+    --card-line: #D3DFCC;
+    --pill-bg: #E3EED4;
+    --pill-ink: #0F2A1D;
+    --pill-act-bg: #375534;
+    --pill-act-ink: #ffffff;
+    --accent: #375534;
+    --accent2: #6B9071;
+    --bar-grad: linear-gradient(90deg, #375534, #6B9071);
+    --nav-stuck: rgba(15, 42, 29, .96);
+    --foot-bg: #0F2A1D;
+  }
+  html[data-mode="light"][data-accent="mocha"] {
+    --canvas-bg: #EDE3D4;
+    --canvas-ink: #3B2A1F;
+    --canvas-muted: #725947;
+    --card-bg: #FFF9F0;
+    --card-line: #D4B996;
+    --pill-bg: #E3D3BE;
+    --pill-ink: #3B2A1F;
+    --pill-act-bg: #6F4E37;
+    --pill-act-ink: #FFF9F0;
+    --accent: #6F4E37;
+    --accent2: #B08968;
+    --bar-grad: linear-gradient(90deg, #6F4E37, #B08968);
+    --nav-stuck: rgba(59, 42, 31, .96);
+    --foot-bg: #3B2A1F;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--canvas-bg);
+    color: var(--canvas-ink);
+    transition: background .25s ease, color .25s ease;
+  }
+
+  /* ===== Top Overlay Nav with Module Dropdowns & Theme Picker ===== */
+  .v-nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 80;
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    padding: 14px 36px;
+    background: linear-gradient(180deg, rgba(8,14,22,.84) 0%, rgba(8,14,22,0) 100%);
+    transition: background .25s ease;
+  }
+  .v-nav.stuck { background: var(--nav-stuck); border-bottom: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(10px); }
+  .v-brand-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 4px 10px; border-radius: 10px; background: rgba(255,255,255,.95);
+    text-decoration: none;
+  }
+  .v-brand-pill img { height: 28px; width: auto; display: block; }
+
+  .v-menu { display: flex; align-items: center; gap: 4px; }
+  .v-dd { position: relative; }
+  .v-dd > button {
+    border: 0; background: transparent; color: rgba(255,255,255,.92);
+    padding: 8px 11px; border-radius: 99px; cursor: pointer;
+    font: 600 11.5px/1 Inter, sans-serif; letter-spacing: .06em; text-transform: uppercase;
+  }
+  .v-dd > button:hover, .v-dd:hover > button { background: rgba(255,255,255,.14); color: #fff; }
+  .v-dd-pop {
+    position: absolute; left: 0; top: calc(100% + 6px); min-width: 230px;
+    background: #131c2b; border: 1px solid rgba(255,255,255,.14); border-radius: 14px;
+    padding: 8px; box-shadow: 0 18px 40px rgba(0,0,0,.45);
+    opacity: 0; pointer-events: none; transform: translateY(4px); transition: all .16s ease;
+  }
+  .v-dd:hover .v-dd-pop, .v-dd:focus-within .v-dd-pop { opacity: 1; pointer-events: auto; transform: none; }
+  .v-dd-pop a {
+    display: block; padding: 9px 12px; border-radius: 9px; color: #dbe5f0;
+    text-decoration: none; font-size: 13px; font-weight: 500;
+  }
+  .v-dd-pop a:hover { background: rgba(255,255,255,.1); color: #fff; }
+  .v-dd-pop a.on { background: var(--accent); color: #fff; font-weight: 600; }
+
+  .v-util { display: flex; align-items: center; gap: 8px; padding-left: 12px; border-left: 1px solid rgba(255,255,255,.22); position: relative; }
+  .v-pill-btn {
+    border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.1); color: #fff;
+    padding: 7px 13px; border-radius: 99px; font: 600 12px/1 Inter, sans-serif; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .v-badge { background: #e5484d; color: #fff; border-radius: 99px; padding: 1px 6px; font-size: 10.5px; }
+  .acm-chip {
+    display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px;
+    border: 1px solid rgba(255,255,255,.28); border-radius: 99px; background: rgba(255,255,255,.12);
+    color: #fff; cursor: pointer; font: inherit; text-align: left;
+  }
+  .acm-av {
+    width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: #fff;
+    display: grid; place-items: center; font-weight: 800; font-size: 12px;
+  }
+  .acm-chip b { display: block; font-size: 12px; line-height: 1.15; }
+  .acm-chip small { display: block; font-size: 10.5px; opacity: .8; }
+  .acm-pop {
+    position: absolute; right: 0; top: calc(100% + 10px); width: 268px;
+    background: var(--card-bg); color: var(--canvas-ink);
+    border: 1px solid var(--card-line); border-radius: 16px; padding: 14px;
+    box-shadow: 0 20px 48px rgba(0,0,0,.42); z-index: 95;
+  }
+  .acm-pop[hidden] { display: none; }
+  .acm-lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--canvas-muted); margin: 10px 0 6px; }
+  .acm-row { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 3px; border-radius: 10px; background: var(--pill-bg); }
+  .acm-row button {
+    border: 0; background: transparent; color: var(--pill-ink); padding: 7px 8px; border-radius: 8px;
+    font: 600 12px/1 Inter, sans-serif; cursor: pointer;
+  }
+  .acm-row button.on { background: var(--card-bg); color: var(--accent); box-shadow: 0 2px 6px rgba(0,0,0,.12); }
+  .acm-acc { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+  .acm-acc button {
+    border: 1px solid var(--card-line); background: var(--pill-bg); color: var(--pill-ink);
+    padding: 7px 6px; border-radius: 9px; font: 600 11.5px/1 Inter, sans-serif; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .acm-acc button.on { border-color: var(--accent); background: var(--accent); color: #fff; }
+  .acm-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; border: 1px solid rgba(255,255,255,.4); }
+  .acm-links { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--card-line); display: grid; gap: 2px; }
+  .acm-links a {
+    padding: 7px 8px; border-radius: 8px; color: var(--canvas-ink); text-decoration: none; font-size: 12.5px; font-weight: 500;
+  }
+  .acm-links a:hover { background: var(--pill-bg); }
+  @media (max-width: 1080px) { .v-menu { display: none; } .v-nav { padding: 12px 18px; } }
+
+  /* ===== Floating Right-Edge "TANYA SENA" Tab ===== */
+  .sena-tab {
+    position: fixed; right: 0; top: 52%; transform: translateY(-50%); z-index: 70;
+    writing-mode: vertical-rl; text-orientation: mixed;
+    padding: 16px 10px; border: 0; border-radius: 12px 0 0 12px; cursor: pointer;
+    background: linear-gradient(180deg, var(--accent) 0%, var(--accent2) 100%);
+    color: #fff; font: 700 11.5px/1 Inter, sans-serif; letter-spacing: .14em;
+    box-shadow: -4px 8px 24px rgba(0,0,0,.35);
+  }
+
+  /* ===== Hero Full-Bleed with Floating Banner Photos ===== */
+  .hero {
+    position: relative; height: 90svh; min-height: 560px; max-height: 840px;
+    overflow: hidden; display: flex; align-items: flex-end;
+  }
+  .hero-bg { position: absolute; inset: 0; }
+  .hero-bg img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    opacity: 0; transform: scale(1.04); transition: opacity 1.4s ease, transform 7s ease;
+  }
+  .hero-bg img.on { opacity: 1; transform: scale(1); }
+  .hero-scrim {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(7,15,24,.45) 0%, rgba(7,15,24,.15) 45%, rgba(10,16,24,.88) 100%);
+  }
+  .hero-in {
+    position: relative; z-index: 2; width: 100%; max-width: 1320px; margin: 0 auto;
+    padding: 0 48px 50px; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px;
+  }
+  .hero-eyebrow {
+    font-size: 11.5px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
+    color: #7dd3fc; margin-bottom: 10px;
+  }
+  .hero h1 {
+    margin: 0; font-size: clamp(32px, 5vw, 60px); font-weight: 300; line-height: 1.06;
+    letter-spacing: -.02em; color: #fff; max-width: 780px;
+  }
+  .hero h1 b { font-weight: 700; }
+  .hero-dots { display: flex; gap: 8px; align-items: center; }
+  .hero-dots button {
+    width: 10px; height: 10px; border-radius: 99px; border: 0; padding: 0; cursor: pointer;
+    background: rgba(255,255,255,.35); transition: width .25s ease, background .25s ease;
+  }
+  .hero-dots button.on { width: 28px; background: #fff; }
+  @media (max-width: 760px) { .hero-in { padding: 0 20px 34px; flex-direction: column; align-items: flex-start; } }
+
+  /* ===== White Utility Breadcrumb Strip ===== */
+  .util-strip {
+    background: #ffffff; color: #132b43; border-bottom: 1px solid #e0e8f0;
+    padding: 15px 48px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .crumb { font-size: 12.5px; color: #5b7085; font-weight: 500; }
+  .crumb b { color: #073b63; }
+  .util-actions { display: flex; gap: 10px; align-items: center; }
+  .u-btn {
+    border: 1px solid #d2dde8; background: #f5f8fc; color: #073b63;
+    padding: 9px 18px; border-radius: 99px; font: 700 11.5px/1 Inter, sans-serif;
+    letter-spacing: .06em; text-transform: uppercase; cursor: pointer; text-decoration: none;
+  }
+  .u-btn.pri { background: var(--accent); border-color: var(--accent); color: #fff; }
+  @media (max-width: 760px) { .util-strip { padding: 14px 20px; } }
+
+  /* ===== Main Showcase Canvas (follows Dark / Light Biru / Sage / Mocha) ===== */
+  .canvas { position: relative; padding: 44px 48px 90px; overflow: hidden; }
+  .inner { position: relative; z-index: 2; max-width: 1280px; margin: 0 auto; }
+
+  .sum-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 22px; }
+  @media (max-width: 980px) { .sum-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 560px) { .sum-grid { grid-template-columns: 1fr; } }
+  .s-card {
+    background: var(--card-bg); border: 1px solid var(--card-line); border-radius: 16px;
+    padding: 16px 18px; box-shadow: 0 6px 20px rgba(0,0,0,.06);
+  }
+  .s-card small {
+    display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--canvas-muted); margin-bottom: 6px;
+  }
+  .s-card b { display: block; font-size: 24px; color: var(--canvas-ink); font-variant-numeric: tabular-nums; margin-bottom: 4px; }
+  .s-card span { display: block; font-size: 12px; color: var(--canvas-muted); line-height: 1.45; }
+  .s-bar { height: 5px; border-radius: 99px; background: var(--card-line); margin-top: 10px; overflow: hidden; }
+  .s-bar i { display: block; height: 100%; border-radius: 99px; background: var(--bar-grad); }
+
+  .brief {
+    background: var(--card-bg); border: 1px solid var(--card-line); border-radius: 18px;
+    padding: 22px 24px; margin-bottom: 48px; box-shadow: 0 6px 20px rgba(0,0,0,.06);
+  }
+  .brief-eye { font-size: 11.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  html[data-mode="dark"] .brief-eye { color: #7dd3fc; }
+  .brief-sub { margin: 0 0 10px; font-size: 13px; color: var(--canvas-muted); line-height: 1.5; }
+  .brief-ctl { display: flex; gap: 14px; margin-bottom: 14px; }
+  .brief-ctl button {
+    border: 0; background: none; padding: 0; color: var(--accent); font: 600 12.5px Inter, sans-serif;
+    text-decoration: underline; cursor: pointer;
+  }
+  html[data-mode="dark"] .brief-ctl button { color: #7dd3fc; }
+  .brief-grp { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 14px 0 10px; font-size: 13.5px; color: var(--canvas-ink); }
+  .brief .tag { display: inline-block; padding: 3px 11px; border-radius: 99px; background: var(--accent); color: #fff; font-size: 11.5px; font-weight: 700; }
+  .brief .tag.rut { background: var(--accent2); }
+  .brief-acc { display: grid; gap: 8px; }
+  .brief-acc details {
+    border: 1px solid var(--card-line); border-radius: 12px; padding: 10px 14px;
+    background: var(--canvas-bg);
+  }
+  .brief-acc summary {
+    cursor: pointer; font-size: 13px; line-height: 1.5; color: var(--canvas-ink); list-style: none;
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .brief-acc summary::-webkit-details-marker { display: none; }
+  .brief-acc summary::before { content: "›"; font-weight: 700; font-size: 15px; color: var(--canvas-muted); transition: transform .15s ease; }
+  .brief-acc details[open] summary::before { transform: rotate(90deg); }
+  .brief-acc .dt-body { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--card-line); font-size: 12.5px; color: var(--canvas-muted); line-height: 1.55; }
+  .c-ok { color: #22c55e; font-weight: 700; }
+  .c-bad { color: #f87171; font-weight: 700; }
+  html[data-mode="light"] .c-ok { color: #14724f; }
+  html[data-mode="light"] .c-bad { color: #c0302f; }
+
+  /* ===== Heading & Filters ===== */
+  .sec-head { text-align: center; margin-bottom: 28px; }
+  .sec-head h2 {
+    margin: 0 0 8px; font-size: clamp(24px, 3.2vw, 34px); font-weight: 700; letter-spacing: .04em;
+    color: var(--canvas-ink);
+  }
+  .sec-sub { margin: 0 0 18px; font-size: 13px; color: var(--canvas-muted); }
+  .filters { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .filters button {
+    border: 1px solid var(--card-line); background: var(--pill-bg); color: var(--pill-ink);
+    padding: 10px 20px; border-radius: 99px; font: 600 12.5px/1 Inter, sans-serif; cursor: pointer;
+  }
+  .filters button.on { background: var(--pill-act-bg); color: var(--pill-act-ink); border-color: var(--pill-act-bg); }
+
+  /* ===== Staggered 4-Column Portrait Project Grid ===== */
+  .p-grid {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 26px;
+    align-items: start; margin-top: 34px; margin-bottom: 110px;
+  }
+  .p-card {
+    position: relative; aspect-ratio: 3 / 4; border-radius: 16px; overflow: hidden;
+    border: 1px solid var(--card-line); background: #1e242c;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    text-decoration: none; color: #fff; box-shadow: 0 14px 32px rgba(0,0,0,.18);
+    transition: transform .25s ease, border-color .25s ease;
+  }
+  .p-card:hover { transform: translateY(-4px); border-color: var(--accent); }
+  .p-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+  .p-card:hover img { transform: scale(1.04); }
+  .p-card::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(10,14,20,.1) 25%, rgba(10,14,20,.92) 92%);
+  }
+  .p-in { position: relative; z-index: 2; padding: 20px; }
+  .p-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 11.5px; font-weight: 700; }
+  .p-st { padding: 3px 9px; border-radius: 99px; background: rgba(20,114,79,.9); color: #dcf5e9; }
+  .p-st.warn { background: rgba(180,120,10,.92); color: #fff4cc; }
+  .p-pct { color: #e2e8f0; font-variant-numeric: tabular-nums; }
+  .p-wk { font-size: 11.5px; color: #a8c7e4; margin-bottom: 10px; }
+  .p-in h3 { margin: 0 0 12px; font-size: 20px; font-weight: 500; line-height: 1.25; color: #fff; }
+  .p-cta {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 18px; border-radius: 99px; border: 1px solid rgba(255,255,255,.5);
+    font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #fff;
+  }
+  .p-card:hover .p-cta { background: #fff; color: #161618; border-color: #fff; }
+
+  @media (min-width: 1024px) {
+    .p-card.st-1 { transform: translateY(60px); }
+    .p-card.st-1:hover { transform: translateY(56px); }
+    .p-card.st-2 { transform: translateY(120px); }
+    .p-card.st-2:hover { transform: translateY(116px); }
+  }
+  @media (max-width: 1023px) { .p-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 40px; } }
+  @media (max-width: 600px) { .p-grid { grid-template-columns: 1fr; } .canvas { padding: 36px 20px 60px; } }
+
+  .foot {
+    background: var(--foot-bg); border-top: 1px solid rgba(255,255,255,.1);
+    padding: 32px 48px; color: #cbd5e1; font-size: 12.5px;
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 14px;
+  }
+</style>
+</head>
+<body>
+
+<nav class="v-nav" id="vNav">
+  <a href="#top" class="v-brand-pill">
+    <img src="https://pmopetrokimia.tech/media/brand/petro.png" alt="Petrokimia Gresik">
+    <img src="https://pmopetrokimia.tech/media/brand/logo.png" alt="PMO">
+  </a>
+
+  <div class="v-menu">
+    <div class="v-dd">
+      <button type="button">Dashboard Proyek ⌄</button>
+      <div class="v-dd-pop">
+        <a href="#top" class="on">Portal Proyek</a>
+        <a href="#ringkasan">Monthly Executive Review</a>
+        <a href="#proyek">Master Schedule</a>
+        <a href="#proyek">Weekly Progress</a>
+      </div>
+    </div>
+    <div class="v-dd">
+      <button type="button">EPCC Control ⌄</button>
+      <div class="v-dd-pop">
+        <a href="#proyek">Engineering</a>
+        <a href="#proyek">Procurement</a>
+        <a href="#proyek">Construction</a>
+        <a href="#proyek">Commissioning</a>
+      </div>
+    </div>
+    <div class="v-dd">
+      <button type="button">Dokumen &amp; 3D ⌄</button>
+      <div class="v-dd-pop">
+        <a href="#proyek">Document Control</a>
+        <a href="#proyek">Library &amp; Knowledge</a>
+        <a href="#proyek">Live View (CCTV)</a>
+        <a href="#proyek">Visual 3D Proyek</a>
+      </div>
+    </div>
+    <div class="v-dd">
+      <button type="button">Pelaporan &amp; Input ⌄</button>
+      <div class="v-dd-pop">
+        <a href="#proyek">Pelaporan Manajemen</a>
+        <a href="#proyek">Buat Laporan Weekly</a>
+        <a href="#proyek">Buat Laporan Bulanan</a>
+        <a href="#proyek">Input Progress</a>
+        <a href="#proyek">Tambah / Edit Proyek</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="v-util">
+    <button type="button" class="v-pill-btn">Cari · Ctrl K</button>
+    <button type="button" class="v-pill-btn">🔔 <span class="v-badge">7</span></button>
+    <button type="button" class="acm-chip" onclick="toggleAcm(event)">
+      <span class="acm-av">A</span>
+      <span><b>Administrator</b><small>Admin ⌄</small></span>
+    </button>
+    <div class="acm-pop" id="acmPop" hidden>
+      <div style="font-size:12px;color:var(--canvas-muted)">Akses: <b style="color:var(--canvas-ink)">Semua proyek</b></div>
+      <div class="acm-lbl">Tampilan</div>
+      <div class="acm-row">
+        <button type="button" id="mLight" onclick="setMode('light')">☀ Terang</button>
+        <button type="button" id="mDark" class="on" onclick="setMode('dark')">🌙 Gelap</button>
+      </div>
+      <div class="acm-lbl">Warna tema (mode terang)</div>
+      <div class="acm-acc">
+        <button type="button" id="aBlue" class="on" onclick="setAcc('blue')"><span class="acm-dot" style="background:#0f5fa8"></span>Biru</button>
+        <button type="button" id="aSage" onclick="setAcc('sage')"><span class="acm-dot" style="background:#375534"></span>Sage</button>
+        <button type="button" id="aMocha" onclick="setAcc('mocha')"><span class="acm-dot" style="background:#6F4E37"></span>Mocha</button>
+      </div>
+      <div class="acm-links">
+        <a href="#top">Ganti password</a>
+        <a href="#top">Kelola Akun</a>
+        <a href="#top">Impor Data</a>
+        <a href="#top">Kelompok Proyek</a>
+        <a href="#top">Koneksi Google</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<button type="button" class="sena-tab" title="Tanya Asisten AI Sena">TANYA SENA</button>
+
+<section class="hero" id="top">
+  <div class="hero-bg" id="heroBg">
+    <img class="on" src="https://pmopetrokimia.tech/media/brand/login-bg.jpg?v=2" alt="Pelabuhan dan Kawasan Industri Petrokimia Gresik">
+    <img src="https://pmopetrokimia.tech/media/brand/bg-1.jpg" alt="Kawasan Pabrik dan Infrastruktur">
+    <img src="https://pmopetrokimia.tech/media/brand/bg-2.jpg" alt="Proyek Infrastruktur PMO">
+  </div>
+  <div class="hero-scrim"></div>
+  <div class="hero-in">
+    <div>
+      <div class="hero-eyebrow">PMO Infrastruktur &amp; Process Plant · Input Terakhir 10 Nov 2026</div>
+      <h1><b>Portal Proyek</b><br>PT Petrokimia Gresik</h1>
+    </div>
+    <div class="hero-dots" id="dots">
+      <button type="button" class="on" onclick="pickHero(0)" aria-label="Foto 1"></button>
+      <button type="button" onclick="pickHero(1)" aria-label="Foto 2"></button>
+      <button type="button" onclick="pickHero(2)" aria-label="Foto 3"></button>
+    </div>
+  </div>
+</section>
+
+<div class="util-strip">
+  <div class="crumb">PMO Infrastruktur &amp; Process Plant &rsaquo; <b>Portal Proyek</b> &middot; Progres minggu terakhir yang sudah diinput</div>
+  <div class="util-actions">
+    <a class="u-btn" href="#proyek">Proyek Pengembangan</a>
+    <a class="u-btn pri" href="#ringkasan">Monthly Executive Review &rarr;</a>
+  </div>
+</div>
+
+<main class="canvas">
+  <div class="inner">
+    <!-- 1. Ringkasan Progress Minggu Terakhir & Keuangan Bulanan (DI ATAS GRID KARTU) -->
+    <section class="brief" id="ringkasan">
+      <div class="brief-eye">Ringkasan · Progres Minggu Terakhir &amp; Keuangan Bulanan</div>
+      <p class="brief-sub">Periode berjalan November 2026. Progres memakai minggu terakhir yang diinput tiap proyek; keuangan memakai posisi akhir Oktober 2026 terhadap RKAP tahun berjalan.</p>
+      <div class="brief-ctl">
+        <button type="button" onclick="toggleAllAcc(true)">Buka semua</button>
+        <button type="button" onclick="toggleAllAcc(false)">Lipat semua</button>
+      </div>
+
+      <div class="brief-grp">
+        <span class="tag">Proyek Pengembangan</span>
+        <span>4 proyek berjalan. Serapan RKAP tahunan <b>62%</b> (Rp 588,3 M dari Rp 947,2 M) s.d. akhir Oktober 2026.</span>
+      </div>
+      <div class="brief-acc">
+        <details>
+          <summary><span><b>Conveyor Unloading Bahan Baku - Soda Ash</b> — sampai dengan minggu ke-2 November 2026 (W47): progres fisik <b class="c-bad">40,84%</b> dari rencana <b>42,99%</b> (<span class="c-bad">−2,15 poin, critical</span>).</span></summary>
+          <div class="dt-body">Highlight: Fabrikasi Steel Structure tercapai 54,36%. Target berikutnya: Fabrikasi Struktur Baja 100%.</div>
+        </details>
+        <details>
+          <summary><span><b>Pabrik Pupuk Fosfat</b> — sampai dengan minggu ke-2 November 2026 (W3): progres fisik <b class="c-ok">3,13%</b> dari rencana <b>1,83%</b> (<span class="c-ok">+1,30 poin, on track</span>).</span></summary>
+          <div class="dt-body">Highlight: Penyelesaian WBS dan Engineering Deliverable List (EDL).</div>
+        </details>
+        <details>
+          <summary><span><b>Dermaga A</b> — sampai dengan minggu ke-2 November 2026 (W104): progres fisik telah <b class="c-ok">selesai 100%</b> (rencana <b>98,84%</b>).</span></summary>
+          <div class="dt-body">Highlight: 10 November 2026 telah dilaksanakan Riksama 100% untuk Proyek Dermaga A.</div>
+        </details>
+        <details>
+          <summary><span><b>Tangki Asam Sulfat 2×20.000 Ton</b> — sampai dengan minggu ke-1 November 2026 (W50): progres fisik <b class="c-ok">64,98%</b> dari rencana <b>64,69%</b> (<span class="c-ok">+0,30 poin, on track</span>).</span></summary>
+          <div class="dt-body">Highlight: Termin pembayaran bulan September telah diajukan dan terealisasi di week 1 Oktober 2026.</div>
+        </details>
+      </div>
+
+      <div class="brief-grp" style="margin-top:20px">
+        <span class="tag rut">Proyek Investasi Rutin</span>
+        <span>1 proyek berjalan. Serapan RKAP tahunan <b>79%</b> (Rp 45,7 M dari Rp 58,0 M) s.d. akhir Oktober 2026.</span>
+      </div>
+      <div class="brief-acc">
+        <details>
+          <summary><span><b>Continuous Ship Unloader - 3</b> — sampai dengan minggu ke-4 Oktober 2026 (W50): progres fisik <b class="c-ok">81,09%</b> dari rencana <b>81,00%</b> (<span class="c-ok">+0,09 poin, on track</span>). <i>(input terakhir 3 minggu lalu)</i></span></summary>
+          <div class="dt-body">Highlight: CSU Machine telah selesai 100%, siap dilakukan FAT bulan November 2026.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- 2. Grid Kartu Proyek (WEEK TERAKHIR YANG SUDAH DIINPUT) -->
+    <div class="sec-head" id="proyek">
+      <h2>PROYEK - PROYEK PENGEMBANGAN</h2>
+      <p class="sec-sub">Menampilkan progres week terakhir yang sudah diinput pada masing-masing proyek</p>
+      <div class="filters" id="filters">
+        <button type="button" class="on" onclick="filterProj('all', this)">Semua (5)</button>
+        <button type="button" onclick="filterProj('dev', this)">Proyek Pengembangan (4)</button>
+        <button type="button" onclick="filterProj('rutin', this)">Investasi Rutin (1)</button>
+        <button type="button" onclick="filterProj('done', this)">Selesai (1)</button>
+      </div>
+    </div>
+
+    <div class="p-grid" id="pGrid"></div>
+  </div>
+</main>
+
+<footer class="foot">
+  <div>PT Petrokimia Gresik · PMO Infrastruktur &amp; Process Plant</div>
+  <div>Pratinjau Portal Proyek · Mendukung Tema Gelap, Biru, Sage &amp; Mocha</div>
+</footer>
+
+<script>
+  function toggleAllAcc(open) {
+    document.querySelectorAll('.brief-acc details').forEach(function (d) { d.open = !!open; });
+  }
+  var PROJECTS = [
+    { name: 'Dermaga A', grp: 'dev', done: true, pct: '100,0%', wk: 'W104 · Plan 98,84% (+1,16 poin)', st: 'Selesai', warn: false, img: 'https://pmopetrokimia.tech/media/brand/login-bg.jpg?v=2' },
+    { name: 'Tangki Asam Sulfat 2×20.000 Ton', grp: 'dev', done: false, pct: '64,98%', wk: 'W50 · Plan 64,69% (+0,30 poin)', st: 'On track', warn: false, img: 'https://pmopetrokimia.tech/media/brand/bg-1.jpg' },
+    { name: 'Conveyor Unloading Bahan Baku - Soda Ash', grp: 'dev', done: false, pct: '40,84%', wk: 'W47 · Plan 42,99% (−2,15 poin)', st: 'Critical', warn: true, img: 'https://pmopetrokimia.tech/media/brand/bg-2.jpg' },
+    { name: 'Pabrik Pupuk Fosfat', grp: 'dev', done: false, pct: '3,13%', wk: 'W3 · Plan 1,83% (+1,30 poin)', st: 'On track', warn: false, img: 'https://pmopetrokimia.tech/media/brand/bg-1.jpg' },
+    { name: 'Continuous Ship Unloader - 3', grp: 'rutin', done: false, pct: '81,09%', wk: 'W50 · Plan 81,00% (+0,09 poin)', st: 'On track', warn: false, img: 'https://pmopetrokimia.tech/media/brand/login-bg.jpg?v=2' }
+  ];
+  function filterProj(kind, btn) {
+    document.querySelectorAll('#filters button').forEach(function (b) { b.classList.remove('on'); });
+    if (btn) btn.classList.add('on');
+    var list = PROJECTS.filter(function (p) {
+      if (kind === 'all') return true;
+      if (kind === 'done') return p.done;
+      return p.grp === kind;
+    });
+    document.getElementById('pGrid').innerHTML = list.map(function (p, i) {
+      var col = i % 4;
+      var stg = col === 1 ? 'st-1' : col === 2 ? 'st-2' : '';
+      return '<a href="#proyek" class="p-card ' + stg + '">' +
+        '<img src="' + p.img + '" alt="' + p.name + '">' +
+        '<div class="p-in">' +
+          '<div class="p-meta"><span class="p-st ' + (p.warn ? 'warn' : '') + '">' + p.st + '</span><span class="p-pct">' + p.pct + '</span></div>' +
+          '<div class="p-wk">' + p.wk + '</div>' +
+          '<h3>' + p.name + '</h3>' +
+          '<span class="p-cta">Buka Weekly &rarr;</span>' +
+        '</div></a>';
+    }).join('');
+  }
+  filterProj('all', document.querySelector('#filters button'));
+
+  function toggleAcm(e) {
+    if (e) e.stopPropagation();
+    var p = document.getElementById('acmPop');
+    p.hidden = !p.hidden;
+  }
+  document.addEventListener('click', function (e) {
+    var p = document.getElementById('acmPop');
+    if (p && !p.hidden && !e.target.closest('.v-util')) p.hidden = true;
+  });
+  function setMode(mode) {
+    document.documentElement.setAttribute('data-mode', mode);
+    document.getElementById('mLight').classList.toggle('on', mode === 'light');
+    document.getElementById('mDark').classList.toggle('on', mode === 'dark');
+  }
+  function setAcc(acc) {
+    document.documentElement.setAttribute('data-accent', acc);
+    document.documentElement.setAttribute('data-mode', 'light');
+    document.getElementById('mLight').classList.add('on');
+    document.getElementById('mDark').classList.remove('on');
+    document.getElementById('aBlue').classList.toggle('on', acc === 'blue');
+    document.getElementById('aSage').classList.toggle('on', acc === 'sage');
+    document.getElementById('aMocha').classList.toggle('on', acc === 'mocha');
+  }
+
+  var curH = 0, imgs = document.querySelectorAll('#heroBg img'), dots = document.querySelectorAll('#dots button');
+  function pickHero(n) {
+    curH = n;
+    imgs.forEach(function (im, i) { im.classList.toggle('on', i === n); });
+    dots.forEach(function (d, i) { d.classList.toggle('on', i === n); });
+  }
+  setInterval(function () { pickHero((curH + 1) % imgs.length); }, 5000);
+  window.addEventListener('scroll', function () {
+    document.getElementById('vNav').classList.toggle('stuck', window.scrollY > 40);
+  });
+</script>
+</body>
+</html>
