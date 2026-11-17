@@ -606,11 +606,43 @@ const HTML_PATCHES = [
     find: "box=document.createElement('div');box.id=key;box.className='pmo-requests';box.hidden=true;",
     replace: "return;box=document.createElement('div');box.id=key;box.className='pmo-requests';box.hidden=true;",
   })),
-  // Weekly Dashboard (mode mobile): rapikan jarak label data-label pada kartu Concern, Mitigasi, RTL, dan Aktivitas Kritis.
+  // Weekly Dashboard (Desktop & Mobile): cegah clipping kanan saat muat awal, rapikan dok bawah mobile & posisi Sena, dan perbesar target sentuh HP.
   {
     file: 'Dashboard',
     find: '</style></head><body>',
-    replace: '\nhtml.m-mode .table.pmo-cards>tbody>tr>td::before{display:block;margin-bottom:2px}\nhtml.m-mode .table.pmo-cards>tbody>tr>td:first-child::before{display:none}\nhtml.m-mode .table.pmo-cards>tbody>tr>td:first-child{display:block;margin:0 0 8px 0;padding-bottom:6px!important;border-bottom:1px solid var(--line)!important}\nhtml.m-mode #concerns>tr>td:nth-child(2){display:block;margin:0 0 8px 0}\nhtml.m-mode #concerns>tr>td:nth-child(2)::before{display:inline-block;margin-right:8px;margin-bottom:0}\n</style></head><body>',
+    replace: '\nhtml,body{overflow-x:clip}.app>*,.main,.content,.topbar,.grid,.panel{min-width:0;max-width:100%}' +
+      '\nhtml.m-mode body{padding-bottom:140px!important}' +
+      '\nhtml.m-mode .m-dock{padding:0!important;background:linear-gradient(to bottom,transparent 0,var(--bg) 56%)}' +
+      '\nhtml.m-mode .m-period{margin:0 auto 8px 10px!important}' +
+      '\nhtml.m-mode .m-period button{height:44px!important}' +
+      '\nhtml.m-mode .m-tabs{border-radius:18px 18px 0 0!important;border-bottom:0!important;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))!important}' +
+      '\nhtml.m-mode .aic-fab{bottom:calc(74px + env(safe-area-inset-bottom,0px))!important;right:12px!important}' +
+      '\n@media (max-width:760px){.ntf-btn,.search-btn,.msc-btn{min-height:44px!important;min-width:44px!important}}' +
+      '\nhtml.m-mode .table.pmo-cards>tbody>tr>td::before{display:block;margin-bottom:2px}\nhtml.m-mode .table.pmo-cards>tbody>tr>td:first-child::before{display:none}\nhtml.m-mode .table.pmo-cards>tbody>tr>td:first-child{display:block;margin:0 0 8px 0;padding-bottom:6px!important;border-bottom:1px solid var(--line)!important}\nhtml.m-mode #concerns>tr>td:nth-child(2){display:block;margin:0 0 8px 0}\nhtml.m-mode #concerns>tr>td:nth-child(2)::before{display:inline-block;margin-right:8px;margin-bottom:0}\n</style></head><body>',
+  },
+  // Weekly Dashboard (Kurva S): pisahkan label Plan & Aktual agar tidak bertumpuk saat titik akhir berdekatan.
+  {
+    file: 'Dashboard',
+    find: "let yPlanLbl=selectedPlan?Math.max(T+14,y(selectedPlan.value)-10):null;\n  let yActLbl=selectedActual?Math.min(H-B-6,y(selectedActual.value)+18):null;\n  if(yPlanLbl!==null&&yActLbl!==null&&Math.abs(yActLbl-yPlanLbl)<15){\n    yPlanLbl=Math.max(T+14,y(selectedPlan.value)-14);\n    yActLbl=Math.min(H-B-4,y(selectedActual.value)+20);\n  }",
+    replace: "let yPlanLbl=selectedPlan?Math.max(T+14,y(selectedPlan.value)-10):null;\n  let yActLbl=selectedActual?Math.min(H-B-6,y(selectedActual.value)+18):null;\n  if(selectedPlan&&selectedActual){\n    if(selectedActual.value>=selectedPlan.value){\n      yActLbl=Math.max(T+12,y(selectedActual.value)-10);\n      yPlanLbl=Math.min(H-B-4,y(selectedPlan.value)+16);\n      if(yPlanLbl-yActLbl<16)yPlanLbl=Math.min(H-B-4,yActLbl+16);\n    }else if(yActLbl-yPlanLbl<16){\n      yPlanLbl=Math.max(T+12,y(selectedPlan.value)-14);\n      yActLbl=Math.min(H-B-4,yPlanLbl+16);\n    }\n  }",
+  },
+  // Monthly Executive Review (Mobile): rapikan dok bawah, cegah tabrakan pil PERIODE vs Sena, dan perbesar target sentuh HP.
+  {
+    file: 'ExecutiveDashboard',
+    find: '</style></head>',
+    replace: '\nhtml.m-mode body{padding-bottom:140px!important}' +
+      '\nhtml.m-mode .m-dock{padding:0!important;background:linear-gradient(to bottom,transparent 0,var(--bg) 56%)}' +
+      '\nhtml.m-mode .m-period{margin:0 auto 8px 10px!important}' +
+      '\nhtml.m-mode .m-period button{height:44px!important}' +
+      '\nhtml.m-mode .m-tabs{border-radius:18px 18px 0 0!important;border-bottom:0!important;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))!important}' +
+      '\nhtml.m-mode .aic-fab{bottom:calc(74px + env(safe-area-inset-bottom,0px))!important;right:12px!important}' +
+      '\n@media (max-width:760px){.ntf-btn,.search-btn,.xb-act button{min-height:44px!important;min-width:44px!important}}\n</style></head>',
+  },
+  // Portal Proyek (Mobile): geser titik carousel menjauhi Sena, judul 1 baris, titik status bulat, dan target sentuh >= 44px.
+  {
+    file: 'Portal',
+    find: '</head>',
+    replace: '<style>@media (max-width:760px){.hero-dots{left:16px!important;right:auto!important;bottom:14px!important}.top .t b{white-space:nowrap;font-size:clamp(14px,4vw,17px)}.top .t small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hero-eye::before,.hero-eye i,.hero-eye span{flex-shrink:0}.ntf-btn,.search-btn,.xb-act button,.acc-all button{min-height:44px!important;min-width:44px!important}}</style>\n</head>',
   },
   // Weekly Dashboard (mode mobile): Forecast selesai & aktivitas kritis (Jadwal CPM) hanya tampil di tab Kurva S.
   {
