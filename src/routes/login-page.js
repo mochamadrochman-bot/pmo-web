@@ -141,7 +141,7 @@ function render(appUrl, base) {
   html = html.replace(/<\/html>[\s\S]*$/i, '</html>');
   // Gambar identitas dari server sendiri (lihat routes/brand.js), bukan langsung dari Google Drive.
   html = html.split('https://drive.google.com/thumbnail?id=1JP0hqePxcaiFN0aZ2dv6WJ6qCNwrRLxf&sz=w800').join('/media/brand/logo.png')
-    .split('https://drive.google.com/thumbnail?id=1W4smcs4NnfWWq4ruAub6SifsfyF4unC6&sz=w2000').join('/media/brand/login-bg.jpg');
+    .split('https://drive.google.com/thumbnail?id=1W4smcs4NnfWWq4ruAub6SifsfyF4unC6&sz=w2000').join('/media/brand/login-bg.jpg?v=2');
   html = html.replace('class="company-logo">', 'class="company-logo" width="220" height="201" fetchpriority="high">');
   // Tanpa JavaScript pun form tidak boleh mengirim sandi lewat alamat (GET).
   html = html.replace('<form id="loginForm">', '<form id="loginForm" method="post" action="/login">');

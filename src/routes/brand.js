@@ -39,6 +39,12 @@ const urlOf = (a) => SRC + '?id=' + a.id + '&sz=w' + a.w;
 
 async function load(name) {
   if (mem.has(name)) return mem.get(name);
+  const bundled = path.join(__dirname, '..', '..', 'public', 'media', 'brand', name);
+  try {
+    const buf = fs.readFileSync(bundled);
+    const type = /\.jpe?g$/i.test(name) ? 'image/jpeg' : 'image/png';
+    if (buf.length > 200) { const v = { buf, type }; mem.set(name, v); return v; }
+  } catch (e) { /* pakai cache/Drive */ }
   const file = path.join(DIR, name);
   try {
     const buf = fs.readFileSync(file);
