@@ -475,7 +475,14 @@ Keputusan pemilik: dashboard internal **tidak diindeks** mesin pencari; alamat u
   - video pembuka diunduh sekali lewat `<link rel="prefetch">`.
 - Paket 2 (17 Nov): logo PMO, logo Petrokimia, ikon tab, dan gambar latar yang ditulis tetap di halaman dashboard juga disajikan dari `/media/brand/`. Caranya: `brand.rewrite()` mengganti tautan thumbnail Drive untuk ID yang dikenal saat halaman lama dimuat (runtime.js), dan ikon tab diganti di `routes/gas.js`. Foto lapangan dan banner proyek (isi dinamis) tetap dari Drive.
 - Judul utama halaman login diberi teks lengkap untuk pembaca layar (`.pmo-sr`), tampilan tidak berubah.
-- **Belum dikerjakan:** Content-Security-Policy; logo Petrokimia pada gambar latar login yang terpotong di lebar ±1000px.
+- **CSP mode lapor saja** (17 Nov), file `src/routes/csp.js`:
+  - Header `Content-Security-Policy-Report-Only` di semua respons, dengan daftar sumber yang dipakai dashboard: Drive/Docs, YouTube, Office viewer, OneDrive/SharePoint, cdnjs/jsdelivr, Google Fonts, googleapis untuk unggah arsip, vesselfinder/flightradar24.
+  - Hanya `report-uri /api/csp-report`. `report-to` sengaja tidak dipakai, karena membuat Chrome mengabaikan report-uri dan mengirim laporan tertunda.
+  - Laporan diringkas per (directive, origin sumber, halaman) di tabel `csp_reports` (migrasi 008, maks 500 baris; batas 120 laporan/menit per IP; laporan dari ekstensi browser diabaikan).
+  - Admin melihat dan mengosongkan catatan di `/admin/csp` (menu header "Laporan CSP").
+  - Env: `CSP_MODE=report|enforce|off`, `CSP_EXTRA_FRAME` (sumber frame tambahan, mis. alamat NVR CCTV).
+  - Uji lokal: Portal, Monthly, Weekly, Input, Live, dan presentasi tidak menghasilkan laporan.
+- **Belum dikerjakan:** penegakan CSP setelah beberapa hari pemantauan; logo Petrokimia pada gambar latar login yang terpotong di lebar ±1000px.
 
 ---
 

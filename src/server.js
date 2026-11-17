@@ -54,6 +54,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// Content-Security-Policy mode lapor saja + penerima laporan (lihat routes/csp.js).
+const cspRoutes = require('./routes/csp');
+app.use(cspRoutes.header);
+app.post('/api/csp-report', cspRoutes);
+
 app.get('/robots.txt', (req, res) => res.type('text/plain').send('User-agent: *\nDisallow: /\n'));
 app.use('/', require('./routes/brand'));
 app.get(['/favicon.ico', '/apple-touch-icon.png'], (req, res) => res.redirect(302, '/media/brand/icon.png'));
@@ -124,6 +129,7 @@ app.get('/akun/password', requireUser, (req, res) => {
 });
 app.get('/privasi', (req, res) => renderPage(res, 'pages/privasi', { title: 'Kebijakan Privasi', user: req.user }));
 app.use('/', adminRoutes);
+app.use('/', cspRoutes);
 app.use('/', require('./routes/arsip'));
 app.use('/', require('./routes/pres'));
 app.use('/', gasRoutes);
