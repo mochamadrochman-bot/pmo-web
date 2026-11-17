@@ -33,6 +33,30 @@ app.set('views', path.join(__dirname, '..', 'views'));
 // CSP dimatikan pada tahap awal karena halaman lama memakai style dan script inline.
 // Nyalakan setelah aset dipisah ke /assets (lihat B5).
 app.use(helmet({ contentSecurityPolicy: false }));
+
+// Dashboard internal: jangan diindeks mesin pencari, dan tutup fitur perangkat yang tidak dipakai.
+// Mikrofon tetap diizinkan untuk halaman sendiri (dipakai input suara).
+app.use((req, res, next) => {
+  res.set('X-Robots-Tag', 'noindex, nofollow');
+  res.set('Permissions-Policy', 'camera=(), geolocation=(), payment=(), usb=(), microphone=(self)');
+  next();
+});
+
+// Satu alamat utama: host "www." dialihkan permanen ke alamat tanpa www (sesuai APP_BASE_URL).
+app.use((req, res, next) => {
+  const host = String(req.headers.host || '');
+  if (/^www\./i.test(host) && (req.method === 'GET' || req.method === 'HEAD')) {
+    let base = '';
+    try { base = process.env.APP_BASE_URL ? new URL(process.env.APP_BASE_URL).origin : ''; } catch (e) { base = ''; }
+    if (!base || /^https?:\/\/www\./i.test(base)) base = 'https://' + host.replace(/^www\./i, '');
+    return res.redirect(301, base + req.originalUrl);
+  }
+  next();
+});
+
+app.get('/robots.txt', (req, res) => res.type('text/plain').send('User-agent: *\nDisallow: /\n'));
+app.use('/', require('./routes/brand'));
+app.get(['/favicon.ico', '/apple-touch-icon.png'], (req, res) => res.redirect(302, '/media/brand/icon.png'));
 // Halaman lama mengirim berkas lewat google.script.run (base64), jadi batasnya lebih besar di /app/rpc.
 const jsonSmall = express.json({ limit: '1mb' });
 const jsonLarge = express.json({ limit: '40mb' });
@@ -77,7 +101,7 @@ app.get('/login', (req, res) => {
     try {
       const base = (process.env.APP_BASE_URL || (req.protocol + '://' + req.get('host'))).replace(/\/$/, '');
       res.set('Cache-Control', 'no-store');
-      return res.type('html').send(loginPage.render(base + '/app'));
+      return res.type('html').send(loginPage.render(base + '/app', base));
     } catch (err) {
       console.error('[login] tampilan lama gagal, pakai tampilan sederhana:', err.message);
     }
@@ -85,6 +109,8 @@ app.get('/login', (req, res) => {
   renderPage(res, 'pages/login', { title: 'Masuk', error: null });
 });
 
+// Form login tanpa JavaScript: kembali ke halaman login (sandi tidak pernah masuk ke alamat).
+app.post('/login', (req, res) => res.redirect(303, '/login'));
 app.post('/api/auth/login', loginRateLimit, authRoutes.login);
 app.post('/api/auth/logout', authRoutes.logout);
 
@@ -106,7 +132,7 @@ app.use('/', portalRoutes);
 
 // ---- 404 dan penanganan galat
 app.use((req, res) => {
-  if (req.path.startsWith('/api/')) {
+  if (req.path.startsWith('/api/') || req.path.startsWith('/app/rpc/')) {
     return res.status(404).json({ ok: false, error: 'Rute tidak dikenal.' });
   }
   res.status(404);
@@ -119,7 +145,7 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
   if (status >= 500) {
     console.error(JSON.stringify({ ev: 'unhandled', path: req.path, message: String(err.message || err) }));
   }
-  if (req.path.startsWith('/api/')) {
+  if (req.path.startsWith('/api/') || req.path.startsWith('/app/rpc/')) {
     return res.status(status).json({
       ok: false,
       error: parseError ? 'Format permintaan tidak valid.' : 'Terjadi kesalahan di server.',
@@ -146,6 +172,7 @@ async function start() {
   }
 
   const server = app.listen(PORT, () => {
+    try { require('./routes/brand').warm(); } catch (e) { /* gambar diambil saat diminta */ }
     console.log(JSON.stringify({ ev: 'listen', port: PORT, env: process.env.NODE_ENV || 'development' }));
   });
 

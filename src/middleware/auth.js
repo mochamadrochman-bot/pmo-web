@@ -9,6 +9,7 @@ const db = require('../db');
 const PUBLIC_PATHS = [
   { method: 'GET', path: '/health' },
   { method: 'GET', path: '/login' },
+  { method: 'POST', path: '/login' },
   { method: 'POST', path: '/api/auth/login' },
 ];
 
@@ -20,6 +21,7 @@ function isApi(req) {
 }
 
 function isPublic(req) {
+  if (req.method === 'GET' && (req.path === '/robots.txt' || req.path === '/favicon.ico' || req.path === '/apple-touch-icon.png' || req.path.startsWith('/media/brand/'))) return true;
   return PUBLIC_PATHS.some((p) => p.method === req.method && p.path === req.path);
 }
 

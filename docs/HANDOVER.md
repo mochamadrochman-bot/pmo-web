@@ -456,6 +456,25 @@ Masukan Direktur Pengembangan: saat portal dibuka, progres aktual vs plan dan re
 - `nav-theme.js` (Ctrl K) ikut diganti.
 - Menu "Buat Laporan Bulanan" menjadi "Buat Laporan Bulanan (dokumen)".
 
+
+### Tindak lanjut audit SEO/keamanan (paket 1) · 17 Nov 2026 (Claude)
+Keputusan pemilik: dashboard internal **tidak diindeks** mesin pencari; alamat utama **tanpa www**; pratinjau tautan (Open Graph) dipasang.
+- `server.js`:
+  - header `X-Robots-Tag: noindex, nofollow` dan `Permissions-Policy` (mikrofon tetap `self` karena dipakai input suara Sena);
+  - `/robots.txt` berisi `Disallow: /`;
+  - host `www.` dialihkan 301 ke origin `APP_BASE_URL` (GET/HEAD);
+  - galat di `/app/rpc/*` dibalas JSON seperti `/api/*`;
+  - `POST /login` (form tanpa JavaScript) dialihkan 303 ke `/login`.
+- `routes/brand.js` (baru): `/media/brand/{logo.png,login-bg.jpg,icon.png,petro.png}`. Server mengambil gambar dari thumbnail Drive sekali, menyimpannya di disk (`BRAND_CACHE_DIR`, bawaan folder tmp) dan memori, lalu menyajikannya dengan cache 7 hari. Kalau gagal, browser dialihkan 302 ke sumber Drive dan server mencoba lagi setelah 5 menit. `/favicon.ico` mengarah ke `icon.png`.
+- `routes/login-page.js`:
+  - judul, deskripsi, `noindex`, canonical, ikon tab, preconnect font, Open Graph dan Twitter Card (gambar `/media/pmo-intro-poster.jpg`);
+  - logo dan latar login dari `/media/brand/`;
+  - `method="post"` pada form;
+  - karakter nyasar setelah `</html>` dibuang;
+  - CSS: kartu muat di layar pendek (≤800px) tanpa dua scrollbar, tombol tema mengecil dan tidak menimpa logo di HP;
+  - video pembuka diunduh sekali lewat `<link rel="prefetch">`.
+- **Belum dikerjakan:** Content-Security-Policy; logo/ikon di dalam halaman dashboard masih dari Drive; logo Petrokimia pada gambar latar yang terpotong di lebar ±1000px.
+
 ---
 
 ## 7. Preferensi kerja pemilik
