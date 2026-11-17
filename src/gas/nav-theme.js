@@ -276,6 +276,33 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
     });
     return out;
   }
+  // Daftar proyek Weekly untuk sub-menu: pakai tombol #projectNav bila ada (halaman Weekly),
+  // selain itu daftar dari getProjectList (cache pmoSwr 'projNav') berupa tombol virtual.
+  var NAVP=null,navpBusy=false;
+  function navpKey(v){return String(v||'').toUpperCase().replace(/^\s*PROYEK\s*/,'').replace(/[^A-Z0-9]/g,'')}
+  function navpLoad(){
+    if(NAVP||navpBusy)return;
+    try{var c=window.pmoSwr&&pmoSwr.get('projNav');if(c&&c.d)NAVP=c.d}catch(e){}
+    if(!(window.google&&google.script&&google.script.run))return;
+    var tok='';try{tok=sessionStorage.getItem('pmoSessionToken')||''}catch(e){}
+    navpBusy=true;
+    google.script.run.withSuccessHandler(function(r){navpBusy=false;if(r&&r.projects){NAVP=r.projects;try{window.pmoSwr&&pmoSwr.set('projNav',r.projects)}catch(e){}}}).withFailureHandler(function(){navpBusy=false}).getProjectList(tok);
+  }
+  function navProjBtns(){
+    var real=Array.prototype.slice.call(document.querySelectorAll('#projectNav .project-item'));
+    if(real.length)return real;
+    navpLoad();
+    if(!Array.isArray(NAVP))return [];
+    var act='';try{act=navpKey(sessionStorage.getItem('pmoActiveProject')||'')}catch(e){}
+    var onWeekly=/[?&]page=weekly\b/.test(location.search);
+    return NAVP.filter(function(p){return p&&p.name&&p.hasWeekly!==false}).sort(function(a,b){var da=a.stage==='SELESAI'||a.stage==='DITUTUP'?1:0,db=b.stage==='SELESAI'||b.stage==='DITUTUP'?1:0;return da-db}).map(function(p){
+      var b=document.createElement('button');var done=p.stage==='SELESAI'||p.stage==='DITUTUP';
+      b.textContent=p.name+(done?' Selesai':'');
+      if(onWeekly&&navpKey(p.name)===act)b.classList.add('on');
+      b.click=function(){try{sessionStorage.setItem('pmoActiveProject',p.name)}catch(e){}
+        if(typeof window.pmoGoWithProject==='function')window.pmoGoWithProject('weekly');else window.top.location.href='/app?page=weekly&project='+encodeURIComponent(p.name)};
+      return b});
+  }
   function fly2Hide(){clearTimeout(fly2T);if(fly2)fly2.classList.remove('on')}
   function fly2HideSoon(){clearTimeout(fly2T);fly2T=setTimeout(fly2Hide,160)}
   function fly2Show(anchorBtn){
@@ -318,7 +345,7 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
       fly.addEventListener('keydown',function(e){if(e.key==='Escape'){flyHide();if(flyGrp){var f=flyGrp.querySelector('button.nav');if(f)f.focus()}}});
       fly.addEventListener('click',function(e){var x=e.target.closest('[data-fi]');if(!x||!fly.__items)return;var it=fly.__items[+x.getAttribute('data-fi')];flyHide();if(it)it.b.click()});}
     clearTimeout(flyT);fly2Hide();if(flyGrp!==w)fly.__byClick=false;flyGrp=w;fly.__items=L;
-    var pBtns=id==='m1'?Array.prototype.slice.call(w.querySelectorAll('#projectNav button')):null;
+    var pBtns=id==='m1'?navProjBtns():null;
     fly.__projs=pBtns||[];
     fly.innerHTML='<h5>'+esc(TAG[id]||'')+' '+esc(GRP[id]||'')+'</h5>'+L.map(function(x,i){
       var hasSub=id==='m1'&&fly.__projs.length&&/weekly/i.test(x.t);
@@ -334,6 +361,7 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
   function flyHideSoon(){clearTimeout(flyT);flyT=setTimeout(flyHide,220)}
   function bindFly(){
     var side=document.querySelector('aside.side');if(!side||side.__pmoFly)return;side.__pmoFly=true;
+    setTimeout(navpLoad,400);
     side.addEventListener('mouseover',function(e){var w=e.target.closest('.pmo-mgrp');if(!w){return}if(w!==flyGrp||!fly||!fly.classList.contains('on'))flyShow(w);else clearTimeout(flyT)});
     side.addEventListener('mouseleave',flyHideSoon);
     side.addEventListener('click',function(e){var hd=e.target.closest('.pmo-mod-hd');if(!hd||!collapsed())return;var w=hd.closest('.pmo-mgrp');if(!w)return;e.preventDefault();e.stopPropagation();if(fly&&fly.classList.contains('on')&&flyGrp===w&&fly.__byClick){flyHide();fly.__byClick=false}else{flyShow(w);if(fly)fly.__byClick=true}},true);
