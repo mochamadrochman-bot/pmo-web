@@ -473,7 +473,9 @@ Keputusan pemilik: dashboard internal **tidak diindeks** mesin pencari; alamat u
   - karakter nyasar setelah `</html>` dibuang;
   - CSS: kartu muat di layar pendek (≤800px) tanpa dua scrollbar, tombol tema mengecil dan tidak menimpa logo di HP;
   - video pembuka diunduh sekali lewat `<link rel="prefetch">`.
-- **Belum dikerjakan:** Content-Security-Policy; logo/ikon di dalam halaman dashboard masih dari Drive; logo Petrokimia pada gambar latar yang terpotong di lebar ±1000px.
+- Paket 2 (17 Nov): logo PMO, logo Petrokimia, ikon tab, dan gambar latar yang ditulis tetap di halaman dashboard juga disajikan dari `/media/brand/`. Caranya: `brand.rewrite()` mengganti tautan thumbnail Drive untuk ID yang dikenal saat halaman lama dimuat (runtime.js), dan ikon tab diganti di `routes/gas.js`. Foto lapangan dan banner proyek (isi dinamis) tetap dari Drive.
+- Judul utama halaman login diberi teks lengkap untuk pembaca layar (`.pmo-sr`), tampilan tidak berubah.
+- **Belum dikerjakan:** Content-Security-Policy; logo Petrokimia pada gambar latar login yang terpotong di lebar ±1000px.
 
 ---
 

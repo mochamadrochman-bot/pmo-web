@@ -22,7 +22,15 @@ const ASSETS = {
   'login-bg.jpg': { id: '1W4smcs4NnfWWq4ruAub6SifsfyF4unC6', w: 1920 }, // latar halaman login
   'icon.png': { id: '1JP0hqePxcaiFN0aZ2dv6WJ6qCNwrRLxf', w: 128 },      // ikon tab & pratinjau tautan
   'petro.png': { id: '1LZynEU1SZ27JmRMPdv2D5CTxcd4cKp84', w: 480 },     // logo Petrokimia Gresik
+  'bg-1.jpg': { id: '1vAJUIDwskvCdPmXNNvzCwoqpBVBCsdP1', w: 1920 },     // gambar latar halaman dashboard
+  'bg-2.jpg': { id: '1WHRHo_x1Qq4g8GiPtnBmFtMw-0UjmYID', w: 1920 },
 };
+// Tautan thumbnail Drive di halaman lama -> gambar yang sama dari server ini.
+const BY_ID = { '1JP0hqePxcaiFN0aZ2dv6WJ6qCNwrRLxf': 'logo.png', '1LZynEU1SZ27JmRMPdv2D5CTxcd4cKp84': 'petro.png', '1W4smcs4NnfWWq4ruAub6SifsfyF4unC6': 'login-bg.jpg', '1vAJUIDwskvCdPmXNNvzCwoqpBVBCsdP1': 'bg-1.jpg', '1WHRHo_x1Qq4g8GiPtnBmFtMw-0UjmYID': 'bg-2.jpg' };
+const DRIVE_RE = /https:\/\/drive\.google\.com\/thumbnail\?id=([A-Za-z0-9_-]+)&(?:amp;)?sz=w\d+(?:&\.png)?/g;
+function rewrite(text) {
+  return String(text || '').replace(DRIVE_RE, (m, id) => (BY_ID[id] ? '/media/brand/' + BY_ID[id] : m));
+}
 const mem = new Map();   // nama -> { buf, type }
 const failAt = new Map(); // nama -> waktu gagal terakhir
 const pending = new Map();
@@ -81,3 +89,4 @@ function warm() { Object.keys(ASSETS).forEach((n) => { load(n).catch(() => {}); 
 module.exports = router;
 module.exports.warm = warm;
 module.exports.ASSETS = ASSETS;
+module.exports.rewrite = rewrite;

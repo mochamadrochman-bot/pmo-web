@@ -93,6 +93,7 @@ function headMeta(base) {
 // Perbaikan tampilan: kartu muat di layar laptop pendek (tanpa dua scrollbar), tombol tema tidak menimpa logo di HP.
 const FIX_CSS = `<style>
 html,body{margin:0}
+.pmo-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .company-logo{aspect-ratio:220/201;height:auto!important;width:min(220px,56vw)!important;max-width:100%}
 @media (max-height:800px){
   .login-wrapper{padding-top:10px!important;padding-bottom:10px!important}
@@ -127,6 +128,9 @@ function render(appUrl, base) {
   html = html.replace('class="company-logo">', 'class="company-logo" width="220" height="201" fetchpriority="high">');
   // Tanpa JavaScript pun form tidak boleh mengirim sandi lewat alamat (GET).
   html = html.replace('<form id="loginForm">', '<form id="loginForm" method="post" action="/login">');
+  // Satu judul utama yang bermakna untuk pembaca layar; tampilan tidak berubah.
+  html = html.replace('<h1>DASHBOARD</h1>', '<h1>DASHBOARD<span class="pmo-sr"> — Project Monitoring, PMO PT Petrokimia Gresik</span></h1>')
+    .replace('<p class="subtitle">PROJECT MONITORING</p>', '<p class="subtitle" aria-hidden="true">PROJECT MONITORING</p>');
   html = html.replace(/<div class="login-footer">Project Management Office<br>/, '<div class="login-footer">Project Management Office <br>');
   html = /<head[^>]*>/i.test(html)
     ? html.replace(/<head[^>]*>/i, (m) => m + '\n' + headMeta(base) + STUB)

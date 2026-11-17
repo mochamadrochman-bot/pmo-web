@@ -794,6 +794,11 @@ function load() {
     if (t !== v) htmlFiles.set(k, t);
   }
   for (const f of gsFiles) f.src = f.src.split('Executive Dashboard').join('Monthly Executive Review');
+  // Logo, ikon, dan gambar latar yang ditulis tetap di halaman lama: sajikan dari server sendiri (routes/brand.js).
+  try {
+    const { rewrite } = require('../routes/brand');
+    for (const [k, v] of htmlFiles) { const t = rewrite(v); if (t !== v) htmlFiles.set(k, t); }
+  } catch (e) { console.log(JSON.stringify({ ev: 'brand_rewrite_skip', message: String(e.message || e) })); }
   for (const p of require('./live-lan').GS_PATCHES) {
     const f = gsFiles.find((x) => x.name === p.file);
     if (f && f.src.includes(p.find)) f.src = f.src.replace(p.find, () => p.replace);

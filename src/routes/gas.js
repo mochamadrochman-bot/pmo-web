@@ -119,7 +119,7 @@ function wrapPage(out, opts) {
     out.getTitle() && !/<title[\s>]/i.test(html) ? '<title>' + out.getTitle().replace(/</g, '&lt;') + '</title>' : '',
     ...out._meta.filter(([n]) => !new RegExp('name=["\\\']' + n + '["\\\']', 'i').test(html))
       .map(([n, c]) => '<meta name="' + n + '" content="' + String(c).replace(/"/g, '&quot;') + '">'),
-    out._favicon ? '<link rel="icon" href="' + out._favicon + '">' : '',
+    out._favicon ? '<link rel="icon" type="image/png" href="' + (/1JP0hqePxcaiFN0aZ2dv6WJ6qCNwrRLxf/.test(out._favicon) ? '/media/brand/icon.png' : out._favicon) + '">' : '',
     clientShim(),
     navTheme.accentHead((opts && opts.accent) || 'blue'),
   ].filter(Boolean).join('\n');
