@@ -67,8 +67,9 @@ html.pv2 #hero .hero-bg>div{position:absolute;inset:0;background-size:cover;back
 html.pv2 #hero .hero-bg>div.on{opacity:1;transform:scale(1)}
 html.pv2 #hero::before,html.pv2 #hero::after{display:none!important}
 html.pv2 #hero .v-scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(7,15,24,.45) 0%,rgba(7,15,24,.15) 45%,rgba(10,16,24,.88) 100%);pointer-events:none}
-html.pv2 #hero .hero-in{position:absolute;z-index:2;left:0;bottom:0;width:auto;max-width:min(860px,calc(100% - 260px));margin:0!important;padding:0 0 44px 48px!important;background:none!important}
-html.pv2 #hero .hero-top{display:block!important}
+html.pv2 #hero .hero-in{position:absolute;z-index:2;left:0;bottom:0;width:auto;max-width:min(860px,calc(100% - 260px));margin:0!important;padding:0 0 44px 48px!important;background:none!important;display:block!important;min-height:0!important;height:auto!important;top:auto!important}
+html.pv2 #hero .hero-top{display:block!important;margin:0!important;padding:0!important;min-height:0!important}
+html.pv2 #hero .hero-t{margin:0!important;padding:0!important}
 html.pv2 #hero #greet,html.pv2 #hero #heroSub,html.pv2 #hero .stamp,html.pv2 #hero .hero-kpis,html.pv2 #hero .hero-cap{display:none!important}
 html.pv2 #hero .hero-eye{display:block;font-size:11.5px!important;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#7dd3fc!important;margin:0 0 12px!important}
 html.pv2 #hero .hero-eye::before{display:none!important}
@@ -121,7 +122,8 @@ html.pv2 #briefBox .xpl-mon a{color:var(--v-acc)!important}
 html.pv2[data-theme="dark"] #briefBox .xpl-mon a{color:#7dd3fc!important}
 
 /* ---------- grid proyek ---------- */
-html.pv2 .v-sec{text-align:center;margin:56px auto 28px!important}
+html.pv2 #briefBox .xpl-mon{display:none!important}
+html.pv2 .v-sec{scroll-margin-top:90px;text-align:center;margin:56px auto 28px!important}
 html.pv2 .v-sec h2{margin:0 0 8px;font-size:clamp(24px,3.2vw,34px);font-weight:700;letter-spacing:.04em;color:var(--v-ink)}
 html.pv2 .v-sec p{margin:0 0 18px;font-size:13px;color:var(--v-mut)}
 html.pv2 .v-filters{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
@@ -266,7 +268,7 @@ const JS = String.raw`<script>
     var eye=D.getElementById('heroEye');if(eye)eye.textContent='PMO Infrastruktur & Process Plant';
     // strip utilitas
     var u=D.createElement('div');u.className='v-util';
-    u.innerHTML='<div class="v-crumb">PMO Infrastruktur &amp; Process Plant › <b>Portal Proyek</b> · Progres minggu terakhir yang sudah diinput</div><div class="v-ua"><button type="button" class="v-ub" data-v="grid">Proyek Pengembangan</button><button type="button" class="v-ub pri" data-v="exec">Monthly Executive Review →</button></div>';
+    u.innerHTML='<div class="v-crumb">PMO Infrastruktur &amp; Process Plant</div><div class="v-ua"><button type="button" class="v-ub" data-v="grid">Daftar Proyek</button><button type="button" class="v-ub pri" data-v="exec">Monthly Executive Review →</button></div>';
     D.body.insertBefore(u,main);
     q('[data-v="grid"]',u).onclick=function(){var s=D.getElementById('vSec');if(s)s.scrollIntoView({behavior:'smooth',block:'start'})};
     q('[data-v="exec"]',u).onclick=function(){if(typeof go==='function')go('executive');else location.href='/app?page=executive'};
