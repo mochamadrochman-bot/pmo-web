@@ -815,7 +815,7 @@ function load() {
   });
   const v3d = require('./visual3d');
   htmlFiles.set('Visual3D', v3d.VISUAL3D_HTML);
-  for (const p of HTML_PATCHES.concat(v3d.HTML_PATCHES, require('./monthly-fin').HTML_PATCHES)) {
+  for (const p of HTML_PATCHES.concat(v3d.HTML_PATCHES, require('./monthly-fin').HTML_PATCHES, require('./portal-v2').PORTAL_V2_PATCHES)) {
     const src = htmlFiles.get(p.file);
     if (src && src.includes(p.find)) htmlFiles.set(p.file, src.replace(p.find, p.replace));
     else console.warn(JSON.stringify({ ev: 'gas_patch_miss', file: p.file }));

@@ -483,6 +483,12 @@ Keputusan pemilik: dashboard internal **tidak diindeks** mesin pencari; alamat u
   - Env: `CSP_MODE=report|enforce|off`, `CSP_EXTRA_FRAME` (sumber frame tambahan, mis. alamat NVR CCTV).
   - Uji lokal: Portal, Monthly, Weekly, Input, Live, dan presentasi tidak menghasilkan laporan.
 - **Belum dikerjakan:** penegakan CSP setelah beberapa hari pemantauan; logo Petrokimia pada gambar latar login yang terpotong di lebar ±1000px.
+- **Portal Proyek gaya "Vision 2030"** (18 Nov), acuan `docs/vision2030-portal-preview.html`. File `src/gas/portal-v2.js` (CSS + skrip di bawah `html.pv2`, hanya halaman Portal); didaftarkan paling akhir di loop patch `runtime.js`.
+  - Elemen lama **tidak dibuang**, hanya ditata ulang: header jadi bilah melayang; hero (carousel `heroPhotos`, cadangan `/media/brand/login-bg.jpg?v=2`, `bg-1.jpg`, `bg-2.jpg`) jadi layar penuh; KPI hero pindah ke baris kartu di kanvas; Ringkasan (`pmoPortalBrief`, portal-latest.js) di atas grid; Story Lapangan di bawah grid.
+  - Menu modul = dropdown di header (HP: tombol Menu → panel samping). Isinya **diambil dari tombol kartu Modul lama** (kartu disembunyikan, tidak dihapus), jadi hak akses per peran dan semua `go(...)` tetap sama. Menambah tombol di kartu Modul otomatis ikut muncul di dropdown.
+  - Grid "PROYEK - PROYEK PENGEMBANGAN": kartu portrait bertingkat dari `i.lw` (week terakhir yang diinput), filter Semua / Pengembangan / Investasi Rutin / Selesai (aktual ≥ 100%). Klik kartu → `goWeek`. Kartu `#pulse` lama tetap dirender tapi disembunyikan.
+  - Tab "TANYA SENA" di tepi kanan membuka widget Sena (`.aic-fab` disembunyikan secara visual, di-klik lewat skrip).
+  - Tema: Terang/Gelap dan Biru/Sage/Mocha tetap dari menu akun (`data-theme`, `data-accent`); variabel warna `--v-*` mengikuti keduanya.
 - **Visual 3D Proyek** (17 Nov), halaman `?page=visual3d`:
   - Letak menu: sidebar kelompok Dokumen & Lapangan (setelah Live View CCTV), menu HP, dan Ctrl K. Akun kontraktor tidak melihatnya.
   - Berkas: `src/gas/visual3d.html` (templat virtual "Visual3D"), `src/gas/visual3d.js` (rute Code.gs, patch sidebar, tombol Weekly), `src/routes/model3d.js` (API), migrasi `009-model3d.sql`.
