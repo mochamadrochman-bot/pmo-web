@@ -648,17 +648,31 @@ const HTML_PATCHES = [
   {
     file: 'WeeklyPrint',
     find: "return {code:r.code,name:r.name,group:r.group||'',groupName:r.groupName||'',weight:r.weight,fw:r.fieldWeight,blk,dev,late,changed,hl,ket};",
-    replace: "return {code:r.code,name:r.name,disc:r.disc||'',group:r.group||'',groupName:r.groupName||'',weight:r.weight,fw:r.fieldWeight,blk,dev,late,changed,hl,ket};",
+    replace: "return {code:r.code,name:r.name,disc:r.disc||'',type:r.type||'',stageNote:r.stageNote||'',group:r.group||'',groupName:r.groupName||'',weight:r.weight,fw:r.fieldWeight,blk,dev,late,changed,hl,ket};",
   },
   {
     file: 'WeeklyPrint',
     find: "function resumeModel(f){const M=detailModel(f),w=fin(f.weight)?Number(f.weight):null,sc=v=>fin(v)&&w!=null?v*w/100:null;\n  const groups=M.rows.filter(r=>r.type==='group'),loose=M.rows.filter(r=>r.type==='item'&&!r.group&&!r.groupName);\n  const list=groups.map(g=>({code:g.code,name:g.name,fw:g.fw,blk:g.blk}));\n  if(loose.length){const sum=sel=>loose.every(x=>fin(sel(x)))?loose.reduce((a,x)=>a+Number(sel(x)),0):null,blk={};BLOCKS.forEach(([k])=>blk[k]={total:sum(x=>x.blk[k].total),plan:sum(x=>x.blk[k].plan)});list.push({code:'',name:'Lain-lain',fw:sum(x=>x.fw),blk});}\n  const row=g=>{const o={code:g.code,name:g.name,weight:sc(g.fw)};BLOCKS.forEach(([k])=>o[k]=[sc(g.blk[k].plan),sc(g.blk[k].total)]);o.contrib=fin(g.blk.current.total)&&fin(g.fw)&&g.fw>0?g.blk.current.total/g.fw*100:null;o.dev=fin(o.current[0])&&fin(o.current[1])?o.current[1]-o.current[0]:null;return o;};\n  const rows=list.map(row),T=row({code:'',name:'JUMLAH',fw:M.total.fw,blk:M.total.blk});return {weight:w,rows,total:T};}",
     replace: `function pmoDiscOf(it){
-  const t=(String(it.disc||'')+' '+String(it.groupName||'')+' '+String(it.group||'')).toUpperCase();
-  if(/\\b(CIVIL|SIPIL|STRUKTUR|STRUCTURE)\\b/.test(t))return 'CIVIL';
-  if(/\\b(MECHANICAL|MEKANIKAL|MEKANIK|PIPING|PROSES|PROCESS)\\b/.test(t))return 'MECHANICAL';
-  if(/\\b(ELECTRICAL|ELEKTRIKAL|ELEKTRIK|LISTRIK)\\b/.test(t))return 'ELECTRICAL';
-  if(/\\b(INSTRUMENT|INSTRUMENTASI|INSTRUMENTATION|INSTRUMEN)\\b/.test(t))return 'INSTRUMENT';
+  const m=function(s){
+    if(/\\b(CIVIL|SIPIL|CIV|SIP|STRUKTUR|STRUCTURE|STRUCTURAL|STR|ARSITEK|ARCH|ARCHITECTURAL)\\b/.test(s))return 'CIVIL';
+    if(/\\b(MECHANICAL|MEKANIKAL|MEKANIK|MEC|MEK|PIPING|PIP|PROSES|PROCESS|PRC|ROTATING|STATIC|EQUIPMENT)\\b/.test(s))return 'MECHANICAL';
+    if(/\\b(ELECTRICAL|ELEKTRIKAL|ELEKTRIK|LISTRIK|ELE|ELK)\\b/.test(s))return 'ELECTRICAL';
+    if(/\\b(INSTRUMENT|INSTRUMENTASI|INSTRUMENTATION|INSTRUMEN|INSTUMENT|INS|INST|AUTOMATION)\\b/.test(s))return 'INSTRUMENT';
+    return '';
+  };
+  const d1=m((String(it.disc||'')+' '+String(it.groupName||'')+' '+String(it.group||'')+' '+String(it.type||'')+' '+String(it.stageNote||'')).toUpperCase());
+  if(d1)return d1;
+  const n=String(it.name||'').toUpperCase();
+  if(/\\b(FT-\\d+|FCV|PLC|DCS|SCADA|TRANSMITTER|GAUGE|METER|ANALYZER|CONTROL VALVE|THERMOCOUPLE|SENSOR|F&G|FIRE|ALARM|CCTV|INSTRUMENT|INSTUMENT)\\b/.test(n))return 'INSTRUMENT';
+  if(/\\b(ELECTRICAL|ELEKTRIK|LISTRIK|CABLE|KABEL|PANEL|TRAFO|TRANSFORMER|SWITCHGEAR|HVS|MCC|MOTOR|LIGHTING|LAMPU|GROUNDING|LIGHTNING|UPS|GENSET|POWER|BUSDUCT|FIBER OPTIC)\\b/.test(n))return 'ELECTRICAL';
+  if(/\\b(MECHANICAL|MEKANIK|GRANULATOR|DRYER|COOLER|SCRUBBER|TANK|TANGKI|VESSEL|PUMP|POMPA|PIPE|PIPA|PIPING|VALVE|HYDRANT|CRANE|CONVEYOR|HOIST|BLOWER|FAN|COMPRESSOR|HEAT EXCHANGER|CHILLER|BOILER|TURBINE|REACTOR|UNLOADER|ELEVATOR|SCREW|HOPPER|SILO|DUCTING|RAIL|JACK UP|STRINGING|FIT UP|DYE PENETRANT|BIN HOPPER)\\b/.test(n))return 'MECHANICAL';
+  if(/\\b(CIVIL|SIPIL|BETON|ATAP|PONDASI|FOUNDATION|STRUKTUR|STRUCTURE|STEEL STRUCTURE|JALAN|DRAINASE|TANGGUL|TIANG|PANCANG|PILE|BORE PILE|PILING|SHEET PILE|PLATFORM|STAIRS|LADDER|GEDUNG|BANGUNAN|EXCAVATION|EARTHWORK|CONCRETE|FENDER|BOLLARD|REVETMENT|DERMAGA|BAJA|SILT PROTECTOR|DREDGING|PIPE BRIDGE|CABLE TRAY|SITE OFFICE|DIREKSI KEET|PERSIAPAN|MOBILISASI|DEMOBILISASI|FINISHING|PERIZINAN)\\b/.test(n))return 'CIVIL';
+  const gc=String(it.group||it.code||'').trim();
+  if(/^1\\.[23]\\.1(?:\\.|$)/.test(gc))return 'CIVIL';
+  if(/^1\\.[23]\\.2(?:\\.|$)/.test(gc))return 'MECHANICAL';
+  if(/^1\\.[23]\\.3(?:\\.|$)/.test(gc))return 'ELECTRICAL';
+  if(/^1\\.[23]\\.4(?:\\.|$)/.test(gc))return 'INSTRUMENT';
   return 'LAIN';
 }
 function resumeModel(f){const M=detailModel(f),w=fin(f.weight)?Number(f.weight):null,sc=v=>fin(v)&&w!=null?v*w/100:null;
