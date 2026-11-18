@@ -647,13 +647,18 @@ const HTML_PATCHES = [
   // Buat Laporan Weekly: ubah Resume per bidang menjadi 4 Disiplin (CIVIL, MECHANICAL, ELECTRICAL, INSTRUMENT) + tabel gabungan 4 Bidang x 4 Disiplin.
   {
     file: 'WeeklyPrint',
+    find: "return {code:r.code,name:r.name,group:r.group||'',groupName:r.groupName||'',weight:r.weight,fw:r.fieldWeight,blk,dev,late,changed,hl,ket};",
+    replace: "return {code:r.code,name:r.name,disc:r.disc||'',group:r.group||'',groupName:r.groupName||'',weight:r.weight,fw:r.fieldWeight,blk,dev,late,changed,hl,ket};",
+  },
+  {
+    file: 'WeeklyPrint',
     find: "function resumeModel(f){const M=detailModel(f),w=fin(f.weight)?Number(f.weight):null,sc=v=>fin(v)&&w!=null?v*w/100:null;\n  const groups=M.rows.filter(r=>r.type==='group'),loose=M.rows.filter(r=>r.type==='item'&&!r.group&&!r.groupName);\n  const list=groups.map(g=>({code:g.code,name:g.name,fw:g.fw,blk:g.blk}));\n  if(loose.length){const sum=sel=>loose.every(x=>fin(sel(x)))?loose.reduce((a,x)=>a+Number(sel(x)),0):null,blk={};BLOCKS.forEach(([k])=>blk[k]={total:sum(x=>x.blk[k].total),plan:sum(x=>x.blk[k].plan)});list.push({code:'',name:'Lain-lain',fw:sum(x=>x.fw),blk});}\n  const row=g=>{const o={code:g.code,name:g.name,weight:sc(g.fw)};BLOCKS.forEach(([k])=>o[k]=[sc(g.blk[k].plan),sc(g.blk[k].total)]);o.contrib=fin(g.blk.current.total)&&fin(g.fw)&&g.fw>0?g.blk.current.total/g.fw*100:null;o.dev=fin(o.current[0])&&fin(o.current[1])?o.current[1]-o.current[0]:null;return o;};\n  const rows=list.map(row),T=row({code:'',name:'JUMLAH',fw:M.total.fw,blk:M.total.blk});return {weight:w,rows,total:T};}",
     replace: `function pmoDiscOf(it){
-  const t=(String(it.groupName||'')+' '+String(it.group||'')).toUpperCase();
-  if(/\\b(CIVIL|SIPIL)\\b/.test(t))return 'CIVIL';
-  if(/\\b(MECHANICAL|MEKANIK)\\b/.test(t))return 'MECHANICAL';
-  if(/\\b(ELECTRICAL|ELEKTRIK|LISTRIK)\\b/.test(t))return 'ELECTRICAL';
-  if(/\\b(INSTRUMENT|INSTRUMENTATION|INSTRUMEN)\\b/.test(t))return 'INSTRUMENT';
+  const t=(String(it.disc||'')+' '+String(it.groupName||'')+' '+String(it.group||'')).toUpperCase();
+  if(/\\b(CIVIL|SIPIL|STRUKTUR|STRUCTURE)\\b/.test(t))return 'CIVIL';
+  if(/\\b(MECHANICAL|MEKANIKAL|MEKANIK|PIPING|PROSES|PROCESS)\\b/.test(t))return 'MECHANICAL';
+  if(/\\b(ELECTRICAL|ELEKTRIKAL|ELEKTRIK|LISTRIK)\\b/.test(t))return 'ELECTRICAL';
+  if(/\\b(INSTRUMENT|INSTRUMENTASI|INSTRUMENTATION|INSTRUMEN)\\b/.test(t))return 'INSTRUMENT';
   return 'LAIN';
 }
 function resumeModel(f){const M=detailModel(f),w=fin(f.weight)?Number(f.weight):null,sc=v=>fin(v)&&w!=null?v*w/100:null;
@@ -799,6 +804,49 @@ ${RETIRED.map((n) => `  ${n} = function () { throw new Error('Akun kini dikelola
         r = Object.assign({}, r, { brief: Object.assign({}, r.brief, { groups: { map: gmap, parents: parents }, finRows: finRows, doneProjects: doneProjects, msMap: msMap }) });
       }
     } catch (e) { /* tanpa kelompok, kartu tampil seperti biasa */ }
+    return r;
+  };
+  // Buat Laporan Weekly: sertakan kolom DISIPLIN dari ENG_BASELINE & EPC_ITEM agar resume 4 Disiplin akurat.
+  var __origWeeklyPrint = getWeeklyPrintReport;
+  getWeeklyPrintReport = function (token, projectId, requestedWeek) {
+    var r = __origWeeklyPrint(token, projectId, requestedWeek);
+    try {
+      if (!r || !r.success || !r.project || !Array.isArray(r.fields)) return r;
+      var pid = String(r.project.id || '').trim().toUpperCase();
+      var ss = loadDb_().ss;
+      var engMap = {}, epcMap = {};
+      var readSh = function (def, fn) {
+        var sh = ss.getSheetByName(def[0]);
+        if (!sh || sh.getLastRow() < 2) return;
+        var vals = sh.getDataRange().getValues(), hd = vals[0].map(function (x) { return String(x || '').trim().toUpperCase(); });
+        var iP = hd.indexOf('PROYEK_ID'), iD = hd.indexOf('DISIPLIN'), iSt = hd.indexOf('STATUS');
+        if (iP < 0 || iD < 0) return;
+        for (var i = 1; i < vals.length; i++) {
+          if (String(vals[i][iP] || '').trim().toUpperCase() !== pid) continue;
+          if (iSt >= 0 && String(vals[i][iSt] || '').trim().toUpperCase() === 'BATAL') continue;
+          fn(vals[i], hd, String(vals[i][iD] || '').trim());
+        }
+      };
+      readSh(ENG.SHEETS.BASELINE, function (row, hd, disc) {
+        if (!disc) return;
+        var iNo = hd.indexOf('NOMOR_DOKUMEN'), iNm = hd.indexOf('NAMA_DOKUMEN');
+        if (iNo >= 0 && row[iNo]) engMap[String(row[iNo]).trim()] = disc;
+        if (iNm >= 0 && row[iNm]) engMap['N:' + String(row[iNm]).trim()] = disc;
+      });
+      readSh(EPC.SHEETS.ITEM, function (row, hd, disc) {
+        if (!disc) return;
+        var iId = hd.indexOf('ID'), iBid = hd.indexOf('BIDANG');
+        if (iId >= 0 && row[iId]) epcMap[String(iBid >= 0 ? row[iBid] : '') + '|' + String(row[iId]).trim()] = disc;
+        if (iId >= 0 && row[iId]) epcMap[String(row[iId]).trim()] = disc;
+      });
+      r.fields.forEach(function (f) {
+        if (!f || !Array.isArray(f.rows)) return;
+        f.rows.forEach(function (row) {
+          if (f.key === 'ENG') row.disc = engMap[String(row.id || '').trim()] || engMap['N:' + String(row.name || '').trim()] || '';
+          else row.disc = epcMap[f.key + '|' + String(row.id || '').trim()] || epcMap[String(row.id || '').trim()] || '';
+        });
+      });
+    } catch (e) { /* jika gagal, resume tetap memakai GRUP */ }
     return r;
   };
   // Tambah/Edit Proyek: kelompok proyek (Pengembangan / Rutin / Sub-proyek).
