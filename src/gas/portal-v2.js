@@ -123,6 +123,8 @@ html.pv2[data-theme="dark"] #briefBox .xpl-mon a{color:#7dd3fc!important}
 
 /* ---------- grid proyek ---------- */
 html.pv2 #briefBox .xpl-mon{display:none!important}
+html.pv2 #briefBox .xpl-acts,.xpl-acts{margin:2px 0 10px;padding-left:22px;display:grid;gap:3px}
+html.pv2 #briefBox .xpl-acts li{padding-left:2px}
 html.pv2 .v-sec{scroll-margin-top:90px;text-align:center;margin:56px auto 28px!important}
 html.pv2 .v-sec h2{margin:0 0 8px;font-size:clamp(24px,3.2vw,34px);font-weight:700;letter-spacing:.04em;color:var(--v-ink)}
 html.pv2 .v-sec p{margin:0 0 18px;font-size:13px;color:var(--v-mut)}

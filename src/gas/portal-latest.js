@@ -90,15 +90,15 @@ function pmoPortalBrief(el,s,b){
       :'progres fisik <b class="xpl-v '+cls+'">'+P(act)+'</b> dari rencana <b class="xpl-v pl">'+P(plan)+'</b>'+(dev!=null?' (<span class="xpl-s '+cls+'">'+pmoPortalPts(dev)+' poin, '+E(String(stt||'').toLowerCase())+'</span>)':'');
     var head='<b>'+E(nm(i.name))+'</b> — '+(when?when+': ':'')+prog+'.'+(L.stale>=1?' <i>(input terakhir '+L.stale+' minggu lalu)</i>':'');
     var body=[];
-    var acts=(L.lines&&L.lines.length?L.lines:(L.highlight?[L.highlight]:[])).slice(0,3).map(function(x){return short(x,140)}).filter(Boolean);
-    if(acts.length)body.push('<i>Aktivitas utama:</i> '+acts.map(E).join('; ')+'.');
+    var acts=(L.lines&&L.lines.length?L.lines:(L.highlight?[L.highlight]:[])).slice(0,10).map(function(x){return short(x,200)}).filter(Boolean);
+    if(acts.length)body.push('<i>Highlight aktivitas W'+E(L.week||'')+':</i> '+acts.map(function(x){return E(sen(x))}).join(', ')+'.');
     if(dev!=null&&dev<0&&cs.concern)body.push('<i>Kendala'+(cs.field?' ('+E(cs.field)+')':'')+':</i> '+E(short(cs.concern,260))+'.'+(cs.mitigation?' <i>Tindak lanjut:</i> '+E(short(cs.mitigation,260))+'.':''));
     var msName=sen(ms.milestone||i.nextMilestone||'');
     if(msName)body.push('<i>Target milestone '+E(nx||'bulan berikutnya')+':</i> '+E(msName)+(sen(ms.status)?' — status <b>'+E(sen(ms.status))+'</b>':(done?' — <b>selesai</b>':''))+'.');
     if(f&&f.rkap2026!=null&&Number(f.rkap2026)>0&&f.actualToDate!=null)body.push('<i>Keuangan s.d. akhir '+E(finPer)+':</i> realisasi '+E(rp(f.actualToDate))+', <b class="xpl-v fin">'+P0(Number(f.actualToDate)/Number(f.rkap2026))+'</b> dari RKAP tahunan '+E(rp(f.rkap2026))+'.');
     else body.push('<i>Keuangan s.d. akhir '+E(finPer)+':</i> data RKAP belum tersedia.');
     plainParts.push((head+' '+body.join(' ')).replace(/<[^>]+>/g,''));
-    return '<details class="xpl-p"'+(cls!=='good'?' open':'')+'><summary>'+head+'</summary><div class="xpl-b">'+body.map(function(x){return '<p>'+x+'</p>'}).join('')+'</div></details>';
+    return '<details class="xpl-p"'+(cls!=='good'?' open':'')+'><summary>'+head+'</summary><div class="xpl-b">'+body.map(function(x){return /^<ol/.test(x)?x:'<p>'+x+'</p>'}).join('')+'</div></details>';
   }
   var rk=function(i){var x=(i.lw&&i.lw.status)||i.status;return x==='Critical'?0:x==='At risk'?1:2};
   var memo='<p class="xpl-lead">'+E(lead)+'</p><div class="xpl-tools"><button type="button" data-xpl="1">Buka semua</button><button type="button" data-xpl="0">Lipat semua</button></div>';
