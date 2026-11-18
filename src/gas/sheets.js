@@ -338,10 +338,30 @@ class Range {
     this._d.dirty = true;
     return proxyOf(this);
   }
-  copyTo(dest) {
-    const vals = this.getValues();
-    const target = dest._s.getRange(dest._r, dest._c, this._nr, this._nc);
-    target.setValues(vals);
+  /**
+   * Range.copyTo(dest, copyPasteType?, transposed?) seperti Apps Script:
+   *  - PASTE_FORMAT : hanya format angka (nilai & rumus tujuan TIDAK berubah)
+   *  - PASTE_VALUES : hanya nilai
+   *  - PASTE_NORMAL / tanpa tipe : nilai + format (rumus tidak disalin karena referensi relatif belum disesuaikan)
+   * Tujuan yang lebih besar dari sumber diisi berulang (pola sumber diulang), sama seperti Google Sheets.
+   * (Sebelum 18 Nov 2026 semua tipe menyalin nilai, sehingga PASTE_FORMAT ikut menimpa isi sel tujuan.)
+   */
+  copyTo(dest, type) {
+    const t = String(type || 'PASTE_NORMAL');
+    const sr = this._r - 1, sc = this._c - 1, sd = this._d, dd = dest._d;
+    const nr = Math.max(dest._nr, this._nr), nc = Math.max(dest._nc, this._nc);
+    const cells = [];
+    for (let i = 0; i < nr; i++) for (let j = 0; j < nc; j++) {
+      const fr = sr + (i % this._nr), fc = sc + (j % this._nc), tr = dest._r - 1 + i, tc = dest._c - 1 + j;
+      cells.push({ fk: fr + ',' + fc, tr, tc, v: sd.get(fr, fc) });
+    }
+    if (t !== 'PASTE_FORMAT' && hooks.onWrite) hooks.onWrite(dest._s._ss._b);
+    for (const x of cells) {
+      if (t === 'PASTE_FORMAT') { dd.setFmt(x.tr, x.tc, sd.fmts[x.fk] || null); continue; }
+      dd.set(x.tr, x.tc, x.v instanceof Date ? new Date(x.v.getTime()) : x.v);
+      if (t === 'PASTE_NORMAL') dd.setFmt(x.tr, x.tc, sd.fmts[x.fk] || null);
+    }
+    dd.dirty = true;
     return proxyOf(this);
   }
   sort(spec) {

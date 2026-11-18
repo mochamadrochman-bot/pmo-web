@@ -169,6 +169,11 @@ async function start() {
     console.log(JSON.stringify({ ev: 'google_auth', configured: g.configured, connected: g.connected }));
     await require('./lib/groups').load();
     const info = await gasStore.load();
+    try {
+      const fixed = require('./gas/repair-dup-blocks').run(gasStore);
+      if (fixed.some((x) => x.removed)) await gasStore.flush();
+      if (fixed.length) console.log(JSON.stringify({ ev: 'gas_repair_dup_blocks', fixed }));
+    } catch (e) { console.error(JSON.stringify({ ev: 'gas_repair_dup_blocks_fail', message: String(e.message || e) })); }
     const rt = gasRuntime.load();
     console.log(JSON.stringify({ ev: 'gas_ready', sheets: info.sheets, functions: rt.functions, html: rt.html }));
     const auto = gasSync.start();
