@@ -82,6 +82,8 @@ html:not([data-theme="dark"]) aside.side .brand{flex:0 1 auto;width:auto;backgro
 html:not([data-theme="dark"]) aside.side .pmo-mgrp+.pmo-mgrp{border-top-color:rgba(255,255,255,.10)}
 html:not([data-theme="dark"]) aside.side ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22)}
 html:not([data-theme="dark"]) aside.side button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+html:not(.pv2) aside.side .brand,html:not(.pv2) .side-head .brand{cursor:pointer}
+html:not(.pv2) aside.side .brand:focus-visible,html:not(.pv2) .side-head .brand:focus-visible{outline:2px solid #fff;outline-offset:3px;border-radius:10px}
 
 /* Judul grup ditulis utuh (tidak terpotong) */
 aside.side .pmo-mod-hd{text-transform:none!important;letter-spacing:0!important;font-size:12.5px!important;font-weight:600!important}
@@ -626,9 +628,29 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
     setTimeout(function(){collectSections();sync();},2200);
   }
 
-  var q=0;function queue(){if(!q)q=setTimeout(function(){q=0;render();addPicker();try{railIcons()}catch(e){}},120)}
+  function bindBrandHome(){
+    if(page==='portal'||document.documentElement.classList.contains('pv2'))return;
+    var goPortal=function(){
+      if(typeof go==='function'){try{go('portal');return;}catch(e){}}
+      var base='';try{base=typeof appUrl!=='undefined'&&appUrl?appUrl:'/app'}catch(e){base='/app'}
+      window.top.location.href=base+(base.indexOf('?')>=0?'&':'?')+'page=portal';
+    };
+    document.querySelectorAll('aside.side .brand,.side-head .brand,header.top .brand,header.topbar .brand').forEach(function(el){
+      if(el.getAttribute('data-pmo-home')==='1')return;
+      el.setAttribute('data-pmo-home','1');
+      el.setAttribute('role','link');
+      el.setAttribute('tabindex','0');
+      el.setAttribute('title','Kembali ke halaman Portal utama');
+      el.setAttribute('aria-label','Kembali ke halaman Portal utama');
+      el.style.cursor='pointer';
+      el.addEventListener('click',function(e){if(e.target&&e.target.closest('button,a,[data-toggle-nav]'))return;goPortal();});
+      el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();goPortal();}});
+    });
+  }
+
+  var q=0;function queue(){if(!q)q=setTimeout(function(){q=0;render();addPicker();bindBrandHome();try{railIcons()}catch(e){}},120)}
   function init(){
-    addPicker();initScrollHud();
+    addPicker();bindBrandHome();initScrollHud();
     var tries=0;(function wait(){if(document.querySelector('aside.side nav[data-pmo-modular="1"]')||tries>40){build();bindFly();railIcons();setTimeout(senaFocus,600);
       var side=document.querySelector('aside.side');
       if(side&&window.MutationObserver)new MutationObserver(queue).observe(side,{subtree:true,attributes:true,attributeFilter:['class','hidden','style','aria-current']});

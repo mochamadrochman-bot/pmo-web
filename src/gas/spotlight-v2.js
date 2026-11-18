@@ -176,15 +176,17 @@ const JS = String.raw`<script>
   var backHref=oldBack?oldBack.getAttribute('href'):((typeof appUrl!=='undefined'&&appUrl)?appUrl+'?page=portal':'?page=portal');
   var inIframe=false;try{inIframe=window.self!==window.top;}catch(e){inIframe=true;}
 
+  var logoTag=inIframe?'div class="sv2-logos"':'a class="sv2-logos" href="'+E(backHref)+'" target="_top" title="Kembali ke halaman Portal utama" aria-label="Kembali ke halaman Portal utama"';
+  var logoClose=inIframe?'</div>':'</a>';
   SC.innerHTML=
     '<div class="sv2-bg" id="sv2Bg" aria-hidden="true"></div>'+
     '<div class="sv2-scrim" aria-hidden="true"></div>'+
     '<header class="sv2-top">'+
       '<div class="sv2-brand">'+
-        '<div class="sv2-logos">'+
+        '<'+logoTag+'>'+
           '<img src="/media/brand/petro.png" alt="PT Petrokimia Gresik" decoding="async" onerror="this.onerror=null;this.src=\'https://drive.google.com/thumbnail?id=1LZynEU1SZ27JmRMPdv2D5CTxcd4cKp84&sz=w240\'">'+
           '<img src="/media/brand/logo.png" alt="PMO Infrastruktur &amp; Process Plant" decoding="async" onerror="this.onerror=null;this.src=\'https://drive.google.com/thumbnail?id=1JP0hqePxcaiFN0aZ2dv6WJ6qCNwrRLxf&sz=w240\'">'+
-        '</div>'+
+        logoClose+
         '<div class="sv2-btxt"><b>PMO Spotlight Lobby</b><span>Monitoring Proyek Strategis EPCC</span></div>'+
       '</div>'+
       '<div class="sv2-top-r">'+
