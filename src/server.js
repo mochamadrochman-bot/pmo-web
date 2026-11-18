@@ -175,6 +175,7 @@ async function start() {
       if (fixed.length) console.log(JSON.stringify({ ev: 'gas_repair_dup_blocks', fixed }));
     } catch (e) { console.error(JSON.stringify({ ev: 'gas_repair_dup_blocks_fail', message: String(e.message || e) })); }
     const rt = gasRuntime.load();
+    await require('./lib/project-sync').syncProjects().catch((e) => console.error(JSON.stringify({ ev: 'projects_sync_fail', message: String(e.message || e) })));
     console.log(JSON.stringify({ ev: 'gas_ready', sheets: info.sheets, functions: rt.functions, html: rt.html }));
     const auto = gasSync.start();
     console.log(JSON.stringify({ ev: 'gas_sync_schedule', auto, minutes: gasSync.info().minutes }));

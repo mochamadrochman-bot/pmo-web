@@ -43,6 +43,7 @@ router.get(['/admin', '/admin/'], onlyAdmin, (req, res) => res.redirect('/admin/
 
 router.get('/admin/akun', onlyAdmin, async (req, res, next) => {
   try {
+    await require('../lib/project-sync').syncProjects().catch(() => {});
     const projects = await db.query('select id, name from projects order by name');
     renderPage(res, 'pages/admin-akun', {
       title: 'Kelola Akun',

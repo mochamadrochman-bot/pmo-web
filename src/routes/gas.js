@@ -234,6 +234,7 @@ router.post('/app/rpc/:fn', requireUser, async (req, res) => {
     if (!failed) failed = new Error('Data proyek tersimpan, tetapi kelompok proyek gagal disimpan. Atur ulang di menu Kelompok Proyek.');
     await groups.load().catch(() => {});
   }
+  if (!failed && name === 'saveProjectSetup') await require('../lib/project-sync').syncProjects().catch(() => {});
   const ms = Date.now() - started;
   if (ms > 3000) console.warn(JSON.stringify({ ev: 'gas_slow', fn: name, ms }));
 

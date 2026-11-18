@@ -66,6 +66,7 @@ async function syncNow(opts) {
     await store.replaceMain(sheets, o.actor || 'sinkron-otomatis', (meta.name || 'PMO DASHBOARD') + ' (Google Sheets)');
     await db.query("update gas_imports set note = $1 where id = (select max(id) from gas_imports)", ['modified:' + meta.modifiedTime]);
     clearCache();
+    await require('../lib/project-sync').syncProjects().catch(() => {});
     state.lastResult = { status: 'synced', modifiedTime: meta.modifiedTime, sheets: sheets.length, ms: Date.now() - started, at: new Date() };
     console.log(JSON.stringify({ ev: 'gas_sync', ...state.lastResult }));
     return state.lastResult;
