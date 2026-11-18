@@ -23,7 +23,8 @@ const { requireUser, forbidden, audit } = require('../middleware/auth');
 const router = express.Router();
 
 // Halaman yang boleh dibuka akun kontraktor (selain itu ditolak sebelum kode lama berjalan).
-const KONTRAKTOR_PAGES = ['', 'portal', 'engineering', 'epcc', 'procurement', 'construction', 'commissioning'];
+// Data tiap halaman tetap dibatasi ke proyek kontraktor di sisi server (lihat src/gas/ktr-access.js).
+const KONTRAKTOR_PAGES = ['', 'portal', 'weekly', 'engineering', 'epcc', 'procurement', 'construction', 'commissioning', 'live', 'spotlight', 'lobby', 'visual3d'];
 
 function appUrl(req) {
   const base = process.env.APP_BASE_URL || (req.protocol + '://' + req.get('host'));
@@ -56,10 +57,13 @@ function legacyUser(u) {
 }
 
 /** Skrip yang disisipkan ke setiap halaman lama: pengganti google.script.run. */
-function clientShim() {
+function clientShim(user) {
+  // pmoUser: peran akun untuk menu di browser (kode lama membacanya dari sessionStorage).
+  const pu = user ? JSON.stringify({ username: user.username, name: user.name, role: user.role, project: user.project, projectId: user.projectId }).replace(/</g, '\\u003c') : '';
   return `<script>
 (function () {
   try { sessionStorage.setItem('pmoSessionToken', 'server-session'); } catch (e) {}
+  ${pu ? `try { sessionStorage.setItem('pmoUser', JSON.stringify(${pu})); } catch (e) {}` : ''}
   function call(name, args, ok, fail, userObj) {
     fetch('/app/rpc/' + encodeURIComponent(name), {
       method: 'POST', credentials: 'same-origin',
@@ -120,7 +124,7 @@ function wrapPage(out, opts) {
     ...out._meta.filter(([n]) => !new RegExp('name=["\\\']' + n + '["\\\']', 'i').test(html))
       .map(([n, c]) => '<meta name="' + n + '" content="' + String(c).replace(/"/g, '&quot;') + '">'),
     out._favicon ? '<link rel="icon" type="image/png" href="' + (/1JP0hqePxcaiFN0aZ2dv6WJ6qCNwrRLxf/.test(out._favicon) ? '/media/brand/icon.png' : out._favicon) + '">' : '',
-    clientShim(),
+    clientShim(opts && opts.user),
     navTheme.accentHead((opts && opts.accent) || 'blue'),
   ].filter(Boolean).join('\n');
   if (/<head[^>]*>/i.test(html)) html = html.replace(/<head[^>]*>/i, (m) => m + '\n' + head);
@@ -172,6 +176,7 @@ router.get('/app', requireUser, async (req, res, next) => {
     await store.flush();
     res.set('Cache-Control', 'no-store');
     res.type('html').send(wrapPage(out, {
+      user: legacyUser(req.user),
       intro: page === 'portal' && store.introEnabled(),
       page,
       accent: navTheme.cleanAccent(req.user.ui_accent) || store.defaultAccent(),

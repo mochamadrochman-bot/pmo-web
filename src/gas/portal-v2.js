@@ -214,10 +214,14 @@ const JS = String.raw`<script>
   var BRAND=['/media/brand/login-bg.jpg?v=2','/media/brand/bg-1.jpg','/media/brand/bg-2.jpg'];
   var GROUPS=[['Dashboard Proyek',['tileDash'],true],['EPCC Control',['tileEpc']],['Dokumen & 3D',['tileDoc','tileLive']],['Pelaporan & Input',['tileMr','tileInput']]];
   var label=function(b){var t=(b.textContent||'').replace(/\s+/g,' ').trim().replace(/^Buka\s+/i,'');if(/^Live View$/i.test(t))t='Live View (CCTV)';if(/^Executive Dashboard$/i.test(t))t='Monthly Executive Review';return t};
+  // Akun kontraktor: hanya halaman yang boleh dibuka (proyeknya sendiri) yang tampil di menu.
+  var KTR_OK=/^(Portal Proyek|Weekly Progress|Live View|Spotlight|Visual 3D|Engineering|Procurement|Construction|Commissioning)/i;
+  function isKtr(){if(H.classList.contains('is-ktr'))return true;try{var u=JSON.parse(sessionStorage.getItem('pmoUser')||'null');return String(u&&u.role||'').trim().toUpperCase()==='KONTRAKTOR'}catch(e){return false}}
   function menuData(){
+    var ktr=isKtr();
     return GROUPS.map(function(g){
       var items=[];if(g[2])items.push({t:'Portal Proyek',on:true,fn:function(){window.scrollTo({top:0,behavior:'smooth'})}});
-      g[1].forEach(function(id){var tile=D.getElementById(id);if(!tile||tile.hidden)return;qa('.subs button',tile).forEach(function(b){if(b.hidden||b.style.display==='none')return;var t=label(b);if(!t)return;var it={t:t,fn:function(){b.click()}};if(/^Weekly Progress$/i.test(t))it.sub=weeklySub();items.push(it)})});
+      g[1].forEach(function(id){var tile=D.getElementById(id);if(!tile||tile.hidden)return;qa('.subs button',tile).forEach(function(b){if(b.hidden||(!ktr&&b.style.display==='none'))return;var t=label(b);if(!t)return;if(ktr&&!KTR_OK.test(t))return;var it={t:t,fn:function(){b.click()}};if(/^Weekly Progress$/i.test(t))it.sub=weeklySub();items.push(it)})});
       return {name:g[0],items:items};
     }).filter(function(g){return g.items.length});
   }
@@ -270,11 +274,11 @@ const JS = String.raw`<script>
     var eye=D.getElementById('heroEye');if(eye)eye.textContent='PMO Infrastruktur & Process Plant';
     // strip utilitas
     var u=D.createElement('div');u.className='v-util';
-    u.innerHTML='<div class="v-crumb">PMO Infrastruktur &amp; Process Plant</div><div class="v-ua"><button type="button" class="v-ub" data-v="brief">Ringkasan Eksekutif</button><button type="button" class="v-ub" data-v="grid">Daftar Proyek</button><button type="button" class="v-ub pri" data-v="exec">Monthly Executive Review →</button></div>';
+    u.innerHTML='<div class="v-crumb">PMO Infrastruktur &amp; Process Plant</div><div class="v-ua"><button type="button" class="v-ub" data-v="brief">Ringkasan Eksekutif</button><button type="button" class="v-ub" data-v="grid">Daftar Proyek</button>'+(isKtr()?'':'<button type="button" class="v-ub pri" data-v="exec">Monthly Executive Review →</button>')+'</div>';
     D.body.insertBefore(u,main);
     q('[data-v="brief"]',u).onclick=function(){var t=briefSec||D.getElementById('briefBox');if(t)window.scrollTo({top:Math.max(0,t.getBoundingClientRect().top+window.scrollY-76),behavior:'smooth'})};
     q('[data-v="grid"]',u).onclick=function(){var s=D.getElementById('vSec');if(s)window.scrollTo({top:Math.max(0,s.getBoundingClientRect().top+window.scrollY-76),behavior:'smooth'})};
-    q('[data-v="exec"]',u).onclick=function(){if(typeof go==='function')go('executive');else location.href='/app?page=executive'};
+    var ex=q('[data-v="exec"]',u);if(ex)ex.onclick=function(){if(typeof go==='function')go('executive');else location.href='/app?page=executive'};
     // KPI ke kanvas, ringkasan di atas grid
     var kp=D.getElementById('heroKpis');if(kp){var sum=D.createElement('div');sum.className='v-sum';sum.id='vSum';sum.setAttribute('aria-label','Ringkasan portofolio');main.insertBefore(sum,main.firstChild);sum.appendChild(kp);kp.style.display='contents'}
     var brief=D.getElementById('briefBox'),briefSec=brief&&brief.closest('section'),pulseSec=(D.getElementById('pulse')||{}).closest&&D.getElementById('pulse').closest('section');

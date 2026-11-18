@@ -72,7 +72,7 @@ const HTML_PATCHES = [
     file: 'AccountMenu',
     find: "      buckets.m2.push(liveBtn);\n    }\n",
     replace: "      buckets.m2.push(liveBtn);\n    }\n" +
-      "    (function(){var r='';try{var vu=JSON.parse(sessionStorage.getItem('pmoUser')||'null');r=String(vu&&vu.role||'').trim().toUpperCase()}catch(e){}if(r==='KONTRAKTOR')return;\n" +
+      "    (function(){\n" +
       "      var vb=document.createElement('button');vb.type='button';vb.className='nav';vb.setAttribute('title','Visual 3D Proyek');\n" +
       "      vb.innerHTML='<i class=\"ic\">" + CUBE_SVG.replace(/'/g, "\\'") + "</i><span>Visual 3D Proyek</span>';\n" +
       "      vb.onclick=function(){window.pmoGoWithProject('visual3d')};\n" +
