@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview Konsep — Daftar Proyek Gaya Vision 2030</title>
+<style>
+  :root {
+    --ink: #ffffff;
+    --soft: rgba(255, 255, 255, 0.72);
+    --mut: rgba(255, 255, 255, 0.48);
+    --line: rgba(255, 255, 255, 0.18);
+    --cyan: #38bdf8;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --red: #fb7185;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #0b1420;
+    color: var(--ink);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow-x: clip;
+  }
+
+  /* Bar atas simulasi kontrol preview */
+  .pv-bar {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 32px;
+    background: #071220;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 13px;
+  }
+  .pv-bar b { display: block; font-size: 14px; }
+  .pv-bar span { color: #94a3b8; font-size: 12px; }
+  .pv-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pv-btn {
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: 99px;
+    font: 600 12px/1 inherit;
+    cursor: pointer;
+  }
+  .pv-btn.on { background: #ffffff; color: #0f172a; border-color: #fff; }
+
+  /* ===== VISION 2030 PROJECTS SHOWCASE SECTION ===== */
+  .v20-sec {
+    position: relative;
+    min-height: 680px;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 40px 56px 44px;
+    background: #0b1523;
+    user-select: none;
+  }
+  .v20-sec.mob {
+    max-width: 410px;
+    margin: 18px auto;
+    border-radius: 26px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    min-height: 760px;
+    padding: 24px 18px 28px;
+  }
+
+  /* Background Galeri Masing-Masing Proyek (Crossfade + Zoom halus) */
+  .v20-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  .v20-bg-slide {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transform: scale(1.05);
+    transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 7s linear;
+  }
+  .v20-bg-slide.on { opacity: 1; transform: scale(1); }
+  .v20-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+      linear-gradient(92deg, rgba(7, 15, 26, 0.92) 0%, rgba(7, 15, 26, 0.78) 42%, rgba(7, 15, 26, 0.35) 74%, rgba(7, 15, 26, 0.55) 100%),
+      linear-gradient(180deg, rgba(7, 15, 26, 0.68) 0%, rgba(7, 15, 26, 0.14) 36%, rgba(7, 15, 26, 0.88) 100%);
+  }
+
+  /* Bar Filter Kategori di Atas Seksi */
+  .v20-head {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .v20-eye {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--cyan);
+  }
+  .v20-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .v20-f {
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    background: rgba(11, 20, 34, 0.58);
+    color: #e2e8f0;
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: 99px;
+    font: 600 12px/1 inherit;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  }
+  .v20-f:hover { border-color: #fff; color: #fff; }
+  .v20-f.on { background: #fff; color: #0f172a; border-color: #fff; }
+  .v20-f:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+  /* Grid 2 Kolom Ala Vision 2030: Kiri Selector Proyek + Ringkasan | Kanan Deck Kartu Geser */
+  .v20-body {
+    position: relative;
+    z-index: 3;
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    align-items: center;
+    gap: 40px;
+    flex: 1 1 auto;
+  }
+
+  /* Sisi Kiri: Daftar Proyek Vertikal Ala Vision 2030 */
+  .v20-left { min-width: 0; }
+  .v20-navlist {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .v20-navbtn {
+    position: relative;
+    text-align: left;
+    border: 0;
+    background: transparent;
+    padding: 4px 0 8px;
+    color: var(--mut);
+    font: 400 clamp(17px, 1.9vw, 25px)/1.25 inherit;
+    cursor: pointer;
+    transition: color 0.22s ease, transform 0.22s ease;
+    width: fit-content;
+    max-width: 100%;
+  }
+  .v20-navbtn:hover { color: rgba(255, 255, 255, 0.85); }
+  .v20-navbtn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 4px; border-radius: 6px; }
+  .v20-navbtn.on {
+    color: #ffffff;
+    font-weight: 700;
+    font-size: clamp(21px, 2.5vw, 32px);
+  }
+  .v20-navbtn::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 0%;
+    background: linear-gradient(90deg, #38bdf8, #34d399);
+    transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .v20-navbtn.on::after { width: 100%; }
+
+  /* Detail Ringkas Proyek Aktif di Kiri */
+  .v20-stats {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 24px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+  .v20-stat small {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #94a3b8;
+  }
+  .v20-stat b {
+    font-size: 19px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+  .v20-stat.act b { color: var(--cyan); }
+  .v20-stat.dev.ok b { color: var(--green); }
+  .v20-stat.dev.warn b { color: var(--amber); }
+  .v20-stat.dev.bad b { color: var(--red); }
+
+  .v20-gal-info {
+    margin-top: 12px;
+    font-size: 12.5px;
+    color: var(--soft);
+  }
+
+  /* Sisi Kanan: Deck Kartu Portrait Bertumpuk & Bisa Digeser (Drag/Swipe) */
+  .v20-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+    min-width: 0;
+  }
+  .v20-deck {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    height: 430px;
+    touch-action: pan-y;
+    cursor: grab;
+  }
+  .v20-deck.dragging { cursor: grabbing; }
+
+  .v20-card {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 310px;
+    height: 420px;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    background: #142133;
+    box-shadow: 0 22px 48px rgba(0, 0, 0, 0.55);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 18px;
+    color: #fff;
+    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.38s ease, filter 0.38s ease;
+    will-change: transform, opacity;
+  }
+  .v20-card.no-tr { transition: none !important; }
+  .v20-card-img {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    z-index: 0;
+  }
+  .v20-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(180deg, rgba(8, 15, 26, 0.35) 0%, rgba(8, 15, 26, 0.1) 40%, rgba(8, 15, 26, 0.92) 94%);
+  }
+
+  /* Posisi tumpukan: 0 = Depan, 1 = Mengintip kanan 1, 2 = Mengintip kanan 2 */
+  .v20-card[data-pos="0"] { z-index: 5; transform: translate3d(0, 0, 0) scale(1); opacity: 1; }
+  .v20-card[data-pos="1"] { z-index: 4; transform: translate3d(102px, 14px, 0) scale(0.89); opacity: 0.78; filter: brightness(0.68); cursor: pointer; }
+  .v20-card[data-pos="2"] { z-index: 3; transform: translate3d(172px, 28px, 0) scale(0.79); opacity: 0.45; filter: brightness(0.5); cursor: pointer; }
+  .v20-card[data-pos="hidden"] { z-index: 1; transform: translate3d(200px, 34px, 0) scale(0.72); opacity: 0; pointer-events: none; }
+  .v20-card[data-pos="prev"] { z-index: 6; transform: translate3d(-120px, 0, 0) scale(0.92); opacity: 0; pointer-events: none; }
+
+  .v20-ctop, .v20-cbot { position: relative; z-index: 2; }
+  .v20-ctop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .v20-ctag {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 99px;
+    background: rgba(16, 185, 129, 0.25);
+    border: 1px solid rgba(52, 211, 153, 0.65);
+    color: #a7f3d0;
+  }
+  .v20-ctag.warn { background: rgba(245, 158, 11, 0.26); border-color: rgba(251, 191, 36, 0.65); color: #fde68a; }
+  .v20-ctag.bad { background: rgba(244, 63, 94, 0.28); border-color: rgba(251, 113, 133, 0.7); color: #fecdd3; }
+  .v20-cpct {
+    font-size: 13px;
+    font-weight: 800;
+    background: rgba(8, 15, 26, 0.7);
+    padding: 4px 9px;
+    border-radius: 99px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .v20-cbot h3 {
+    margin: 0 0 6px;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+  .v20-cbot p {
+    margin: 0 0 12px;
+    font-size: 12px;
+    color: #cbd5e1;
+  }
+  .v20-ccta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border-radius: 99px;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    text-decoration: none;
+  }
+  .v20-ccta:hover { background: #fff; color: #0f172a; }
+
+  /* Bar Kontrol Kanan Bawah Ala Vision 2030 ("Explore the Projects" + < >) */
+  .v20-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 310px;
+    justify-content: space-between;
+  }
+  .v20-all {
+    border: 1px solid rgba(52, 211, 153, 0.7);
+    background: rgba(16, 185, 129, 0.14);
+    color: #fff;
+    min-height: 40px;
+    padding: 0 18px;
+    border-radius: 99px;
+    font: 600 12.5px/1 inherit;
+    cursor: pointer;
+    transition: background 0.18s ease;
+  }
+  .v20-all:hover { background: rgba(16, 185, 129, 0.34); }
+  .v20-arrows { display: flex; align-items: center; gap: 8px; }
+  .v20-arr {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    background: rgba(11, 20, 34, 0.65);
+    color: #fff;
+    font-size: 16px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease;
+  }
+  .v20-arr:hover { background: #fff; color: #0f172a; }
+  .v20-arr:focus-visible, .v20-all:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+  .v20-count { font-size: 12px; color: var(--soft); font-variant-numeric: tabular-nums; margin-right: 4px; }
+
+  /* Responsif Mobile */
+  .v20-sec.mob .v20-body { grid-template-columns: 1fr; gap: 20px; }
+  .v20-sec.mob .v20-navlist { flex-direction: row; overflow-x: auto; gap: 14px; padding-bottom: 6px; margin-bottom: 14px; }
+  .v20-sec.mob .v20-navbtn { white-space: nowrap; font-size: 15px; }
+  .v20-sec.mob .v20-navbtn.on { font-size: 17px; }
+  .v20-sec.mob .v20-deck { height: 370px; max-width: 100%; }
+  .v20-sec.mob .v20-card { width: 270px; height: 360px; }
+  .v20-sec.mob .v20-card[data-pos="1"] { transform: translate3d(54px, 12px, 0) scale(0.90); }
+  .v20-sec.mob .v20-card[data-pos="2"] { transform: translate3d(92px, 22px, 0) scale(0.82); }
+  .v20-sec.mob .v20-ctrl { width: 100%; }
+
+  @media (max-width: 960px) {
+    .v20-sec { padding: 28px 20px 32px; }
+    .v20-body { grid-template-columns: 1fr; gap: 22px; }
+    .v20-navlist { flex-direction: row; overflow-x: auto; gap: 16px; padding-bottom: 6px; margin-bottom: 14px; }
+    .v20-navbtn { white-space: nowrap; font-size: 16px; }
+    .v20-navbtn.on { font-size: 18px; }
+    .v20-deck { height: 380px; }
+    .v20-card { width: 280px; height: 370px; }
+    .v20-card[data-pos="1"] { transform: translate3d(68px, 12px, 0) scale(0.90); }
+    .v20-ctrl { width: 100%; max-width: 340px; }
+  }
+</style>
+</head>
+<body>
+<div class="pv-bar">
+  <div>
+    <b>Preview Konsep Daftar Proyek — Gaya Vision 2030</b>
+    <span>Geser/drag kartu di kanan, klik tombol ‹ ›, atau klik nama proyek di kiri · Background ikut berubah sesuai foto galeri proyek</span>
+  </div>
+  <div class="pv-btns">
+    <button type="button" class="pv-btn on" id="btnDesk">Mode Desktop</button>
+    <button type="button" class="pv-btn" id="btnMob">Mode Mobile</button>
+  </div>
+</div>
+
+<section class="v20-sec" id="sec">
+  <div class="v20-bg" id="v20Bg" aria-hidden="true"></div>
+  <div class="v20-scrim" aria-hidden="true"></div>
+
+  <div class="v20-head">
+    <div class="v20-eye">Proyek - Proyek Pengembangan PT Petrokimia Gresik</div>
+    <div class="v20-filters" id="v20Filters" role="group" aria-label="Filter proyek"></div>
+  </div>
+
+  <div class="v20-body">
+    <!-- Kiri: Daftar Proyek & Progres Singkat -->
+    <div class="v20-left">
+      <div class="v20-navlist" id="v20List" role="tablist" aria-label="Daftar proyek"></div>
+      <div class="v20-stats" id="v20Stats"></div>
+      <div class="v20-gal-info" id="v20GalInfo"></div>
+    </div>
+
+    <!-- Kanan: Stacked Card Deck yang Bisa Digeser -->
+    <div class="v20-right">
+      <div class="v20-deck" id="v20Deck" aria-live="polite"></div>
+      <div class="v20-ctrl">
+        <button type="button" class="v20-all" id="v20OpenAll">Buka Weekly Proyek →</button>
+        <div class="v20-arrows">
+          <span class="v20-count" id="v20Count">1 / 5</span>
+          <button type="button" class="v20-arr" id="v20Prev" aria-label="Proyek sebelumnya">‹</button>
+          <button type="button" class="v20-arr" id="v20Next" aria-label="Proyek berikutnya">›</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var PROJECTS = [
+    {
+      name: 'Conveyor Unloading Bahan Baku - Soda Ash',
+      grp: 'dev', status: 'Critical', tone: 'bad',
+      actual: '40,84%', plan: '42,99%', dev: '−2,15 poin', wk: 'W47',
+      photos: [
+        { src: 'https://pmopetrokimia.tech/media/brand/bg-2.jpg', fb: '../public/media/brand/login-bg.jpg', cap: 'Pemasangan tower & trestle conveyor unloading bahan baku' },
+        { src: 'https://pmopetrokimia.tech/media/brand/bg-1.jpg', fb: '../public/media/pmo-intro-end.jpg', cap: 'Fabrikasi struktur baja gallery CV-05/06' }
+      ]
+    },
+    {
+      name: 'Dermaga A',
+      grp: 'dev', status: 'Selesai', tone: 'ok',
+      actual: '100,00%', plan: '98,84%', dev: '+1,16 poin', wk: 'W104',
+      photos: [
+        { src: 'https://pmopetrokimia.tech/media/brand/login-bg.jpg?v=2', fb: '../public/media/brand/login-bg.jpg', cap: 'Struktur jetty utama & mooring dolphin Dermaga A' },
+        { src: 'https://pmopetrokimia.tech/media/brand/bg-1.jpg', fb: '../public/media/pmo-intro-end.jpg', cap: 'Instalasi utilitas & jalur pipa jetty' }
+      ]
+    },
+    {
+      name: 'Tangki Asam Sulfat 2×20.000 Ton',
+      grp: 'dev', status: 'On track', tone: 'ok',
+      actual: '64,98%', plan: '64,69%', dev: '+0,30 poin', wk: 'W50',
+      photos: [
+        { src: 'https://pmopetrokimia.tech/media/brand/bg-1.jpg', fb: '../public/media/pmo-intro-end.jpg', cap: 'Erection roof & shell tangki asam sulfat' },
+        { src: 'https://pmopetrokimia.tech/media/brand/bg-2.jpg', fb: '../public/media/brand/login-bg.jpg', cap: 'Pekerjaan pipe rack & shelter pompa area tankyard' }
+      ]
+    },
+    {
+      name: 'Pabrik Pupuk Fosfat',
+      grp: 'dev', status: 'On track', tone: 'ok',
+      actual: '3,13%', plan: '1,83%', dev: '+1,30 poin', wk: 'W3',
+      photos: [
+        { src: 'https://pmopetrokimia.tech/media/brand/bg-2.jpg', fb: '../public/media/brand/login-bg.jpg', cap: 'Persiapan lahan & pemasangan bowplank area pabrik' }
+      ]
+    },
+    {
+      name: 'Continuous Ship Unloader - 3',
+      grp: 'rutin', status: 'On track', tone: 'ok',
+      actual: '81,09%', plan: '81,00%', dev: '+0,09 poin', wk: 'W50',
+      photos: [
+        { src: 'https://pmopetrokimia.tech/media/brand/login-bg.jpg?v=2', fb: '../public/media/brand/login-bg.jpg', cap: 'Perakitan unit Ship Unloader & kesiapan rel dermaga' }
+      ]
+    }
+  ];
+
+  var kind = 'all';
+  var idx = 0;
+  var pIdx = 0;
+  var bgLayer = document.getElementById('v20Bg');
+  var lastBg = '';
+
+  function filtered() {
+    return PROJECTS.filter(function (p) {
+      if (kind === 'all') return true;
+      if (kind === 'done') return p.status === 'Selesai';
+      return p.grp === kind;
+    });
+  }
+
+  function paintBg(p) {
+    var ph = p.photos[pIdx % p.photos.length];
+    if (ph.src === lastBg) return;
+    lastBg = ph.src;
+    var slide = document.createElement('div');
+    slide.className = 'v20-bg-slide';
+    var img = new Image();
+    img.onload = function () { slide.style.backgroundImage = 'url("' + img.src + '")'; };
+    img.onerror = function () { slide.style.backgroundImage = 'url("' + ph.fb + '")'; };
+    img.src = ph.src;
+    bgLayer.appendChild(slide);
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        slide.classList.add('on');
+        while (bgLayer.children.length > 2) bgLayer.removeChild(bgLayer.firstChild);
+      });
+    });
+    document.getElementById('v20GalInfo').textContent =
+      'Galeri Proyek (' + ((pIdx % p.photos.length) + 1) + '/' + p.photos.length + '): ' + ph.cap;
+  }
+
+  function renderFilters() {
+    var F = [
+      ['all', 'Semua', PROJECTS.length],
+      ['dev', 'Proyek Pengembangan', PROJECTS.filter(function (p) { return p.grp === 'dev'; }).length],
+      ['rutin', 'Investasi Rutin', PROJECTS.filter(function (p) { return p.grp === 'rutin'; }).length],
+      ['done', 'Selesai', PROJECTS.filter(function (p) { return p.status === 'Selesai'; }).length]
+    ];
+    var box = document.getElementById('v20Filters');
+    box.innerHTML = F.map(function (x) {
+      return '<button type="button" class="v20-f' + (kind === x[0] ? ' on' : '') + '" data-k="' + x[0] + '">' + x[1] + ' (' + x[2] + ')</button>';
+    }).join('');
+    box.querySelectorAll('.v20-f').forEach(function (b) {
+      b.onclick = function () { kind = b.getAttribute('data-k'); idx = 0; pIdx = 0; render(); };
+    });
+  }
+
+  function render() {
+    renderFilters();
+    var list = filtered();
+    if (!list.length) return;
+    if (idx >= list.length) idx = 0;
+    var cur = list[idx];
+    paintBg(cur);
+
+    // Kiri: daftar proyek
+    var nav = document.getElementById('v20List');
+    nav.innerHTML = list.map(function (p, i) {
+      return '<button type="button" class="v20-navbtn' + (i === idx ? ' on' : '') + '" data-i="' + i + '">' + p.name + '</button>';
+    }).join('');
+    nav.querySelectorAll('.v20-navbtn').forEach(function (b) {
+      b.onclick = function () { idx = +b.getAttribute('data-i'); pIdx = 0; render(); };
+    });
+
+    // Statistik ringkas di kiri
+    var devCls = cur.tone === 'bad' ? 'bad' : cur.tone === 'warn' ? 'warn' : 'ok';
+    document.getElementById('v20Stats').innerHTML =
+      '<div class="v20-stat act"><small>Aktual (' + cur.wk + ')</small><b>' + cur.actual + '</b></div>' +
+      '<div class="v20-stat"><small>Rencana</small><b>' + cur.plan + '</b></div>' +
+      '<div class="v20-stat dev ' + devCls + '"><small>Deviasi</small><b>' + cur.dev + '</b></div>' +
+      '<div class="v20-stat"><small>Status</small><b>' + cur.status + '</b></div>';
+
+    document.getElementById('v20Count').textContent = (idx + 1) + ' / ' + list.length;
+
+    // Kanan: kartu bertumpuk (posisi relatif thd idx)
+    var deck = document.getElementById('v20Deck');
+    deck.innerHTML = list.map(function (p, i) {
+      var rel = (i - idx + list.length) % list.length;
+      var pos = rel === 0 ? '0' : rel === 1 ? '1' : rel === 2 ? '2' : rel === list.length - 1 && list.length > 3 ? 'prev' : 'hidden';
+      var ph = p.photos[0];
+      var tagCls = p.tone === 'bad' ? 'bad' : p.tone === 'warn' ? 'warn' : '';
+      return '<div class="v20-card" data-pos="' + pos + '" data-i="' + i + '">' +
+        '<div class="v20-card-img" style="background-image:url(\'' + ph.src + '\'),url(\'' + ph.fb + '\')"></div>' +
+        '<div class="v20-ctop"><span class="v20-ctag ' + tagCls + '">' + p.status + '</span><span class="v20-cpct">' + p.actual + '</span></div>' +
+        '<div class="v20-cbot"><h3>' + p.name + '</h3><p>' + p.wk + ' · Plan ' + p.plan + ' (' + p.dev + ')</p>' +
+        '<span class="v20-ccta">Buka Weekly →</span></div>' +
+      '</div>';
+    }).join('');
+
+    deck.querySelectorAll('.v20-card').forEach(function (c) {
+      c.onclick = function () {
+        if (moved) return;
+        var pos = c.getAttribute('data-pos');
+        if (pos === '1' || pos === '2') { idx = +c.getAttribute('data-i'); pIdx = 0; render(); }
+      };
+    });
+  }
+
+  function step(delta) {
+    var list = filtered();
+    if (!list.length) return;
+    idx = (idx + delta + list.length) % list.length;
+    pIdx = 0;
+    render();
+  }
+
+  // Dukungan geser (drag/swipe) pada deck kartu
+  var deckEl = document.getElementById('v20Deck');
+  var startX = 0, dx = 0, dragging = false, moved = false;
+  deckEl.addEventListener('pointerdown', function (e) {
+    dragging = true; moved = false; startX = e.clientX; dx = 0;
+    deckEl.classList.add('dragging');
+    var front = deckEl.querySelector('.v20-card[data-pos="0"]');
+    if (front) front.classList.add('no-tr');
+  });
+  window.addEventListener('pointermove', function (e) {
+    if (!dragging) return;
+    dx = e.clientX - startX;
+    if (Math.abs(dx) > 6) moved = true;
+    var front = deckEl.querySelector('.v20-card[data-pos="0"]');
+    if (front) front.style.transform = 'translate3d(' + dx + 'px, 0, 0) rotate(' + (dx * 0.03) + 'deg)';
+  });
+  window.addEventListener('pointerup', function () {
+    if (!dragging) return;
+    dragging = false;
+    deckEl.classList.remove('dragging');
+    var front = deckEl.querySelector('.v20-card[data-pos="0"]');
+    if (front) { front.classList.remove('no-tr'); front.style.transform = ''; }
+    if (dx < -45) step(1);
+    else if (dx > 45) step(-1);
+    setTimeout(function () { moved = false; }, 30);
+  });
+
+  document.getElementById('v20Prev').onclick = function () { step(-1); };
+  document.getElementById('v20Next').onclick = function () { step(1); };
+
+  // Rotasi galeri foto proyek aktif tiap 4 detik
+  setInterval(function () {
+    var list = filtered();
+    if (!list.length) return;
+    var cur = list[idx];
+    if (cur && cur.photos.length > 1) { pIdx++; paintBg(cur); }
+  }, 4000);
+
+  document.getElementById('btnDesk').onclick = function () {
+    document.getElementById('sec').classList.remove('mob');
+    this.classList.add('on');
+    document.getElementById('btnMob').classList.remove('on');
+  };
+  document.getElementById('btnMob').onclick = function () {
+    document.getElementById('sec').classList.add('mob');
+    this.classList.add('on');
+    document.getElementById('btnDesk').classList.remove('on');
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>

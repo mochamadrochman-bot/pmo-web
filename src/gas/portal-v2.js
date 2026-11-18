@@ -121,41 +121,77 @@ html.pv2 #briefBox .xpl-mon{background:var(--v-pill)!important;border-color:var(
 html.pv2 #briefBox .xpl-mon a{color:var(--v-acc)!important}
 html.pv2[data-theme="dark"] #briefBox .xpl-mon a{color:#7dd3fc!important}
 
-/* ---------- grid proyek ---------- */
+/* ---------- showcase daftar proyek ala Vision 2030 ---------- */
 html.pv2 #briefBox .xpl-mon{display:none!important}
 html.pv2 #briefBox .xpl-acts,.xpl-acts{margin:2px 0 10px;padding-left:22px;display:grid;gap:3px}
 html.pv2 #briefBox .xpl-acts li{padding-left:2px}
-html.pv2 .v-sec{scroll-margin-top:90px;text-align:center;margin:56px auto 28px!important}
-html.pv2 .v-sec h2{margin:0 0 8px;font-size:clamp(24px,3.2vw,34px);font-weight:700;letter-spacing:.04em;color:var(--v-ink)}
-html.pv2 .v-sec p{margin:0 0 18px;font-size:13px;color:var(--v-mut)}
-html.pv2 .v-filters{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
-html.pv2 .v-filters button{border:1px solid var(--v-line);background:var(--v-pill);color:var(--v-pill-ink);padding:0 20px;min-height:40px;border-radius:99px;font:600 12.5px/1 Inter,system-ui,sans-serif;cursor:pointer}
-html.pv2 .v-filters button.on{background:var(--v-act);color:var(--v-act-ink);border-color:var(--v-act)}
-html.pv2 .v-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:26px;align-items:start;margin-top:34px!important;margin-bottom:150px!important}
-html.pv2 .v-card{position:relative;aspect-ratio:3/4;border-radius:16px;overflow:hidden;border:1px solid var(--v-line);background:#1e242c;display:flex;flex-direction:column;justify-content:flex-end;color:#fff;box-shadow:0 14px 32px rgba(0,0,0,.18);transition:transform .25s ease,border-color .25s ease;cursor:pointer;text-align:left;padding:0;font:inherit;width:100%}
-html.pv2 .v-card:hover,html.pv2 .v-card:focus-visible{border-color:var(--v-acc);outline:0}
-html.pv2 .v-card .v-img{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform .5s ease}
-html.pv2 .v-card:hover .v-img{transform:scale(1.04)}
-html.pv2 .v-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,14,20,.1) 25%,rgba(10,14,20,.92) 92%)}
-html.pv2 .v-in{position:relative;z-index:2;padding:20px}
-html.pv2 .v-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:6px;font-size:11.5px;font-weight:700}
-html.pv2 .v-st{padding:3px 9px;border-radius:99px;background:rgba(20,114,79,.9);color:#dcf5e9}
+html.pv2 .v20-sec{position:relative;scroll-margin-top:68px;min-height:640px;width:100%;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:42px 56px 46px;margin-top:24px;background:#0b1523;color:#fff;user-select:none}
+html.pv2 .v20-bg{position:absolute;inset:0;z-index:0}
+html.pv2 .v20-bg-slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transform:scale(1.05);transition:opacity .9s cubic-bezier(.22,1,.36,1),transform 7s linear;will-change:opacity,transform}
+html.pv2 .v20-bg-slide.on{opacity:1;transform:scale(1)}
+html.pv2 .v20-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;background:
+  linear-gradient(92deg,rgba(7,15,26,.93) 0%,rgba(7,15,26,.78) 44%,rgba(7,15,26,.34) 76%,rgba(7,15,26,.54) 100%),
+  linear-gradient(180deg,rgba(7,15,26,.68) 0%,rgba(7,15,26,.14) 36%,rgba(7,15,26,.88) 100%)}
+html.pv2 .v20-in{position:relative;z-index:3;max-width:1280px;width:100%;margin:0 auto;display:flex;flex-direction:column;flex:1 1 auto;justify-content:space-between}
+html.pv2 .v20-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin-bottom:28px}
+html.pv2 .v20-eye{font-size:11.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#38bdf8}
+html.pv2 .v20-filters{display:flex;flex-wrap:wrap;gap:8px}
+html.pv2 .v20-filters button{border:1px solid rgba(255,255,255,.26);background:rgba(11,20,34,.62);color:#e2e8f0;padding:0 16px;min-height:38px;border-radius:99px;font:600 12px/1 Inter,system-ui,sans-serif;cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease}
+html.pv2 .v20-filters button:hover{border-color:#fff;color:#fff}
+html.pv2 .v20-filters button.on{background:#fff;color:#0f172a;border-color:#fff}
+html.pv2 .v20-filters button:focus-visible{outline:2px solid #38bdf8;outline-offset:2px}
+
+html.pv2 .v20-body{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);align-items:center;gap:42px;flex:1 1 auto}
+html.pv2 .v20-left{min-width:0;transition:opacity .24s ease,transform .24s ease}
+html.pv2 .v20-left.switching{opacity:.22;transform:translateY(6px)}
+html.pv2 .v20-par{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#a8c7e4;margin-bottom:8px}
+html.pv2 .v20-title{position:relative;margin:0 0 22px;padding-bottom:14px;font-size:clamp(24px,3vw,40px);font-weight:700;line-height:1.15;color:#fff;max-width:600px}
+html.pv2 .v20-title::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:min(220px,65%);border-radius:99px;background:linear-gradient(90deg,#38bdf8,#34d399)}
+html.pv2 .v20-stats{display:flex;flex-wrap:wrap;align-items:center;gap:14px 28px;padding-top:16px;border-top:1px solid rgba(255,255,255,.18)}
+html.pv2 .v20-stat small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:2px}
+html.pv2 .v20-stat b{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;color:#fff}
+html.pv2 .v20-stat.act b{color:#38bdf8}
+html.pv2 .v20-stat.dev.ok b{color:#34d399}html.pv2 .v20-stat.dev.warn b{color:#fbbf24}html.pv2 .v20-stat.dev.bad b{color:#fb7185}
+html.pv2 .v20-gal-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:14px;font-size:12.5px;color:#cbd5e1}
+html.pv2 .v20-gal-btn{border:1px solid rgba(255,255,255,.26);background:rgba(11,20,34,.55);color:#fff;padding:4px 10px;border-radius:99px;font:600 11px/1.2 inherit;cursor:pointer}
+html.pv2 .v20-gal-btn:hover{border-color:#fff;background:rgba(255,255,255,.16)}
+
+html.pv2 .v20-right{display:flex;flex-direction:column;align-items:flex-start;gap:18px;min-width:0}
+html.pv2 .v20-deck{position:relative;width:100%;max-width:460px;height:430px;touch-action:pan-y;cursor:grab}
+html.pv2 .v20-deck.dragging{cursor:grabbing}
+html.pv2 .v20-card{position:absolute;left:0;top:0;width:316px;height:420px;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.24);background:#142133;box-shadow:0 22px 48px rgba(0,0,0,.55);display:flex;flex-direction:column;justify-content:space-between;padding:18px;color:#fff;transition:transform .38s cubic-bezier(.22,1,.36,1),opacity .38s ease,filter .38s ease;will-change:transform,opacity}
+html.pv2 .v20-card.no-tr{transition:none!important}
+html.pv2 .v20-card-img{position:absolute;inset:0;background-size:cover;background-position:center;z-index:0}
+html.pv2 .v20-card::after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(8,15,26,.36) 0%,rgba(8,15,26,.08) 40%,rgba(8,15,26,.92) 94%)}
+html.pv2 .v20-card[data-pos="0"]{z-index:5;transform:translate3d(0,0,0) scale(1);opacity:1;cursor:pointer}
+html.pv2 .v20-card[data-pos="1"]{z-index:4;transform:translate3d(104px,14px,0) scale(.89);opacity:.78;filter:brightness(.68);cursor:pointer}
+html.pv2 .v20-card[data-pos="2"]{z-index:3;transform:translate3d(176px,28px,0) scale(.79);opacity:.44;filter:brightness(.5);cursor:pointer}
+html.pv2 .v20-card[data-pos="hidden"]{z-index:1;transform:translate3d(204px,34px,0) scale(.72);opacity:0;pointer-events:none}
+html.pv2 .v20-card[data-pos="prev"]{z-index:6;transform:translate3d(-120px,0,0) scale(.92);opacity:0;pointer-events:none}
+
+html.pv2 .v20-ctop,html.pv2 .v20-cbot{position:relative;z-index:2}
+html.pv2 .v20-ctop{display:flex;align-items:center;justify-content:space-between;gap:8px}
+html.pv2 .v-st{padding:4px 10px;border-radius:99px;font-size:11px;font-weight:700;background:rgba(20,114,79,.9);color:#dcf5e9}
 html.pv2 .v-st.warn{background:rgba(180,120,10,.92);color:#fff4cc}
 html.pv2 .v-st.bad{background:rgba(192,48,47,.92);color:#ffe4e4}
 html.pv2 .v-st.done{background:rgba(15,95,168,.92);color:#e0f0ff}
 html.pv2 .v-st.wait{background:rgba(90,104,120,.92);color:#eef2f6}
-html.pv2 .v-pct{color:#e2e8f0;font-variant-numeric:tabular-nums}
-html.pv2 .v-wk{font-size:11.5px;color:#a8c7e4;margin-bottom:10px;line-height:1.45}
-html.pv2 .v-par{display:block;font-size:11px;color:#cbd5e1;font-weight:600;letter-spacing:.04em;margin-bottom:4px}
-html.pv2 .v-in h3{margin:0 0 12px;font-size:20px;font-weight:500;line-height:1.25;color:#fff}
-html.pv2 .v-cta{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:99px;border:1px solid rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fff}
-html.pv2 .v-card:hover .v-cta,html.pv2 .v-card:focus-visible .v-cta{background:#fff;color:#161618;border-color:#fff}
-html.pv2 .v-empty{grid-column:1/-1;text-align:center;color:var(--v-mut);padding:30px 0}
-@media (min-width:1024px){
-  html.pv2 .v-card.st-1{transform:translateY(60px)}html.pv2 .v-card.st-1:hover{transform:translateY(56px)}
-  html.pv2 .v-card.st-2{transform:translateY(120px)}html.pv2 .v-card.st-2:hover{transform:translateY(116px)}
-  html.pv2 .v-card:not(.st-1):not(.st-2):hover{transform:translateY(-4px)}
-}
+html.pv2 .v20-cpct{font-size:13px;font-weight:800;background:rgba(8,15,26,.72);padding:4px 10px;border-radius:99px;font-variant-numeric:tabular-nums;color:#fff}
+html.pv2 .v20-cbot h3{margin:0 0 6px;font-size:20px;font-weight:700;line-height:1.25;color:#fff}
+html.pv2 .v20-cbot p{margin:0 0 12px;font-size:12px;color:#cbd5e1;line-height:1.4}
+html.pv2 .v20-ccta{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:99px;border:1px solid rgba(255,255,255,.55);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:rgba(255,255,255,.12);color:#fff}
+html.pv2 .v20-card[data-pos="0"]:hover .v20-ccta{background:#fff;color:#0f172a;border-color:#fff}
+
+html.pv2 .v20-ctrl{display:flex;align-items:center;justify-content:space-between;gap:12px;width:316px}
+html.pv2 .v20-all{border:1px solid rgba(52,211,153,.7);background:rgba(16,185,129,.16);color:#fff;min-height:40px;padding:0 18px;border-radius:99px;font:600 12.5px/1 Inter,system-ui,sans-serif;cursor:pointer;transition:background .18s ease}
+html.pv2 .v20-all:hover{background:rgba(16,185,129,.34)}
+html.pv2 .v20-arrows{display:flex;align-items:center;gap:8px}
+html.pv2 .v20-arr{width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.34);background:rgba(11,20,34,.68);color:#fff;font-size:17px;display:grid;place-items:center;cursor:pointer;transition:background .18s ease,color .18s ease}
+html.pv2 .v20-arr:hover:not(:disabled){background:#fff;color:#0f172a}
+html.pv2 .v20-arr:disabled{opacity:.35;cursor:default}
+html.pv2 .v20-arr:focus-visible,.v20-all:focus-visible{outline:2px solid #38bdf8;outline-offset:2px}
+html.pv2 .v20-count{font-size:12px;color:#cbd5e1;font-variant-numeric:tabular-nums;margin-right:2px}
+html.pv2 .v20-empty{padding:48px 0;text-align:center;color:#cbd5e1;font-size:14px}
 
 /* bagian lama yang dipindah ke header / grid baru */
 html.pv2 main.wrap>section.grp.v-hide{display:none!important}
@@ -182,7 +218,15 @@ html.pv2 .v-sheet-in>button:hover,html.pv2 .v-sheet-in>button.on{background:rgba
   html.pv2 header.top .ntf-wrap{margin-left:auto}
   html.pv2 .v-sum{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
-@media (max-width:1023px){html.pv2 .v-grid{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:40px!important}}
+@media (max-width:960px){
+  html.pv2 .v20-sec{padding:28px 20px 34px;min-height:auto}
+  html.pv2 .v20-body{grid-template-columns:1fr;gap:24px}
+  html.pv2 .v20-deck{height:380px}
+  html.pv2 .v20-card{width:280px;height:370px}
+  html.pv2 .v20-card[data-pos="1"]{transform:translate3d(64px,12px,0) scale(.90)}
+  html.pv2 .v20-card[data-pos="2"]{transform:translate3d(104px,22px,0) scale(.82)}
+  html.pv2 .v20-ctrl{width:100%;max-width:330px}
+}
 @media (max-width:760px){
   html.pv2 header.top{gap:8px;padding:8px 12px!important}
   html.pv2 header.top .brand{padding:3px 6px}html.pv2 header.top .brand img{height:22px!important}
@@ -194,15 +238,14 @@ html.pv2 .v-sheet-in>button:hover,html.pv2 .v-sheet-in>button.on{background:rgba
   html.pv2 #hero .hero-dots{left:20px!important;right:auto!important;bottom:26px!important}
   html.pv2 .v-util{padding:14px 20px}
   html.pv2 .v-ub{flex:1 1 auto;justify-content:center}
-  html.pv2 main.wrap{padding:28px 16px 70px!important}
+  html.pv2 main.wrap{padding:28px 16px 40px!important}
   html.pv2 #briefBox.story{padding:16px!important}
   html.pv2 .v-sum{gap:10px}html.pv2 .v-sum .hk{padding:12px 14px}html.pv2 .v-sum .hk b{font-size:20px}
-  html.pv2 .v-sec{margin-top:40px!important}
   html.pv2 .foot.v-foot{padding:24px 20px}
   html.pv2 .v-sena{top:auto;bottom:96px;transform:none;padding:12px 8px}
 }
-@media (max-width:600px){html.pv2 .v-grid{grid-template-columns:1fr;gap:16px}html.pv2 .v-card{aspect-ratio:4/3}html.pv2 .v-sum{grid-template-columns:1fr 1fr}}
-@media (prefers-reduced-motion:reduce){html.pv2 #hero .hero-bg>div,html.pv2 .v-card,html.pv2 .v-card .v-img{transition:none!important}}
+@media (max-width:600px){html.pv2 .v-sum{grid-template-columns:1fr 1fr}}
+@media (prefers-reduced-motion:reduce){html.pv2 #hero .hero-bg>div,html.pv2 .v20-bg-slide,html.pv2 .v20-card,html.pv2 .v20-left{transition:none!important}}
 </style>`;
 
 const JS = String.raw`<script>
@@ -284,14 +327,37 @@ const JS = String.raw`<script>
     var brief=D.getElementById('briefBox'),briefSec=brief&&brief.closest('section'),pulseSec=(D.getElementById('pulse')||{}).closest&&D.getElementById('pulse').closest('section');
     var story=D.getElementById('glStories'),storySec=story&&story.closest('section');
     var modSec=qa('main.wrap>section.grp').filter(function(s){return q('.mods',s)})[0];
-    var sec=D.createElement('div');sec.className='v-sec';sec.id='vSec';
-    sec.innerHTML='<h2>PROYEK - PROYEK PENGEMBANGAN</h2><p>Menampilkan progres week terakhir yang sudah diinput pada masing-masing proyek</p><div class="v-filters" id="vFilters" role="group" aria-label="Filter proyek"></div>';
-    var grid=D.createElement('div');grid.className='v-grid';grid.id='vGrid';grid.innerHTML='<div class="v-empty">Memuat kartu proyek…</div>';
-    if(briefSec&&briefSec.parentNode===main){main.insertBefore(briefSec,(kp?D.getElementById('vSum').nextSibling:main.firstChild));briefSec.parentNode.insertBefore(sec,briefSec.nextSibling)}else main.appendChild(sec);
-    sec.parentNode.insertBefore(grid,sec.nextSibling);
+    var sec=D.createElement('section');sec.className='v20-sec';sec.id='vSec';sec.setAttribute('aria-label','Proyek pengembangan');
+    sec.innerHTML=
+      '<div class="v20-bg" id="v20Bg" aria-hidden="true"></div>'+
+      '<div class="v20-scrim" aria-hidden="true"></div>'+
+      '<div class="v20-in">'+
+        '<div class="v20-head">'+
+          '<div class="v20-eye">Proyek - Proyek Pengembangan PT Petrokimia Gresik</div>'+
+          '<div class="v20-filters" id="vFilters" role="group" aria-label="Filter proyek"></div>'+
+        '</div>'+
+        '<div class="v20-body" id="v20Body">'+
+          '<div class="v20-left" id="v20Left">'+
+            '<span class="v20-par" id="v20Par" hidden></span>'+
+            '<h2 class="v20-title" id="v20Title">Memuat proyek…</h2>'+
+            '<div class="v20-stats" id="v20Stats"></div>'+
+            '<div class="v20-gal-row" id="v20GalRow"><span id="v20GalCap"></span><button type="button" class="v20-gal-btn" id="v20GalNext" hidden>Foto berikutnya ›</button></div>'+
+          '</div>'+
+          '<div class="v20-right">'+
+            '<div class="v20-deck" id="v20Deck" aria-live="polite"></div>'+
+            '<div class="v20-ctrl">'+
+              '<button type="button" class="v20-all" id="v20OpenBtn">Buka Weekly Proyek →</button>'+
+              '<div class="v20-arrows"><span class="v20-count" id="v20Count">0 / 0</span><button type="button" class="v20-arr" id="v20Prev" aria-label="Proyek sebelumnya">‹</button><button type="button" class="v20-arr" id="v20Next" aria-label="Proyek berikutnya">›</button></div>'+
+            '</div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="v20-empty" id="v20Empty" hidden>Belum ada proyek berjalan pada filter ini.</div>'+
+      '</div>';
+    if(briefSec&&briefSec.parentNode===main){main.insertBefore(briefSec,(kp?D.getElementById('vSum').nextSibling:main.firstChild));}
     if(storySec)main.insertBefore(storySec,main.firstChild);
     if(pulseSec)pulseSec.classList.add('v-hide');if(modSec)modSec.classList.add('v-hide');
-    var ft=q('main.wrap>.foot');if(ft){ft.classList.add('v-foot');ft.innerHTML='<div>PT Petrokimia Gresik · PMO Infrastruktur &amp; Process Plant</div><div>Portal Proyek</div>';D.body.insertBefore(ft,main.nextSibling)}
+    var ft=q('main.wrap>.foot');if(ft){ft.classList.add('v-foot');ft.innerHTML='<div>PT Petrokimia Gresik · PMO Infrastruktur &amp; Process Plant</div><div>Portal Proyek</div>';D.body.insertBefore(sec,main.nextSibling);D.body.insertBefore(ft,sec.nextSibling);}else{D.body.insertBefore(sec,main.nextSibling);}
+    initV20Gestures();
     // Tanya Sena
     var sb=D.createElement('button');sb.type='button';sb.className='v-sena';sb.textContent='TANYA SENA';sb.title='Tanya Asisten AI Sena';sb.onclick=sena;D.body.appendChild(sb);
     // header melekat saat scroll
@@ -311,8 +377,8 @@ const JS = String.raw`<script>
     clearInterval(window.__pv2ht);window.__pv2ht=setInterval(function(){show(cur+1)},7000);
   }
 
-  // ---------- grid proyek dari i.lw ----------
-  var ST={kind:'all',items:[],b:null};
+  // ---------- showcase proyek ala Vision 2030 (i.lw + Galeri Foto per proyek) ----------
+  var ST={kind:'all',items:[],b:null,idx:0,pIdx:0,gal:{},lastBg:'',dragMoved:false,galLoaded:false,timer:0};
   var P2=function(v){return v==null||!isFinite(v)?'—':(v*100).toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2})+'%'};
   var PTS=function(v){return (v>0?'+':v<0?'−':'')+(Math.abs(v)*100).toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2})};
   var NM=function(n){return typeof pmoProjName==='function'?pmoProjName(n):n};
@@ -330,28 +396,151 @@ const JS = String.raw`<script>
       return {i:i,k:k,grp:pt==='RUTIN'?'rutin':'dev',done:done,act:act,plan:plan,dev:dev,wk:wk,lbl:lbl,cls:cls,stale:L.stale||0,par:parName,banner:i.banner};
     });
   }
-  function photo(m,idx){if(m.banner&&typeof thumb==='function')return thumb(m.banner,800);return BRAND[idx%BRAND.length]}
+  function parseGal(data){
+    var map={};
+    ((data&&data.projects)||[]).forEach(function(pr){
+      var all=[];
+      (pr.months||[]).slice().reverse().forEach(function(mo){
+        (mo.photos||[]).forEach(function(ph){
+          if(ph&&ph.id&&all.length<10)all.push({src:typeof thumb==='function'?thumb(ph.id,1600):('https://drive.google.com/thumbnail?id='+encodeURIComponent(ph.id)+'&sz=w1600'),card:typeof thumb==='function'?thumb(ph.id,800):('https://drive.google.com/thumbnail?id='+encodeURIComponent(ph.id)+'&sz=w800'),cap:ph.cap||mo.label||'Dokumentasi lapangan'});
+        });
+      });
+      if(all.length){map[String(pr.id||'').toUpperCase()]=all;if(pr.name)map[String(pr.name||'').toUpperCase()]=all;}
+    });
+    ST.gal=map;
+  }
+  function loadGalleryForShowcase(){
+    try{var c=JSON.parse(localStorage.getItem('pmoGalIdx')||'null');if(c&&c.d)parseGal(c.d);}catch(e){}
+    if(ST.galLoaded)return;ST.galLoaded=true;
+    var tok='';try{tok=(typeof token!=='undefined'&&token)||sessionStorage.getItem('pmoSessionToken')||'';}catch(e){}
+    if(tok&&typeof google!=='undefined'&&google.script&&google.script.run){
+      try{
+        google.script.run.withSuccessHandler(function(d){if(d&&d.success){parseGal(d);render();}}).withFailureHandler(function(){}).getGalleryIndex(tok);
+      }catch(e){}
+    }
+  }
+  function photosOf(m){
+    var pid=String((m.i&&m.i.projectId)||'').toUpperCase(),pnm=String((m.i&&m.i.name)||'').toUpperCase();
+    var g=ST.gal[pid]||ST.gal[pnm];
+    if(g&&g.length)return g;
+    if(m.banner&&typeof thumb==='function'){
+      var b1=thumb(m.banner,1600),b2=thumb(m.banner,800);
+      return [{src:b1,card:b2,cap:'Foto profil '+NM(m.i.name)}];
+    }
+    var fb=BRAND[m.k%BRAND.length];
+    return [{src:fb,card:fb,cap:'Kawasan Industri PT Petrokimia Gresik'}];
+  }
+  function paintBg(m){
+    var bg=D.getElementById('v20Bg'),capEl=D.getElementById('v20GalCap'),nxtEl=D.getElementById('v20GalNext');
+    if(!bg||!m)return;
+    var list=photosOf(m),idxP=ST.pIdx%list.length,ph=list[idxP];
+    if(capEl)capEl.textContent='Galeri Proyek ('+(idxP+1)+'/'+list.length+'): '+ph.cap;
+    if(nxtEl)nxtEl.hidden=list.length<2;
+    var fImg=D.querySelector('.v20-card[data-pos="0"] .v20-card-img');
+    if(fImg&&ph.card)fImg.style.backgroundImage='url("'+ph.card+'")';
+    if(ph.src===ST.lastBg)return;
+    ST.lastBg=ph.src;
+    var dv=D.createElement('div');dv.className='v20-bg-slide';
+    var img=new Image();
+    img.onload=function(){if(ph.src!==ST.lastBg)return;dv.style.backgroundImage='url("'+img.src+'")';bg.appendChild(dv);requestAnimationFrame(function(){requestAnimationFrame(function(){dv.classList.add('on');while(bg.children.length>2)bg.removeChild(bg.firstChild)})})};
+    img.onerror=function(){var fb=BRAND[m.k%BRAND.length];dv.style.backgroundImage='url("'+fb+'")';bg.appendChild(dv);requestAnimationFrame(function(){requestAnimationFrame(function(){dv.classList.add('on');while(bg.children.length>2)bg.removeChild(bg.firstChild)})})};
+    img.src=ph.src;
+  }
+  function filteredList(){
+    return ST.items.filter(function(m){return ST.kind==='all'?true:ST.kind==='done'?m.done:m.grp===ST.kind});
+  }
+  function openProj(m){
+    if(!m||!m.i)return;
+    if(typeof goWeek==='function')goWeek(m.i.name,m.wk);else location.href='/app?page=weekly&project='+encodeURIComponent(m.i.name);
+  }
+  function stepV20(delta){
+    var list=filteredList();if(list.length<2)return;
+    ST.idx=(ST.idx+delta+list.length)%list.length;ST.pIdx=0;render();
+  }
+  function initV20Gestures(){
+    var deckEl=D.getElementById('v20Deck');if(!deckEl)return;
+    var startX=0,dx=0,dragging=false;
+    deckEl.addEventListener('pointerdown',function(e){
+      if(e.target&&e.target.closest('button'))return;
+      dragging=true;ST.dragMoved=false;startX=e.clientX;dx=0;deckEl.classList.add('dragging');
+      var f=deckEl.querySelector('.v20-card[data-pos="0"]');if(f)f.classList.add('no-tr');
+    });
+    window.addEventListener('pointermove',function(e){
+      if(!dragging)return;dx=e.clientX-startX;if(Math.abs(dx)>6)ST.dragMoved=true;
+      var f=deckEl.querySelector('.v20-card[data-pos="0"]');
+      if(f)f.style.transform='translate3d('+dx+'px,0,0) rotate('+(dx*0.03)+'deg)';
+    });
+    window.addEventListener('pointerup',function(){
+      if(!dragging)return;dragging=false;deckEl.classList.remove('dragging');
+      var f=deckEl.querySelector('.v20-card[data-pos="0"]');if(f){f.classList.remove('no-tr');f.style.transform='';}
+      if(dx<-45)stepV20(1);else if(dx>45)stepV20(-1);
+      setTimeout(function(){ST.dragMoved=false;},40);
+    });
+    var prv=D.getElementById('v20Prev'),nxt=D.getElementById('v20Next'),gn=D.getElementById('v20GalNext'),op=D.getElementById('v20OpenBtn');
+    if(prv)prv.onclick=function(){stepV20(-1);};
+    if(nxt)nxt.onclick=function(){stepV20(1);};
+    if(gn)gn.onclick=function(){var list=filteredList();if(list[ST.idx]){ST.pIdx++;paintBg(list[ST.idx]);}};
+    if(op)op.onclick=function(){var list=filteredList();if(list[ST.idx])openProj(list[ST.idx]);};
+    clearInterval(ST.timer);
+    ST.timer=setInterval(function(){var list=filteredList(),cur=list[ST.idx];if(cur&&photosOf(cur).length>1){ST.pIdx++;paintBg(cur);}},4000);
+  }
   function render(){
-    var g=D.getElementById('vGrid'),f=D.getElementById('vFilters');if(!g||!f)return;
+    var f=D.getElementById('vFilters'),body=D.getElementById('v20Body'),emp=D.getElementById('v20Empty');
+    if(!f||!body)return;
     var all=ST.items,cnt={all:all.length,dev:0,rutin:0,done:0};all.forEach(function(m){cnt[m.grp]++;if(m.done)cnt.done++});
     var F=[['all','Semua'],['dev','Proyek Pengembangan'],['rutin','Investasi Rutin'],['done','Selesai']];
     f.innerHTML=F.map(function(x){return '<button type="button" data-k="'+x[0]+'" aria-pressed="'+(ST.kind===x[0])+'" class="'+(ST.kind===x[0]?'on':'')+'">'+x[1]+' ('+cnt[x[0]]+')</button>'}).join('');
-    qa('button',f).forEach(function(b){b.onclick=function(){ST.kind=b.getAttribute('data-k');render()}});
-    var list=all.filter(function(m){return ST.kind==='all'?true:ST.kind==='done'?m.done:m.grp===ST.kind});
-    if(!list.length){g.innerHTML='<div class="v-empty">'+(all.length?'Tidak ada proyek pada filter ini.':'Belum ada proyek berjalan.')+'</div>';return}
-    g.innerHTML=list.map(function(m,n){
-      var col=n%4,stg=col===1?' st-1':col===2?' st-2':'';
-      var wl='W'+E(m.wk||'—')+(m.plan!=null?' · Plan '+P2(m.plan):'')+(m.dev!=null&&!m.done?' ('+PTS(m.dev)+' poin)':'')+(m.stale>=1?'<br>Input terakhir '+m.stale+' minggu lalu':'');
-      return '<button type="button" class="v-card'+stg+'" data-n="'+E(m.i.name)+'" data-w="'+E(m.wk||'')+'" aria-label="Buka Weekly Progress '+E(NM(m.i.name))+'">'+
-        '<span class="v-img" style="background-image:url(\''+E(photo(m,m.k))+'\')"></span>'+
-        '<span class="v-in"><span class="v-meta"><span class="v-st '+m.cls+'">'+E(m.lbl)+'</span><span class="v-pct">'+(m.act==null?'—':P2(m.act))+'</span></span>'+
-        '<span class="v-wk" style="display:block">'+wl+'</span>'+(m.par?'<span class="v-par">Sub-proyek · '+E(NM(m.par))+'</span>':'')+
-        '<h3>'+E(NM(m.i.name))+'</h3><span class="v-cta">Buka Weekly →</span></span></button>';
-    }).join('');
-    qa('.v-card',g).forEach(function(c){c.onclick=function(){var n=c.getAttribute('data-n'),w=c.getAttribute('data-w');if(typeof goWeek==='function')goWeek(n,w);else location.href='/app?page=weekly&project='+encodeURIComponent(n)}});
+    qa('button',f).forEach(function(b){b.onclick=function(){ST.kind=b.getAttribute('data-k');ST.idx=0;ST.pIdx=0;render()}});
+    var list=filteredList();
+    if(!list.length){body.hidden=true;if(emp){emp.hidden=false;emp.textContent=all.length?'Tidak ada proyek pada filter ini.':'Belum ada proyek berjalan.';}return;}
+    body.hidden=false;if(emp)emp.hidden=true;
+    if(ST.idx>=list.length)ST.idx=0;
+    var cur=list[ST.idx];
+    paintBg(cur);
+
+    var parEl=D.getElementById('v20Par'),tEl=D.getElementById('v20Title'),stEl=D.getElementById('v20Stats');
+    if(parEl){if(cur.par){parEl.hidden=false;parEl.textContent='Sub-proyek · '+NM(cur.par);}else{parEl.hidden=true;parEl.textContent='';}}
+    if(tEl)tEl.textContent=NM(cur.i.name);
+    var dvTone=cur.cls==='bad'?'bad':cur.cls==='warn'?'warn':'ok';
+    if(stEl){
+      stEl.innerHTML=
+        '<div class="v20-stat act"><small>Aktual (W'+E(cur.wk||'—')+')</small><b>'+(cur.act==null?'—':P2(cur.act))+'</b></div>'+
+        '<div class="v20-stat"><small>Rencana</small><b>'+(cur.plan==null?'—':P2(cur.plan))+'</b></div>'+
+        '<div class="v20-stat dev '+dvTone+'"><small>Deviasi</small><b>'+(cur.done?'Selesai':(cur.dev==null?'—':PTS(cur.dev)+' poin'))+'</b></div>'+
+        '<div class="v20-stat"><small>Status</small><b>'+E(cur.lbl)+'</b></div>';
+    }
+    var cntEl=D.getElementById('v20Count'),prv=D.getElementById('v20Prev'),nxt=D.getElementById('v20Next');
+    if(cntEl)cntEl.textContent=(ST.idx+1)+' / '+list.length;
+    if(prv)prv.disabled=list.length<2;
+    if(nxt)nxt.disabled=list.length<2;
+
+    var deck=D.getElementById('v20Deck');
+    if(deck){
+      deck.innerHTML=list.map(function(m,i){
+        var rel=(i-ST.idx+list.length)%list.length;
+        var pos=rel===0?'0':(list.length>1&&rel===1)?'1':(list.length>2&&rel===2)?'2':(list.length>3&&rel===list.length-1)?'prev':'hidden';
+        var ph=photosOf(m)[0];
+        var wl='W'+E(m.wk||'—')+(m.plan!=null?' · Plan '+P2(m.plan):'')+(m.dev!=null&&!m.done?' ('+PTS(m.dev)+' poin)':'')+(m.stale>=1?' · Input '+m.stale+' mg lalu':'');
+        return '<div class="v20-card" data-pos="'+pos+'" data-i="'+i+'" role="button" tabindex="'+(pos==='0'||pos==='1'||pos==='2'?'0':'-1')+'" aria-label="'+E(NM(m.i.name))+'">'+
+          '<div class="v20-card-img" style="background-image:url(\''+E(ph.card)+'\')"></div>'+
+          '<div class="v20-ctop"><span class="v-st '+m.cls+'">'+E(m.lbl)+'</span><span class="v20-cpct">'+(m.act==null?'—':P2(m.act))+'</span></div>'+
+          '<div class="v20-cbot"><h3>'+E(NM(m.i.name))+'</h3><p>'+wl+'</p><span class="v20-ccta">Buka Weekly →</span></div>'+
+        '</div>';
+      }).join('');
+      qa('.v20-card',deck).forEach(function(c){
+        c.onclick=function(){
+          if(ST.dragMoved)return;
+          var pos=c.getAttribute('data-pos'),ci=+c.getAttribute('data-i');
+          if(pos==='0')openProj(list[ci]);
+          else if(pos==='1'||pos==='2'){ST.idx=ci;ST.pIdx=0;render();}
+        };
+        c.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();c.click();}};
+      });
+    }
   }
   window.pmoV2Grid=function(b){
     try{setup()}catch(e){console.warn('pv2 setup',e)}
+    loadGalleryForShowcase();
     ST.b=b||{};ST.items=model(ST.b);render();
     var eye=D.getElementById('heroEye');if(eye&&b&&b.asOfText)eye.textContent='PMO Infrastruktur & Process Plant · Input terakhir '+b.asOfText;
     try{buildMenu()}catch(e){}
