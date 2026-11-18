@@ -644,6 +644,61 @@ const HTML_PATCHES = [
     find: '</head>',
     replace: '<style>@media (max-width:760px){.hero-dots{left:16px!important;right:auto!important;bottom:14px!important}.top .t b{white-space:nowrap;font-size:clamp(14px,4vw,17px)}.top .t small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hero-eye::before,.hero-eye i,.hero-eye span{flex-shrink:0}.ntf-btn,.search-btn,.xb-act button,.acc-all button{min-height:44px!important;min-width:44px!important}}</style>\n</head>',
   },
+  // Buat Laporan Weekly: ubah Resume per bidang menjadi 4 Disiplin (CIVIL, MECHANICAL, ELECTRICAL, INSTRUMENT) + tabel gabungan 4 Bidang x 4 Disiplin.
+  {
+    file: 'WeeklyPrint',
+    find: "function resumeModel(f){const M=detailModel(f),w=fin(f.weight)?Number(f.weight):null,sc=v=>fin(v)&&w!=null?v*w/100:null;\n  const groups=M.rows.filter(r=>r.type==='group'),loose=M.rows.filter(r=>r.type==='item'&&!r.group&&!r.groupName);\n  const list=groups.map(g=>({code:g.code,name:g.name,fw:g.fw,blk:g.blk}));\n  if(loose.length){const sum=sel=>loose.every(x=>fin(sel(x)))?loose.reduce((a,x)=>a+Number(sel(x)),0):null,blk={};BLOCKS.forEach(([k])=>blk[k]={total:sum(x=>x.blk[k].total),plan:sum(x=>x.blk[k].plan)});list.push({code:'',name:'Lain-lain',fw:sum(x=>x.fw),blk});}\n  const row=g=>{const o={code:g.code,name:g.name,weight:sc(g.fw)};BLOCKS.forEach(([k])=>o[k]=[sc(g.blk[k].plan),sc(g.blk[k].total)]);o.contrib=fin(g.blk.current.total)&&fin(g.fw)&&g.fw>0?g.blk.current.total/g.fw*100:null;o.dev=fin(o.current[0])&&fin(o.current[1])?o.current[1]-o.current[0]:null;return o;};\n  const rows=list.map(row),T=row({code:'',name:'JUMLAH',fw:M.total.fw,blk:M.total.blk});return {weight:w,rows,total:T};}",
+    replace: `function pmoDiscOf(it){
+  const t=(String(it.groupName||'')+' '+String(it.group||'')).toUpperCase();
+  if(/\\b(CIVIL|SIPIL)\\b/.test(t))return 'CIVIL';
+  if(/\\b(MECHANICAL|MEKANIK)\\b/.test(t))return 'MECHANICAL';
+  if(/\\b(ELECTRICAL|ELEKTRIK|LISTRIK)\\b/.test(t))return 'ELECTRICAL';
+  if(/\\b(INSTRUMENT|INSTRUMENTATION|INSTRUMEN)\\b/.test(t))return 'INSTRUMENT';
+  return 'LAIN';
+}
+function resumeModel(f){const M=detailModel(f),w=fin(f.weight)?Number(f.weight):null,sc=v=>fin(v)&&w!=null?v*w/100:null;
+  const items=M.rows.filter(r=>r.type==='item');
+  const buckets={CIVIL:[],MECHANICAL:[],ELECTRICAL:[],INSTRUMENT:[],LAIN:[]};
+  items.forEach(it=>buckets[pmoDiscOf(it)].push(it));
+  const aggB=(name,arr)=>{if(!arr.length)return {code:'',name:name,fw:null,blk:{previous:{plan:null,total:null},added:{plan:null,total:null},current:{plan:null,total:null}}};
+    const sum=sel=>{const vals=arr.map(sel).filter(fin);return vals.length?vals.reduce((a,x)=>a+Number(x),0):null;};
+    const blk={};BLOCKS.forEach(([k])=>{blk[k]={total:sum(x=>x.blk[k].total),plan:sum(x=>x.blk[k].plan)};});
+    return {code:'',name:name,fw:sum(x=>x.fw),blk};};
+  const list=['CIVIL','MECHANICAL','ELECTRICAL','INSTRUMENT'].map(d=>aggB(d,buckets[d]));
+  if(buckets.LAIN.length)list.push(aggB('LAIN-LAIN',buckets.LAIN));
+  const row=g=>{const o={code:g.code,name:g.name,weight:sc(g.fw)};BLOCKS.forEach(([k])=>o[k]=[sc(g.blk[k].plan),sc(g.blk[k].total)]);o.contrib=fin(g.blk.current.total)&&fin(g.fw)&&g.fw>0?g.blk.current.total/g.fw*100:null;o.dev=fin(o.current[0])&&fin(o.current[1])?o.current[1]-o.current[0]:null;return o;};
+  const rows=list.map(row),T=row({code:'',name:'JUMLAH',fw:M.total.fw,blk:M.total.blk});return {weight:w,rows,total:T};}
+function resumeAllReport(){const ph=periodHeads();
+  let h=head('RESUME WEEKLY PROGRESS PER BIDANG & DISIPLIN')+'<table class="sum res"><thead><tr><th rowspan="3" class="c-no">No</th><th rowspan="3" class="desc">Uraian Pekerjaan</th><th rowspan="3">Bobot (%)</th>'+RES_HEAD.map((x,i)=>'<th colspan="2">'+x[1]+'<span class="thd">'+ph[i][1]+'</span></th>').join('')+'<th rowspan="2">KONTRIBUSI</th><th rowspan="2">DEVIASI</th></tr><tr>'+Array(3).fill('<th>Rencana</th><th>Aktual</th>').join('')+'</tr><tr>'+Array(6).fill('<th>Bobot (%)</th>').join('')+'<th>%</th><th>%</th></tr></thead><tbody>';
+  const line=(r,cls,num)=>'<tr'+(cls?' class="'+cls+'"':'')+'><td class="c-no">'+(num||'')+'</td><td class="desc">'+esc(r.name)+'</td>'+tdn(r.weight)+BLOCKS.map(([k])=>tdn(r[k][0])+tdn(r[k][1])).join('')+tdn(r.contrib)+tdn(r.dev)+'</tr>';
+  let totW=0,totBlk={previous:[0,0],added:[0,0],current:[0,0]},hasAny=false;
+  D.fields.forEach((f,fi)=>{const no=fi+1,w=fin(f.weight)?Number(f.weight):null;if(w!=null)totW+=w;
+    if(f.notice){h+='<tr class="grp"><td class="c-no">'+no+'</td><td class="desc">'+esc(f.name.toUpperCase())+'</td>'+tdn(w)+'<td colspan="8" style="text-align:left;color:#64748b">Baseline belum tersedia</td></tr>';
+      ['CIVIL','MECHANICAL','ELECTRICAL','INSTRUMENT'].forEach((d,di)=>h+=line({name:d,weight:null,previous:[null,null],added:[null,null],current:[null,null],contrib:null,dev:null},'',no+'.'+(di+1)));return;}
+    const M=resumeModel(f);hasAny=true;
+    h+='<tr class="grp"><td class="c-no">'+no+'</td><td class="desc">'+esc(f.name.toUpperCase())+'</td>'+tdn(M.weight)+BLOCKS.map(([k])=>tdn(M.total[k][0])+tdn(M.total[k][1])).join('')+tdn(M.total.contrib)+tdn(M.total.dev)+'</tr>';
+    M.rows.forEach((r,ri)=>h+=line(r,'',no+'.'+(ri+1)));
+    BLOCKS.forEach(([k])=>{if(fin(M.total[k][0]))totBlk[k][0]+=Number(M.total[k][0]);if(fin(M.total[k][1]))totBlk[k][1]+=Number(M.total[k][1]);});
+  });
+  const totRow={name:'JUMLAH',weight:totW||null,previous:totBlk.previous,added:totBlk.added,current:totBlk.current,contrib:hasAny&&totW>0?totBlk.current[1]/totW*100:null,dev:hasAny?totBlk.current[1]-totBlk.current[0]:null};
+  h+=line(totRow,'total','');
+  return h+'</tbody></table><div class="memo"><b>Catatan :</b> Pengelompokan disiplin (Civil, Mechanical, Electrical, Instrument) mengikuti label kolom GRUP pada baseline proyek. Item yang belum diberi label disiplin masuk ke Lain-lain.</div>'+signs();}`,
+  },
+  {
+    file: 'WeeklyPrint',
+    find: "function sections(){const out=[{id:'summary',t:'Summary Weekly Progress',html:summaryReport}];",
+    replace: "function sections(){const out=[{id:'summary',t:'Summary Weekly Progress',html:summaryReport},{id:'rall',t:'Resume Progress per Bidang & Disiplin',html:resumeAllReport}];",
+  },
+  {
+    file: 'WeeklyPrint',
+    find: "if(selected==='summary')html=summaryReport();",
+    replace: "if(selected==='summary')html=summaryReport()+'<hr>'+resumeAllReport();",
+  },
+  {
+    file: 'WeeklyPrint',
+    find: "for(const f of D.fields){fno++;if(!f.notice)resumeSheet(f,fno);",
+    replace: `(function(){const ws=b.sheet('Resume Bidang'),ph=periodHeads();[7,34,11,12,12,12,12,12,12,13,12].forEach((w,i)=>ws.cols[i+1]=w);const r0=header(ws,'RESUME WEEKLY PROGRESS PER BIDANG & DISIPLIN',11);ws.mg(r0,1,r0+2,1,'No',S.th);ws.mg(r0,2,r0+2,2,'Uraian Pekerjaan',S.th);ws.mg(r0,3,r0+2,3,'Bobot (%)',S.th);RES_HEAD.forEach((x,i)=>{ws.mg(r0,4+i*2,r0,5+i*2,x[1]+'\\n'+ph[i][1],S.th);ws.set(r0+1,4+i*2,'Rencana',S.th2);ws.set(r0+1,5+i*2,'Aktual',S.th2);ws.set(r0+2,4+i*2,'Bobot (%)',S.th2);ws.set(r0+2,5+i*2,'Bobot (%)',S.th2);});ws.mg(r0,10,r0+1,10,'KONTRIBUSI',S.th);ws.mg(r0,11,r0+1,11,'DEVIASI',S.th);ws.set(r0+2,10,'%',S.th2);ws.set(r0+2,11,'%',S.th2);ws.hts[r0]=54;ws.cols[1]=9;let r=r0+3,totW=0,tb={previous:[0,0],added:[0,0],current:[0,0]},any=false;const g=o=>cell(Object.assign({b:1,fill:GRP},o));const put=(x,num,tot)=>{const o=e=>cell(Object.assign(tot?{b:1,fill:HEAD}:{},e));ws.set(r,1,num,o({h:'center'}));ws.set(r,2,x.name,o(tot?{h:'right'}:{}));ws.set(r,3,x.weight,o({fmt:NF3}));BLOCKS.forEach(([k],i)=>{ws.set(r,4+i*2,x[k][0],o({fmt:NF3}));ws.set(r,5+i*2,x[k][1],o({fmt:NF3}));});ws.set(r,10,x.contrib,o({fmt:NF3}));ws.set(r,11,x.dev,o({fmt:NF3}));ws.hts[r]=17;r++;};D.fields.forEach((f,fi)=>{const no=fi+1,w=fin(f.weight)?Number(f.weight):null;if(w!=null)totW+=w;if(f.notice){ws.set(r,1,no,g({h:'center'}));ws.set(r,2,f.name.toUpperCase(),g({}));ws.set(r,3,w,g({fmt:NF3}));for(let c=4;c<=11;c++)ws.set(r,c,null,g({}));r++;['CIVIL','MECHANICAL','ELECTRICAL','INSTRUMENT'].forEach((d,di)=>put({name:d,weight:null,previous:[null,null],added:[null,null],current:[null,null],contrib:null,dev:null},no+'.'+(di+1)));return;}const M=resumeModel(f);any=true;ws.set(r,1,no,g({h:'center'}));ws.set(r,2,f.name.toUpperCase(),g({}));ws.set(r,3,M.weight,g({fmt:NF3}));BLOCKS.forEach(([k],i)=>{ws.set(r,4+i*2,M.total[k][0],g({fmt:NF3}));ws.set(r,5+i*2,M.total[k][1],g({fmt:NF3}));});ws.set(r,10,M.total.contrib,g({fmt:NF3}));ws.set(r,11,M.total.dev,g({fmt:NF3}));r++;M.rows.forEach((x,i)=>put(x,no+'.'+(i+1)));BLOCKS.forEach(([k])=>{if(fin(M.total[k][0]))tb[k][0]+=Number(M.total[k][0]);if(fin(M.total[k][1]))tb[k][1]+=Number(M.total[k][1]);});});put({name:'JUMLAH',weight:totW||null,previous:tb.previous,added:tb.added,current:tb.current,contrib:any&&totW>0?tb.current[1]/totW*100:null,dev:any?tb.current[1]-tb.current[0]:null},'',true);signBlock(ws,r+2,2,3,8,11);ws.titles=[r0,r0+2];})();\n  for(const f of D.fields){fno++;if(!f.notice)resumeSheet(f,fno);`,
+  },
   // Weekly Dashboard (mode mobile): Forecast selesai & aktivitas kritis (Jadwal CPM) hanya tampil di tab Kurva S.
   {
     file: 'Dashboard',
