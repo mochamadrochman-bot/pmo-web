@@ -27,7 +27,7 @@ body.sv2.sv2-portrait #screen.sv2-screen{max-width:480px;height:auto;min-height:
 
 /* ---------- latar galeri penuh + scrim ---------- */
 body.sv2 .sv2-bg{position:absolute;inset:0;z-index:0;background:#0a1423;overflow:hidden}
-body.sv2 .sv2-bg-slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transform:scale(1.03);transition:opacity .55s cubic-bezier(.22,1,.36,1),transform 2.2s ease-out;will-change:opacity,transform}
+body.sv2 .sv2-bg-slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transform:scale(1.03);transition:opacity .75s cubic-bezier(.22,1,.36,1),transform 3.2s ease-out;will-change:opacity,transform}
 body.sv2 .sv2-bg-slide.on{opacity:1;transform:scale(1)}
 body.sv2 .sv2-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;background:
   linear-gradient(95deg,rgba(8,18,30,.95) 0%,rgba(8,18,30,.85) 38%,rgba(8,18,30,.36) 70%,rgba(8,18,30,.22) 100%),
@@ -472,7 +472,7 @@ const JS = String.raw`<script>
       if(fill)fill.style.width=(ratio*100).toFixed(2)+'%';
       var photos=photosOf(projectList[currentIndex],currentIndex);
       if(photos.length>1){
-        var nextRound=Math.floor(elapsedMs/1500);
+        var nextRound=Math.floor(elapsedMs/2500);
         if(nextRound!==photoRound){photoRound=nextRound;paintPhotos();}
       }
       if(elapsedMs>=SLIDE_MS){
