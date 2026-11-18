@@ -173,7 +173,31 @@ const NAV_SNIPPET = String.raw`<style id="pmoNavACss">
 @media (max-width:1100px){.pmo-pbar{padding:0 16px}}
 @media (max-width:760px){.pmo-pbar:not(.is-epc){display:none!important}.pmo-pbar{padding:0 10px}.pmo-crumb,.pmo-pbar .pmo-r-isi{display:none!important}.pmo-tab{padding:0 10px;font-size:13px}}
 html.m-mode .pmo-pbar,html.pp-open .pmo-pbar{display:none!important}
-@media print{.pmo-pbar{display:none!important}}
+@media print{.pmo-pbar,.pmo-ftrack,.pmo-sdots,.pmo-topbtn{display:none!important}html,body{scrollbar-width:auto!important}}
+/* Opsi 2 Scrollbar Modern Global: sembunyikan scrollbar klasik di dokumen luar, ganti floating rail + section dots + ke atas */
+html:not([data-page="spotlight"]):not([data-page="lobby"]),html:not([data-page="spotlight"]):not([data-page="lobby"]) body{scrollbar-width:none}
+html:not([data-page="spotlight"]):not([data-page="lobby"])::-webkit-scrollbar,html:not([data-page="spotlight"]):not([data-page="lobby"]) body::-webkit-scrollbar{display:none}
+.pmo-ftrack{position:fixed;right:3px;top:72px;bottom:14px;width:10px;z-index:68;cursor:pointer;display:none}
+.pmo-ftrack.on{display:block}
+.pmo-fthumb{position:absolute;left:3px;right:2px;min-height:42px;border-radius:99px;background:rgba(19,43,67,.34);transition:background .15s ease,left .15s ease,right .15s ease}
+.pmo-ftrack:hover .pmo-fthumb,.pmo-ftrack.drag .pmo-fthumb{left:0;right:0;background:var(--pri,#0f5fa8)}
+html[data-theme="dark"] .pmo-fthumb{background:rgba(203,213,225,.34)}
+html[data-theme="dark"] .pmo-ftrack:hover .pmo-fthumb,html[data-theme="dark"] .pmo-ftrack.drag .pmo-fthumb{background:#38bdf8}
+.pmo-sdots{position:fixed;right:16px;top:24%;z-index:69;display:none;flex-direction:column;align-items:flex-end;gap:7px;padding:9px 7px;border-radius:99px;background:rgba(15,25,38,.84);border:1px solid rgba(255,255,255,.16);box-shadow:0 10px 26px rgba(0,0,0,.22)}
+.pmo-sdots.on{display:flex}
+.pmo-sdot{position:relative;display:flex;align-items:center;border:0;background:transparent;padding:3px;cursor:pointer}
+.pmo-sdot:focus-visible{outline:2px solid #38bdf8;border-radius:99px}
+.pmo-sdot i{display:block;width:7px;height:7px;border-radius:99px;background:rgba(255,255,255,.42);transition:height .2s ease,background .2s ease}
+.pmo-sdot.on i{height:20px;background:#38bdf8}
+.pmo-sdot span{position:absolute;right:calc(100% + 10px);background:rgba(15,25,38,.94);border:1px solid rgba(255,255,255,.16);color:#fff;font:600 11.5px/1.2 inherit;padding:5px 10px;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transform:translateX(4px);transition:opacity .15s ease,transform .15s ease}
+.pmo-sdot:hover span,.pmo-sdot:focus-visible span{opacity:1;transform:none}
+.pmo-topbtn{position:fixed;right:20px;bottom:22px;z-index:69;display:inline-flex;align-items:center;gap:5px;min-height:38px;padding:0 13px;border-radius:99px;border:1px solid rgba(255,255,255,.18);background:rgba(15,25,38,.86);color:#fff;font:600 12px/1 inherit;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.22);opacity:0;visibility:hidden;pointer-events:none;transform:translateY(8px);transition:opacity .2s ease,transform .2s ease,visibility .2s ease}
+.pmo-topbtn.show{opacity:1;visibility:visible;pointer-events:auto;transform:none}
+.pmo-topbtn:hover{background:#0f5fa8;border-color:#0f5fa8}
+.pmo-topbtn:focus-visible{outline:2px solid #38bdf8;outline-offset:2px}
+html:not(.pv2) .pmo-topbtn.has-fab{bottom:86px}
+@media (max-width:760px){.pmo-sdots{display:none!important}.pmo-topbtn,html:not(.pv2) .pmo-topbtn.has-fab{right:12px;bottom:16px}}
+html.pp-open .pmo-ftrack,html.pp-open .pmo-sdots,html.pp-open .pmo-topbtn,html.m-mode .pmo-ftrack,html.m-mode .pmo-sdots,html.m-mode .pmo-topbtn,body.sv2 .pmo-ftrack,body.sv2 .pmo-sdots,body.sv2 .pmo-topbtn{display:none!important}
 .pmo-sena-hit{outline:3px solid var(--pri,#0f5fa8)!important;outline-offset:2px;border-radius:6px;background-color:color-mix(in srgb,var(--soft,#e8f3fb) 80%,transparent)!important;transition:outline-color 1.2s ease .8s}
 .pmo-sena-toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:70;padding:10px 16px;border-radius:12px;background:var(--ink,#132b43);color:var(--card,#fff);font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:min(560px,92vw)}
 .ntf-it.k-alert .ntf-av{background:#fde8e6;color:#b42318}
@@ -492,9 +516,119 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
     if(!bar||!hdr)return;var cs=getComputedStyle(hdr);
     bar.style.top=(cs.position==='sticky'||cs.position==='fixed')?hdr.offsetHeight+'px':'0px';
   }
+  /* ---------- scroll modern opsi 2 (floating rail + section dots + ke atas) ---------- */
+  function initScrollHud(){
+    if(/^(spotlight|lobby)$/i.test(page)||document.body.classList.contains('sv2')||document.getElementById('spotBoot')||document.getElementById('pmoScrollTrack'))return;
+    var track=document.createElement('div');track.id='pmoScrollTrack';track.className='pmo-ftrack';track.setAttribute('aria-hidden','true');
+    var thumb=document.createElement('div');thumb.id='pmoScrollThumb';thumb.className='pmo-fthumb';track.appendChild(thumb);
+    var dotsNav=document.createElement('nav');dotsNav.id='pmoScrollDots';dotsNav.className='pmo-sdots';dotsNav.setAttribute('aria-label','Navigasi bagian halaman');
+    var topBtn=document.createElement('button');topBtn.type='button';topBtn.id='pmoToTop';topBtn.className='pmo-topbtn';topBtn.setAttribute('aria-label','Kembali ke atas');topBtn.textContent='↑ Ke atas';
+    document.body.appendChild(track);document.body.appendChild(dotsNav);document.body.appendChild(topBtn);
+
+    var secs=[],dotBtns=[];
+    function collectSections(){
+      var list=[];
+      if(document.documentElement.classList.contains('pv2')){
+        [['#hero','Puncak Hero'],['#briefBox','Ringkasan Eksekutif'],['#vSec','Daftar Proyek']].forEach(function(p){
+          var el=document.querySelector(p[0]);if(el&&el.offsetHeight>0)list.push({el:el,label:p[1]});
+        });
+      }else{
+        var seen=[],topEl=document.querySelector('main,.wrap,.hero,header.head')||document.body;
+        list.push({el:topEl,label:'Bagian Atas',isTop:true});
+        var cand=document.querySelectorAll('main section.grp>h2,main .cardh>b,main details>summary>b,main .sec>h2,.wrap>section>h2,.wrap details>summary .st>b');
+        for(var i=0;i<cand.length&&list.length<6;i++){
+          var c=cand[i],target=c.closest('section,details,.card')||c;
+          if(!target||target.offsetHeight<40||seen.indexOf(target)>=0)continue;
+          var topY=target.getBoundingClientRect().top+window.scrollY;
+          if(list.length&&Math.abs(topY-(list[list.length-1].isTop?0:list[list.length-1].y))<180)continue;
+          seen.push(target);
+          var txt=String(c.textContent||'').replace(/\s+/g,' ').trim().slice(0,36);
+          if(txt)list.push({el:target,label:txt,y:topY});
+        }
+      }
+      secs=list;
+      var max=Math.max(0,document.documentElement.scrollHeight-window.innerHeight);
+      var showDots=secs.length>=3&&max>220;
+      dotsNav.classList.toggle('on',showDots);
+      if(!showDots){dotsNav.innerHTML='';dotBtns=[];return;}
+      var key=secs.map(function(s){return s.label}).join('|');
+      if(dotsNav.getAttribute('data-k')===key)return;
+      dotsNav.setAttribute('data-k',key);
+      dotsNav.innerHTML=secs.map(function(s,idx){
+        return '<button type="button" class="pmo-sdot'+(idx===0?' on':'')+'" data-idx="'+idx+'" aria-label="Ke '+esc(s.label)+'"><span>'+esc(s.label)+'</span><i></i></button>';
+      }).join('');
+      dotBtns=Array.prototype.slice.call(dotsNav.querySelectorAll('.pmo-sdot'));
+      dotBtns.forEach(function(b){
+        b.onclick=function(){
+          var s=secs[+b.getAttribute('data-idx')];
+          if(!s)return;
+          if(s.isTop){window.scrollTo({top:0,behavior:'smooth'});return;}
+          var off=(hdr&&getComputedStyle(hdr).position==='fixed'?hdr.offsetHeight:0)+16;
+          var y=Math.max(0,s.el.getBoundingClientRect().top+window.scrollY-off);
+          window.scrollTo({top:y,behavior:'smooth'});
+        };
+      });
+    }
+
+    var raf=0;
+    function sync(){
+      raf=0;
+      var doc=document.documentElement,max=Math.max(0,doc.scrollHeight-window.innerHeight);
+      var showTrack=max>60;
+      track.classList.toggle('on',showTrack);
+      if(hdr){
+        var cs=getComputedStyle(hdr),topPad=(cs.position==='sticky'||cs.position==='fixed')?(hdr.offsetHeight+(bar&&!bar.hidden?bar.offsetHeight:0)+8):12;
+        track.style.top=Math.min(140,Math.max(12,topPad))+'px';
+      }
+      if(showTrack){
+        var y=window.scrollY,pct=Math.min(1,Math.max(0,y/max));
+        var th=Math.max(42,Math.round((window.innerHeight/doc.scrollHeight)*track.clientHeight));
+        thumb.style.height=th+'px';
+        thumb.style.top=Math.round(pct*Math.max(0,track.clientHeight-th))+'px';
+      }
+      topBtn.classList.toggle('show',window.scrollY>260);
+      var fab=document.querySelector('.aic-fab');
+      var fabVis=!!(fab&&!fab.hidden&&getComputedStyle(fab).opacity!=='0'&&getComputedStyle(fab).display!=='none');
+      topBtn.classList.toggle('has-fab',fabVis);
+      if(dotBtns.length){
+        var act=0;
+        secs.forEach(function(s,i){
+          if(s.isTop)return;
+          if(s.el.getBoundingClientRect().top<=window.innerHeight*0.42)act=i;
+        });
+        if(window.scrollY<60)act=0;
+        dotBtns.forEach(function(b,i){b.classList.toggle('on',i===act);});
+      }
+    }
+    function scheduleSync(){if(!raf)raf=requestAnimationFrame(sync);}
+
+    var dragging=false;
+    function dragTo(clientY){
+      var rect=track.getBoundingClientRect(),th=thumb.offsetHeight||42;
+      var ratio=Math.min(1,Math.max(0,(clientY-rect.top-th/2)/Math.max(1,rect.height-th)));
+      var max=Math.max(1,document.documentElement.scrollHeight-window.innerHeight);
+      window.scrollTo({top:ratio*max,behavior:'auto'});
+    }
+    track.addEventListener('pointerdown',function(e){
+      dragging=true;track.classList.add('drag');
+      try{track.setPointerCapture(e.pointerId);}catch(x){}
+      dragTo(e.clientY);
+    });
+    track.addEventListener('pointermove',function(e){if(dragging)dragTo(e.clientY);});
+    track.addEventListener('pointerup',function(){dragging=false;track.classList.remove('drag');});
+    topBtn.onclick=function(){window.scrollTo({top:0,behavior:'smooth'});};
+
+    window.addEventListener('scroll',scheduleSync,{passive:true});
+    window.addEventListener('resize',function(){collectSections();scheduleSync();},{passive:true});
+    if(window.ResizeObserver)try{new ResizeObserver(function(){collectSections();scheduleSync();}).observe(document.body);}catch(e){}
+    collectSections();sync();
+    setTimeout(function(){collectSections();sync();},800);
+    setTimeout(function(){collectSections();sync();},2200);
+  }
+
   var q=0;function queue(){if(!q)q=setTimeout(function(){q=0;render();addPicker();try{railIcons()}catch(e){}},120)}
   function init(){
-    addPicker();
+    addPicker();initScrollHud();
     var tries=0;(function wait(){if(document.querySelector('aside.side nav[data-pmo-modular="1"]')||tries>40){build();bindFly();railIcons();setTimeout(senaFocus,600);
       var side=document.querySelector('aside.side');
       if(side&&window.MutationObserver)new MutationObserver(queue).observe(side,{subtree:true,attributes:true,attributeFilter:['class','hidden','style','aria-current']});
