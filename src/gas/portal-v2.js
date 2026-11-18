@@ -38,6 +38,19 @@ html.pv2 .v-dd:hover .v-dd-pop,html.pv2 .v-dd:focus-within .v-dd-pop,html.pv2 .v
 html.pv2 .v-dd-pop button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:10px 12px;border-radius:9px;color:#dbe5f0;font:500 13px/1.3 Inter,system-ui,sans-serif;cursor:pointer}
 html.pv2 .v-dd-pop button:hover,html.pv2 .v-dd-pop button:focus-visible{background:rgba(255,255,255,.1);color:#fff;outline:0}
 html.pv2 .v-dd-pop button.on{background:var(--v-acc);color:#fff;font-weight:600}
+html.pv2 .v-has-sub{position:relative}
+html.pv2 .v-has-sub>button{display:flex!important;align-items:center;justify-content:space-between;gap:10px}
+html.pv2 .v-has-sub>button span{font-size:16px;opacity:.8}
+html.pv2 .v-sub{position:absolute;left:calc(100% + 8px);top:-8px;min-width:270px;max-height:70vh;overflow:auto;background:#131c2b;border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:8px;box-shadow:0 18px 40px rgba(0,0,0,.45);opacity:0;pointer-events:none;transform:translateX(-4px);transition:opacity .14s ease,transform .14s ease}
+html.pv2 .v-sub::before{content:"";position:absolute;top:0;bottom:0;left:-10px;width:10px}
+html.pv2 .v-has-sub:hover>.v-sub,html.pv2 .v-has-sub:focus-within>.v-sub{opacity:1;pointer-events:auto;transform:none}
+html.pv2 .v-has-sub:hover>button{background:rgba(255,255,255,.1);color:#fff}
+html.pv2 .v-sub-h{padding:6px 12px 8px;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#7dd3fc}
+html.pv2 .v-sub button,html.pv2 .v-sh-sub button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:9px 12px;border-radius:9px;color:#dbe5f0;font:500 13px/1.3 Inter,system-ui,sans-serif;cursor:pointer}
+html.pv2 .v-sub button:hover,html.pv2 .v-sub button:focus-visible,html.pv2 .v-sh-sub button:hover{background:rgba(255,255,255,.1);color:#fff;outline:0}
+html.pv2 .v-sub small,html.pv2 .v-sh-sub small{display:block;font-size:11px;color:#94a3b8;margin-top:2px}
+html.pv2 .v-sh-sub{margin:0 0 6px 14px;padding-left:8px;border-left:2px solid rgba(255,255,255,.14)}
+html.pv2 .v-sh-sub button{min-height:44px;font-size:13.5px}
 html.pv2 .v-burger{display:none;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.1);color:#fff;border-radius:99px;min-height:40px;padding:0 14px;font:600 12px/1 Inter,system-ui,sans-serif;cursor:pointer;align-items:center;gap:6px}
 html.pv2 .v-burger svg{width:18px;height:18px}
 html.pv2 header.top .ntf-wrap{margin-left:auto}
@@ -54,14 +67,14 @@ html.pv2 #hero .hero-bg>div{position:absolute;inset:0;background-size:cover;back
 html.pv2 #hero .hero-bg>div.on{opacity:1;transform:scale(1)}
 html.pv2 #hero::before,html.pv2 #hero::after{display:none!important}
 html.pv2 #hero .v-scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(7,15,24,.45) 0%,rgba(7,15,24,.15) 45%,rgba(10,16,24,.88) 100%);pointer-events:none}
-html.pv2 #hero .hero-in{position:relative;z-index:2;width:100%;max-width:1320px;margin:0 auto;padding:0 48px 54px!important;background:none!important}
+html.pv2 #hero .hero-in{position:absolute;z-index:2;left:0;bottom:0;width:auto;max-width:min(860px,calc(100% - 260px));margin:0!important;padding:0 0 44px 48px!important;background:none!important}
 html.pv2 #hero .hero-top{display:block!important}
 html.pv2 #hero #greet,html.pv2 #hero #heroSub,html.pv2 #hero .stamp,html.pv2 #hero .hero-kpis,html.pv2 #hero .hero-cap{display:none!important}
 html.pv2 #hero .hero-eye{display:block;font-size:11.5px!important;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#7dd3fc!important;margin:0 0 12px!important}
 html.pv2 #hero .hero-eye::before{display:none!important}
 html.pv2 #hero .v-h1{margin:0;font-size:clamp(32px,5vw,60px);font-weight:300;line-height:1.06;letter-spacing:-.02em;color:#fff;max-width:780px}
 html.pv2 #hero .v-h1 b{font-weight:700}
-html.pv2 #hero .hero-dots{position:absolute!important;z-index:3;right:48px!important;left:auto!important;bottom:58px!important;top:auto!important;display:flex;gap:8px;align-items:center}
+html.pv2 #hero .hero-dots{position:absolute!important;z-index:3;right:48px!important;left:auto!important;bottom:48px!important;top:auto!important;display:flex;gap:8px;align-items:center}
 html.pv2 #hero .hero-dots button{width:10px;height:10px;min-width:0;min-height:0;border-radius:99px;border:0;padding:0;cursor:pointer;background:rgba(255,255,255,.35);transition:width .25s ease,background .25s ease}
 html.pv2 #hero .hero-dots button.on{width:28px;background:#fff}
 html.pv2 #hero #heroName{color:rgba(255,255,255,.82);font-size:12px;margin-right:6px;white-space:nowrap}
@@ -173,7 +186,7 @@ html.pv2 .v-sheet-in>button:hover,html.pv2 .v-sheet-in>button.on{background:rgba
   html.pv2 header.top .account-wrap>.chip>div{display:none!important}
   html.pv2 .v-burger span{display:none}html.pv2 .v-burger{padding:0 11px;min-width:44px;justify-content:center}
   html.pv2 #hero.hero{height:72svh;min-height:460px}
-  html.pv2 #hero .hero-in{padding:0 20px 64px!important}
+  html.pv2 #hero .hero-in{max-width:calc(100% - 20px);padding:0 0 64px 20px!important}
   html.pv2 #hero .hero-dots{left:20px!important;right:auto!important;bottom:26px!important}
   html.pv2 .v-util{padding:14px 20px}
   html.pv2 .v-ub{flex:1 1 auto;justify-content:center}
@@ -200,9 +213,17 @@ const JS = String.raw`<script>
   function menuData(){
     return GROUPS.map(function(g){
       var items=[];if(g[2])items.push({t:'Portal Proyek',on:true,fn:function(){window.scrollTo({top:0,behavior:'smooth'})}});
-      g[1].forEach(function(id){var tile=D.getElementById(id);if(!tile||tile.hidden)return;qa('.subs button',tile).forEach(function(b){if(b.hidden||b.style.display==='none')return;var t=label(b);if(t)items.push({t:t,fn:function(){b.click()}})})});
+      g[1].forEach(function(id){var tile=D.getElementById(id);if(!tile||tile.hidden)return;qa('.subs button',tile).forEach(function(b){if(b.hidden||b.style.display==='none')return;var t=label(b);if(!t)return;var it={t:t,fn:function(){b.click()}};if(/^Weekly Progress$/i.test(t))it.sub=weeklySub();items.push(it)})});
       return {name:g[0],items:items};
     }).filter(function(g){return g.items.length});
+  }
+  function weeklySub(){
+    return (ST.items||[]).map(function(m){return {t:NM(m.i.name)+(m.par?'':''),par:m.par?NM(m.par):'',done:m.done,fn:function(){if(typeof goWeek==='function')goWeek(m.i.name,m.wk);else location.href='/app?page=weekly&project='+encodeURIComponent(m.i.name)}}});
+  }
+  function subEl(it,sheet){
+    var w=D.createElement('div');w.className=sheet?'v-sh-sub':'v-sub';
+    it.sub.forEach(function(s){var b=D.createElement('button');b.type='button';b.innerHTML=E(s.t)+(s.par?'<small>Sub \u00b7 '+E(s.par)+'</small>':'')+(s.done?'<small>Selesai</small>':'');b.onclick=function(){closeAll();s.fn()};w.appendChild(b)});
+    return w;
   }
   function itemBtn(it,cls){var b=D.createElement('button');b.type='button';b.textContent=it.t;if(it.on)b.className='on';b.onclick=function(){closeAll();it.fn()};return b}
   function closeAll(){qa('.v-dd.open').forEach(function(d){d.classList.remove('open')});var s=D.getElementById('vSheet');if(s)s.hidden=true;D.body.style.overflow=''}
@@ -212,12 +233,12 @@ const JS = String.raw`<script>
     data.forEach(function(g){
       var dd=D.createElement('div');dd.className='v-dd';
       var bt=D.createElement('button');bt.type='button';bt.setAttribute('aria-haspopup','true');bt.setAttribute('aria-expanded','false');bt.textContent=g.name+' ⌄';
-      var pop=D.createElement('div');pop.className='v-dd-pop';pop.setAttribute('role','menu');g.items.forEach(function(it){pop.appendChild(itemBtn(it))});
+      var pop=D.createElement('div');pop.className='v-dd-pop';pop.setAttribute('role','menu');g.items.forEach(function(it){if(it.sub&&it.sub.length){var row=D.createElement('div');row.className='v-has-sub';var ib=itemBtn(it);ib.innerHTML=E(it.t)+'<span aria-hidden="true">\u203a</span>';ib.setAttribute('aria-haspopup','true');row.appendChild(ib);var sp=subEl(it,false);var h=D.createElement('div');h.className='v-sub-h';h.textContent='Pilih proyek';sp.insertBefore(h,sp.firstChild);row.appendChild(sp);pop.appendChild(row)}else pop.appendChild(itemBtn(it))});
       bt.onclick=function(e){e.stopPropagation();var o=!dd.classList.contains('open');closeAll();dd.classList.toggle('open',o);bt.setAttribute('aria-expanded',String(o))};
       dd.appendChild(bt);dd.appendChild(pop);m.appendChild(dd);
     });
     var head=sh.firstElementChild;sh.innerHTML='';sh.appendChild(head);
-    data.forEach(function(g){var h=D.createElement('h4');h.textContent=g.name;sh.appendChild(h);g.items.forEach(function(it){sh.appendChild(itemBtn(it))})});
+    data.forEach(function(g){var h=D.createElement('h4');h.textContent=g.name;sh.appendChild(h);g.items.forEach(function(it){sh.appendChild(itemBtn(it));if(it.sub&&it.sub.length)sh.appendChild(subEl(it,true))})});
   }
   function sena(){var f=q('.aic-fab');if(f){f.click();return}var p=q('aside.aic');if(p)p.hidden=false}
   function setup(){
@@ -241,7 +262,7 @@ const JS = String.raw`<script>
     // hero penuh di luar main
     D.body.insertBefore(hero,main);
     if(!q('.v-scrim',hero)){var sc=D.createElement('div');sc.className='v-scrim';hero.insertBefore(sc,hero.children[1]||null)}
-    var top=q('.hero-t',hero);if(top&&!q('.v-h1',top)){var h1=D.createElement('h2');h1.className='v-h1';h1.innerHTML='<b>Portal Proyek</b><br>PT Petrokimia Gresik';top.appendChild(h1)}
+    var top=q('.hero-t',hero);if(top&&!q('.v-h1',top)){var h1=D.createElement('h2');h1.className='v-h1';h1.innerHTML='<b>Proyek Pengembangan</b><br>PT Petrokimia Gresik';top.appendChild(h1)}
     var eye=D.getElementById('heroEye');if(eye)eye.textContent='PMO Infrastruktur & Process Plant';
     // strip utilitas
     var u=D.createElement('div');u.className='v-util';
@@ -259,7 +280,7 @@ const JS = String.raw`<script>
     var grid=D.createElement('div');grid.className='v-grid';grid.id='vGrid';grid.innerHTML='<div class="v-empty">Memuat kartu proyek…</div>';
     if(briefSec&&briefSec.parentNode===main){main.insertBefore(briefSec,(kp?D.getElementById('vSum').nextSibling:main.firstChild));briefSec.parentNode.insertBefore(sec,briefSec.nextSibling)}else main.appendChild(sec);
     sec.parentNode.insertBefore(grid,sec.nextSibling);
-    if(storySec)main.insertBefore(storySec,grid.nextSibling);
+    if(storySec)main.insertBefore(storySec,main.firstChild);
     if(pulseSec)pulseSec.classList.add('v-hide');if(modSec)modSec.classList.add('v-hide');
     var ft=q('main.wrap>.foot');if(ft){ft.classList.add('v-foot');ft.innerHTML='<div>PT Petrokimia Gresik · PMO Infrastruktur &amp; Process Plant</div><div>Portal Proyek</div>';D.body.insertBefore(ft,main.nextSibling)}
     // Tanya Sena
