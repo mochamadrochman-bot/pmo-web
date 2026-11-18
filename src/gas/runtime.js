@@ -899,7 +899,7 @@ ${RETIRED.map((n) => `  ${n} = function () { throw new Error('Akun kini dikelola
               lw.stale = late >= 2 ? late : 0;
             }
             var cs = execCause_(db, pj, w);
-            if (cs) { var cut = function (t) { t = String(t || ''); return t.length > 400 ? t.slice(0, 397) + '\\u2026' : t; }; lw.cause = { field: cs.field, concern: cut(cs.concern), mitigation: cut(cs.mitigation) }; }
+            if (cs) { var lim = function (t) { return String(t || '').trim().slice(0, 4000); }; lw.cause = { field: cs.field, concern: lim(cs.concern), mitigation: lim(cs.mitigation) }; }
           }
           if (w > 1) { var pa = pct(weekPercent_(db.weekly, i.projectId, 'KOMULATIF_REALISASI', w - 1)); if (pa !== null) lw.prev = { week: w - 1, actual: pa }; }
         } catch (e2) { /* rincian tambahan opsional */ }

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview Konsep — Keterbacaan Ringkasan Portal PMO</title>
+<style>
+  :root {
+    --bg: #f2f5f9;
+    --card: #ffffff;
+    --row: #f7fafd;
+    --ink: #132b43;
+    --mut: #475569;
+    --line: #dbe5ee;
+    --pri: #0f5fa8;
+    --tag-act-bg: #e6f0fa; --tag-act-ink: #0b4f8c;
+    --tag-knd-bg: #fdecec; --tag-knd-ink: #9e1c1c; --knd-bar: #d92d20;
+    --tag-tnd-bg: #e6f6ef; --tag-tnd-ink: #0b6b49; --tnd-bar: #0f8a5f;
+    --tag-ms-bg:  #e9eff6; --tag-ms-ink:  #334155;
+    --tag-fin-bg: #eef2ff; --tag-fin-ink: #1e40af;
+    --val-bad: #b42318; --val-warn: #b45309; --val-good: #16875d;
+  }
+  html[data-theme="dark"] {
+    --bg: #11161d;
+    --card: #1b222c;
+    --row: #161b22;
+    --ink: #f1f5f9;
+    --mut: #94a3b8;
+    --line: rgba(255, 255, 255, 0.12);
+    --pri: #38bdf8;
+    --tag-act-bg: #17283d; --tag-act-ink: #93c5fd;
+    --tag-knd-bg: #3a191d; --tag-knd-ink: #fca5a5; --knd-bar: #f87171;
+    --tag-tnd-bg: #133126; --tag-tnd-ink: #6ee7b7; --tnd-bar: #34d399;
+    --tag-ms-bg:  #232b36; --tag-ms-ink:  #cbd5e1;
+    --tag-fin-bg: #1e293b; --tag-fin-ink: #93c5fd;
+    --val-bad: #f87171; --val-warn: #fbbf24; --val-good: #4ade80;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 18px 60px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; }
+  .wrap.mob { max-width: 410px; }
+
+  /* Bar Pengontrol Preview */
+  .bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+  }
+  .bar-t b { display: block; font-size: 15px; }
+  .bar-t span { display: block; font-size: 12.5px; color: var(--mut); }
+  .bar-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+  .btn {
+    border: 1px solid var(--line);
+    background: var(--row);
+    color: var(--ink);
+    min-height: 38px;
+    padding: 0 14px;
+    border-radius: 99px;
+    font: 600 12.5px/1 inherit;
+    cursor: pointer;
+  }
+  .btn.on { background: var(--pri); border-color: var(--pri); color: #fff; }
+  html[data-theme="dark"] .btn.on { color: #0f172a; }
+  .btn:focus-visible { outline: 2px solid var(--pri); outline-offset: 2px; }
+
+  /* Kotak Ringkasan (meniru #briefBox di Portal) */
+  .brief {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 20px 22px;
+  }
+  .lead { font-size: 13px; color: var(--mut); margin: 0 0 10px; }
+  .grp-h { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 12px; font-size: 13.5px; }
+  .tag-grp {
+    display: inline-block; padding: 3px 10px; border-radius: 99px;
+    background: #0f5fa8; color: #fff; font-weight: 700; font-size: 12px;
+  }
+
+  /* Kartu Proyek */
+  details.item {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--row);
+    margin: 0 0 12px;
+    overflow: hidden;
+  }
+  details.item > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 13px 16px 13px 38px;
+    position: relative;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  details.item > summary::-webkit-details-marker { display: none; }
+  details.item > summary::before {
+    content: "";
+    position: absolute;
+    left: 16px; top: 20px;
+    width: 7px; height: 7px;
+    border-right: 2px solid var(--mut);
+    border-bottom: 2px solid var(--mut);
+    transform: rotate(-45deg);
+    transition: transform .15s;
+  }
+  details.item[open] > summary::before { transform: rotate(45deg); }
+  .v-good { color: var(--val-good); font-weight: 800; }
+  .v-warn { color: var(--val-warn); font-weight: 800; }
+  .v-bad  { color: var(--val-bad);  font-weight: 800; }
+  .v-pl   { font-weight: 800; }
+
+  /* ======== KONSEP A: Grid Label Kiri-Kanan Terstruktur ======== */
+  .rows-a {
+    border-top: 1px solid var(--line);
+    padding: 6px 16px 14px 38px;
+  }
+  .row-a {
+    display: grid;
+    grid-template-columns: 205px minmax(0, 1fr);
+    align-items: start;
+    gap: 8px 16px;
+    padding: 9px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+  .row-a:last-child { border-bottom: 0; padding-bottom: 2px; }
+  .lbl-a {
+    display: inline-flex;
+    align-items: center;
+    justify-self: start;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 6px;
+    line-height: 1.35;
+    letter-spacing: 0.01em;
+  }
+  .lbl-act { background: var(--tag-act-bg); color: var(--tag-act-ink); }
+  .lbl-knd { background: var(--tag-knd-bg); color: var(--tag-knd-ink); }
+  .lbl-tnd { background: var(--tag-tnd-bg); color: var(--tag-tnd-ink); }
+  .lbl-ms  { background: var(--tag-ms-bg);  color: var(--tag-ms-ink);  }
+  .lbl-fin { background: var(--tag-fin-bg); color: var(--tag-fin-ink); }
+
+  .val-a {
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+  .row-a.knd .val-a { border-left: 3px solid var(--knd-bar); padding-left: 11px; }
+  .row-a.tnd .val-a { border-left: 3px solid var(--tnd-bar); padding-left: 11px; }
+
+  /* ======== KONSEP B: Badge Tegas Inline (Lebih Padat Vertikal) ======== */
+  .rows-b {
+    border-top: 1px solid var(--line);
+    padding: 10px 16px 14px 38px;
+    display: grid;
+    gap: 8px;
+  }
+  .row-b {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+  .row-b .lbl-a {
+    margin-right: 8px;
+    vertical-align: 1px;
+  }
+  .row-b.knd {
+    border-left: 3px solid var(--knd-bar);
+    padding-left: 10px;
+  }
+  .row-b.tnd {
+    border-left: 3px solid var(--tnd-bar);
+    padding-left: 10px;
+  }
+
+  .wrap.mob .row-a { grid-template-columns: 1fr; gap: 5px; }
+  .wrap.mob .rows-a, .wrap.mob .rows-b { padding-left: 16px; }
+  .wrap.mob details.item > summary { padding-left: 34px; }
+  @media (max-width: 700px) {
+    .row-a { grid-template-columns: 1fr; gap: 5px; }
+    .rows-a, .rows-b { padding-left: 16px; }
+    details.item > summary { padding-left: 34px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <div class="bar">
+    <div class="bar-t">
+      <b>Preview Perbaikan Tampilan Ringkasan Portal</b>
+      <span>Kendala utuh (tidak terpotong), Tindak Lanjut di paragraf baru, dan label lebih menonjol</span>
+    </div>
+    <div class="bar-btns">
+      <button type="button" class="btn on" id="btnA">Konsep A · Grid Sejajar (Rekomendasi)</button>
+      <button type="button" class="btn" id="btnB">Konsep B · Badge Inline</button>
+      <button type="button" class="btn" id="btnMob">Simulasi Mobile</button>
+      <button type="button" class="btn" id="btnTheme">Tema Gelap</button>
+    </div>
+  </div>
+
+  <div class="brief">
+    <p class="lead">Periode berjalan November 2026. Progres memakai minggu terakhir yang diinput tiap proyek; keuangan memakai posisi akhir Oktober 2026 terhadap RKAP tahun berjalan.</p>
+    <div class="grp-h"><span class="tag-grp">Proyek Pengembangan</span> <span>5 proyek berjalan. Serapan RKAP tahunan <b>62%</b> (Rp 588,3 M dari Rp 947,2 M) s.d. akhir Oktober 2026.</span></div>
+    <div id="list"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var ITEMS = [
+    {
+      head: '<b>Conveyor Unloading Bahan Baku - Soda Ash</b> — sampai dengan minggu ke-2 November 2026 (W47): progres fisik <span class="v-bad">40,84%</span> dari rencana <span class="v-pl">42,99%</span> (<span class="v-bad">−2,15 poin, critical</span>).',
+      open: true,
+      rows: [
+        { k: 'act', lbl: 'Highlight Aktivitas W47', val: 'Fabrikasi Steel Structure tercapai 54,36%, Telah dilakukan FAT Motor Gearbox Sumitomo di China dan rencana FOB pada bulan November 2026, Belt Conveyor sudah onsite pada week 3 Oktober 2026, FAT Roller Conveyor di PT Rollent Indonesia di KIG.' },
+        { k: 'knd', lbl: 'Kendala (Construction)', val: 'Pekerjaan conveyor CV-04 178 of 839 Pedestal Beton, conveyor CV-05 6 of 52 Pedestal Beton, Conveyor CV-03 0 of 4 Pedestal Beton, fabrikasi steel structure saat ini 58,992% dan estimasi selesai week 4 November 2026, Pondasi Tower D telah selesai, dan Pondasi [isi lanjutan penuh tidak terpotong di sistem nyata].' },
+        { k: 'tnd', lbl: 'Tindak Lanjut', val: 'Percepatan fabrikasi Struktur Baja dan Pondasi beton untuk Conveyor CV-03, CV-04, CV-05, Tower A, D, E, F & TP-407 sudah terfabrikasi Expedite delivery material ke site sesuai erection sequence dan lakukan daily monitoring recovery schedule.' },
+        { k: 'ms',  lbl: 'Target Milestone November', val: 'Fabrikasi Struktur Baja 100% — status <b>Proses Fabrikasi</b>.' },
+        { k: 'fin', lbl: 'Keuangan s.d. akhir Oktober 2026', val: 'realisasi Rp 39,9 M, <b style="color:var(--pri)">25%</b> dari RKAP tahunan Rp 160,7 M.' }
+      ]
+    },
+    {
+      head: '<b>Owner Scope Proyek Npk</b> — sampai dengan minggu ke-3 November 2026 (W1): progres fisik <span class="v-warn">0,00%</span> dari rencana <span class="v-pl">0,20%</span> (<span class="v-warn">−0,20 poin, at risk</span>).',
+      open: true,
+      rows: [
+        { k: 'act', lbl: 'Highlight Aktivitas W1', val: 'fabrikasi plat.' },
+        { k: 'fin', lbl: 'Keuangan s.d. akhir Oktober 2026', val: 'data RKAP belum tersedia.' }
+      ]
+    },
+    {
+      head: '<b>Pabrik Pupuk Fosfat</b> — sampai dengan minggu ke-2 November 2026 (W3): progres fisik <span class="v-good">3,13%</span> dari rencana <span class="v-pl">1,83%</span> (<span class="v-good">+1,30 poin, on track</span>).',
+      open: true,
+      rows: [
+        { k: 'act', lbl: 'Highlight Aktivitas W3', val: 'Submit 86 dokumen IFR; Sipil (13 dokumen), Mekanikal (19 dokumen); Piping & Ducting (5 dokumen), Elektrikal (18 dokumen), HSE/K3 (31 dokumen), Pekerjaan Procurement pengadaan bahan pemasangan bowplang; Pengadaan perlengkapan K3, Membuat list item Long Lead sebagai acuan equipment yang akan didatangkan, Percepatan kelengkapan tim PT Nindya Karya untuk masing-masing bidang, Persiapan Survey Topography akan dimulai di Week ke-4.' },
+        { k: 'ms',  lbl: 'Target Milestone November', val: 'Survey topografi selesai — status <b>Inprogress</b>.' }
+      ]
+    }
+  ];
+
+  var mode = 'A';
+  function render() {
+    var box = document.getElementById('list');
+    box.innerHTML = ITEMS.map(function (it) {
+      var body = mode === 'A'
+        ? '<div class="rows-a">' + it.rows.map(function (r) {
+            return '<div class="row-a ' + r.k + '"><span class="lbl-a lbl-' + r.k + '">' + r.lbl + '</span><div class="val-a">' + r.val + '</div></div>';
+          }).join('') + '</div>'
+        : '<div class="rows-b">' + it.rows.map(function (r) {
+            return '<p class="row-b ' + r.k + '"><span class="lbl-a lbl-' + r.k + '">' + r.lbl + '</span>' + r.val + '</p>';
+          }).join('') + '</div>';
+      return '<details class="item"' + (it.open ? ' open' : '') + '><summary>' + it.head + '</summary>' + body + '</details>';
+    }).join('');
+  }
+
+  document.getElementById('btnA').onclick = function () {
+    mode = 'A';
+    this.classList.add('on');
+    document.getElementById('btnB').classList.remove('on');
+    render();
+  };
+  document.getElementById('btnB').onclick = function () {
+    mode = 'B';
+    this.classList.add('on');
+    document.getElementById('btnA').classList.remove('on');
+    render();
+  };
+  document.getElementById('btnMob').onclick = function () {
+    var on = document.getElementById('wrap').classList.toggle('mob');
+    this.classList.toggle('on', on);
+  };
+  document.getElementById('btnTheme').onclick = function () {
+    var dk = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', dk ? 'light' : 'dark');
+    this.textContent = dk ? 'Tema Gelap' : 'Tema Terang';
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>
