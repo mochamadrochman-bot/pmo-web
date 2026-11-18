@@ -270,9 +270,10 @@ const JS = String.raw`<script>
     var eye=D.getElementById('heroEye');if(eye)eye.textContent='PMO Infrastruktur & Process Plant';
     // strip utilitas
     var u=D.createElement('div');u.className='v-util';
-    u.innerHTML='<div class="v-crumb">PMO Infrastruktur &amp; Process Plant</div><div class="v-ua"><button type="button" class="v-ub" data-v="grid">Daftar Proyek</button><button type="button" class="v-ub pri" data-v="exec">Monthly Executive Review →</button></div>';
+    u.innerHTML='<div class="v-crumb">PMO Infrastruktur &amp; Process Plant</div><div class="v-ua"><button type="button" class="v-ub" data-v="brief">Ringkasan Eksekutif</button><button type="button" class="v-ub" data-v="grid">Daftar Proyek</button><button type="button" class="v-ub pri" data-v="exec">Monthly Executive Review →</button></div>';
     D.body.insertBefore(u,main);
-    q('[data-v="grid"]',u).onclick=function(){var s=D.getElementById('vSec');if(s)s.scrollIntoView({behavior:'smooth',block:'start'})};
+    q('[data-v="brief"]',u).onclick=function(){var t=briefSec||D.getElementById('briefBox');if(t)window.scrollTo({top:Math.max(0,t.getBoundingClientRect().top+window.scrollY-76),behavior:'smooth'})};
+    q('[data-v="grid"]',u).onclick=function(){var s=D.getElementById('vSec');if(s)window.scrollTo({top:Math.max(0,s.getBoundingClientRect().top+window.scrollY-76),behavior:'smooth'})};
     q('[data-v="exec"]',u).onclick=function(){if(typeof go==='function')go('executive');else location.href='/app?page=executive'};
     // KPI ke kanvas, ringkasan di atas grid
     var kp=D.getElementById('heroKpis');if(kp){var sum=D.createElement('div');sum.className='v-sum';sum.id='vSum';sum.setAttribute('aria-label','Ringkasan portofolio');main.insertBefore(sum,main.firstChild);sum.appendChild(kp);kp.style.display='contents'}
