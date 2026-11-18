@@ -648,7 +648,7 @@ const HTML_PATCHES = [
   {
     file: 'WeeklyPrint',
     find: "return {code:r.code,name:r.name,group:r.group||'',groupName:r.groupName||'',weight:r.weight,fw:r.fieldWeight,blk,dev,late,changed,hl,ket};",
-    replace: "return {code:r.code,name:r.name,disc:r.disc||'',type:r.type||'',stageNote:r.stageNote||'',group:r.group||'',groupName:r.groupName||'',weight:r.weight,fw:r.fieldWeight,blk,dev,late,changed,hl,ket};",
+    replace: "return {code:r.code,name:r.name,disc:r.disc||'',epcType:r.type||'',stageNote:r.stageNote||'',group:r.group||'',groupName:r.groupName||'',weight:r.weight,fw:r.fieldWeight,blk,dev,late,changed,hl,ket};",
   },
   {
     file: 'WeeklyPrint',
@@ -661,7 +661,7 @@ const HTML_PATCHES = [
     if(/\\b(INSTRUMENT|INSTRUMENTASI|INSTRUMENTATION|INSTRUMEN|INSTUMENT|INS|INST|AUTOMATION)\\b/.test(s))return 'INSTRUMENT';
     return '';
   };
-  const d1=m((String(it.disc||'')+' '+String(it.groupName||'')+' '+String(it.group||'')+' '+String(it.type||'')+' '+String(it.stageNote||'')).toUpperCase());
+  const d1=m((String(it.disc||'')+' '+String(it.groupName||'')+' '+String(it.group||'')+' '+String(it.epcType||'')+' '+String(it.stageNote||'')).toUpperCase());
   if(d1)return d1;
   const n=String(it.name||'').toUpperCase();
   if(/\\b(FT-\\d+|FCV|PLC|DCS|SCADA|TRANSMITTER|GAUGE|METER|ANALYZER|CONTROL VALVE|THERMOCOUPLE|SENSOR|F&G|FIRE|ALARM|CCTV|INSTRUMENT|INSTUMENT)\\b/.test(n))return 'INSTRUMENT';
