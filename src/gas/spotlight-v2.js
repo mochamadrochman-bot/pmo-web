@@ -27,7 +27,7 @@ body.sv2.sv2-portrait #screen.sv2-screen{max-width:480px;height:auto;min-height:
 
 /* ---------- latar galeri penuh + scrim ---------- */
 body.sv2 .sv2-bg{position:absolute;inset:0;z-index:0;background:#0a1423;overflow:hidden}
-body.sv2 .sv2-bg-slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transform:scale(1.06);transition:opacity 1.15s cubic-bezier(.22,1,.36,1),transform 8s linear;will-change:opacity,transform}
+body.sv2 .sv2-bg-slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transform:scale(1.03);transition:opacity .55s cubic-bezier(.22,1,.36,1),transform 2.2s ease-out;will-change:opacity,transform}
 body.sv2 .sv2-bg-slide.on{opacity:1;transform:scale(1)}
 body.sv2 .sv2-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;background:
   linear-gradient(95deg,rgba(8,18,30,.95) 0%,rgba(8,18,30,.85) 38%,rgba(8,18,30,.36) 70%,rgba(8,18,30,.22) 100%),
@@ -88,6 +88,7 @@ body.sv2 .sv2-fact span{display:block;font-size:11.5px;color:#cbd5e1;margin-top:
 body.sv2 .sv2-ctr{display:flex;align-items:center;gap:8px}
 body.sv2 .sv2-ctr-logo{height:28px;max-width:56px;object-fit:contain;background:#fff;padding:2px 4px;border-radius:6px;flex:none}
 body.sv2 .sv2-ctr-chip{width:28px;height:28px;border-radius:6px;background:#fff;color:#0f172a;font-size:10.5px;font-weight:800;display:grid;place-items:center;flex:none}
+body.sv2 .sv2-ctr-logo[hidden],body.sv2 .sv2-ctr-chip[hidden]{display:none!important}
 
 /* ---------- badge galeri kanan ---------- */
 body.sv2 .sv2-pmeta{justify-self:end;text-align:right;max-width:300px;background:rgba(8,18,30,.76);border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:10px 14px;cursor:pointer;color:#fff;font:inherit;transition:border-color .18s ease,background .18s ease}
@@ -321,6 +322,7 @@ const JS = String.raw`<script>
     var cur=list[pIdx];
     var lbl=p.photos&&p.photos.length?'GALERI LAPANGAN · FOTO '+(pIdx+1)+'/'+list.length:'DOKUMENTASI PROYEK';
     applyBg(cur.src,cur.cap,lbl);
+    if(list.length>1){var nxt=new Image();nxt.src=list[(pIdx+1)%list.length].src;}
   };
 
   function buildRail(){
@@ -406,8 +408,14 @@ const JS = String.raw`<script>
       var ctrName=p.contractor&&p.contractor!=='—'?p.contractor:(profile.contractor||'—');
       D.getElementById('sv2Contractor').textContent=ctrName;
       var logo=D.getElementById('sv2CtrLogo'),chip=D.getElementById('sv2CtrChip');
-      if(p.logo){logo.src=p.logo;logo.hidden=false;chip.hidden=true;}
-      else{logo.hidden=true;logo.removeAttribute('src');chip.hidden=false;chip.textContent=initials(ctrName);}
+      if(p.logo){
+        logo.onerror=function(){logo.hidden=true;logo.style.display='none';chip.textContent=initials(ctrName);chip.hidden=false;chip.style.display='grid';};
+        logo.src=p.logo;logo.hidden=false;logo.style.display='block';
+        chip.hidden=true;chip.style.display='none';chip.textContent='';
+      }else{
+        logo.onerror=null;logo.hidden=true;logo.style.display='none';logo.removeAttribute('src');
+        chip.textContent=initials(ctrName);chip.hidden=false;chip.style.display='grid';
+      }
 
       D.getElementById('sv2Contract').textContent=profile.contract||'—';
       D.getElementById('sv2ContractNote').textContent=profile.contractNote||'Nilai kontrak efektif';
@@ -464,8 +472,7 @@ const JS = String.raw`<script>
       if(fill)fill.style.width=(ratio*100).toFixed(2)+'%';
       var photos=photosOf(projectList[currentIndex],currentIndex);
       if(photos.length>1){
-        var stepMs=Math.max(5000,SLIDE_MS/Math.min(3,photos.length));
-        var nextRound=Math.floor(elapsedMs/stepMs);
+        var nextRound=Math.floor(elapsedMs/1500);
         if(nextRound!==photoRound){photoRound=nextRound;paintPhotos();}
       }
       if(elapsedMs>=SLIDE_MS){
