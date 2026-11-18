@@ -645,6 +645,22 @@ const HTML_PATCHES = [
     replace: '<style>@media (max-width:760px){.hero-dots{left:16px!important;right:auto!important;bottom:14px!important}.top .t b{white-space:nowrap;font-size:clamp(14px,4vw,17px)}.top .t small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hero-eye::before,.hero-eye i,.hero-eye span{flex-shrink:0}.ntf-btn,.search-btn,.xb-act button,.acc-all button{min-height:44px!important;min-width:44px!important}}</style>\n</head>',
   },
   // Buat Laporan Weekly: ubah Resume per bidang menjadi 4 Disiplin (CIVIL, MECHANICAL, ELECTRICAL, INSTRUMENT) + tabel gabungan 4 Bidang x 4 Disiplin.
+  // Buat Laporan Bulanan: ganti daftar bullet kontribusi bidang dengan tabel kontribusi per item/disiplin (tanpa kolom Kendala & Action Plan).
+  {
+    file: 'MonthlyDoc',
+    find: "  p('Kontribusi progres tiap bidang terhadap progres proyek (100%):',{sp:true});\n  ul(x.fields.filter(f=>fin(f.weight)&&Number(f.weight)>0).map(f=>f.name+': realisasi '+pc(fin(f.actual)?f.actual*f.weight/100:null,2)+' dari '+pc(f.weight,2)+' (rencana '+pc(fin(f.plan)?f.plan*f.weight/100:null,2)+')'));",
+    replace: `  const dbMap=x.discByField||{};
+  x.fields.filter(f=>fin(f.weight)&&Number(f.weight)>0).forEach(f=>{
+    const d=dbMap[f.k],projCont=fin(f.actual)?f.actual*f.weight/100:null,projPlan=fin(f.plan)?f.plan*f.weight/100:null;
+    p(f.name+' : '+(fin(f.actual)?nf(f.actual,3)+'%':'-')+' dari '+(fin(f.plan)?nf(f.plan,3)+'%':'-')+' (bobot proyek '+pc(f.weight,2)+' · kontribusi '+pc(projCont,2)+' dari rencana '+pc(projPlan,2)+')',{b:true,sp:true});
+    if(d&&d.rows&&d.rows.length){
+      const trs=d.rows.map((r,idx)=>[String(idx+1)+'.',r.name,nf(r.weight,3),nf(r.contrib,3)]);
+      trs.push(['','TOTAL',nf(d.totWeight,3),nf(d.totContrib,3)]);
+      tb({cols:[{h:'No',w:8,al:'c'},{h:'Item',w:44,al:'l'},{h:'Bobot (%)',w:24},{h:'Kontribusi (%)',w:24}],rows:trs,total:true});
+    }
+  });`,
+  },
+  // Buat Laporan Weekly: ubah Resume per bidang menjadi 4 Disiplin (CIVIL, MECHANICAL, ELECTRICAL, INSTRUMENT) + tabel gabungan 4 Bidang x 4 Disiplin.
   {
     file: 'WeeklyPrint',
     find: "return {code:r.code,name:r.name,group:r.group||'',groupName:r.groupName||'',weight:r.weight,fw:r.fieldWeight,blk,dev,late,changed,hl,ket};",
@@ -861,6 +877,75 @@ ${RETIRED.map((n) => `  ${n} = function () { throw new Error('Akun kini dikelola
         });
       });
     } catch (e) { /* jika gagal, resume tetap memakai GRUP */ }
+    return r;
+  };
+  // Buat Laporan Bulanan (Word): tambahkan rincian kontribusi per item/disiplin untuk tiap bidang pada week cut-off.
+  var __origMonthlyDoc = getMonthlyDocData;
+  getMonthlyDocData = function (token, projectId, monthKey) {
+    var r = __origMonthlyDoc(token, projectId, monthKey);
+    try {
+      if (!r || !r.success || !r.extra || !r.extra.week || !r.project) return r;
+      var wp = getWeeklyPrintReport(token, r.project.id, r.extra.week);
+      if (!wp || !wp.success || !Array.isArray(wp.fields)) return r;
+      var ORDER = ['General', 'Process', 'Sipil', 'Mekanikal', 'Piping', 'Elektrikal', 'Instrument', 'HSE', 'Umum'];
+      var pickLabel = function (row) {
+        var norm = function (s) {
+          if (/\\b(UMUM|GENERAL|GEN|DOC CONTROL|DOCUMENT CONTROL)\\b/.test(s)) return 'General';
+          if (/\\b(PROSES|PROCESS|PRC)\\b/.test(s)) return 'Process';
+          if (/\\b(CIVIL|SIPIL|CIV|SIP|STRUKTUR|STRUCTURE|STRUCTURAL|STR|ARSITEK|ARCH)\\b/.test(s)) return 'Sipil';
+          if (/\\b(MECHANICAL|MEKANIKAL|MEKANIK|MEC|MEK|ROTATING|STATIC|EQUIPMENT)\\b/.test(s)) return 'Mekanikal';
+          if (/\\b(PIPING|PIP)\\b/.test(s)) return 'Piping';
+          if (/\\b(ELECTRICAL|ELEKTRIKAL|ELEKTRIK|LISTRIK|ELE|ELK)\\b/.test(s)) return 'Elektrikal';
+          if (/\\b(INSTRUMENT|INSTRUMENTASI|INSTRUMENTATION|INSTRUMEN|INSTUMENT|INS|INST|AUTOMATION)\\b/.test(s)) return 'Instrument';
+          if (/\\b(HSE|K3|SAFETY)\\b/.test(s)) return 'HSE';
+          return '';
+        };
+        var d1 = norm((String(row.disc || '') + ' ' + String(row.groupName || '') + ' ' + String(row.group || '') + ' ' + String(row.type || '') + ' ' + String(row.stageNote || '')).toUpperCase());
+        if (d1) return d1;
+        var n = String(row.name || '').toUpperCase();
+        if (/\\b(FT-\\d+|FCV|PLC|DCS|SCADA|TRANSMITTER|GAUGE|METER|ANALYZER|CONTROL VALVE|THERMOCOUPLE|SENSOR|F&G|FIRE|ALARM|CCTV|INSTRUMENT|INSTUMENT)\\b/.test(n)) return 'Instrument';
+        if (/\\b(ELECTRICAL|ELEKTRIK|LISTRIK|CABLE|KABEL|PANEL|TRAFO|TRANSFORMER|SWITCHGEAR|HVS|MCC|MOTOR|LIGHTING|LAMPU|GROUNDING|LIGHTNING|UPS|GENSET|POWER|BUSDUCT|FIBER OPTIC)\\b/.test(n)) return 'Elektrikal';
+        if (/\\b(MECHANICAL|MEKANIK|GRANULATOR|DRYER|COOLER|SCRUBBER|TANK|TANGKI|VESSEL|PUMP|POMPA|PIPE|PIPA|PIPING|VALVE|HYDRANT|CRANE|CONVEYOR|HOIST|BLOWER|FAN|COMPRESSOR|HEAT EXCHANGER|CHILLER|BOILER|TURBINE|REACTOR|UNLOADER|ELEVATOR|SCREW|HOPPER|SILO|DUCTING|RAIL|JACK UP|STRINGING|FIT UP|DYE PENETRANT|BIN HOPPER)\\b/.test(n)) return 'Mekanikal';
+        if (/\\b(CIVIL|SIPIL|BETON|ATAP|PONDASI|FOUNDATION|STRUKTUR|STRUCTURE|STEEL STRUCTURE|JALAN|DRAINASE|TANGGUL|TIANG|PANCANG|PILE|BORE PILE|PILING|SHEET PILE|PLATFORM|STAIRS|LADDER|GEDUNG|BANGUNAN|EXCAVATION|EARTHWORK|CONCRETE|FENDER|BOLLARD|REVETMENT|DERMAGA|BAJA|SILT PROTECTOR|DREDGING|PIPE BRIDGE|CABLE TRAY|SITE OFFICE|DIREKSI KEET|PERSIAPAN|MOBILISASI|DEMOBILISASI|FINISHING|PERIZINAN)\\b/.test(n)) return 'Sipil';
+        var gc = String(row.group || row.code || '').trim();
+        if (/^1\\.[23]\\.1(?:\\.|$)/.test(gc)) return 'Sipil';
+        if (/^1\\.[23]\\.2(?:\\.|$)/.test(gc)) return 'Mekanikal';
+        if (/^1\\.[23]\\.3(?:\\.|$)/.test(gc)) return 'Elektrikal';
+        if (/^1\\.[23]\\.4(?:\\.|$)/.test(gc)) return 'Instrument';
+        return 'Umum';
+      };
+      var discByField = {};
+      wp.fields.forEach(function (f) {
+        if (!f || f.notice || !Array.isArray(f.rows) || !f.rows.length) return;
+        var map = {};
+        f.rows.forEach(function (row) {
+          var lb = pickLabel(row);
+          if (!map[lb]) map[lb] = { name: lb, weight: 0, contrib: 0 };
+          map[lb].weight += Number(row.fieldWeight) || 0;
+          map[lb].contrib += (row.current && Number(row.current.total)) || 0;
+        });
+        var rows = Object.keys(map).map(function (k) { return map[k]; }).filter(function (x) { return x.weight > 0 || x.contrib > 0; });
+        rows.sort(function (a, b) {
+          var ia = ORDER.indexOf(a.name), ib = ORDER.indexOf(b.name);
+          return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+        });
+        var totW = rows.reduce(function (s, x) { return s + x.weight; }, 0);
+        var totC = rows.reduce(function (s, x) { return s + x.contrib; }, 0);
+        var ef = (r.extra.fields || []).filter(function (x) { return x.k === f.key; })[0];
+        if (ef && ef.actual != null && isFinite(ef.actual)) {
+          if (ef.actual >= 99.995 && totW > 0 && Math.abs(totC - 100) > 0.05) {
+            rows.forEach(function (x) { x.contrib = x.weight * 100 / totW; });
+            totC = 100;
+          } else if (totC > 0 && Math.abs(totC - ef.actual) > 0.5) {
+            var sc = ef.actual / totC;
+            rows.forEach(function (x) { x.contrib = x.contrib * sc; });
+            totC = ef.actual;
+          }
+        }
+        discByField[f.key] = { rows: rows, totWeight: totW, totContrib: totC };
+      });
+      r = Object.assign({}, r, { extra: Object.assign({}, r.extra, { discByField: discByField }) });
+    } catch (e) { /* jika baseline mingguan tidak tersedia, tampilkan ringkasan bidang saja */ }
     return r;
   };
   // Tambah/Edit Proyek: kelompok proyek (Pengembangan / Rutin / Sub-proyek).
