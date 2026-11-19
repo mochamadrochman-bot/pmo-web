@@ -1,90 +1,91 @@
 <style>
-  .panel { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin: 0 0 16px; }
-  .panel h2 { font-size: 16px; margin: 0 0 6px; color: var(--navy); display: flex; align-items: center; gap: 8px; }
-  .step { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--navy); color: #fff; font-size: 13px; }
-  .muted { color: var(--muted); font-size: 13px; }
-  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
-  .btn { display: inline-block; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: #fff; color: var(--navy); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; }
-  .btn.utama { background: var(--navy); color: #fff; border-color: var(--navy); }
-  .btn.kecil { padding: 4px 10px; font-size: 13px; }
-  .btn:disabled { opacity: .5; cursor: default; }
-  .badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
-  .b-tim { background: #dcfce7; color: #166534; } .b-salin { background: #dbeafe; color: #1e40af; }
-  .b-manual { background: #fef3c7; color: #92400e; } .b-off { background: #f1f5f9; color: #475569; } .b-err { background: #fee2e2; color: #991b1b; }
-  .msg { padding: 10px 12px; border-radius: 8px; font-size: 14px; margin-bottom: 14px; }
-  .msg.ok { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
-  .msg.err { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
-  input[type=text] { flex: 1 1 360px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
-  select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px; }
-  .stat { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .steps-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 16px; }
+  .step-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 8px;
+  }
+  .step-card h2 { font-size: 14.5px; margin: 0; color: var(--navy); display: flex; align-items: center; gap: 8px; }
+  .step {
+    display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--pri); color: #fff; font-size: 11.5px; font-weight: 700; flex: none;
+  }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 11px 13px; box-shadow: var(--shadow); }
   .stat b { display: block; font-size: 18px; color: var(--navy); }
   .stat span { font-size: 12px; color: var(--muted); }
-  .bar { height: 8px; border-radius: 99px; background: #e2e8f0; overflow: hidden; margin-top: 8px; }
-  .bar i { display: block; height: 100%; background: var(--navy); }
-  .bar i.need { background: #f59e0b; }
-  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .tbl th, .tbl td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
-  .tbl td.num { text-align: right; white-space: nowrap; }
-  .tblwrap { overflow-x: auto; }
-  .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
-  .chip { padding: 4px 10px; border-radius: 99px; border: 1px solid var(--line); background: #fff; font: inherit; font-size: 12px; cursor: pointer; }
-  .chip.on { background: var(--navy); color: #fff; border-color: var(--navy); }
-  .log { max-height: 220px; overflow: auto; font-size: 12px; background: #f8fafc; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin-top: 10px; }
-  .log div.f { color: #991b1b; }
-  .confirm { border: 1px solid #fde68a; background: #fffbeb; border-radius: 10px; padding: 12px; margin-top: 12px; font-size: 14px; }
+  .bar { height: 8px; border-radius: 99px; background: var(--bg); border: 1px solid var(--line); overflow: hidden; margin-top: 8px; }
+  .bar i { display: block; height: 100%; background: var(--pri); }
+  .bar i.need { background: var(--warn); }
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    padding: 5px 12px; border-radius: 7px; border: 1px solid var(--line);
+    background: var(--card); color: var(--muted); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .chip.on { background: var(--pri); color: #fff; border-color: var(--pri); }
+  .log { max-height: 220px; overflow: auto; font-size: 12px; background: var(--tint); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin-top: 10px; }
+  .log div.f { color: var(--err); }
+  .confirm { border: 1px solid var(--warn); background: var(--warn-bg); color: var(--warn); border-radius: 10px; padding: 12px; margin-top: 10px; font-size: 13.5px; }
   .fname { min-width: 240px; max-width: 380px; overflow-wrap: anywhere; }
   .owner { max-width: 200px; overflow-wrap: anywhere; color: var(--muted); }
+  .tbl td.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  @media (max-width: 960px) { .steps-row { grid-template-columns: 1fr; } }
 </style>
 
-<h1>Arsip Materi Weekly</h1>
-<p class="sub">Salin video dan materi weekly dari akun kontraktor atau perorangan ke Google Drive tim proyek, lalu ganti tautannya di dashboard. File asli tidak diubah.</p>
+<div class="pg-head">
+  <div>
+    <div class="pg-kicker">Manajemen File Weekly</div>
+    <h1>Arsip Materi Weekly</h1>
+    <p class="sub" style="margin:0">Salin video dan materi weekly dari akun kontraktor atau perorangan ke Google Drive tim proyek, lalu ganti tautannya di dashboard. File asli tidak diubah.</p>
+  </div>
+  <div class="row">
+    <select id="pid" aria-label="Pilih proyek" style="width:auto;min-width:230px">
+      <% projects.forEach(function (p) { %><option value="<%= p.id %>" <%= p.id === sel ? 'selected' : '' %>><%= p.name %></option><% }) %>
+    </select>
+    <button class="btn" id="reload" type="button">Muat ulang</button>
+  </div>
+</div>
 
 <% if (msg) { %><div class="msg ok"><%= msg %></div><% } %>
 <% if (err) { %><div class="msg err"><%= err %></div><% } %>
 <% if (!configured) { %><div class="msg err">Koneksi Google belum disetel di server (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET).</div><% } %>
 
-<div class="panel">
-  <label class="muted" for="pid">Proyek</label>
-  <div class="row" style="margin-top:6px">
-    <select id="pid">
-      <% projects.forEach(function (p) { %><option value="<%= p.id %>" <%= p.id === sel ? 'selected' : '' %>><%= p.name %></option><% }) %>
-    </select>
-    <button class="btn kecil" id="reload" type="button">Muat ulang</button>
+<div class="steps-row">
+  <div class="step-card">
+    <h2><span class="step">1</span> Akun Google tim proyek</h2>
+    <div id="acc" class="muted" style="font-size:13px">Memuat…</div>
+  </div>
+
+  <div class="step-card">
+    <h2><span class="step">2</span> Folder tujuan arsip</h2>
+    <p class="muted" style="margin:0;font-size:12.5px">Tempel tautan folder Drive milik tim. Di dalamnya dibuat subfolder per minggu (W103, W104, …).</p>
+    <div class="row">
+      <input type="text" id="folder" placeholder="https://drive.google.com/drive/folders/…" aria-label="Tautan folder tujuan" style="flex:1;min-width:140px">
+      <button class="btn" id="saveFolder" type="button">Simpan</button>
+    </div>
+    <div id="folderInfo" class="muted" style="font-size:12.5px"></div>
+  </div>
+
+  <div class="step-card">
+    <h2><span class="step">3</span> Periksa lalu arsipkan</h2>
+    <div id="quota" style="font-size:12.5px"></div>
+    <div class="row" style="margin-top:auto">
+      <button class="btn pri" id="go" type="button" disabled>Mulai arsip…</button>
+      <button class="btn" id="undo" type="button">Pulihkan tautan lama…</button>
+    </div>
+    <div id="confirm"></div>
+    <div id="job"></div>
   </div>
 </div>
 
-<div class="panel">
-  <h2><span class="step">1</span> Akun Google tim proyek</h2>
-  <div id="acc" class="muted">Memuat…</div>
-</div>
+<div class="stats" id="stats"></div>
 
-<div class="panel">
-  <h2><span class="step">2</span> Folder tujuan arsip</h2>
-  <p class="muted" style="margin:0">Tempel tautan folder Google Drive milik tim proyek. Di dalamnya sistem membuat subfolder per minggu (W103, W104, …).</p>
-  <div class="row">
-    <input type="text" id="folder" placeholder="https://drive.google.com/drive/folders/…" aria-label="Tautan folder tujuan">
-    <button class="btn" id="saveFolder" type="button">Simpan folder</button>
+<div class="panel" style="padding:14px 18px">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+    <h2 style="margin:0">Daftar video &amp; materi</h2>
+    <div class="filters" id="filters"></div>
   </div>
-  <div id="folderInfo" class="muted" style="margin-top:8px"></div>
-</div>
-
-<div class="panel">
-  <h2><span class="step">3</span> Periksa lalu arsipkan</h2>
-  <div class="stats" id="stats"></div>
-  <div id="quota"></div>
-  <div class="row">
-    <button class="btn utama" id="go" type="button" disabled>Mulai arsip…</button>
-    <button class="btn" id="undo" type="button">Pulihkan tautan lama…</button>
-  </div>
-  <div id="confirm"></div>
-  <div id="job"></div>
-</div>
-
-<div class="panel">
-  <h2>Daftar video &amp; materi</h2>
-  <div class="filters" id="filters"></div>
-  <div class="tblwrap" style="margin-top:10px">
+  <div class="tblwrap" style="border:1px solid var(--line);border-radius:10px">
     <table class="tbl">
       <thead><tr><th>Minggu</th><th>Jenis</th><th>File</th><th style="text-align:right">Ukuran</th><th>Pemilik</th><th>Status</th><th></th></tr></thead>
       <tbody id="rows"><tr><td colspan="7" class="muted">Memuat…</td></tr></tbody>
@@ -122,11 +123,11 @@
   function render() {
     var a = data.account;
     if (!a) {
-      $('acc').innerHTML = '<p style="margin:0">Belum terhubung. Masuk dengan akun Google <b>tim proyek</b> (bukan akun pribadi atau kontraktor). Jika muncul peringatan "aplikasi belum diverifikasi", pilih <b>Advanced → Go to PMO Dashboard</b>, lalu centang izin Google Drive.</p><div class="row"><a class="btn utama" href="/arsip/google/connect?pid=' + encodeURIComponent(pid) + '">Hubungkan akun Google tim</a></div>';
+      $('acc').innerHTML = '<p style="margin:0 0 8px">Belum terhubung. Masuk dengan akun Google <b>tim proyek</b> (bukan pribadi/kontraktor). Bila muncul peringatan "belum diverifikasi", pilih <b>Advanced → Go to PMO Dashboard</b>.</p><a class="btn pri sm" href="/arsip/google/connect?pid=' + encodeURIComponent(pid) + '">Hubungkan akun Google tim</a>';
     } else {
-      $('acc').innerHTML = '<span class="badge b-tim">Terhubung</span> <b>' + esc(a.email || 'akun Google') + '</b>' +
-        (data.tokenError ? '<div class="msg err" style="margin-top:8px">' + esc(data.tokenError) + '</div>' : '') +
-        '<div class="row"><a class="btn kecil" href="/arsip/google/connect?pid=' + encodeURIComponent(pid) + '">Ganti / hubungkan ulang</a><button class="btn kecil" id="disc" type="button">Putuskan</button></div>';
+      $('acc').innerHTML = '<div style="margin-bottom:8px"><span class="badge b-tim">Terhubung</span> <b style="color:var(--navy)">' + esc(a.email || 'akun Google') + '</b></div>' +
+        (data.tokenError ? '<div class="msg err" style="margin-bottom:8px">' + esc(data.tokenError) + '</div>' : '') +
+        '<div class="row"><a class="btn sm" href="/arsip/google/connect?pid=' + encodeURIComponent(pid) + '">Ganti akun</a><button class="btn sm danger" id="disc" type="button">Putuskan</button></div>';
       $('disc').onclick = async function () { try { await api('/disconnect', {}); load(); } catch (e) { alertBox(e.message); } };
     }
     $('folder').disabled = $('saveFolder').disabled = !a;
@@ -137,7 +138,7 @@
     var man = (c.onedrive || 0) + (c.akses || 0) + (c.folder || 0) + (c.lain || 0);
     if (!a) {
       $('stats').innerHTML = stat(data.items.length, 'tautan video & materi') + stat((c.onedrive || 0) + (c.folder || 0) + (c.lain || 0), 'di luar Google Drive');
-      $('quota').innerHTML = '<div class="muted" style="margin-top:12px">Hubungkan akun Google tim untuk melihat ukuran, pemilik, dan file yang perlu disalin.</div>';
+      $('quota').innerHTML = '<div class="muted">Hubungkan akun Google tim untuk melihat ukuran, pemilik, dan file yang perlu disalin.</div>';
       $('go').disabled = true; renderFilters(c); renderRows(); renderJob(data.job); return;
     }
     $('stats').innerHTML =
@@ -148,9 +149,9 @@
     var q = data.quota;
     if (q && q.limit) {
       var free = Math.max(0, q.limit - q.usage), pctU = Math.min(100, q.usage / q.limit * 100), pctN = Math.min(100 - pctU, data.need / q.limit * 100);
-      $('quota').innerHTML = '<div class="muted" style="margin-top:12px">Kapasitas Drive tim: terpakai ' + gb(q.usage) + ' dari ' + gb(q.limit) + ' · sisa ' + gb(free) + '</div><div class="bar" style="display:flex"><i style="width:' + pctU + '%"></i><i class="need" style="width:' + pctN + '%"></i></div>' +
-        (free < data.need ? '<div class="msg err" style="margin-top:8px">Ruang tidak cukup: perlu ' + gb(data.need) + ', sisa ' + gb(free) + '. Tambah kapasitas Google One akun tim dulu.</div>' : '<div class="muted" style="margin-top:4px">Kuning = perkiraan tambahan dari arsip ini.</div>');
-    } else if (q) { $('quota').innerHTML = '<div class="muted" style="margin-top:12px">Kapasitas Drive tim: tanpa batas (terpakai ' + gb(q.usage) + ').</div>'; }
+      $('quota').innerHTML = '<div class="muted">Drive tim: terpakai ' + gb(q.usage) + ' / ' + gb(q.limit) + ' · sisa ' + gb(free) + '</div><div class="bar" style="display:flex"><i style="width:' + pctU + '%"></i><i class="need" style="width:' + pctN + '%"></i></div>' +
+        (free < data.need ? '<div class="msg err" style="margin-top:8px">Ruang tidak cukup: perlu ' + gb(data.need) + ', sisa ' + gb(free) + '.</div>' : '<div class="muted" style="margin-top:4px;font-size:11.5px">Kuning = perkiraan tambahan dari arsip ini.</div>');
+    } else if (q) { $('quota').innerHTML = '<div class="muted">Drive tim: tanpa batas (terpakai ' + gb(q.usage) + ').</div>'; }
     else $('quota').innerHTML = '';
     var running = data.job && data.job.running;
     $('go').disabled = !(a && a.folderId && c.salin && !running && !data.tokenError);
@@ -171,8 +172,8 @@
     var canUp = data.account && data.account.folderId && !data.tokenError;
     $('rows').innerHTML = list.map(function (x) {
       var s = ST[x.status] || [x.status, 'b-off'];
-      var act = '<a class="btn kecil" href="' + esc(x.url) + '" target="_blank" rel="noopener">Buka</a>';
-      if (MANUAL[x.status] && canUp) act += ' <button class="btn kecil" type="button" data-up="' + x.row + ',' + x.col + '">Unggah file</button>';
+      var act = '<a class="btn sm" href="' + esc(x.url) + '" target="_blank" rel="noopener">Buka</a>';
+      if (MANUAL[x.status] && canUp) act += ' <button class="btn sm" type="button" data-up="' + x.row + ',' + x.col + '">Unggah file</button>';
       return '<tr><td>' + esc(x.week) + '</td><td>' + (x.item === 'VIDEO' ? 'Video' : 'Materi') + '</td><td class="fname">' + esc(x.title || (x.kind === 'onedrive' ? 'Tautan OneDrive' : x.url)) +
         (x.error ? '<div class="muted">' + esc(x.error) + '</div>' : '') + '</td><td class="num">' + gb(x.size) + '</td><td class="owner">' + esc(x.owner || '–') + '</td><td><span class="badge ' + s[1] + '">' + s[0] + '</span><span class="up-st" id="up-' + x.row + '-' + x.col + '"></span></td><td style="white-space:nowrap">' + act + '</td></tr>';
     }).join('');
@@ -182,7 +183,7 @@
   function renderJob(j) {
     if (!j) { $('job').innerHTML = ''; return; }
     var pct = j.total ? Math.round(j.done / j.total * 100) : 0;
-    $('job').innerHTML = '<div class="muted" style="margin-top:14px">' + (j.running ? 'Sedang mengarsipkan' + (j.current ? ': ' + esc(j.current) : '') + '…' : 'Arsip selesai.') + ' ' + j.done + '/' + j.total + ' · berhasil ' + j.ok + ' · gagal ' + j.fail + '</div><div class="bar"><i style="width:' + pct + '%"></i></div>' +
+    $('job').innerHTML = '<div class="muted" style="margin-top:8px">' + (j.running ? 'Sedang mengarsipkan' + (j.current ? ': ' + esc(j.current) : '') + '…' : 'Arsip selesai.') + ' ' + j.done + '/' + j.total + ' · berhasil ' + j.ok + ' · gagal ' + j.fail + '</div><div class="bar"><i style="width:' + pct + '%"></i></div>' +
       (j.error ? '<div class="msg err" style="margin-top:8px">' + esc(j.error) + '</div>' : '') +
       (j.log && j.log.length ? '<div class="log">' + j.log.map(function (l) { return '<div class="' + (l.ok ? '' : 'f') + '">' + (l.ok ? '✓ ' : '✗ ') + esc(l.text) + '</div>'; }).join('') + '</div>' : '');
   }
@@ -198,11 +199,11 @@
     }, 2500);
   }
 
-  function alertBox(t, ok) { $('confirm').innerHTML = '<div class="msg ' + (ok ? 'ok' : 'err') + '" style="margin-top:12px">' + esc(t) + '</div>'; }
+  function alertBox(t, ok) { $('confirm').innerHTML = '<div class="msg ' + (ok ? 'ok' : 'err') + '" style="margin-top:10px">' + esc(t) + '</div>'; }
 
   $('go').onclick = function () {
     var n = data.items.filter(function (x) { return x.status === 'salin'; }).length;
-    $('confirm').innerHTML = '<div class="confirm"><b>Salin ' + n + ' tautan (' + gb(data.need) + ')</b> ke folder <b>' + esc(data.account.folderName || '') + '</b> milik ' + esc(data.account.email || '') + '?<br>File asli tetap ada. Setiap tautan di dashboard diganti setelah salinannya terbukti bisa dibuka.<div class="row"><button class="btn utama" id="yes" type="button">Ya, mulai arsip</button><button class="btn" id="no" type="button">Batal</button></div></div>';
+    $('confirm').innerHTML = '<div class="confirm"><b>Salin ' + n + ' tautan (' + gb(data.need) + ')</b> ke folder <b>' + esc(data.account.folderName || '') + '</b> milik ' + esc(data.account.email || '') + '?<br>File asli tetap ada.<div class="row" style="margin-top:8px"><button class="btn pri sm" id="yes" type="button">Ya, mulai arsip</button><button class="btn sm" id="no" type="button">Batal</button></div></div>';
     $('no').onclick = function () { $('confirm').innerHTML = ''; };
     $('yes').onclick = async function () {
       this.disabled = true;
@@ -211,7 +212,7 @@
   };
 
   $('undo').onclick = function () {
-    $('confirm').innerHTML = '<div class="confirm">Kembalikan semua tautan proyek ini ke tautan sebelum diarsipkan? Salinan di Drive tim tidak dihapus.<div class="row"><button class="btn utama" id="yes2" type="button">Ya, pulihkan</button><button class="btn" id="no2" type="button">Batal</button></div></div>';
+    $('confirm').innerHTML = '<div class="confirm">Kembalikan semua tautan proyek ini ke tautan sebelum diarsipkan? Salinan di Drive tim tidak dihapus.<div class="row" style="margin-top:8px"><button class="btn pri sm" id="yes2" type="button">Ya, pulihkan</button><button class="btn sm" id="no2" type="button">Batal</button></div></div>';
     $('no2').onclick = function () { $('confirm').innerHTML = ''; };
     $('yes2').onclick = async function () {
       this.disabled = true;
@@ -221,7 +222,7 @@
 
   $('saveFolder').onclick = async function () {
     var b = this; b.disabled = true;
-    try { var f = await api('/folder', { url: $('folder').value }); $('folder').value = ''; alertBox('Folder tujuan disimpan: ' + f.name, true); await load(); } catch (e) { $('folderInfo').innerHTML = '<span style="color:#991b1b">' + esc(e.message) + '</span>'; }
+    try { var f = await api('/folder', { url: $('folder').value }); $('folder').value = ''; alertBox('Folder tujuan disimpan: ' + f.name, true); await load(); } catch (e) { $('folderInfo').innerHTML = '<span style="color:var(--err)">' + esc(e.message) + '</span>'; }
     b.disabled = false;
   };
 

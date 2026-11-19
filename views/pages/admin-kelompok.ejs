@@ -1,37 +1,57 @@
 <style>
-  .panel { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin: 0 0 18px; }
-  .panel h2 { font-size: 16px; margin: 0 0 6px; color: var(--navy); }
-  .muted { color: var(--muted); }
-  .btn { padding: 9px 16px; border-radius: 8px; border: 0; background: var(--navy); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
-  .btn:disabled { opacity: .5; cursor: default; }
-  .ok { color: #166534; font-size: 14px; margin-top: 12px; }
-  .kel { width: 100%; border-collapse: collapse; margin-top: 12px; }
-  .kel th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--line); }
-  .kel td { padding: 10px; border-bottom: 1px solid #eef1f4; vertical-align: middle; font-size: 14px; }
-  .kel tr.sub td:first-child { padding-left: 28px; }
-  .kel select { width: 100%; max-width: 260px; margin: 0; }
-  .kel select:disabled { background: #f3f5f7; color: #9aa5b1; }
+  .kel tr.sub td:first-child { padding-left: 34px; position: relative; }
+  .kel tr.sub td:first-child::before {
+    content: "↳"; position: absolute; left: 14px; top: 12px;
+    color: var(--muted); font-weight: 700;
+  }
+  .kel select { max-width: 270px; margin: 0; }
+  .kel select:disabled { opacity: .6; cursor: not-allowed; }
   .pid { display: block; font-size: 12px; color: var(--muted); }
-  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 99px; background: #eef2f6; color: #5b6773; margin-left: 6px; }
-  .legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 10px; font-size: 13px; }
-  .legend div { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .tag {
+    display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 7px;
+    border-radius: 6px; background: var(--tint); border: 1px solid var(--line); color: var(--muted); margin-left: 6px;
+  }
+  .legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 8px; font-size: 13px; }
+  .legend div { border: 1px solid var(--line); border-radius: 10px; padding: 11px 13px; background: var(--tint); }
   .legend b { display: block; color: var(--navy); margin-bottom: 2px; }
   .savebar { display: flex; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
-  .changed { font-size: 13px; color: #92400e; }
+  .changed { font-size: 13px; color: var(--warn); font-weight: 600; }
+  .toolbar select { flex: 0 1 180px; }
   @media (max-width: 640px) {
+    .tbl-card { border: 0; background: transparent; box-shadow: none; }
     .kel thead { display: none; }
     .kel, .kel tbody, .kel tr, .kel td { display: block; width: 100%; }
-    .kel tr { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin-bottom: 10px; }
+    .kel tr {
+      background: var(--card); border: 1px solid var(--line); border-radius: 11px;
+      padding: 8px 10px; margin-bottom: 10px; box-shadow: var(--shadow);
+    }
     .kel tr.sub { margin-left: 14px; width: calc(100% - 14px); }
+    .kel tr.sub td:first-child::before { content: none; }
     .kel td { border: 0; padding: 4px 0; }
     .kel tr.sub td:first-child { padding-left: 0; }
-    .kel td[data-l]::before { content: attr(data-l); display: block; font-size: 11px; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+    .kel td[data-l]::before { content: attr(data-l); display: block; font-size: 11px; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; font-weight: 600; }
     .kel select { max-width: none; }
   }
 </style>
 
-<h1>Kelompok Proyek</h1>
-<p class="sub">Menentukan kelompok setiap proyek untuk tampilan Portal dan laporan. Perhitungan progres dan keuangan tetap sendiri-sendiri per proyek.</p>
+<div class="pg-head">
+  <div>
+    <div class="pg-kicker">Struktur Portofolio</div>
+    <h1>Kelompok Proyek</h1>
+    <p class="sub" style="margin:0">Menentukan kelompok setiap proyek untuk tampilan Portal dan laporan. Perhitungan progres dan keuangan tetap sendiri-sendiri per proyek.</p>
+  </div>
+  <% if (!error && projects.length) { %>
+    <button class="btn pri" id="saveBtn" type="button" disabled>Simpan perubahan</button>
+  <% } %>
+</div>
+
+<% if (!error && projects.length) { %>
+<div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(210px,1fr))">
+  <div class="kpi"><small>Proyek Pengembangan</small><b id="kelKpiDev">–</b></div>
+  <div class="kpi"><small>Investasi Rutin</small><b id="kelKpiRutin">–</b></div>
+  <div class="kpi"><small>Sub-proyek</small><b id="kelKpiSub">–</b></div>
+</div>
+<% } %>
 
 <div class="panel">
   <div class="legend">
@@ -41,42 +61,55 @@
   </div>
 </div>
 
-<div class="panel">
-  <h2>Daftar proyek</h2>
-  <% if (error) { %>
-    <p class="err"><%= error %></p>
-  <% } else if (!projects.length) { %>
-    <p class="muted">Belum ada proyek di spreadsheet.</p>
-  <% } else { %>
-    <p class="muted" style="margin:0;font-size:13px">Proyek baru otomatis masuk <b>Pengembangan</b> sampai diubah di sini. Pengaturan ini disimpan di server, jadi tidak hilang saat sinkron atau impor data.</p>
-    <table class="kel" id="kel">
-      <thead><tr><th>Proyek</th><th style="width:200px">Tipe</th><th style="width:270px">Proyek induk</th></tr></thead>
-      <tbody>
-        <% projects.forEach(function (p) { %>
-          <tr data-id="<%= p.id %>" class="<%= p.type === 'SUB' ? 'sub' : '' %>">
-            <td><b><%= p.name %></b><% if (!p.active) { %><span class="tag">belum ada data</span><% } %><span class="pid"><%= p.id %><%= p.team ? ' · ' + p.team : '' %></span></td>
-            <td data-l="Tipe">
-              <select class="t" aria-label="Tipe <%= p.name %>">
-                <option value="PENGEMBANGAN" <%= p.type === 'PENGEMBANGAN' ? 'selected' : '' %>>Pengembangan</option>
-                <option value="RUTIN" <%= p.type === 'RUTIN' ? 'selected' : '' %>>Rutin</option>
-                <option value="SUB" <%= p.type === 'SUB' ? 'selected' : '' %>>Sub-proyek</option>
-              </select>
-            </td>
-            <td data-l="Proyek induk">
-              <select class="p" aria-label="Proyek induk <%= p.name %>" data-cur="<%= p.parent %>"></select>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-    <div class="savebar">
-      <button class="btn" id="saveBtn" type="button" disabled>Simpan kelompok</button>
-      <span class="changed" id="changed" hidden>Ada perubahan yang belum disimpan.</span>
+<% if (error) { %>
+  <div class="panel"><p class="err" style="margin:0"><%= error %></p></div>
+<% } else if (!projects.length) { %>
+  <div class="panel"><p class="muted" style="margin:0">Belum ada proyek di spreadsheet.</p></div>
+<% } else { %>
+  <div class="toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="kelSearch" type="search" placeholder="Saring nama, ID proyek, atau tim…" aria-label="Saring proyek">
     </div>
-    <div class="err" id="err" role="alert"></div>
-    <div class="ok" id="ok" role="status"></div>
-  <% } %>
-</div>
+    <select id="kelTypeFilter" aria-label="Filter tipe kelompok">
+      <option value="">Semua tipe</option>
+      <option value="PENGEMBANGAN">Pengembangan</option>
+      <option value="RUTIN">Rutin</option>
+      <option value="SUB">Sub-proyek</option>
+    </select>
+    <span class="tb-count" id="kelCount"><%= projects.length %> proyek</span>
+  </div>
+
+  <div class="tbl-card">
+    <div class="tbl-scroll">
+      <table class="kel" id="kel">
+        <thead><tr><th>Proyek</th><th style="width:200px">Tipe</th><th style="width:270px">Proyek induk</th></tr></thead>
+        <tbody>
+          <% projects.forEach(function (p) { %>
+            <tr data-id="<%= p.id %>" data-q="<%= (p.name + ' ' + p.id + ' ' + (p.team || '')).toLowerCase() %>" class="<%= p.type === 'SUB' ? 'sub' : '' %>">
+              <td><b><%= p.name %></b><% if (!p.active) { %><span class="tag">belum ada data</span><% } %><span class="pid"><%= p.id %><%= p.team ? ' · ' + p.team : '' %></span></td>
+              <td data-l="Tipe">
+                <select class="t" aria-label="Tipe <%= p.name %>">
+                  <option value="PENGEMBANGAN" <%= p.type === 'PENGEMBANGAN' ? 'selected' : '' %>>Pengembangan</option>
+                  <option value="RUTIN" <%= p.type === 'RUTIN' ? 'selected' : '' %>>Rutin</option>
+                  <option value="SUB" <%= p.type === 'SUB' ? 'selected' : '' %>>Sub-proyek</option>
+                </select>
+              </td>
+              <td data-l="Proyek induk">
+                <select class="p" aria-label="Proyek induk <%= p.name %>" data-cur="<%= p.parent %>"></select>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="savebar">
+    <span class="changed" id="changed" hidden>Ada perubahan yang belum disimpan. Klik "Simpan perubahan" di kanan atas.</span>
+    <div class="err" id="err" role="alert" style="margin:0"></div>
+    <div class="ok" id="ok" role="status" style="margin:0"></div>
+  </div>
+<% } %>
 
 <script>
 (function () {
@@ -87,6 +120,7 @@
   var rows = Array.prototype.slice.call(table.querySelectorAll('tbody tr'));
   var btn = document.getElementById('saveBtn'), changed = document.getElementById('changed');
   var err = document.getElementById('err'), ok = document.getElementById('ok');
+  var qInp = document.getElementById('kelSearch'), tf = document.getElementById('kelTypeFilter');
   var initial = JSON.stringify(state());
 
   function state() {
@@ -95,10 +129,26 @@
       return { id: tr.getAttribute('data-id'), type: t, parent: t === 'SUB' ? (p.value || p.getAttribute('data-cur') || '') : '' };
     });
   }
+  function applyFilter() {
+    var q = (qInp && qInp.value || '').trim().toLowerCase();
+    var tp = (tf && tf.value) || '';
+    var shown = 0;
+    rows.forEach(function (tr) {
+      var rowType = tr.querySelector('.t').value;
+      var hit = (!tp || rowType === tp) && (!q || (tr.getAttribute('data-q') || '').indexOf(q) >= 0);
+      tr.hidden = !hit;
+      if (hit) shown++;
+    });
+    if (document.getElementById('kelCount')) {
+      document.getElementById('kelCount').textContent = 'Menampilkan ' + shown + ' dari ' + rows.length + ' proyek';
+    }
+  }
   function refresh() {
     var dev = rows.filter(function (tr) { return tr.querySelector('.t').value === 'PENGEMBANGAN'; }).map(function (tr) { return tr.getAttribute('data-id'); });
+    var nDev = 0, nRut = 0, nSub = 0;
     rows.forEach(function (tr) {
       var id = tr.getAttribute('data-id'), t = tr.querySelector('.t').value, sel = tr.querySelector('.p');
+      if (t === 'PENGEMBANGAN') nDev++; else if (t === 'RUTIN') nRut++; else nSub++;
       var cur = sel.value || sel.getAttribute('data-cur') || '';
       tr.classList.toggle('sub', t === 'SUB');
       if (t !== 'SUB') { sel.innerHTML = '<option value="">—</option>'; sel.disabled = true; return; }
@@ -110,10 +160,16 @@
       sel.innerHTML = opts;
       sel.setAttribute('data-cur', sel.value);
     });
+    if (document.getElementById('kelKpiDev')) document.getElementById('kelKpiDev').textContent = nDev + ' proyek';
+    if (document.getElementById('kelKpiRutin')) document.getElementById('kelKpiRutin').textContent = nRut + ' proyek';
+    if (document.getElementById('kelKpiSub')) document.getElementById('kelKpiSub').textContent = nSub + ' paket';
     var dirty = JSON.stringify(state()) !== initial;
     btn.disabled = !dirty;
     changed.hidden = !dirty;
+    applyFilter();
   }
+  if (qInp) qInp.addEventListener('input', applyFilter);
+  if (tf) tf.addEventListener('change', applyFilter);
   table.addEventListener('change', function (e) {
     if (e.target.classList.contains('p')) e.target.setAttribute('data-cur', e.target.value);
     ok.textContent = ''; err.textContent = '';

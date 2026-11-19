@@ -1,116 +1,151 @@
 <style>
-  .wrap { max-width: 1100px; }
-  .bar-atas { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
-  .btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: #fff; color: var(--navy); font: inherit; font-size: 14px; cursor: pointer; }
-  .btn.utama { background: var(--navy); color: #fff; border-color: var(--navy); font-weight: 600; }
-  .btn.kecil { padding: 4px 10px; font-size: 13px; }
-  .btn:disabled { opacity: .5; cursor: default; }
-  .tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
-  table.akun td, table.akun th { font-size: 13px; vertical-align: top; }
-  table.akun tr:hover td { background: #f8fafc; }
-  .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
-  .b-admin { background: #e0e7ff; color: #3730a3; }
-  .b-input { background: #dcfce7; color: #166534; }
-  .b-kontraktor { background: #fef3c7; color: #92400e; }
-  .b-viewer, .b-reviewer { background: #f1f5f9; color: #475569; }
-  .b-off { background: #fee2e2; color: #991b1b; }
-  .b-lock { background: #fde68a; color: #78350f; }
-  .b-temp { background: #e0f2fe; color: #075985; }
-  .b-sena { background: #efe8fc; color: #6b35c4; }
-  .muted { color: var(--muted); }
-  .panel { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin: 0 0 18px; }
-  .panel h2 { font-size: 16px; margin: 0 0 4px; color: var(--navy); }
+  .u-cell { display: flex; align-items: center; gap: 10px; }
+  .u-av {
+    width: 30px; height: 30px; border-radius: 8px; background: var(--soft); color: var(--pri-ink);
+    display: grid; place-items: center; font-size: 11px; font-weight: 700; flex: none;
+  }
+  .proj-tags { display: flex; flex-wrap: wrap; gap: 4px; max-width: 320px; }
+  .proj-tag {
+    font-size: 11px; padding: 2px 7px; border-radius: 5px;
+    background: var(--tint); border: 1px solid var(--line); color: var(--ink);
+  }
+  .toolbar select { flex: 0 1 175px; }
   .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0 16px; }
-  select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; background: #fff; }
-  .proyek-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 12px; margin-top: 6px; font-size: 13px; }
-  .proyek-list label { display: flex; gap: 8px; align-items: flex-start; margin: 0; color: var(--ink); font-size: 13px; }
-  .proyek-list input { width: auto; margin-top: 3px; }
+  .proyek-list {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 6px 12px;
+    margin-top: 8px; font-size: 13px; padding: 12px; border: 1px solid var(--line);
+    border-radius: 10px; background: var(--tint); max-height: 220px; overflow-y: auto;
+  }
+  .proyek-list label { display: flex; gap: 8px; align-items: flex-start; margin: 0; color: var(--ink); font-size: 13px; font-weight: 500; cursor: pointer; }
+  .proyek-list input { width: auto; margin-top: 3px; accent-color: var(--pri); }
   .aksi { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
-  .temp { margin-top: 12px; padding: 12px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; font-size: 14px; }
-  .temp code { font-size: 18px; letter-spacing: 1px; background: #fff; padding: 2px 8px; border-radius: 6px; border: 1px solid #bbf7d0; }
-  .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
-  [hidden] { display: none !important; }
+  .temp {
+    margin-top: 12px; padding: 12px 14px; background: var(--ok-bg); color: var(--ok);
+    border: 1px solid rgba(20, 122, 82, .28); border-radius: 9px; font-size: 13.5px;
+  }
+  .temp code { font-size: 17px; letter-spacing: 1px; background: var(--card); padding: 2px 8px; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 4px; font-weight: 400; }
   @media (max-width: 640px) {
-    .tbl-wrap { border: 0; overflow: visible; }
+    .tbl-wrap { border: 0; background: transparent; box-shadow: none; overflow: visible; }
+    table.akun { background: transparent; }
     table.akun thead { display: none; }
     table.akun, table.akun tbody, table.akun tr, table.akun td { display: block; width: 100%; }
-    table.akun tr { background: #fff; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; padding: 6px 4px; }
-    table.akun td { border: 0; padding: 4px 10px; display: flex; gap: 10px; }
-    table.akun td::before { content: attr(data-label); flex: 0 0 104px; color: var(--muted); font-size: 12px; }
+    table.akun tr {
+      background: var(--card); border: 1px solid var(--line); border-radius: 11px;
+      margin-bottom: 10px; padding: 8px 6px; box-shadow: var(--shadow);
+    }
+    table.akun td { border: 0; padding: 5px 10px; display: flex; gap: 10px; align-items: center; }
+    table.akun td::before { content: attr(data-label); flex: 0 0 100px; color: var(--muted); font-size: 11.5px; font-weight: 600; }
     table.akun td:last-child::before { content: none; }
-    table.akun td:last-child { justify-content: flex-end; }
+    table.akun td:last-child { justify-content: flex-end; padding-top: 8px; border-top: 1px dashed var(--line); margin-top: 4px; }
   }
 </style>
 
-<div class="wrap">
-  <div class="bar-atas">
+<div class="pg-head">
+  <div>
+    <div class="pg-kicker">Administrasi Pengguna</div>
+    <h1>Kelola Akun</h1>
+    <p class="sub" style="margin:0">Cari akun, atur peran &amp; proyek, buka kunci login, atau reset password sementara.</p>
+  </div>
+  <button class="btn pri" id="btnTambah" type="button">+ Tambah akun</button>
+</div>
+
+<div class="kpis">
+  <div class="kpi"><small>Total akun</small><b id="kpiTotal">–</b></div>
+  <div class="kpi"><small>Akun aktif</small><b id="kpiAktif">–</b></div>
+  <div class="kpi"><small>Password sementara / terkunci</small><b id="kpiWarn">–</b></div>
+  <div class="kpi"><small>Akses Asisten AI (Sena)</small><b id="kpiSena">–</b></div>
+</div>
+
+<div class="panel" id="panel" hidden>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
     <div>
-      <h1>Kelola Akun</h1>
-      <p class="sub" style="margin:0">Tambah akun, atur peran dan proyek, buka kunci, atau reset password.</p>
+      <h2 id="panelJudul">Tambah akun</h2>
+      <p class="sub" id="panelSub" style="margin:0 0 8px">Akun baru wajib mengganti password saat login pertama.</p>
     </div>
-    <button class="btn utama" id="btnTambah" type="button">Tambah akun</button>
   </div>
-
-  <div class="panel" id="panel" hidden>
-    <h2 id="panelJudul">Tambah akun</h2>
-    <p class="sub" id="panelSub" style="margin:0 0 6px">Akun baru wajib mengganti password saat login pertama.</p>
-    <form id="formAkun">
-      <div class="grid2">
-        <div>
-          <label for="fUsername">Username</label>
-          <input id="fUsername" autocomplete="off" />
-        </div>
-        <div>
-          <label for="fNama">Nama lengkap</label>
-          <input id="fNama" autocomplete="off" />
-        </div>
-        <div>
-          <label for="fPeran">Peran</label>
-          <select id="fPeran">
-            <% roles.forEach(function (r) { %><option value="<%= r.id %>"><%= r.label %></option><% }); %>
-          </select>
-          <div class="hint" id="peranHint"></div>
-        </div>
-        <div id="statusWrap" hidden>
-          <label for="fStatus">Status</label>
-          <select id="fStatus">
-            <option value="aktif">Aktif</option>
-            <option value="nonaktif">Nonaktif (tidak bisa login)</option>
-          </select>
-        </div>
+  <form id="formAkun">
+    <div class="grid2">
+      <div>
+        <label for="fUsername">Username</label>
+        <input id="fUsername" autocomplete="off" />
       </div>
-
-      <label id="proyekLabel">Proyek</label>
-      <div class="hint" id="proyekHint"></div>
-      <div class="proyek-list">
-        <label><input type="checkbox" value="*" id="cbAll" /> <b>Semua proyek</b></label>
-        <% projects.forEach(function (p) { %>
-          <label><input type="checkbox" class="cbProyek" value="<%= p.id %>" /> <span><%= p.name %> <span class="muted">(<%= p.id %>)</span></span></label>
-        <% }); %>
+      <div>
+        <label for="fNama">Nama lengkap</label>
+        <input id="fNama" autocomplete="off" />
       </div>
-
-      <label class="sena-cb" style="display:flex;align-items:flex-start;gap:8px;margin-top:14px;font-weight:500;cursor:pointer">
-        <input type="checkbox" id="fSena" style="width:auto;margin:3px 0 0" />
-        <span>Akses Sena (asisten AI)<span class="hint" style="display:block;font-weight:400" id="senaHint">Untuk pimpinan yang perlu bertanya ke Sena, misalnya direktur. Sena hanya membaca proyek yang boleh dibuka akun ini. Admin selalu punya akses.</span></span>
-      </label>
-
-      <div class="aksi">
-        <button class="btn utama" type="submit" id="btnSimpan">Simpan</button>
-        <button class="btn" type="button" id="btnReset" hidden>Reset password</button>
-        <button class="btn" type="button" id="btnUnlock" hidden>Buka kunci</button>
-        <button class="btn" type="button" id="btnBatal">Batal</button>
+      <div>
+        <label for="fPeran">Peran</label>
+        <select id="fPeran">
+          <% roles.forEach(function (r) { %><option value="<%= r.id %>"><%= r.label %></option><% }); %>
+        </select>
+        <div class="hint" id="peranHint"></div>
       </div>
-      <div class="err" id="formErr" role="alert"></div>
-      <div class="temp" id="tempBox" hidden></div>
-    </form>
+      <div id="statusWrap" hidden>
+        <label for="fStatus">Status</label>
+        <select id="fStatus">
+          <option value="aktif">Aktif</option>
+          <option value="nonaktif">Nonaktif (tidak bisa login)</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:6px">
+      <div>
+        <label id="proyekLabel" style="margin-bottom:2px">Proyek</label>
+        <div class="hint" id="proyekHint" style="margin-top:0"></div>
+      </div>
+      <input id="projFilterInp" type="search" placeholder="Saring daftar proyek…" aria-label="Saring daftar proyek" style="max-width:220px;height:32px;font-size:12.5px">
+    </div>
+    <div class="proyek-list" id="proyekList">
+      <label><input type="checkbox" value="*" id="cbAll" /> <b>Semua proyek</b></label>
+      <% projects.forEach(function (p) { %>
+        <label data-proj-opt="<%= (p.name + ' ' + p.id).toLowerCase() %>"><input type="checkbox" class="cbProyek" value="<%= p.id %>" /> <span><%= p.name %> <span class="muted">(<%= p.id %>)</span></span></label>
+      <% }); %>
+    </div>
+
+    <label class="sena-cb" style="display:flex;align-items:flex-start;gap:8px;margin-top:14px;font-weight:500;color:var(--ink);cursor:pointer">
+      <input type="checkbox" id="fSena" style="width:auto;margin:3px 0 0;accent-color:var(--pri)" />
+      <span>Akses Sena (asisten AI)<span class="hint" style="display:block;font-weight:400" id="senaHint">Untuk pimpinan yang perlu bertanya ke Sena, misalnya direktur. Sena hanya membaca proyek yang boleh dibuka akun ini. Admin selalu punya akses.</span></span>
+    </label>
+
+    <div class="aksi">
+      <button class="btn pri" type="submit" id="btnSimpan">Simpan</button>
+      <button class="btn" type="button" id="btnReset" hidden>Reset password</button>
+      <button class="btn" type="button" id="btnUnlock" hidden>Buka kunci</button>
+      <button class="btn" type="button" id="btnBatal">Batal</button>
+    </div>
+    <div class="err" id="formErr" role="alert"></div>
+    <div class="temp" id="tempBox" hidden></div>
+  </form>
+</div>
+
+<div class="toolbar">
+  <div class="search-box">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    <input id="akunSearch" type="search" placeholder="Cari username, nama, atau proyek…" aria-label="Cari akun">
   </div>
+  <select id="akunRoleFilter" aria-label="Filter peran">
+    <option value="">Semua peran</option>
+    <% roles.forEach(function (r) { %><option value="<%= r.id %>"><%= r.label %></option><% }); %>
+  </select>
+  <select id="akunStatusFilter" aria-label="Filter status">
+    <option value="">Semua status</option>
+    <option value="aktif">Aktif</option>
+    <option value="temp">Password sementara</option>
+    <option value="locked">Terkunci</option>
+    <option value="nonaktif">Nonaktif</option>
+  </select>
+  <span class="tb-count" id="akunCount">Memuat…</span>
+</div>
 
-  <div class="tbl-wrap">
-    <table class="akun">
+<div class="tbl-wrap">
+  <div class="tbl-scroll">
+    <table class="tbl akun">
       <thead>
-        <tr><th>Username</th><th>Nama</th><th>Peran</th><th>Proyek</th><th>Status</th><th>Login terakhir</th><th></th></tr>
+        <tr><th>Akun</th><th>Peran</th><th>Proyek</th><th>Status</th><th>Login terakhir</th><th style="text-align:right">Aksi</th></tr>
       </thead>
-      <tbody id="rows"><tr><td colspan="7" class="muted">Memuat…</td></tr></tbody>
+      <tbody id="rows"><tr><td colspan="6" class="muted">Memuat…</td></tr></tbody>
     </table>
   </div>
 </div>
@@ -148,10 +183,15 @@
     return esc(d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' +
       d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }));
   }
+  function projNamesOf(ids) {
+    if (!ids || !ids.length) return '';
+    if (ids.indexOf('*') >= 0) return 'Semua proyek';
+    return ids.map(function (id) { return PROJECT_NAMES[id] || id; }).join(' ');
+  }
   function projText(ids) {
     if (!ids || !ids.length) return '<span class="muted">—</span>';
-    if (ids.indexOf('*') >= 0) return 'Semua proyek';
-    return ids.map(function (id) { return esc(PROJECT_NAMES[id] || id); }).join('<br>');
+    if (ids.indexOf('*') >= 0) return '<span class="proj-tag">Semua proyek</span>';
+    return '<div class="proj-tags">' + ids.map(function (id) { return '<span class="proj-tag">' + esc(PROJECT_NAMES[id] || id) + '</span>'; }).join('') + '</div>';
   }
 
   async function api(method, url, body) {
@@ -170,28 +210,67 @@
       users = await api('GET', '/api/admin/users');
       render();
     } catch (e) {
-      $('rows').innerHTML = '<tr><td colspan="7" class="err">' + esc(e.message) + '</td></tr>';
+      $('rows').innerHTML = '<tr><td colspan="6" class="err">' + esc(e.message) + '</td></tr>';
     }
   }
 
+  function updateKpis() {
+    var aktif = 0, warn = 0, sena = 0;
+    users.forEach(function (u) {
+      if (u.status === 'aktif') aktif++;
+      if (u.must_change_password || u.locked) warn++;
+      if (u.sena_access || u.role === 'admin') sena++;
+    });
+    $('kpiTotal').textContent = users.length;
+    $('kpiAktif').textContent = aktif;
+    $('kpiWarn').textContent = warn;
+    $('kpiSena').textContent = sena;
+  }
+
+  function filteredUsers() {
+    var q = ($('akunSearch').value || '').trim().toLowerCase();
+    var rf = $('akunRoleFilter').value;
+    var sf = $('akunStatusFilter').value;
+    return users.filter(function (u) {
+      if (rf && u.role !== rf) return false;
+      if (sf === 'aktif' && (u.status !== 'aktif' || u.locked || u.must_change_password)) return false;
+      if (sf === 'temp' && !u.must_change_password) return false;
+      if (sf === 'locked' && !u.locked) return false;
+      if (sf === 'nonaktif' && u.status !== 'nonaktif') return false;
+      if (q) {
+        var hay = [u.username, u.full_name, ROLE_LABEL[u.role] || u.role, projNamesOf(u.project_ids)].join(' ').toLowerCase();
+        if (hay.indexOf(q) < 0) return false;
+      }
+      return true;
+    });
+  }
+
   function render() {
+    updateKpis();
     if (!users.length) {
-      $('rows').innerHTML = '<tr><td colspan="7" class="muted">Belum ada akun.</td></tr>';
+      $('akunCount').textContent = '0 akun';
+      $('rows').innerHTML = '<tr><td colspan="6" class="muted">Belum ada akun.</td></tr>';
       return;
     }
-    $('rows').innerHTML = users.map(function (u) {
+    var list = filteredUsers();
+    $('akunCount').textContent = 'Menampilkan ' + list.length + ' dari ' + users.length + ' akun';
+    if (!list.length) {
+      $('rows').innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center;padding:24px">Tidak ada akun yang cocok dengan kata kunci atau filter tersebut.</td></tr>';
+      return;
+    }
+    $('rows').innerHTML = list.map(function (u) {
       var st = u.status === 'aktif' ? '' : '<span class="badge b-off">Nonaktif</span> ';
       if (u.locked) st += '<span class="badge b-lock">Terkunci</span> ';
       if (u.must_change_password) st += '<span class="badge b-temp">Password sementara</span>';
-      if (!st) st = 'Aktif';
+      if (!st) st = '<span class="badge b-ok">Aktif</span>';
+      var init = String(u.full_name || u.username || '?').split(/\s+/).map(function (p) { return p[0] || ''; }).join('').slice(0, 2).toUpperCase();
       return '<tr>' +
-        '<td data-label="Username"><b>' + esc(u.username) + '</b>' + (u.id === ME ? ' <span class="muted">(Anda)</span>' : '') + '</td>' +
-        '<td data-label="Nama">' + esc(u.full_name) + '</td>' +
+        '<td data-label="Akun"><div class="u-cell"><span class="u-av">' + esc(init) + '</span><div><b>' + esc(u.username) + '</b>' + (u.id === ME ? ' <span class="badge b-neu">Anda</span>' : '') + '<div class="muted" style="font-size:12px">' + esc(u.full_name) + '</div></div></div></td>' +
         '<td data-label="Peran"><span class="badge b-' + esc(u.role) + '">' + esc(ROLE_LABEL[u.role] || u.role) + '</span>' + (u.sena_access && u.role !== 'admin' ? ' <span class="badge b-sena" title="Boleh memakai Sena">Sena</span>' : '') + '</td>' +
         '<td data-label="Proyek">' + projText(u.project_ids) + '</td>' +
         '<td data-label="Status">' + st + '</td>' +
         '<td data-label="Login terakhir">' + fmtDate(u.last_login_at) + '</td>' +
-        '<td><button class="btn kecil" type="button" data-edit="' + esc(u.id) + '">Ubah</button></td>' +
+        '<td style="text-align:right"><button class="btn kecil" type="button" data-edit="' + esc(u.id) + '">Ubah</button></td>' +
         '</tr>';
     }).join('');
   }
@@ -226,6 +305,8 @@
     $('formErr').textContent = '';
     $('tempBox').hidden = true;
     $('panel').hidden = false;
+    $('projFilterInp').value = '';
+    document.querySelectorAll('[data-proj-opt]').forEach(function (el) { el.hidden = false; });
     $('fUsername').value = u ? u.username : '';
     $('fUsername').disabled = !!u;
     $('fNama').value = u ? u.full_name : '';
@@ -254,13 +335,24 @@
       '<div class="hint">Salin dan berikan langsung ke pemilik akun. Password ini tidak akan ditampilkan lagi.</div>';
   }
 
+  $('akunSearch').addEventListener('input', render);
+  $('akunRoleFilter').addEventListener('change', render);
+  $('akunStatusFilter').addEventListener('change', render);
+  $('projFilterInp').addEventListener('input', function () {
+    var pq = (this.value || '').trim().toLowerCase();
+    document.querySelectorAll('[data-proj-opt]').forEach(function (el) {
+      el.hidden = !!pq && el.getAttribute('data-proj-opt').indexOf(pq) < 0;
+    });
+  });
+
   $('btnTambah').addEventListener('click', function () { openPanel(null); });
   $('btnBatal').addEventListener('click', function () { $('panel').hidden = true; editing = null; });
   $('fPeran').addEventListener('change', updateHints);
   $('cbAll').addEventListener('change', function () { setChecks(this.checked ? ['*'] : []); });
   $('rows').addEventListener('click', function (e) {
-    var id = e.target.getAttribute('data-edit');
-    if (!id) return;
+    var btn = e.target.closest('[data-edit]');
+    if (!btn) return;
+    var id = btn.getAttribute('data-edit');
     openPanel(users.find(function (u) { return u.id === id; }));
   });
 
