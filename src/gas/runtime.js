@@ -408,7 +408,7 @@ function pmoXgHeaders(){
 /* Data dari cache browser bisa sudah tampil sebelum skrip ini dimuat: kelompokkan sekarang. */
 try{if(typeof currentReportData!=='undefined'&&currentReportData&&!document.querySelector('#projectRows tr.xg-h'))pmoExecGroups(currentReportData)}catch(e){console.warn('pmoExecGroups',e)}
 try{if(typeof currentReportData!=='undefined'&&currentReportData){pmoExecGroupMd(currentReportData);pmoExecGroupLa(currentReportData)}}catch(e){console.warn('pmoExecGroupsExtra',e)}
-try{var __st=document.getElementById('exStories');if(__st&&!__st.querySelector('.gl-st')&&typeof renderExecStories==='function'&&window.pmoGallery)renderExecStories(typeof currentReportData!=='undefined'&&currentReportData?currentReportData.period:'')}catch(e){console.warn('stories',e)}
+/* exStories dirender oleh exec-story-brief.js agar tidak tertimpa Story lingkaran lama */
 ` + EXEC_BRIEF_NARR_JS + `
 </script>`;
 
