@@ -79,6 +79,8 @@ html:not([data-theme="dark"]) aside.side .pmo-mod-hd .sg-n{background:rgba(255,2
 html:not([data-theme="dark"]) aside.side .pmo-epc-pill{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);color:var(--pmo-side-ink)}
 html:not([data-theme="dark"]) aside.side .pmo-epc-pill:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35)}
 html:not([data-theme="dark"]) aside.side .brand{flex:0 1 auto;width:auto;background:#fff;border-radius:12px;padding:6px 10px;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+html:not([data-theme="dark"]) .app.collapsed aside.side .brand{padding:5px;max-width:calc(100% - 12px);margin:0 auto}
+html:not([data-theme="dark"]) .app.collapsed aside.side .brand .brand-pmo{width:54px;height:44px}
 html:not([data-theme="dark"]) aside.side .pmo-mgrp+.pmo-mgrp{border-top-color:rgba(255,255,255,.10)}
 html:not([data-theme="dark"]) aside.side ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22)}
 html:not([data-theme="dark"]) aside.side button:focus-visible{outline:2px solid #fff;outline-offset:2px}
@@ -609,7 +611,7 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
           var padOff=(s.el&&s.el.id==='vSec')?0:16;
           var isHeroHdr=document.documentElement.classList.contains('ex-hero-hdr');
           var sh=isHeroHdr?document.getElementById('exStuckHost'):null;
-          var heroStickyH=(sh&&sh.offsetHeight>0)?sh.offsetHeight:((hdr?hdr.offsetHeight:58)+(bar&&!bar.hidden?bar.offsetHeight:38));
+          var heroStickyH=(sh&&sh.offsetHeight>0)?sh.offsetHeight:(hdr&&hdr.offsetHeight>40?hdr.offsetHeight+14:64);
           var hdrPos=hdr?getComputedStyle(hdr).position:'';
           var stickyOff=isHeroHdr?heroStickyH:(hdrPos==='fixed'?hdr.offsetHeight:(page==='executive'&&hdrPos==='sticky'?hdr.offsetHeight+(bar&&!bar.hidden?bar.offsetHeight:0):0));
           var off=stickyOff+padOff;
@@ -685,7 +687,7 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
         if(nxt){
           var isHeroHdr=document.documentElement.classList.contains('ex-hero-hdr');
           var sh=isHeroHdr?document.getElementById('exStuckHost'):null;
-          var heroOff=(sh&&sh.offsetHeight>0)?sh.offsetHeight:((hdr?hdr.offsetHeight:58)+(bar&&!bar.hidden?bar.offsetHeight:38));
+          var heroOff=(sh&&sh.offsetHeight>0)?sh.offsetHeight:(hdr&&hdr.offsetHeight>40?hdr.offsetHeight+14:64);
           var hdrPos=hdr?getComputedStyle(hdr).position:'';
           var off=(isHeroHdr?heroOff:(/(sticky|fixed)/.test(hdrPos)?hdr.offsetHeight+(bar&&!bar.hidden?bar.offsetHeight:0):0))+16;
           window.scrollTo({top:Math.max(0,nxt.getBoundingClientRect().top+window.scrollY-off),behavior:'smooth'});

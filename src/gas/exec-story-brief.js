@@ -54,15 +54,15 @@ html.ex-hero-hdr[data-theme="dark"]{
   --ex-stuck-top:#0f172a;--ex-stuck-sub:#0f172a;--ex-stuck-menu:#111c33;--ex-stuck-act:#2563eb;
 }
 html.ex-hero-hdr .content{padding-top:14px!important}
-html.ex-hero-hdr .hero{position:relative;overflow:visible!important;z-index:34;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;align-items:end;column-gap:16px;padding:12px 24px 20px;min-height:156px}
+html.ex-hero-hdr .hero{position:relative;overflow:visible!important;z-index:71;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;align-items:end;column-gap:16px;padding:12px 24px 20px;min-height:156px}
 html.ex-hero-hdr .hero::before{border-radius:inherit;overflow:hidden}
 #exHeroSpacer{display:none;grid-column:1 / -1;grid-row:1;flex:none}#exPbarSpacer{display:none;flex:none}
 html.ex-hero-hdr.ex-hdr-mounted #exHeroSpacer{display:block}
 html.ex-hero-hdr.ex-pbar-mounted #exPbarSpacer{display:block}
 
 /* Kontrol glass di dalam .hero (at top) maupun di dalam #exStuckHost (saat scroll) */
-html.ex-hero-hdr :is(.hero,#exStuckHost) header.topbar{position:relative!important;top:auto!important;z-index:8;background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;border-bottom:1px solid rgba(255,255,255,.16)!important;padding:0 0 10px 0!important;margin:0 0 12px 0!important;gap:8px;flex-wrap:wrap}
-html.ex-hero-hdr .hero>header.topbar{grid-column:1 / -1;grid-row:1}
+html.ex-hero-hdr :is(.hero,#exStuckHost) header.topbar{position:relative!important;top:auto!important;z-index:40!important;background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;border-bottom:1px solid rgba(255,255,255,.16)!important;gap:8px;flex-wrap:wrap}
+html.ex-hero-hdr .hero>header.topbar{grid-column:1 / -1;grid-row:1;padding:0 0 10px 0!important;margin:0 0 12px 0!important}
 html.ex-hero-hdr .hero>div:not(#exHeroSpacer):not(#exPbarSpacer):not(.pmo-pbar){grid-column:1;grid-row:2;min-width:0;z-index:5}
 html.ex-hero-hdr .hero header.topbar .crumbs{display:none!important}
 html.ex-hero-hdr .hero header.topbar .period-control{margin-left:auto}
@@ -90,35 +90,40 @@ html.ex-hero-hdr :is(.hero,#exStuckHost) header.topbar .ntf-wrap>button svg{colo
 html.ex-hero-hdr :is(.hero,#exStuckHost) header.topbar .pmo-qs-trigger kbd{background:rgba(255,255,255,.16)!important;border-color:rgba(255,255,255,.32)!important;color:#fff!important}
 html.ex-hero-hdr :is(.hero,#exStuckHost) header.topbar .pop{background:var(--card,#fff);color:var(--ink,#132b43);z-index:80}
 html.ex-hero-hdr .pmo-pbar .pmo-crumb{display:none!important}
-html.ex-hero-hdr .hero>.pmo-pbar{grid-column:2;grid-row:2;align-self:end;justify-self:end;position:relative!important;top:auto!important;z-index:7;margin:0!important;padding:0!important;border:0!important;background:transparent!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important}
-html.ex-hero-hdr .hero>.pmo-pbar[hidden]{display:none!important}
-html.ex-hero-hdr .hero>.pmo-pbar .pmo-pbar-r{min-height:0!important;overflow:visible!important}
-html.ex-hero-hdr .hero>.pmo-pbar .pmo-isi-drop{margin-left:0}
-html.ex-hero-hdr .hero>.pmo-pbar .pmo-isi-trig{height:38px;padding:0 14px;border-radius:11px;background:rgba(255,255,255,.12)!important;border:1px solid rgba(255,255,255,.28)!important;color:#fff!important;box-shadow:none!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-html.ex-hero-hdr .hero>.pmo-pbar .pmo-isi-trig:hover,html.ex-hero-hdr .hero>.pmo-pbar .pmo-isi-drop.open .pmo-isi-trig{background:rgba(255,255,255,.22)!important;border-color:rgba(255,255,255,.46)!important;color:#fff!important}
-html.ex-hero-hdr .hero>.pmo-pbar .pmo-isi-trig .pmo-isi-l{color:rgba(219,234,254,.84)!important}
-html.ex-hero-hdr .hero>.pmo-pbar .pmo-isi-trig svg{color:#fff!important;opacity:.9}
+html.ex-hero-hdr :is(.hero,#exStuckHost) .pmo-pbar{position:relative!important;top:auto!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important;flex:none;overflow:visible!important}
+html.ex-hero-hdr :is(.hero,#exStuckHost) .pmo-pbar[hidden]{display:none!important}
+html.ex-hero-hdr :is(.hero,#exStuckHost) .pmo-pbar .pmo-pbar-r{min-height:0!important;overflow:visible!important}
+html.ex-hero-hdr :is(.hero,#exStuckHost) .pmo-pbar .pmo-isi-drop{margin-left:0}
+html.ex-hero-hdr :is(.hero,#exStuckHost) .pmo-pbar .pmo-isi-trig{height:38px;padding:0 13px;border-radius:11px;background:rgba(255,255,255,.12)!important;border:1px solid rgba(255,255,255,.28)!important;color:#fff!important;box-shadow:none!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+html.ex-hero-hdr :is(.hero,#exStuckHost) .pmo-pbar .pmo-isi-trig:hover,html.ex-hero-hdr :is(.hero,#exStuckHost) .pmo-pbar .pmo-isi-drop.open .pmo-isi-trig{background:rgba(255,255,255,.22)!important;border-color:rgba(255,255,255,.46)!important;color:#fff!important}
+html.ex-hero-hdr :is(.hero,#exStuckHost) .pmo-pbar .pmo-isi-trig .pmo-isi-l{color:rgba(219,234,254,.84)!important}
+html.ex-hero-hdr :is(.hero,#exStuckHost) .pmo-pbar .pmo-isi-trig svg{color:#fff!important;opacity:.9}
+html.ex-hero-hdr .hero>.pmo-pbar{grid-column:2;grid-row:2;align-self:end;justify-self:end;z-index:10!important}
 html.ex-hero-hdr .hero>.pmo-pbar .pmo-isi-menu{background:var(--card,#fff)!important;border:1px solid var(--line,#dce5ed)!important;color:var(--ink,#132b43)!important;z-index:80}
 html.ex-hero-hdr .content>.notice{margin-top:12px}
-html.ex-hero-hdr .anchor{scroll-margin-top:112px!important}
+html.ex-hero-hdr .anchor{scroll-margin-top:82px!important}
 
-/* Sticky Header Host: muncul sangat smooth dengan latar tema saat scroll melewati banner */
-#exStuckHost{position:fixed;top:0;right:0;left:var(--ex-stuck-left,0);z-index:48;background:var(--ex-stuck-top);color:#fff;box-shadow:0 12px 32px rgba(0,0,0,.26);border-bottom:1px solid rgba(255,255,255,.14);transform:translate3d(0,-104%,0);opacity:0;pointer-events:none;transition:transform .38s cubic-bezier(.22,1,.36,1),opacity .30s ease,background-color .30s ease;will-change:transform,opacity}
+/* Sticky Header Host: satu baris ramping bertema dengan Isi halaman tepat di kiri Periode */
+#exStuckHost{position:fixed;top:0;right:0;left:var(--ex-stuck-left,0);z-index:72;background:var(--ex-stuck-top);color:#fff;box-shadow:0 10px 28px rgba(0,0,0,.24);border-bottom:1px solid rgba(255,255,255,.14);transform:translate3d(0,-104%,0);opacity:0;pointer-events:none;transition:transform .38s cubic-bezier(.22,1,.36,1),opacity .30s ease,background-color .30s ease;will-change:transform,opacity}
 #exStuckHost[hidden]{display:none}
 html.ex-hero-hdr.ex-hdr-stuck #exStuckHost{transform:translate3d(0,0,0);opacity:1;pointer-events:auto}
-#exStuckHost header.topbar{margin:0!important;padding:15px 24px 12px!important;min-height:64px;border-bottom:1px solid rgba(255,255,255,.10)!important}
-#exStuckHost header.topbar .crumbs{display:block!important;min-width:0;flex:1}
-#exStuckHost header.topbar .crumbs small{color:rgba(255,255,255,.74);font-size:11px;display:block;margin-bottom:2px}
-#exStuckHost header.topbar .crumbs h2{color:#fff;font-size:16.5px;margin:0;line-height:1.25}
-#exStuckHost .pmo-pbar{position:relative!important;top:auto!important;margin:0!important;border:0!important;border-radius:0!important;padding:6px 24px 10px!important;background:var(--ex-stuck-sub)!important;color:#fff;box-shadow:none!important;transition:background-color .30s ease}
-#exStuckHost .pmo-pbar-r{min-height:36px;justify-content:flex-end}
-#exStuckHost .pmo-isi-trig{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.28);color:#fff;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-#exStuckHost .pmo-isi-trig:hover,#exStuckHost .pmo-isi-drop.open .pmo-isi-trig{background:rgba(255,255,255,.24);border-color:rgba(255,255,255,.5);color:#fff}
-#exStuckHost .pmo-isi-trig .pmo-isi-l{color:rgba(255,255,255,.8)}
-#exStuckHost .pmo-isi-menu{background:var(--ex-stuck-menu)!important;border:1px solid rgba(255,255,255,.18)!important;box-shadow:0 18px 40px rgba(0,0,0,.44)}
+html.ex-hero-hdr #exStuckHost header.topbar{margin:0!important;padding:12px 24px!important;min-height:62px;border-bottom:0!important;gap:8px;flex-wrap:nowrap;align-items:center}
+#exStuckHost header.topbar .crumbs{display:block!important;min-width:110px;flex:1 1 130px;overflow:hidden}
+#exStuckHost header.topbar .crumbs small{color:rgba(255,255,255,.74);font-size:11px;display:block;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#exStuckHost header.topbar .crumbs h2{color:#fff;font-size:16px;margin:0;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#exStuckHost .pmo-isi-menu{background:var(--ex-stuck-menu)!important;border:1px solid rgba(255,255,255,.18)!important;box-shadow:0 18px 40px rgba(0,0,0,.44);z-index:80}
 #exStuckHost .pmo-isi-menu .pmo-chip{color:rgba(255,255,255,.9)!important}
 #exStuckHost .pmo-isi-menu .pmo-chip:hover{background:rgba(255,255,255,.12)!important;color:#fff!important}
 #exStuckHost .pmo-isi-menu .pmo-chip.on{background:var(--ex-stuck-act)!important;color:#fff!important}
+@media (max-width:1240px){
+  html.ex-hero-hdr #exStuckHost header.topbar .period-trigger{min-width:150px!important}
+  html.ex-hero-hdr #exStuckHost header.topbar .userchip{max-width:175px}
+  html.ex-hero-hdr #exStuckHost header.topbar .pmo-qs-trigger kbd{display:none!important}
+}
+@media (max-width:1060px){
+  html.ex-hero-hdr #exStuckHost header.topbar{padding:11px 16px!important;gap:6px}
+  html.ex-hero-hdr #exStuckHost .pmo-isi-trig .pmo-isi-l{display:none}
+}
 html.pp-open #exStuckHost{display:none!important}
 
 /* 1. Hapus Card Ringkasan per Kelompok & 2. Susun Vertikal Peta Deviasi + Realisasi Keuangan */
@@ -431,9 +436,16 @@ const EXEC_STORY_BRIEF_JS = String.raw`<script id="pmoExecStoryBriefJs">
         }
         nodes.host.hidden=false;
         if(hdr.parentNode!==nodes.host)nodes.host.appendChild(hdr);
-        if(pbar&&pbar.parentNode!==nodes.host)nodes.host.appendChild(pbar);
+        if(pbar){
+          var per=hdr.querySelector('.period-control');
+          if(per){if(pbar.parentNode!==hdr||pbar.nextElementSibling!==per)hdr.insertBefore(pbar,per);}
+          else if(pbar.parentNode!==hdr)hdr.appendChild(pbar);
+        }
         void nodes.host.offsetHeight;
         H.classList.add('ex-hdr-stuck');
+      }else if(pbar&&pbar.parentNode!==hdr){
+        var per2=hdr.querySelector('.period-control');
+        if(per2)hdr.insertBefore(pbar,per2);else hdr.appendChild(pbar);
       }
     }else if(wasStuck){
       if(window.scrollY<18){
