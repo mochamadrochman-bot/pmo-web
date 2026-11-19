@@ -60,8 +60,10 @@ html.pv2 header.top .pmo-qs-trigger *,html.pv2 header.top .account-wrap>.chip b,
 html.pv2 header.top .pmo-qs-trigger kbd{background:rgba(255,255,255,.14)!important;border-color:rgba(255,255,255,.3)!important;color:#fff!important}
 html.pv2 header.top .account-wrap>.chip small{opacity:.8}
 
-/* ---------- hero penuh ---------- */
-html.pv2 #hero.hero{position:relative;height:88svh;min-height:540px;max-height:840px;margin:0!important;border-radius:0!important;overflow:hidden;display:flex;align-items:flex-end;padding:0!important;box-shadow:none!important;background:#0b1825!important}
+/* ---------- hero penuh + strip bawah pas 1 layar ---------- */
+html.pv2 .v-first{display:flex;flex-direction:column;min-height:100svh}
+@media (min-width:761px){html.pv2 .v-first{height:100svh;min-height:580px}}
+html.pv2 #hero.hero{position:relative;flex:1 1 auto;height:auto!important;min-height:460px;max-height:none!important;margin:0!important;border-radius:0!important;overflow:hidden;display:flex;align-items:flex-end;padding:0!important;box-shadow:none!important;background:#0b1825!important}
 html.pv2 #hero .hero-bg{position:absolute;inset:0;z-index:0}
 html.pv2 #hero .hero-bg>div{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transform:scale(1.04);transition:opacity 1.4s ease,transform 7s ease}
 html.pv2 #hero .hero-bg>div.on{opacity:1;transform:scale(1)}
@@ -81,7 +83,7 @@ html.pv2 #hero .hero-dots button.on{width:28px;background:#fff}
 html.pv2 #hero #heroName{color:rgba(255,255,255,.82);font-size:12px;margin-right:6px;white-space:nowrap}
 
 /* ---------- strip utilitas ---------- */
-html.pv2 .v-util{background:#fff;color:#132b43;border-bottom:1px solid #e0e8f0;padding:15px 48px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+html.pv2 .v-util{flex:none;background:#fff;color:#132b43;border-bottom:1px solid #e0e8f0;padding:15px 48px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
 html.pv2[data-theme="dark"] .v-util{background:#0f141c;color:#e2e8f0;border-color:rgba(255,255,255,.1)}
 html.pv2 .v-crumb{font-size:12.5px;color:#5b7085;font-weight:500}
 html.pv2 .v-crumb b{color:#073b63}
@@ -92,7 +94,7 @@ html.pv2 .v-ub.pri{background:var(--v-acc);border-color:var(--v-acc);color:#fff}
 html.pv2[data-theme="dark"] .v-ub:not(.pri){background:#1b2330;border-color:rgba(255,255,255,.16);color:#e2e8f0}
 
 /* ---------- kanvas ---------- */
-html.pv2 main.wrap{max-width:none!important;margin:0!important;padding:44px 48px 90px!important;background:var(--v-bg)}
+html.pv2 main.wrap{max-width:none!important;margin:0!important;padding:44px 48px 56px!important;background:var(--v-bg)}
 html.pv2 main.wrap>*{max-width:1280px;margin-left:auto!important;margin-right:auto!important}
 html.pv2 main.wrap>section.grp>h2{font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--v-eye)!important}
 html.pv2 main.wrap>section.grp>h2::after{background:var(--v-line)!important}
@@ -125,7 +127,7 @@ html.pv2[data-theme="dark"] #briefBox .xpl-mon a{color:#7dd3fc!important}
 html.pv2 #briefBox .xpl-mon{display:none!important}
 html.pv2 #briefBox .xpl-acts,.xpl-acts{margin:2px 0 10px;padding-left:22px;display:grid;gap:3px}
 html.pv2 #briefBox .xpl-acts li{padding-left:2px}
-html.pv2 .v20-sec{position:relative;scroll-margin-top:68px;min-height:640px;width:100%;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:42px 56px 46px;margin-top:24px;background:#0b1523;color:#fff;user-select:none}
+html.pv2 .v20-sec{position:relative;scroll-margin-top:var(--pv2-hh,64px);min-height:max(620px,calc(100svh - var(--pv2-hh,64px) - var(--pv2-fh,83px)));width:100%;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:44px 56px 48px;margin-top:0;background:#0b1523;color:#fff;user-select:none}
 html.pv2 .v20-bg{position:absolute;inset:0;z-index:0}
 html.pv2 .v20-bg-slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transform:scale(1.05);transition:opacity .9s cubic-bezier(.22,1,.36,1),transform 7s linear;will-change:opacity,transform}
 html.pv2 .v20-bg-slide.on{opacity:1;transform:scale(1)}
@@ -195,7 +197,7 @@ html.pv2 .v20-empty{padding:48px 0;text-align:center;color:#cbd5e1;font-size:14p
 
 /* bagian lama yang dipindah ke header / grid baru */
 html.pv2 main.wrap>section.grp.v-hide{display:none!important}
-html.pv2 .foot.v-foot{max-width:none!important;margin:0!important;background:var(--v-foot);border-top:1px solid rgba(255,255,255,.1);padding:32px 48px;color:#cbd5e1;font-size:12.5px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px;text-align:left}
+html.pv2 .foot.v-foot{max-width:none!important;margin:0!important;background:var(--v-foot);border-top:1px solid rgba(255,255,255,.1);padding:32px 136px 32px 48px;color:#cbd5e1;font-size:12.5px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px;text-align:left}
 
 /* ---------- Tanya Sena ---------- */
 html.pv2 .v-sena{position:fixed;right:0;top:52%;transform:translateY(-50%);z-index:70;writing-mode:vertical-rl;text-orientation:mixed;padding:16px 10px;border:0;border-radius:12px 0 0 12px;cursor:pointer;background:linear-gradient(180deg,var(--v-acc) 0%,var(--v-acc2) 100%);color:#fff;font:700 11.5px/1 Inter,system-ui,sans-serif;letter-spacing:.14em;box-shadow:-4px 8px 24px rgba(0,0,0,.35);min-width:40px}
@@ -233,7 +235,7 @@ html.pv2 .v-sheet-in>button:hover,html.pv2 .v-sheet-in>button.on{background:rgba
   html.pv2 header.top .pmo-qs-trigger{display:none!important}
   html.pv2 header.top .account-wrap>.chip>div{display:none!important}
   html.pv2 .v-burger span{display:none}html.pv2 .v-burger{padding:0 11px;min-width:44px;justify-content:center}
-  html.pv2 #hero.hero{height:72svh;min-height:460px}
+  html.pv2 #hero.hero{min-height:420px}
   html.pv2 #hero .hero-in{max-width:calc(100% - 20px);padding:0 0 64px 20px!important}
   html.pv2 #hero .hero-dots{left:20px!important;right:auto!important;bottom:26px!important}
   html.pv2 .v-util{padding:14px 20px}
@@ -310,17 +312,19 @@ const JS = String.raw`<script>
     burger.onclick=function(e){e.stopPropagation();buildMenu();sheet.hidden=false;D.body.style.overflow='hidden';var f=q('.v-sheet-in>button',sheet);if(f)f.focus()};
     D.addEventListener('click',function(e){if(!e.target.closest('.v-dd'))qa('.v-dd.open').forEach(function(d){d.classList.remove('open')})});
     D.addEventListener('keydown',function(e){if(e.key==='Escape')closeAll()});
-    // hero penuh di luar main
-    D.body.insertBefore(hero,main);
+    // hero penuh + strip utilitas dalam satu layar penuh (.v-first)
+    var first=D.createElement('div');first.className='v-first';
+    D.body.insertBefore(first,main);
+    first.appendChild(hero);
     if(!q('.v-scrim',hero)){var sc=D.createElement('div');sc.className='v-scrim';hero.insertBefore(sc,hero.children[1]||null)}
     var top=q('.hero-t',hero);if(top&&!q('.v-h1',top)){var h1=D.createElement('h2');h1.className='v-h1';h1.innerHTML='<b>Proyek Pengembangan</b><br>PT Petrokimia Gresik';top.appendChild(h1)}
     var eye=D.getElementById('heroEye');if(eye)eye.textContent='PMO Infrastruktur & Process Plant';
     // strip utilitas
     var u=D.createElement('div');u.className='v-util';
     u.innerHTML='<div class="v-crumb">PMO Infrastruktur &amp; Process Plant</div><div class="v-ua"><button type="button" class="v-ub" data-v="brief">Ringkasan Eksekutif</button><button type="button" class="v-ub" data-v="grid">Daftar Proyek</button>'+(isKtr()?'':'<button type="button" class="v-ub pri" data-v="exec">Monthly Executive Review →</button>')+'</div>';
-    D.body.insertBefore(u,main);
-    q('[data-v="brief"]',u).onclick=function(){var t=briefSec||D.getElementById('briefBox');if(t)window.scrollTo({top:Math.max(0,t.getBoundingClientRect().top+window.scrollY-76),behavior:'smooth'})};
-    q('[data-v="grid"]',u).onclick=function(){var s=D.getElementById('vSec');if(s)window.scrollTo({top:Math.max(0,s.getBoundingClientRect().top+window.scrollY-76),behavior:'smooth'})};
+    first.appendChild(u);
+    q('[data-v="brief"]',u).onclick=function(){var t=briefSec||D.getElementById('briefBox');if(t)window.scrollTo({top:Math.max(0,t.getBoundingClientRect().top+window.scrollY-(hdr?hdr.offsetHeight:64)-16),behavior:'smooth'})};
+    q('[data-v="grid"]',u).onclick=function(){var s=D.getElementById('vSec');if(s)window.scrollTo({top:Math.max(0,s.getBoundingClientRect().top+window.scrollY-(hdr?hdr.offsetHeight:64)),behavior:'smooth'})};
     var ex=q('[data-v="exec"]',u);if(ex)ex.onclick=function(){if(typeof go==='function')go('executive');else location.href='/app?page=executive'};
     // KPI ke kanvas, ringkasan di atas grid
     var kp=D.getElementById('heroKpis');if(kp){var sum=D.createElement('div');sum.className='v-sum';sum.id='vSum';sum.setAttribute('aria-label','Ringkasan portofolio');main.insertBefore(sum,main.firstChild);sum.appendChild(kp);kp.style.display='contents'}
@@ -357,6 +361,8 @@ const JS = String.raw`<script>
     if(storySec)main.insertBefore(storySec,main.firstChild);
     if(pulseSec)pulseSec.classList.add('v-hide');if(modSec)modSec.classList.add('v-hide');
     var ft=q('main.wrap>.foot');if(ft){ft.classList.add('v-foot');ft.innerHTML='<div>PT Petrokimia Gresik · PMO Infrastruktur &amp; Process Plant</div><div>Portal Proyek</div>';D.body.insertBefore(sec,main.nextSibling);D.body.insertBefore(ft,sec.nextSibling);}else{D.body.insertBefore(sec,main.nextSibling);}
+    var syncSizes=function(){H.style.setProperty('--pv2-hh',(hdr?hdr.offsetHeight:64)+'px');H.style.setProperty('--pv2-fh',(ft?ft.offsetHeight:0)+'px')};
+    syncSizes();window.addEventListener('resize',syncSizes,{passive:true});
     initV20Gestures();
     // Tanya Sena
     var sb=D.createElement('button');sb.type='button';sb.className='v-sena';sb.textContent='TANYA SENA';sb.title='Tanya Asisten AI Sena';sb.onclick=sena;D.body.appendChild(sb);

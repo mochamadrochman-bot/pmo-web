@@ -565,7 +565,8 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
           var s=secs[+b.getAttribute('data-idx')];
           if(!s)return;
           if(s.isTop){window.scrollTo({top:0,behavior:'smooth'});return;}
-          var off=(hdr&&getComputedStyle(hdr).position==='fixed'?hdr.offsetHeight:0)+16;
+          var padOff=(s.el&&s.el.id==='vSec')?0:16;
+          var off=(hdr&&getComputedStyle(hdr).position==='fixed'?hdr.offsetHeight:0)+padOff;
           var y=Math.max(0,s.el.getBoundingClientRect().top+window.scrollY-off);
           window.scrollTo({top:y,behavior:'smooth'});
         };
