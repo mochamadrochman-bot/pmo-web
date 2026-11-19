@@ -18,7 +18,7 @@ const LEGACY_DIR = path.join(__dirname, '..', '..', 'legacy');
 let factory = null;
 const GLOBAL_NAMES = ['SpreadsheetApp', 'HtmlService', 'Utilities', 'ScriptApp', 'Session', 'Logger', 'console',
   'CacheService', 'PropertiesService', 'LockService', 'DriveApp', 'UrlFetchApp', 'MailApp', 'GmailApp',
-  'DocumentApp', 'SlidesApp', 'ContentService', 'Drive'];
+  'DocumentApp', 'SlidesApp', 'ContentService', 'Drive', 'MimeType'];
 let htmlFiles = null;
 let publicNames = null;
 

@@ -296,6 +296,27 @@ function makeGlobals(ctx) {
   const Logger = { log: (...a) => { console.log(JSON.stringify({ ev: 'gas_log', msg: a.map(String).join(' ').slice(0, 500) })); return Logger; } };
   const lock = { tryLock: () => true, waitLock: () => {}, releaseLock: () => {}, hasLock: () => true };
 
+  const MimeType = Object.freeze({
+    PLAIN_TEXT: 'text/plain',
+    HTML: 'text/html',
+    CSV: 'text/csv',
+    PDF: 'application/pdf',
+    PNG: 'image/png',
+    JPEG: 'image/jpeg',
+    GIF: 'image/gif',
+    SVG: 'image/svg+xml',
+    ZIP: 'application/zip',
+    JAVASCRIPT: 'application/javascript',
+    RTF: 'application/rtf',
+    FOLDER: 'application/vnd.google-apps.folder',
+    GOOGLE_DOCS: 'application/vnd.google-apps.document',
+    GOOGLE_SHEETS: 'application/vnd.google-apps.spreadsheet',
+    GOOGLE_SLIDES: 'application/vnd.google-apps.presentation',
+    MICROSOFT_WORD: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    MICROSOFT_EXCEL: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    MICROSOFT_POWERPOINT: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  });
+
   return {
     SpreadsheetApp,
     HtmlService,
@@ -303,6 +324,7 @@ function makeGlobals(ctx) {
     ScriptApp,
     Session,
     Logger,
+    MimeType,
     console: { log: Logger.log, info: Logger.log, warn: Logger.log, error: (...a) => console.error(JSON.stringify({ ev: 'gas_error', msg: a.map(String).join(' ').slice(0, 500) })) },
     CacheService: { getScriptCache: () => cacheScript, getUserCache: () => makeCache('U:' + ((ctx.user && ctx.user.username) || '') + ':'), getDocumentCache: () => cacheScript },
     PropertiesService: { getScriptProperties: () => makeProps('S:'), getUserProperties: () => makeProps('U:' + ((ctx.user && ctx.user.username) || '') + ':'), getDocumentProperties: () => makeProps('D:') },
