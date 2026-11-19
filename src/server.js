@@ -65,7 +65,7 @@ app.get(['/favicon.ico', '/apple-touch-icon.png'], (req, res) => res.redirect(30
 // Halaman lama mengirim berkas lewat google.script.run (base64), jadi batasnya lebih besar di /app/rpc.
 const jsonSmall = express.json({ limit: '1mb' });
 const jsonLarge = express.json({ limit: '40mb' });
-app.use((req, res, next) => ((req.path.startsWith('/app/rpc/') || req.path === '/api/model3d' || /^\/api\/pres\/decks\/\d+\/pages\//.test(req.path)) ? jsonLarge : jsonSmall)(req, res, next));
+app.use((req, res, next) => ((req.path.startsWith('/app/rpc/') || req.path === '/api/model3d' || req.path.startsWith('/api/library/') || /^\/api\/pres\/decks\/\d+\/pages\//.test(req.path)) ? jsonLarge : jsonSmall)(req, res, next));
 // pdf.js untuk merender PDF materi presentasi di browser.
 // Media statis (video animasi pembuka Portal, poster).
 app.use('/media', express.static(path.join(__dirname, '..', 'public', 'media'), { maxAge: '7d', index: false }));
@@ -133,6 +133,7 @@ app.use('/', cspRoutes);
 app.use('/', require('./routes/arsip'));
 app.use('/', require('./routes/pres'));
 app.use('/', require('./routes/model3d'));
+app.use('/', require('./routes/library'));
 app.use('/', gasRoutes);
 app.use('/api', projectRoutes);
 app.use('/', portalRoutes);
