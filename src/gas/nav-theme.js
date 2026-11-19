@@ -598,8 +598,10 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
           if(s.isTop){window.scrollTo({top:0,behavior:'smooth'});return;}
           var padOff=(s.el&&s.el.id==='vSec')?0:16;
           var isHeroHdr=document.documentElement.classList.contains('ex-hero-hdr');
+          var sh=isHeroHdr?document.getElementById('exStuckHost'):null;
+          var heroStickyH=(sh&&document.documentElement.classList.contains('ex-hdr-stuck'))?sh.offsetHeight:(bar&&!bar.hidden?bar.offsetHeight:0);
           var hdrPos=hdr?getComputedStyle(hdr).position:'';
-          var stickyOff=isHeroHdr?(bar&&!bar.hidden?bar.offsetHeight:0):(hdrPos==='fixed'?hdr.offsetHeight:(page==='executive'&&hdrPos==='sticky'?hdr.offsetHeight+(bar&&!bar.hidden?bar.offsetHeight:0):0));
+          var stickyOff=isHeroHdr?heroStickyH:(hdrPos==='fixed'?hdr.offsetHeight:(page==='executive'&&hdrPos==='sticky'?hdr.offsetHeight+(bar&&!bar.hidden?bar.offsetHeight:0):0));
           var off=stickyOff+padOff;
           var y=Math.max(0,s.el.getBoundingClientRect().top+window.scrollY-off);
           window.scrollTo({top:y,behavior:'smooth'});
@@ -615,7 +617,9 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
       track.classList.toggle('on',showTrack);
       if(hdr){
         var isHeroHdr=document.documentElement.classList.contains('ex-hero-hdr');
-        var cs=getComputedStyle(hdr),topPad=isHeroHdr?((bar&&!bar.hidden?bar.offsetHeight:0)+12):((cs.position==='sticky'||cs.position==='fixed')?(hdr.offsetHeight+(bar&&!bar.hidden?bar.offsetHeight:0)+8):12);
+        var sh=isHeroHdr?document.getElementById('exStuckHost'):null;
+        var heroTopPad=(sh&&document.documentElement.classList.contains('ex-hdr-stuck'))?(sh.offsetHeight+12):((bar&&!bar.hidden?bar.offsetHeight:0)+12);
+        var cs=getComputedStyle(hdr),topPad=isHeroHdr?heroTopPad:((cs.position==='sticky'||cs.position==='fixed')?(hdr.offsetHeight+(bar&&!bar.hidden?bar.offsetHeight:0)+8):12);
         track.style.top=Math.min(140,Math.max(12,topPad))+'px';
       }
       if(showTrack){
@@ -670,8 +674,10 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
         var nxt=secs[1]&&secs[1].el;
         if(nxt){
           var isHeroHdr=document.documentElement.classList.contains('ex-hero-hdr');
+          var sh=isHeroHdr?document.getElementById('exStuckHost'):null;
+          var heroOff=(sh&&document.documentElement.classList.contains('ex-hdr-stuck'))?sh.offsetHeight:(bar&&!bar.hidden?bar.offsetHeight:0);
           var hdrPos=hdr?getComputedStyle(hdr).position:'';
-          var off=(isHeroHdr?(bar&&!bar.hidden?bar.offsetHeight:0):(/(sticky|fixed)/.test(hdrPos)?hdr.offsetHeight+(bar&&!bar.hidden?bar.offsetHeight:0):0))+16;
+          var off=(isHeroHdr?heroOff:(/(sticky|fixed)/.test(hdrPos)?hdr.offsetHeight+(bar&&!bar.hidden?bar.offsetHeight:0):0))+16;
           window.scrollTo({top:Math.max(0,nxt.getBoundingClientRect().top+window.scrollY-off),behavior:'smooth'});
         }else{
           window.scrollTo({top:Math.round(window.innerHeight*0.85),behavior:'smooth'});
