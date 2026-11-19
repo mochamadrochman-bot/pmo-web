@@ -11,23 +11,31 @@
 
 const EXEC_STORY_BRIEF_CSS = String.raw`<style id="pmoExecStoryBriefCss">
 .ex-top-split{display:grid;grid-template-columns:minmax(0,1.16fr) minmax(370px,1fr);gap:16px;align-items:stretch;margin:0 0 28px}
-.ex-top-split>#sec-ringkasan{position:relative;grid-column:1;grid-row:1;margin:0!important;height:var(--ex-split-h,470px);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(100,116,139,.38) transparent;padding-bottom:18px}
-.ex-top-split>#sec-ringkasan::-webkit-scrollbar{width:6px}
-.ex-top-split>#sec-ringkasan::-webkit-scrollbar-track{background:transparent}
-.ex-top-split>#sec-ringkasan::-webkit-scrollbar-thumb{background:rgba(100,116,139,.34);border-radius:99px}
-.ex-top-split>#sec-ringkasan::-webkit-scrollbar-thumb:hover{background:var(--pri,#0f5fa8)}
-.ex-top-split>#sec-ringkasan .bf-metrics,.ex-top-split>#sec-ringkasan .bf-head,.ex-top-split>#sec-ringkasan .bf-attn,.ex-top-split>#sec-ringkasan .xbn-wrap{flex-shrink:0}
-.ex-brief-sbtn{position:sticky;bottom:2px;align-self:flex-end;margin-top:auto;z-index:8;display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 13px;border-radius:99px;border:1px solid rgba(255,255,255,.18);background:rgba(15,25,38,.88);color:#fff;font:600 11.5px/1 inherit;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.22);flex-shrink:0;transition:opacity .2s ease,transform .2s ease,background .15s ease}
+.ex-brief-shell{position:relative;grid-column:1;grid-row:1;height:var(--ex-split-h,470px);min-width:0;border-radius:var(--r,16px)}
+.ex-brief-shell>#sec-ringkasan{margin:0!important;height:100%;display:block;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding-bottom:46px!important;box-sizing:border-box}
+.ex-brief-shell>#sec-ringkasan::-webkit-scrollbar{display:none}
+.ex-brief-rail{position:absolute;right:4px;top:12px;bottom:44px;width:9px;z-index:10;cursor:pointer;display:none}
+.ex-brief-rail.on{display:block}
+.ex-brief-thumb{position:absolute;left:2px;right:2px;min-height:36px;border-radius:99px;background:rgba(19,43,67,.30);transition:background .15s,left .15s,right .15s}
+.ex-brief-rail:hover .ex-brief-thumb,.ex-brief-rail.drag .ex-brief-thumb{left:0;right:0;background:var(--pri,#0f5fa8)}
+html[data-theme="dark"] .ex-brief-thumb{background:rgba(203,213,225,.34)}
+html[data-theme="dark"] .ex-brief-rail:hover .ex-brief-thumb,html[data-theme="dark"] .ex-brief-rail.drag .ex-brief-thumb{background:#38bdf8}
+.ex-brief-sbtn{position:absolute;right:14px;bottom:10px;z-index:12;display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 13px;border-radius:99px;border:1px solid rgba(255,255,255,.18);background:rgba(15,25,38,.88);color:#fff;font:600 11.5px/1 inherit;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.22);transition:background .15s ease,border-color .15s ease}
 .ex-brief-sbtn:hover{background:var(--pri,#0f5fa8);border-color:var(--pri,#0f5fa8)}
 .ex-brief-sbtn[hidden]{display:none!important}
+.ex-brief-tabs{display:inline-flex;flex-wrap:wrap;gap:4px;background:var(--tint,#f3f6fa);border:1px solid var(--line,#dce5ed);border-radius:99px;padding:3px}
+.ex-brief-tab{border:0;background:transparent;color:var(--muted,#5b7085);padding:4px 10px;border-radius:99px;font:600 11.5px/1.2 inherit;cursor:pointer;white-space:nowrap}
+.ex-brief-tab:hover{color:var(--ink,#132b43)}
+.ex-brief-tab.on{background:var(--pri,#0f5fa8);color:#fff}
 .ex-top-split>#sec-story{grid-column:2;grid-row:1;margin:0!important;height:var(--ex-split-h,470px);background:var(--card,#fff);border:1px solid var(--line,#dce5ed);border-radius:var(--r,16px);padding:16px 18px;box-shadow:var(--shadow,0 4px 18px rgba(15,23,42,.06));display:flex;flex-direction:column;overflow:hidden}
 .ex-top-split>#sec-story .ex-sh{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin:0 0 10px;font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted,#5b7085)}
 .ex-top-split>#sec-story .ex-sh>div:first-child{min-width:0;flex:1 1 auto;overflow:hidden}
 .ex-top-split>#sec-story .gl-stories{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;overflow:visible!important;gap:10px;padding:0!important}
 
 /* Reset inside Mode Presentasi supaya slide ringkasan tidak terpotong */
-.pp #sec-ringkasan{height:auto!important;overflow:visible!important;grid-column:auto;grid-row:auto;padding-bottom:0}
-.pp #sec-ringkasan .ex-brief-sbtn{display:none!important}
+.pp #sec-ringkasan{height:auto!important;overflow:visible!important;grid-column:auto;grid-row:auto;padding-bottom:0!important}
+.pp #sec-ringkasan .ex-brief-tabs,.pp .ex-brief-sbtn,.pp .ex-brief-rail{display:none!important}
+.pp #sec-ringkasan [data-xbgrp]{display:block!important}
 
 /* Floating Spatial Gallery ("Rethinking the Gallery") */
 .ex-gal-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -84,19 +92,21 @@ const EXEC_STORY_BRIEF_CSS = String.raw`<style id="pmoExecStoryBriefCss">
 
 @media (max-width:1080px){
   .ex-top-split{grid-template-columns:1fr;margin-bottom:18px}
-  .ex-top-split>#sec-ringkasan,.ex-top-split>#sec-story{grid-column:1;grid-row:auto;height:auto!important;min-height:0;overflow:visible!important;padding-bottom:16px}
-  .ex-brief-sbtn{display:none!important}
+  .ex-brief-shell,.ex-top-split>#sec-story{grid-column:1;grid-row:auto;height:auto!important;min-height:0}
+  .ex-brief-shell>#sec-ringkasan{height:auto!important;overflow:visible!important;padding-bottom:16px!important}
+  .ex-brief-sbtn,.ex-brief-rail{display:none!important}
 }
 @media (max-width:760px){
-  .ex-top-split>#sec-story,.ex-top-split>#sec-ringkasan{padding:13px 14px}
+  .ex-top-split>#sec-story,.ex-brief-shell>#sec-ringkasan{padding:13px 14px}
   .ex-gal-stage{height:245px;min-height:245px}
   .ex-fcard{width:136px;height:142px}
   .ex-fcard.is-focus{width:188px;height:194px}
   .ex-lb-img{height:260px}
 }
 html.m-mode .ex-top-split{grid-template-columns:1fr;margin-bottom:14px}
-html.m-mode .ex-top-split>#sec-ringkasan,html.m-mode .ex-top-split>#sec-story{grid-column:1;grid-row:auto;height:auto!important;min-height:0;padding:13px 14px;overflow:visible!important}
-html.m-mode .ex-brief-sbtn{display:none!important}
+html.m-mode .ex-brief-shell,html.m-mode .ex-top-split>#sec-story{grid-column:1;grid-row:auto;height:auto!important;min-height:0}
+html.m-mode .ex-brief-shell>#sec-ringkasan,html.m-mode .ex-top-split>#sec-story{padding:13px 14px;overflow:visible!important;height:auto!important}
+html.m-mode .ex-brief-sbtn,html.m-mode .ex-brief-rail{display:none!important}
 html.m-mode .ex-gal-stage{height:245px;min-height:245px}
 html.m-mode .ex-fcard{width:136px;height:142px}
 html.m-mode .ex-fcard.is-focus{width:188px;height:194px}
@@ -143,10 +153,91 @@ const EXEC_STORY_BRIEF_JS = String.raw`<script id="pmoExecStoryBriefJs">
     img.src=drv(id,w);
   }
 
-  /* 1. Pastikan ukuran layar awal 2-kolom full viewport di Desktop agar card KPI tidak mengintip */
-  function syncBriefScroll(){
+  /* 1. Scroll modern dalam Ringkasan + Filter cepat Pengembangan / Investasi Rutin + full-viewport 2-kolom */
+  var briefTabGrp='all';
+  function applyBriefFilter(){
     var sec=document.getElementById('sec-ringkasan');
     if(!sec)return;
+    var nodes=sec.querySelectorAll('.xbn-memo [data-xbgrp]');
+    nodes.forEach(function(n){
+      n.style.display=(briefTabGrp==='all'||n.getAttribute('data-xbgrp')===briefTabGrp)?'':'none';
+    });
+    sec.querySelectorAll('.ex-brief-tab').forEach(function(b){
+      b.classList.toggle('on',b.getAttribute('data-g')===briefTabGrp);
+    });
+  }
+
+  function mountBriefTabs(){
+    var sec=document.getElementById('sec-ringkasan');
+    if(!sec)return;
+    var memo=sec.querySelector('.xbn-memo');
+    var head=sec.querySelector('.xbn-head');
+    if(!memo||!head)return;
+    var heads=[];
+    var curGrp=-1;
+    Array.prototype.slice.call(memo.children).forEach(function(ch){
+      if(ch.classList&&ch.classList.contains('xbn-h')){
+        curGrp++;
+        heads.push({idx:String(curGrp),label:String(ch.textContent||'').replace(/\s+/g,' ').trim()});
+      }
+      if(curGrp>=0)ch.setAttribute('data-xbgrp',String(curGrp));
+    });
+    if(heads.length<2)return;
+    var tabs=head.querySelector('.ex-brief-tabs');
+    if(!tabs){
+      tabs=document.createElement('div');
+      tabs.className='ex-brief-tabs';
+      tabs.setAttribute('role','tablist');
+      tabs.innerHTML='<button type="button" class="ex-brief-tab" data-g="all">Semua</button>'+
+        heads.map(function(g){
+          var shortLbl=/rutin/i.test(g.label)?'2. Investasi Rutin':(/pengembangan/i.test(g.label)?'1. Pengembangan':g.label);
+          return '<button type="button" class="ex-brief-tab" data-g="'+g.idx+'">'+esc(shortLbl)+'</button>';
+        }).join('');
+      head.appendChild(tabs);
+      tabs.addEventListener('click',function(e){
+        var b=e.target.closest('.ex-brief-tab');
+        if(!b)return;
+        briefTabGrp=b.getAttribute('data-g')||'all';
+        applyBriefFilter();
+        sec.scrollTop=0;
+        syncBriefScroll();
+      });
+    }
+    applyBriefFilter();
+  }
+
+  function syncBriefScroll(){
+    var shell=document.getElementById('exBriefShell');
+    var sec=document.getElementById('sec-ringkasan');
+    if(!shell||!sec)return;
+
+    var rail=document.getElementById('exBriefRail');
+    var thumb=document.getElementById('exBriefThumb');
+    if(!rail){
+      rail=document.createElement('div');
+      rail.id='exBriefRail';
+      rail.className='ex-brief-rail';
+      rail.setAttribute('aria-hidden','true');
+      thumb=document.createElement('div');
+      thumb.id='exBriefThumb';
+      thumb.className='ex-brief-thumb';
+      rail.appendChild(thumb);
+      shell.appendChild(rail);
+      var dragBrief=false;
+      var moveBrief=function(cy){
+        var rect=rail.getBoundingClientRect(),th=thumb.offsetHeight||36;
+        var ratio=Math.min(1,Math.max(0,(cy-rect.top-th/2)/Math.max(1,rect.height-th)));
+        sec.scrollTop=ratio*Math.max(0,sec.scrollHeight-sec.clientHeight);
+      };
+      rail.addEventListener('pointerdown',function(e){
+        dragBrief=true;rail.classList.add('drag');
+        try{rail.setPointerCapture(e.pointerId);}catch(x){}
+        moveBrief(e.clientY);
+      });
+      rail.addEventListener('pointermove',function(e){if(dragBrief)moveBrief(e.clientY);});
+      rail.addEventListener('pointerup',function(){dragBrief=false;rail.classList.remove('drag');});
+    }
+
     var btn=document.getElementById('exBriefScrollBtn');
     if(!btn){
       btn=document.createElement('button');
@@ -160,14 +251,19 @@ const EXEC_STORY_BRIEF_JS = String.raw`<script id="pmoExecStoryBriefJs">
         else sec.scrollTo({top:Math.min(sec.scrollHeight,sec.scrollTop+Math.max(180,Math.round(sec.clientHeight*0.72))),behavior:'smooth'});
       };
       sec.addEventListener('scroll',syncBriefScroll,{passive:true});
-      sec.appendChild(btn);
-    }else if(sec.lastElementChild!==btn){
-      sec.appendChild(btn);
+      shell.appendChild(btn);
     }
+
     var mob=window.innerWidth<=1080||document.documentElement.classList.contains('m-mode');
-    var hasMore=!mob&&sec.scrollHeight>sec.clientHeight+14;
+    var maxScroll=Math.max(0,sec.scrollHeight-sec.clientHeight);
+    var hasMore=!mob&&maxScroll>16;
     btn.hidden=!hasMore;
+    rail.classList.toggle('on',hasMore);
     if(hasMore){
+      var ratio=Math.min(1,Math.max(0,sec.scrollTop/maxScroll));
+      var th=Math.max(36,Math.round((sec.clientHeight/sec.scrollHeight)*rail.clientHeight));
+      thumb.style.height=th+'px';
+      thumb.style.top=Math.round(ratio*Math.max(0,rail.clientHeight-th))+'px';
       var atBot=sec.scrollTop+sec.clientHeight>=sec.scrollHeight-24;
       btn.textContent=atBot?'↑ Ke atas':'↓ Baca selengkapnya';
       btn.setAttribute('aria-label',atBot?'Gulir ringkasan ke atas':'Gulir ringkasan ke bawah');
@@ -181,6 +277,7 @@ const EXEC_STORY_BRIEF_JS = String.raw`<script id="pmoExecStoryBriefJs">
     if(mob){
       split.style.removeProperty('--ex-split-h');
       positionCards();
+      mountBriefTabs();
       syncBriefScroll();
       return;
     }
@@ -192,6 +289,7 @@ const EXEC_STORY_BRIEF_JS = String.raw`<script id="pmoExecStoryBriefJs">
       split.style.setProperty('--ex-split-h',h+'px');
     }
     positionCards();
+    mountBriefTabs();
     syncBriefScroll();
   }
   window.addEventListener('resize',fitTopSplit);
@@ -202,13 +300,15 @@ const EXEC_STORY_BRIEF_JS = String.raw`<script id="pmoExecStoryBriefJs">
       var tm=0;
       new MutationObserver(function(){
         if(tm)return;
-        tm=setTimeout(function(){tm=0;syncBriefScroll();},60);
+        tm=setTimeout(function(){tm=0;mountBriefTabs();syncBriefScroll();},60);
       }).observe(sec,{childList:true,subtree:true});
     }
   })();
 
-  /* Tag #sec-story untuk tab Ringkasan di Mode HP satu tangan */
+  /* Tag #exBriefShell & #sec-story untuk tab Ringkasan di Mode HP satu tangan */
   function tagStoryMobile(){
+    var sh=document.getElementById('exBriefShell');
+    if(sh&&!sh.getAttribute('data-mtab'))sh.setAttribute('data-mtab','ringkasan');
     var st=document.getElementById('sec-story');
     if(st&&!st.getAttribute('data-mtab'))st.setAttribute('data-mtab','ringkasan');
   }
@@ -577,8 +677,13 @@ const EXEC_STORY_PATCHES = [
   },
   {
     file: 'ExecutiveDashboard',
+    find: '      <section class="brief anchor" id="sec-ringkasan" aria-label="Ringkasan eksekutif">',
+    replace: '      <div class="ex-brief-shell" id="exBriefShell">\n      <section class="brief anchor" id="sec-ringkasan" aria-label="Ringkasan eksekutif">',
+  },
+  {
+    file: 'ExecutiveDashboard',
     find: '      </section>\n      <section class="kpis" aria-label="Ringkasan status proyek">',
-    replace: '      </section>\n      </div>\n      <section class="kpis" aria-label="Ringkasan status proyek">',
+    replace: '      </section>\n      </div>\n      </div>\n      <section class="kpis" aria-label="Ringkasan status proyek">',
   },
   {
     file: 'ExecutiveDashboard',
