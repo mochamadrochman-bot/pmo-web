@@ -37,6 +37,38 @@ html[data-theme="dark"] .ex-brief-rail:hover .ex-brief-thumb,html[data-theme="da
 .pp #sec-ringkasan .ex-brief-tabs,.pp .ex-brief-sbtn,.pp .ex-brief-rail{display:none!important}
 .pp #sec-ringkasan [data-xbgrp]{display:block!important}
 
+/* Desktop Header Controls menyatu ke dalam Banner Hero (persis gaya Portal Utama; judul tidak dobel) */
+html.ex-hero-hdr .content{padding-top:14px!important}
+html.ex-hero-hdr .hero{position:relative;overflow:visible!important;z-index:34;flex-direction:column;justify-content:space-between;align-items:stretch;padding:12px 24px 20px;min-height:156px}
+html.ex-hero-hdr .hero::before{border-radius:inherit;overflow:hidden}
+html.ex-hero-hdr .hero header.topbar{position:relative!important;top:auto!important;z-index:5;background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;border-bottom:1px solid rgba(255,255,255,.16)!important;padding:0 0 10px 0!important;margin:0 0 12px 0!important;gap:8px;flex-wrap:wrap}
+html.ex-hero-hdr .hero header.topbar .crumbs{display:none!important}
+html.ex-hero-hdr .hero header.topbar .period-control{margin-left:auto;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:11px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+html.ex-hero-hdr .hero header.topbar .period-control .step{height:38px;color:rgba(255,255,255,.88)}
+html.ex-hero-hdr .hero header.topbar .period-control .step:hover{background:rgba(255,255,255,.16);color:#fff}
+html.ex-hero-hdr .hero header.topbar .period-trigger{height:38px;min-width:190px;border-inline-color:rgba(255,255,255,.22);color:#fff}
+html.ex-hero-hdr .hero header.topbar .period-trigger:hover{background:rgba(255,255,255,.08)}
+html.ex-hero-hdr .hero header.topbar .period-trigger small{color:rgba(219,234,254,.82)}
+html.ex-hero-hdr .hero header.topbar .period-trigger b,html.ex-hero-hdr .hero header.topbar .period-trigger .ic{color:#fff}
+html.ex-hero-hdr .hero header.topbar .pp-btn,
+html.ex-hero-hdr .hero header.topbar .ntf-wrap>button,
+html.ex-hero-hdr .hero header.topbar .pmo-qs-trigger,
+html.ex-hero-hdr .hero header.topbar .userchip{height:38px;background:rgba(255,255,255,.12)!important;border:1px solid rgba(255,255,255,.28)!important;color:#fff!important;box-shadow:none!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+html.ex-hero-hdr .hero header.topbar .pp-btn:hover,
+html.ex-hero-hdr .hero header.topbar .ntf-wrap>button:hover,
+html.ex-hero-hdr .hero header.topbar .pmo-qs-trigger:hover,
+html.ex-hero-hdr .hero header.topbar .userchip:hover{background:rgba(255,255,255,.2)!important}
+html.ex-hero-hdr .hero header.topbar .userchip .ut b,
+html.ex-hero-hdr .hero header.topbar .userchip .ut small,
+html.ex-hero-hdr .hero header.topbar .userchip .caretic,
+html.ex-hero-hdr .hero header.topbar .pmo-qs-trigger *,
+html.ex-hero-hdr .hero header.topbar .pp-btn *,
+html.ex-hero-hdr .hero header.topbar .ntf-wrap>button svg{color:#fff!important}
+html.ex-hero-hdr .hero header.topbar .pmo-qs-trigger kbd{background:rgba(255,255,255,.16)!important;border-color:rgba(255,255,255,.32)!important;color:#fff!important}
+html.ex-hero-hdr .hero header.topbar .pop{background:var(--card,#fff);color:var(--ink,#132b43);z-index:80}
+html.ex-hero-hdr .content>.pmo-pbar{position:sticky;top:0!important;z-index:29;margin:10px 0 0;border:1px solid var(--line,#dce5ed);border-radius:12px;padding:0 18px;box-shadow:var(--shadow)}
+html.ex-hero-hdr .content>.notice{margin-top:8px}
+
 /* Floating Spatial Gallery ("Rethinking the Gallery") */
 .ex-gal-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .ex-gal-sub{display:block;margin-top:3px;font-size:11.5px;color:var(--muted,#5b7085);font-weight:500;text-transform:none;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -270,7 +302,28 @@ const EXEC_STORY_BRIEF_JS = String.raw`<script id="pmoExecStoryBriefJs">
     }
   }
 
+  function syncUnifiedHeader(){
+    var mob=window.innerWidth<=900||document.documentElement.classList.contains('m-mode');
+    var hdr=document.querySelector('header.topbar');
+    var hero=document.querySelector('.content>.hero');
+    var content=document.querySelector('.main>.content');
+    var mainEl=document.querySelector('.main');
+    var pbar=document.getElementById('pmoPbar');
+    var use=!mob&&!!(hdr&&hero&&content);
+    document.documentElement.classList.toggle('ex-hero-hdr',use);
+    if(!hdr||!hero||!content||!mainEl)return;
+    if(use){
+      if(hdr.parentNode!==hero)hero.insertBefore(hdr,hero.firstChild);
+      if(pbar&&pbar.parentNode!==content)content.insertBefore(pbar,hero.nextSibling);
+      if(pbar)pbar.style.top='0px';
+    }else{
+      if(hdr.parentNode!==mainEl)mainEl.insertBefore(hdr,content);
+      if(pbar&&pbar.parentNode!==mainEl)mainEl.insertBefore(pbar,content);
+    }
+  }
+
   function fitTopSplit(){
+    syncUnifiedHeader();
     var split=document.getElementById('exTopSplit');
     if(!split)return;
     var mob=window.innerWidth<=1080||document.documentElement.classList.contains('m-mode');
@@ -647,6 +700,13 @@ const EXEC_STORY_BRIEF_JS = String.raw`<script id="pmoExecStoryBriefJs">
       setTimeout(fitTopSplit,30);
     };
   }
+  if(typeof setViewMode==='function'){
+    var __origSVM=setViewMode;
+    window.setViewMode=setViewMode=function(){
+      __origSVM.apply(this,arguments);
+      setTimeout(fitTopSplit,20);
+    };
+  }
   if(typeof mShowTab==='function'){
     var __origMShow=mShowTab;
     mShowTab=function(t){
@@ -656,11 +716,25 @@ const EXEC_STORY_BRIEF_JS = String.raw`<script id="pmoExecStoryBriefJs">
     };
   }
 
+  syncUnifiedHeader();
+  if(window.MutationObserver){
+    var __mainEl=document.querySelector('.main');
+    if(__mainEl){
+      new MutationObserver(function(){
+        var mob=window.innerWidth<=900||document.documentElement.classList.contains('m-mode');
+        var pbar=document.getElementById('pmoPbar');
+        var content=document.querySelector('.main>.content');
+        if(!mob&&pbar&&content&&pbar.parentNode!==content)syncUnifiedHeader();
+      }).observe(__mainEl,{childList:true});
+    }
+  }
   if(document.getElementById('exStories')){
     var per=typeof currentReportData!=='undefined'&&currentReportData?currentReportData.period:'';
     refreshAndRender(per);
     setTimeout(fitTopSplit,60);
   }
+  setTimeout(syncUnifiedHeader,150);
+  setTimeout(syncUnifiedHeader,600);
 })();
 </script>`;
 
