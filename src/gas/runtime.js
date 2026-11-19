@@ -241,7 +241,7 @@ function pmoExecOrder(data){
 function pmoExecGroups(data){
   var O=pmoExecOrder(data),G=O.G,N=O.N,type=O.type,par=O.par,nm=O.nm,projects=O.projects,ids=O.ids,isNested=O.isNested,order=O.order,LABEL=O.LABEL,groupsUsed=O.groupsUsed,nameToId=O.nameToId;
   var esc=function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
-  if(!document.getElementById('pmoXgCss')){var st=document.createElement('style');st.id='pmoXgCss';st.textContent='.xg-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-top:14px}.xg-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r,14px);box-shadow:var(--shadow);padding:16px 18px}.xg-card h4{margin:0 0 2px;font-size:15px}.xg-card .xg-sub{font-size:12px;color:var(--muted);margin:6px 0 8px}.xg-real{font-size:12.5px;color:var(--muted);margin-bottom:10px}.xg-real b{color:var(--ink,inherit)}.xg-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}.xg-list li{display:grid;grid-template-columns:minmax(0,1fr) auto 92px;gap:10px;align-items:center;padding:8px 2px;border-bottom:1px solid var(--line);font-size:13.5px}.xg-list li:last-child{border-bottom:0}.xg-nm{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis}.xg-nm small{display:block;font-size:11px;font-weight:600;color:var(--pri2)}.xg-li-sub .xg-nm{padding-left:14px;border-left:3px solid var(--pri2)}.xg-pct{font-variant-numeric:tabular-nums;font-weight:700}.xg-s{justify-self:end;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--th)}.xg-s.g{color:#0f6b48}.xg-s.a{color:#8a5a00}.xg-s.r{color:#a52826}.xg-kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.xg-kv div{min-width:0}.xg-kv small{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}.xg-kv b{display:block;font-size:18px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.xg-kv em{font-style:normal;font-size:12px;color:var(--muted)}.xg-st{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.xg-st span{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--th)}.xg-st .g{color:#0f6b48}.xg-st .a{color:#8a5a00}.xg-st .r{color:#a52826}.xg-pos{color:#0f6b48}.xg-neg{color:#b42318}tr.xg-h td{text-align:left!important;font-weight:700;font-size:13px;letter-spacing:.02em;padding:10px 12px;border-left:5px solid #0f5fa8;background:rgba(15,95,168,.10)}tr.xg-h.xg-rut td{border-left-color:#0f8a5f;background:rgba(15,138,95,.10)}tr.xg-h td span{font-weight:500;color:var(--muted);margin-left:8px}.xg-pill{display:inline-block;padding:4px 12px;border-radius:99px;background:#0f5fa8;color:#fff;font-weight:700;font-size:12.5px;letter-spacing:.02em}.xg-pill.xg-rut{background:#0f8a5f}tr.xg-tot.xg-rut td{background:rgba(15,138,95,.08)}tr.xg-tot.xg-dev td{background:rgba(15,95,168,.08)}.xg-card{border-top:5px solid #0f5fa8}.xg-card.xg-rut{border-top-color:#0f8a5f}.xg-card h4 .xg-pill{font-size:13px}tr.xg-sub-row td:first-child,tr.xg-sub-row td.xg-name,td.md-name.xg-sub-cell{padding-left:10px!important;border-left:3px solid var(--pri2)}.xg-tag{display:block;font-size:11px;font-weight:600;color:var(--pri2);margin-bottom:2px}tr.xg-tot td{font-weight:700;background:rgba(127,160,190,.10)}.xg-fin-wrap{display:grid;grid-template-columns:1fr;gap:14px}.xg-fin-card{border:1px solid var(--line);border-top:4px solid #0f5fa8;border-radius:12px;padding:16px 18px;background:var(--th)}.xg-fin-card.xg-rut{border-top-color:#0f8a5f}.xg-fin-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}.xg-fin-head small{font-size:12px;color:var(--muted);font-weight:600}.xg-fin-money{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px 14px;margin-bottom:12px}.xg-fin-money div{min-width:0}.xg-fin-money small,.xg-fin-pctbox small{display:block;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-weight:600}.xg-fin-money b{display:block;font-size:15px;margin-top:3px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.xg-fin-pcts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.xg-fin-pctbox{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}.xg-fin-pcttop{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-top:4px}.xg-fin-pcttop b{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}.xg-fin-pcttop b.ok{color:#0f6b48}.xg-fin-pcttop b.warn{color:#b45309}.xg-fin-pcttop b.bad{color:#b42318}.xg-fin-bar{height:7px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:7px}.xg-fin-bar>i{display:block;height:100%;border-radius:99px;background:#0f5fa8;transition:width .35s ease}.xg-fin-bar.ok>i{background:#0f8a5f}.xg-fin-bar.warn>i{background:#d97706}.xg-fin-bar.bad>i{background:#dc2626}@media (max-width:520px){.xg-fin-pcts{grid-template-columns:1fr}}.xg-la-h{display:flex;align-items:center;gap:8px;padding:9px 12px;margin:14px 0 8px;border-radius:10px;border-left:5px solid #0f5fa8;background:rgba(15,95,168,.10);font-size:13px}.xg-la-h:first-child{margin-top:0}.xg-la-h.xg-rut{border-left-color:#0f8a5f;background:rgba(15,138,95,.10)}.xg-la-h>span{color:var(--muted);font-size:12px}.xg-la-sub{margin-left:18px;border-left:3px solid var(--pri2);padding-left:6px;border-radius:8px}@media (max-width:700px){.xg-kv{grid-template-columns:repeat(2,minmax(0,1fr))}.xg-la-sub{margin-left:8px}}';document.head.appendChild(st)}
+  if(!document.getElementById('pmoXgCss')){var st=document.createElement('style');st.id='pmoXgCss';st.textContent='.xg-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px;margin-top:14px}.xg-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r,14px);box-shadow:var(--shadow);padding:16px 18px}.xg-card h4{margin:0 0 2px;font-size:15px}.xg-card .xg-sub{font-size:12px;color:var(--muted);margin:6px 0 8px}.xg-real{font-size:12.5px;color:var(--muted);margin-bottom:10px}.xg-real b{color:var(--ink,inherit)}.xg-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}.xg-list li{display:grid;grid-template-columns:minmax(0,1fr) auto 92px;gap:10px;align-items:center;padding:8px 2px;border-bottom:1px solid var(--line);font-size:13.5px}.xg-list li:last-child{border-bottom:0}.xg-nm{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis}.xg-nm small{display:block;font-size:11px;font-weight:600;color:var(--pri2)}.xg-li-sub .xg-nm{padding-left:14px;border-left:3px solid var(--pri2)}.xg-pct{font-variant-numeric:tabular-nums;font-weight:700}.xg-s{justify-self:end;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--th);white-space:nowrap}.xg-s.g{color:#0f6b48}.xg-s.a{color:#8a5a00}.xg-s.r{color:#a52826}.xg-kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.xg-kv div{min-width:0}.xg-kv small{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}.xg-kv b{display:block;font-size:18px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.xg-kv em{font-style:normal;font-size:12px;color:var(--muted)}.xg-st{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.xg-st span{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--th)}.xg-st .g{color:#0f6b48}.xg-st .a{color:#8a5a00}.xg-st .r{color:#a52826}.xg-pos{color:#0f6b48}.xg-neg{color:#b42318}tr.xg-h td{text-align:left!important;font-weight:700;font-size:13px;letter-spacing:.02em;padding:10px 12px;border-left:5px solid #0f5fa8;background:rgba(15,95,168,.10)}tr.xg-h.xg-rut td{border-left-color:#0f8a5f;background:rgba(15,138,95,.10)}tr.xg-h td span{font-weight:500;color:var(--muted);margin-left:8px}.xg-pill{display:inline-block;padding:4px 12px;border-radius:99px;background:#0f5fa8;color:#fff;font-weight:700;font-size:12.5px;letter-spacing:.02em;white-space:nowrap}.xg-pill.xg-rut{background:#0f8a5f}tr.xg-tot.xg-rut td{background:rgba(15,138,95,.08)}tr.xg-tot.xg-dev td{background:rgba(15,95,168,.08)}.xg-card{border-top:5px solid #0f5fa8}.xg-card.xg-rut{border-top-color:#0f8a5f}.xg-card h4 .xg-pill{font-size:13px}tr.xg-sub-row td:first-child,tr.xg-sub-row td.xg-name,td.md-name.xg-sub-cell{padding-left:10px!important;border-left:3px solid var(--pri2)}.xg-tag{display:block;font-size:11px;font-weight:600;color:var(--pri2);margin-bottom:2px}tr.xg-tot td{font-weight:700;background:rgba(127,160,190,.10)}.xg-fin-wrap{display:grid;grid-template-columns:1fr;gap:14px}.xg-fin-card{border:1px solid var(--line);border-top:4px solid #0f5fa8;border-radius:12px;padding:16px 18px;background:var(--th)}.xg-fin-card.xg-rut{border-top-color:#0f8a5f}.xg-fin-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 8px;margin-bottom:12px}.xg-fin-head small{font-size:12px;color:var(--muted);font-weight:600}.xg-fin-money{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px 14px;margin-bottom:12px}.xg-fin-money div{min-width:0}.xg-fin-money small,.xg-fin-pctbox small{display:block;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-weight:600}.xg-fin-money b{display:block;font-size:15px;margin-top:3px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.xg-fin-pcts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.xg-fin-pctbox{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}.xg-fin-pcttop{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-top:4px}.xg-fin-pcttop b{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}.xg-fin-pcttop b.ok{color:#0f6b48}.xg-fin-pcttop b.warn{color:#b45309}.xg-fin-pcttop b.bad{color:#b42318}.xg-fin-bar{height:7px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:7px}.xg-fin-bar>i{display:block;height:100%;border-radius:99px;background:#0f5fa8;transition:width .35s ease}.xg-fin-bar.ok>i{background:#0f8a5f}.xg-fin-bar.warn>i{background:#d97706}.xg-fin-bar.bad>i{background:#dc2626}@media (max-width:520px){.xg-fin-pcts{grid-template-columns:1fr}.xg-list li{grid-template-columns:minmax(0,1fr) auto auto;gap:8px}}.xg-la-h{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 8px;padding:9px 12px;margin:14px 0 8px;border-radius:10px;border-left:5px solid #0f5fa8;background:rgba(15,95,168,.10);font-size:13px}.xg-la-h:first-child{margin-top:0}.xg-la-h.xg-rut{border-left-color:#0f8a5f;background:rgba(15,138,95,.10)}.xg-la-h>span{color:var(--muted);font-size:12px}.xg-la-sub{margin-left:18px;border-left:3px solid var(--pri2);padding-left:6px;border-radius:8px}@media (max-width:700px){.xg-kv{grid-template-columns:repeat(2,minmax(0,1fr))}.xg-la-sub{margin-left:8px}}@media (max-width:640px){#monthlyDeviationPanel .md-table tr.xg-h{display:block;margin:14px 0 10px;padding:0;border-bottom:0}#monthlyDeviationPanel .md-table tr.xg-h:first-child{margin-top:0}#monthlyDeviationPanel .md-table tr.xg-h td{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 10px;width:100%;padding:9px 12px;border-radius:10px}#monthlyDeviationPanel .md-table tr.xg-h td span{margin-left:0}}@media (max-width:760px){table.pmo-cards>tbody>tr.xg-h{border:0!important;background:transparent!important;padding:0!important;margin:14px 0 8px!important}table.pmo-cards>tbody>tr.xg-h>td{display:flex!important;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 10px;padding:9px 12px!important;border-radius:10px}table.pmo-cards>tbody>tr.xg-h>td span{margin-left:0}}:where(html.m-mode) #monthlyDeviationPanel .md-table tr.xg-h{display:block;margin:14px 0 10px;padding:0;border-bottom:0}:where(html.m-mode) #monthlyDeviationPanel .md-table tr.xg-h:first-child{margin-top:0}:where(html.m-mode) #monthlyDeviationPanel .md-table tr.xg-h td{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 10px;width:100%;padding:9px 12px;border-radius:10px}:where(html.m-mode) #monthlyDeviationPanel .md-table tr.xg-h td span{margin-left:0}:where(html.m-mode) table.pmo-cards>tbody>tr.xg-h{border:0!important;background:transparent!important;padding:0!important;margin:14px 0 8px!important}:where(html.m-mode) table.pmo-cards>tbody>tr.xg-h>td{display:flex!important;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 10px;padding:9px 12px!important;border-radius:10px}:where(html.m-mode) table.pmo-cards>tbody>tr.xg-h>td span{margin-left:0}';document.head.appendChild(st)}
 
   var fin=data.financial,frows=fin&&Array.isArray(fin.rows)?fin.rows:[];
   var finById={};frows.forEach(function(f){if(f.projectId)finById[f.projectId]=f});
@@ -606,7 +606,7 @@ const HTML_PATCHES = [
     find: "box=document.createElement('div');box.id=key;box.className='pmo-requests';box.hidden=true;",
     replace: "return;box=document.createElement('div');box.id=key;box.className='pmo-requests';box.hidden=true;",
   })),
-  // Weekly Dashboard (Desktop & Mobile): cegah clipping kanan saat muat awal, rapikan dok bawah mobile & posisi Sena, dan perbesar target sentuh HP.
+  // Weekly Dashboard (Desktop & Mobile): cegah clipping kanan saat muat awal, rapikan dok bawah mobile & posisi Sena, rapikan tabel addendum/keuangan/CPM mobile, dan perbesar target sentuh HP.
   {
     file: 'Dashboard',
     find: '</style></head><body>',
@@ -617,8 +617,16 @@ const HTML_PATCHES = [
       '\nhtml.m-mode .m-period button{height:44px!important}' +
       '\nhtml.m-mode .m-tabs{border-radius:18px 18px 0 0!important;border-bottom:0!important;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))!important}' +
       '\nhtml.m-mode .aic-fab{bottom:calc(74px + env(safe-area-inset-bottom,0px))!important;right:12px!important}' +
-      '\n@media (max-width:760px){.ntf-btn,.search-btn,.msc-btn{min-height:44px!important;min-width:44px!important}}' +
-      '\nhtml.m-mode .table.pmo-cards>tbody>tr>td::before{display:block;margin-bottom:2px}\nhtml.m-mode .table.pmo-cards>tbody>tr>td:first-child::before{display:none}\nhtml.m-mode .table.pmo-cards>tbody>tr>td:first-child{display:block;margin:0 0 8px 0;padding-bottom:6px!important;border-bottom:1px solid var(--line)!important}\nhtml.m-mode #concerns>tr>td:nth-child(2){display:block;margin:0 0 8px 0}\nhtml.m-mode #concerns>tr>td:nth-child(2)::before{display:inline-block;margin-right:8px;margin-bottom:0}\n</style></head><body>',
+      '\n@media (max-width:760px){.ntf-btn,.search-btn,.msc-btn{min-height:44px!important;min-width:44px!important}.life-banner{padding:12px 14px;gap:8px 12px}.life-banner .grow{min-width:min(200px,100%)}.life-banner button{min-height:36px;padding:6px 12px}.life-banner .adlist,.life-banner .adlist tbody{display:block;width:100%}.life-banner .adlist tr{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding:10px 0;border-top:1px solid var(--line)}.life-banner .adlist td{display:block;padding:0;border:0;font-size:12.5px;line-height:1.5;min-width:0}.life-banner .adlist td:nth-child(1){font-size:13px;font-weight:700;color:var(--navy)}.life-banner .adlist td:nth-child(2){color:var(--muted);font-size:12px}.life-banner .adlist td:nth-child(3){padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;background:var(--card);border:1px solid var(--line);color:var(--ink)}.life-banner .adlist td:nth-child(4),.life-banner .adlist td:nth-child(5){flex:0 0 100%;width:100%;overflow-wrap:anywhere}.life-banner .adlist td:nth-child(4){font-weight:600;color:var(--navy)}.life-banner .adlist td:nth-child(4):empty{display:none}}' +
+      '\nhtml.m-mode .life-banner .adlist,html.m-mode .life-banner .adlist tbody{display:block;width:100%}' +
+      '\nhtml.m-mode .life-banner .adlist tr{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding:10px 0;border-top:1px solid var(--line)}' +
+      '\nhtml.m-mode .life-banner .adlist td{display:block;padding:0;border:0;font-size:12.5px;line-height:1.5;min-width:0}' +
+      '\nhtml.m-mode .life-banner .adlist td:nth-child(3){padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;background:var(--card);border:1px solid var(--line);color:var(--ink)}' +
+      '\nhtml.m-mode .life-banner .adlist td:nth-child(4),html.m-mode .life-banner .adlist td:nth-child(5){flex:0 0 100%;width:100%;overflow-wrap:anywhere}' +
+      '\nhtml.m-mode .life-banner .adlist td:nth-child(4):empty{display:none}' +
+      '\n@container panel (max-width:460px){.fin-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px}.fin-row .fl{grid-column:1;white-space:normal}.fin-row .fin-pct{grid-column:2;grid-row:1;align-self:center;justify-self:end}.fin-row .fin-v{text-align:left;white-space:normal}.fin-row .fin-v.fs{border-left:1px solid var(--line);padding-left:12px}.fin-row .fin-bar{grid-column:1/-1;grid-row:3;margin-top:2px}}' +
+      '\n@container panel (max-width:360px){.discipline{grid-template-columns:minmax(0,1fr) auto auto auto;gap:6px 8px}.discipline .badge{padding:3px 7px;font-size:10.5px}}' +
+      '\nhtml.m-mode .table.pmo-cards>tbody>tr>td::before{display:block;margin-bottom:2px}\nhtml.m-mode .table.pmo-cards>tbody>tr>td:first-child::before{display:none}\nhtml.m-mode .table.pmo-cards>tbody>tr>td:first-child{display:block;margin:0 0 8px 0;padding-bottom:6px!important;border-bottom:1px solid var(--line)!important}\nhtml.m-mode .table.pmo-cards>tbody>tr>td+td{margin-top:6px}\nhtml.m-mode .table.pmo-cards>tbody>tr>td[colspan]{margin:0!important;padding:0!important;border-bottom:0!important}\nhtml.m-mode #concerns>tr>td:nth-child(2){display:block;margin:0 0 8px 0}\nhtml.m-mode #concerns>tr>td:nth-child(2)::before{display:inline-block;margin-right:8px;margin-bottom:0}\n</style></head><body>',
   },
   // Weekly Dashboard (Kurva S): pisahkan label Plan & Aktual agar tidak bertumpuk saat titik akhir berdekatan.
   {
@@ -626,18 +634,44 @@ const HTML_PATCHES = [
     find: "let yPlanLbl=selectedPlan?Math.max(T+14,y(selectedPlan.value)-10):null;\n  let yActLbl=selectedActual?Math.min(H-B-6,y(selectedActual.value)+18):null;\n  if(yPlanLbl!==null&&yActLbl!==null&&Math.abs(yActLbl-yPlanLbl)<15){\n    yPlanLbl=Math.max(T+14,y(selectedPlan.value)-14);\n    yActLbl=Math.min(H-B-4,y(selectedActual.value)+20);\n  }",
     replace: "let yPlanLbl=selectedPlan?Math.max(T+14,y(selectedPlan.value)-10):null;\n  let yActLbl=selectedActual?Math.min(H-B-6,y(selectedActual.value)+18):null;\n  if(selectedPlan&&selectedActual){\n    if(selectedActual.value>=selectedPlan.value){\n      yActLbl=Math.max(T+12,y(selectedActual.value)-10);\n      yPlanLbl=Math.min(H-B-4,y(selectedPlan.value)+16);\n      if(yPlanLbl-yActLbl<16)yPlanLbl=Math.min(H-B-4,yActLbl+16);\n    }else if(yActLbl-yPlanLbl<16){\n      yPlanLbl=Math.max(T+12,y(selectedPlan.value)-14);\n      yActLbl=Math.min(H-B-4,yPlanLbl+16);\n    }\n  }",
   },
-  // Monthly Executive Review (Mobile): rapikan dok bawah, cegah tabrakan pil PERIODE vs Sena, dan perbesar target sentuh HP.
+  // Monthly Executive Review (Mobile): rapikan dok bawah, cegah overflow & tabrakan pil PERIODE vs Sena, dan perbesar target sentuh HP.
   {
     file: 'ExecutiveDashboard',
     find: '</head><body>',
-    replace: '<style>\nhtml.m-mode body{padding-bottom:140px!important}' +
+    replace: '<style>\nhtml,body{overflow-x:clip}.app>*,.main,.content,.topbar,.grid,.panel{min-width:0;max-width:100%}' +
+      '\nhtml.m-mode body{padding-bottom:140px!important}' +
       '\nhtml.m-mode .m-dock{padding:0!important;background:linear-gradient(to bottom,transparent 0,var(--bg) 56%)}' +
       '\nhtml.m-mode .m-period{margin:0 auto 8px 10px!important}' +
       '\nhtml.m-mode .m-period button{height:44px!important}' +
       '\nhtml.m-mode .m-tabs{border-radius:18px 18px 0 0!important;border-bottom:0!important;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))!important}' +
       '\nhtml.m-mode .aic-fab{bottom:calc(74px + env(safe-area-inset-bottom,0px))!important;right:12px!important}' +
+      '\n#mProj .mc-h,#mFin .mc-h,#mMs .mc-h{gap:8px}#mProj .mc-h b,#mFin .mc-h b,#mMs .mc-h b{min-width:0;overflow-wrap:anywhere}' +
       '\n@media (max-width:760px){.ntf-btn,.search-btn,.xb-act button{min-height:44px!important;min-width:44px!important}}\n</style>\n</head><body>',
   },
+  // Global AccountMenu & Ringkasan Eksekutif (Mobile): cegah klip angka % pada .xb-bar & overflow grid.
+  {
+    file: 'AccountMenu',
+    find: '@media (max-width:760px){.xb-tiles{grid-template-columns:repeat(2,minmax(0,1fr));padding:12px 14px}.xb-top,.xb-head,.xb-att,.xb-memo,.xb-act,.xb-foot{padding-left:14px;padding-right:14px}.xb-head{flex-direction:column;gap:8px}.xb-hl{font-size:16px}.xb-t b{font-size:20px}.xb-memo{font-size:15px}.xb-tabs{margin-left:0}.xb-bars{padding:0 14px 12px}.xb-bar{grid-template-columns:minmax(0,1fr) 54px;gap:4px 10px;margin:0 -6px;padding:8px 6px}.xb-bar .n{grid-column:1/2}.xb-bar .v{grid-column:2/3;grid-row:1}.xb-bar .tr{grid-column:1/3}.xb-bar .l{grid-column:1/3}}',
+    replace: '@media (max-width:760px){.app>*,.main,.content,.wrap{min-width:0}.xb-tiles{grid-template-columns:repeat(2,minmax(0,1fr));padding:12px 14px}.xb-top,.xb-head,.xb-att,.xb-memo,.xb-act,.xb-foot{padding-left:14px;padding-right:14px}.xb-head{flex-direction:column;gap:8px}.xb-hl{font-size:16px}.xb-t b{font-size:20px}.xb-memo{font-size:15px}.xb-tabs{margin-left:0}.xb-bars{padding:0 14px 12px}.xb-bar{grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;margin:0 -6px;padding:8px 6px}.xb-bar .n{grid-column:1/2}.xb-bar .v{grid-column:2/3;grid-row:1;white-space:nowrap}.xb-bar .tr{grid-column:1/3}.xb-bar .l{grid-column:1/3}}',
+  },
+  // Document Control (Mobile): ubah tabel register dokumen (.dl) menjadi kartu agar judul tidak terhimpit kolom tetap.
+  {
+    file: 'DocControl',
+    find: '</head>',
+    replace: '<style>html,body{overflow-x:clip}.app>*,.main,.wrap{min-width:0;max-width:100%}@media (max-width:640px){.tools .inp.q{min-width:0;width:100%}table.dl{table-layout:auto;display:block}table.dl colgroup{display:none}table.dl tbody{display:block}table.dl tr.r{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:12px 4px;border-bottom:1px solid var(--line)}table.dl td{display:block;border:0;padding:0;overflow:visible;text-overflow:clip}table.dl td.cb{flex:none;width:auto;padding:0;align-self:flex-start;margin-top:2px}table.dl td.t{flex:1 1 calc(100% - 40px);min-width:0}table.dl td.t b,table.dl td.t small{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}table.dl td.n:not(.h){margin-left:28px}table.dl td.a{margin-left:auto;text-align:right;white-space:normal;display:flex;gap:6px;align-items:center;flex-wrap:wrap}}</style>\n</head>',
+  },
+  // Tambah / Edit Proyek (Mobile): susun tabel riwayat addendum (.hist) menjadi kartu & cegah overflow.
+  {
+    file: 'ProjectSetup',
+    find: '</head>',
+    replace: '<style>html,body{overflow-x:clip}.app>*,.main,.content{min-width:0;max-width:100%}@media (max-width:760px){table.hist,table.hist tbody{display:block;width:100%}table.hist thead{display:none}table.hist tr{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding:10px 0;border-bottom:1px solid var(--line)}table.hist td{display:block;padding:0;border:0;min-width:0}table.hist td:nth-child(4),table.hist td:nth-child(5){flex:0 0 100%;width:100%;overflow-wrap:anywhere}}</style>\n</head>',
+  },
+  // EPCC Control & Engineering (Mobile): cegah overflow pada input pencarian & kartu.
+  ...['Epcc', 'Engineering'].map((file) => ({
+    file,
+    find: '</head>',
+    replace: '<style>html,body{overflow-x:clip}.app>*,.main,.wrap{min-width:0;max-width:100%}@media (max-width:640px){.tools .inp.q{min-width:0;width:100%}.drv .t{min-width:0}.stg3 b{font-size:17px}}</style>\n</head>',
+  })),
   // Portal Proyek (Mobile): geser titik carousel menjauhi Sena, judul 1 baris, titik status bulat, dan target sentuh >= 44px.
   {
     file: 'Portal',
@@ -849,6 +883,42 @@ function resumeAllReport(){const ph=periodHeads();
   },
 ];
 HTML_PATCHES.push(...require('./portal-latest').PORTAL_LATEST_PATCHES, ...require('./nav-theme').NAV_PATCHES, ...require('./sena-extra').SENA_PATCHES, ...require('./live-lan').LIVE_HTML_PATCHES);
+
+/** Tambahan/perbaikan fungsi server .gs yang belum lengkap di berkas legacy. */
+const GS_PATCHES = [
+  {
+    file: 'Code',
+    find: 'function deleteGalleryPhoto(token, projectId, photoId) {',
+    replace: `function galPhotoInRoots_(file, roots) {
+  if (!file || !Array.isArray(roots) || !roots.length) return false;
+  var allow = {};
+  for (var i = 0; i < roots.length; i++) {
+    if (roots[i]) allow[String(roots[i])] = true;
+  }
+  var queue = [], seen = {};
+  try {
+    var ps = file.getParents();
+    while (ps && ps.hasNext()) queue.push({ folder: ps.next(), depth: 1 });
+  } catch (e) { return false; }
+  while (queue.length) {
+    var cur = queue.shift();
+    if (!cur || !cur.folder) continue;
+    var pid = '';
+    try { pid = String(cur.folder.getId() || ''); } catch (e) { continue; }
+    if (!pid || seen[pid]) continue;
+    seen[pid] = true;
+    if (allow[pid]) return true;
+    if (cur.depth >= 8) continue;
+    try {
+      var up = cur.folder.getParents();
+      while (up && up.hasNext()) queue.push({ folder: up.next(), depth: cur.depth + 1 });
+    } catch (e) {}
+  }
+  return false;
+}
+function deleteGalleryPhoto(token, projectId, photoId) {`,
+  },
+];
 
 /** Penghubung login baru (cookie) ke bentuk akun yang dikenal kode lama. */
 const BRIDGE_CODE = `
@@ -1238,7 +1308,7 @@ function load() {
     const { rewrite } = require('../routes/brand');
     for (const [k, v] of htmlFiles) { const t = rewrite(v); if (t !== v) htmlFiles.set(k, t); }
   } catch (e) { console.log(JSON.stringify({ ev: 'brand_rewrite_skip', message: String(e.message || e) })); }
-  for (const p of require('./live-lan').GS_PATCHES.concat(require('./visual3d').GS_PATCHES, require('./ktr-docs').GS_PATCHES, require('./ktr-access').GS_PATCHES)) {
+  for (const p of GS_PATCHES.concat(require('./live-lan').GS_PATCHES, require('./visual3d').GS_PATCHES, require('./ktr-docs').GS_PATCHES, require('./ktr-access').GS_PATCHES)) {
     const f = gsFiles.find((x) => x.name === p.file);
     if (f && f.src.includes(p.find)) f.src = f.src.replace(p.find, () => p.replace);
     else console.warn(JSON.stringify({ ev: 'gas_patch_miss', file: p.file + '.gs' }));
