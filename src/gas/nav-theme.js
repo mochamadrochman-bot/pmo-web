@@ -172,8 +172,20 @@ const NAV_SNIPPET = String.raw`<style id="pmoNavACss">
 .pmo-chip.on{background:var(--soft,#e8f3fb);border-color:var(--pri,#0f5fa8);color:var(--pri-ink,#0f5fa8);font-weight:600}
 .pmo-chip svg{width:14px;height:14px}
 .pmo-pbar .pmo-crumb+.pmo-chips{margin-left:auto}
+.pmo-pbar-r.has-drop{overflow:visible}
+.pmo-isi-drop{position:relative;margin-left:auto;flex:none}
+.pmo-isi-trig{display:inline-flex;align-items:center;gap:8px;padding:5px 13px;border-radius:99px;border:1px solid var(--line,#e0e8f0);background:var(--tint,#f8fafc);color:var(--ink,#132b43);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;min-height:0;white-space:nowrap;transition:border-color .15s,background .15s,color .15s}
+.pmo-isi-trig:hover,.pmo-isi-drop.open .pmo-isi-trig{border-color:var(--pri,#0f5fa8);background:var(--soft,#e8f3fb);color:var(--pri-ink,#0f5fa8)}
+.pmo-isi-trig .pmo-isi-l{font-size:10px}
+.pmo-isi-trig svg{width:13px;height:13px;opacity:.75;transition:transform .16s}
+.pmo-isi-drop:hover .pmo-isi-trig svg,.pmo-isi-drop.open .pmo-isi-trig svg{transform:rotate(180deg)}
+.pmo-isi-menu{position:absolute;right:0;top:calc(100% + 6px);min-width:228px;padding:6px;border-radius:12px;border:1px solid var(--line,#e0e8f0);background:var(--card,#fff);box-shadow:0 14px 34px rgba(15,23,42,.18);opacity:0;transform:translateY(-6px) scale(.98);pointer-events:none;transition:opacity .16s ease,transform .16s ease;z-index:70}
+.pmo-isi-drop:hover .pmo-isi-menu,.pmo-isi-drop:focus-within .pmo-isi-menu,.pmo-isi-drop.open .pmo-isi-menu{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.pmo-isi-menu .pmo-chip{width:100%;justify-content:space-between;border:0;border-radius:8px;padding:8px 11px;background:transparent;font-size:12.5px;text-align:left}
+.pmo-isi-menu .pmo-chip:hover{background:var(--tint,#f5f8fb);color:var(--pri-ink,#0f5fa8)}
+.pmo-isi-menu .pmo-chip.on{background:var(--soft,#e8f3fb);color:var(--pri-ink,#0f5fa8)}
 @media (max-width:1100px){.pmo-pbar{padding:0 16px}}
-@media (max-width:760px){.pmo-pbar:not(.is-epc){display:none!important}.pmo-pbar{padding:0 10px}.pmo-crumb,.pmo-pbar .pmo-r-isi{display:none!important}.pmo-tab{padding:0 10px;font-size:13px}}
+@media (max-width:760px){.pmo-pbar:not(.is-epc):not(.has-isi-drop){display:none!important}.pmo-pbar{padding:0 10px}.pmo-pbar.is-epc .pmo-crumb,.pmo-pbar .pmo-r-isi{display:none!important}.pmo-pbar.has-isi-drop .pmo-crumb{font-size:11.5px;overflow:hidden;text-overflow:ellipsis}.pmo-tab{padding:0 10px;font-size:13px}}
 html.m-mode .pmo-pbar,html.pp-open .pmo-pbar{display:none!important}
 @media print{.pmo-pbar,.pmo-ftrack,.pmo-sdots,.pmo-topbtn{display:none!important}html,body{scrollbar-width:auto!important}}
 /* Opsi 2 Scrollbar Modern Global: sembunyikan scrollbar klasik di dokumen luar, ganti floating rail + section dots + ke atas */
@@ -486,12 +498,15 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
     hdr=document.querySelector('header.top,header.topbar');if(!hdr||!hdr.parentNode)return false;
     if(!bar){bar=document.createElement('div');bar.className='pmo-pbar';bar.id='pmoPbar';hdr.parentNode.insertBefore(bar,hdr.nextSibling);
       bar.addEventListener('click',function(e){
+        var tr=e.target.closest('.pmo-isi-trig');
+        if(tr){var dw=tr.closest('.pmo-isi-drop');if(dw){var nx=!dw.classList.contains('open');dw.classList.toggle('open',nx);tr.setAttribute('aria-expanded',nx?'true':'false')}return}
         var t=e.target.closest('[data-epc]');
         if(t){var code=t.getAttribute('data-epc');var own=document.querySelector('aside.side .nav[data-field="'+code+'"]');
           if(own&&page==='epcc'){own.click();try{var u=new URL(location.href);u.searchParams.set('field',code);history.replaceState(history.state,'',u.toString())}catch(x){}setTimeout(render,60)}else{EPC.forEach(function(x){if(x[0]===code)go(x[2])})}return}
         var c=e.target.closest('[data-isi]');
-        if(c){var b=isiBtns()[+c.getAttribute('data-isi')];if(b){b.click();setTimeout(render,80)}}
+        if(c){var dw2=c.closest('.pmo-isi-drop');if(dw2){dw2.classList.remove('open');var tb=dw2.querySelector('.pmo-isi-trig');if(tb)tb.setAttribute('aria-expanded','false')}var b=isiBtns()[+c.getAttribute('data-isi')];if(b){b.click();setTimeout(render,80)}}
       });
+      document.addEventListener('click',function(e){var dw=bar&&bar.querySelector('.pmo-isi-drop.open');if(dw&&!dw.contains(e.target)){dw.classList.remove('open');var tb=dw.querySelector('.pmo-isi-trig');if(tb)tb.setAttribute('aria-expanded','false')}});
     }
     render();return true;
   }
@@ -501,16 +516,23 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
     var info=activeInfo(),h='';
     var crumb=info.g&&GRP[info.g]?'<span class="pmo-crumb"><span>'+esc(GRP[info.g])+'</span>'+(info.name?'<span class="sep">›</span><b>'+esc(info.name)+'</b>':'')+'</span>':'';
     var L=isiBtns();
+    var useDrop=(page==='executive'&&L.length>0);
     var chips=L.length?'<span class="pmo-chips" role="list">'+L.map(function(b,i){var on=b.classList.contains('on')||b.classList.contains('active')||b.getAttribute('aria-current')==='true';var sp=b.querySelector('span');return '<button type="button" role="listitem" class="pmo-chip'+(on?' on':'')+'" data-isi="'+i+'"'+(on?' aria-current="true"':'')+'>'+esc(String((sp&&sp.textContent)||b.textContent||'').trim())+'</button>'}).join('')+'</span>':'';
     if(isEpc()){
       var cur=epcCur();
       h='<div class="pmo-pbar-r">'+crumb+'<nav class="pmo-tabs" aria-label="EPCC Control">'+EPC.map(function(x){var on=x[0]===cur;return '<button type="button" class="pmo-tab'+(on?' on':'')+'" data-epc="'+x[0]+'"'+(on?' aria-current="page"':'')+'><i class="dot" style="background:'+x[3]+'"></i>'+x[1]+'</button>'}).join('')+'</nav></div>';
       if(chips)h+='<div class="pmo-pbar-r pmo-r-isi"><span class="pmo-isi-l">Isi halaman</span>'+chips+'</div>';
+    }else if(useDrop){
+      var actBtn=L.find(function(b){return b.classList.contains('on')||b.classList.contains('active')||b.getAttribute('aria-current')==='true'})||L[0];
+      var actSp=actBtn&&actBtn.querySelector('span');
+      var actLbl=esc(String((actSp&&actSp.textContent)||(actBtn&&actBtn.textContent)||'Ringkasan').trim());
+      var menuItems=L.map(function(b,i){var on=b.classList.contains('on')||b.classList.contains('active')||b.getAttribute('aria-current')==='true';var sp=b.querySelector('span');return '<button type="button" role="menuitem" class="pmo-chip'+(on?' on':'')+'" data-isi="'+i+'"><span>'+esc(String((sp&&sp.textContent)||b.textContent||'').trim())+'</span></button>'}).join('');
+      h='<div class="pmo-pbar-r has-drop">'+crumb+'<div class="pmo-isi-drop"><button type="button" class="pmo-isi-trig" aria-haspopup="menu" aria-expanded="false"><span class="pmo-isi-l">Isi halaman</span><span>'+actLbl+'</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><div class="pmo-isi-menu" role="menu" aria-label="Isi halaman">'+menuItems+'</div></div></div>';
     }else{
       if(!crumb&&!chips){bar.hidden=true;return}
       h='<div class="pmo-pbar-r'+(crumb?'':' pmo-r-isi')+'">'+crumb+(chips?'<span class="pmo-chips" style="margin-left:auto"><span class="pmo-isi-l">Isi halaman</span></span>'+chips:'')+'</div>';
     }
-    bar.hidden=false;bar.classList.toggle('is-epc',isEpc());
+    bar.hidden=false;bar.classList.toggle('is-epc',isEpc());bar.classList.toggle('has-isi-drop',useDrop);
     if(h!==lastHtml){bar.innerHTML=h;lastHtml=h}
     place();
   }
