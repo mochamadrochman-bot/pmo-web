@@ -892,7 +892,7 @@ function resumeAllReport(){const ph=periodHeads();
     replace: "var __wpEl=document.getElementById('weeklyProjectName');__wpEl.textContent=selectedProject.toUpperCase();__wpEl.dataset.pid=data.projectId||'';window.__pmoWeeklyPid=data.projectId||'';",
   },
 ];
-HTML_PATCHES.push(...require('./portal-latest').PORTAL_LATEST_PATCHES, ...require('./nav-theme').NAV_PATCHES, ...require('./sena-extra').SENA_PATCHES, ...require('./live-lan').LIVE_HTML_PATCHES);
+HTML_PATCHES.push(...require('./portal-latest').PORTAL_LATEST_PATCHES, ...require('./nav-theme').NAV_PATCHES, ...require('./sena-extra').SENA_PATCHES, ...require('./live-lan').LIVE_HTML_PATCHES, ...require('./drive-preview').DRIVE_PREVIEW_PATCHES);
 
 /** Tambahan/perbaikan fungsi server .gs yang belum lengkap di berkas legacy. */
 const GS_PATCHES = [

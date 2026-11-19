@@ -134,6 +134,7 @@ app.use('/', require('./routes/arsip'));
 app.use('/', require('./routes/pres'));
 app.use('/', require('./routes/model3d'));
 app.use('/', require('./routes/library'));
+app.use('/', require('./routes/drive-preview'));
 app.use('/', gasRoutes);
 app.use('/api', projectRoutes);
 app.use('/', portalRoutes);
