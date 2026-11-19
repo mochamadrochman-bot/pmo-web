@@ -11,21 +11,27 @@
 
 const EXEC_STORY_BRIEF_CSS = String.raw`<style id="pmoExecStoryBriefCss">
 .ex-top-split{display:grid;grid-template-columns:minmax(0,1.16fr) minmax(370px,1fr);gap:16px;align-items:stretch;margin:0 0 28px}
-.ex-top-split>#sec-ringkasan{grid-column:1;grid-row:1;margin:0!important;height:var(--ex-split-h,470px);display:flex;flex-direction:column;overflow:hidden}
-.ex-top-split>#sec-ringkasan .xb-body,.ex-top-split>#sec-ringkasan .bf-attn{min-height:0}
-.ex-top-split>#sec-ringkasan .xb-body{overflow-y:auto;flex:1 1 auto;padding-right:4px}
-.ex-top-split>#sec-ringkasan .bf-metrics,.ex-top-split>#sec-ringkasan .bf-head,.ex-top-split>#sec-ringkasan .bf-attn{flex-shrink:0}
+.ex-top-split>#sec-ringkasan{position:relative;grid-column:1;grid-row:1;margin:0!important;height:var(--ex-split-h,470px);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(100,116,139,.38) transparent;padding-bottom:18px}
+.ex-top-split>#sec-ringkasan::-webkit-scrollbar{width:6px}
+.ex-top-split>#sec-ringkasan::-webkit-scrollbar-track{background:transparent}
+.ex-top-split>#sec-ringkasan::-webkit-scrollbar-thumb{background:rgba(100,116,139,.34);border-radius:99px}
+.ex-top-split>#sec-ringkasan::-webkit-scrollbar-thumb:hover{background:var(--pri,#0f5fa8)}
+.ex-top-split>#sec-ringkasan .bf-metrics,.ex-top-split>#sec-ringkasan .bf-head,.ex-top-split>#sec-ringkasan .bf-attn,.ex-top-split>#sec-ringkasan .xbn-wrap{flex-shrink:0}
+.ex-brief-sbtn{position:sticky;bottom:2px;align-self:flex-end;margin-top:auto;z-index:8;display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 13px;border-radius:99px;border:1px solid rgba(255,255,255,.18);background:rgba(15,25,38,.88);color:#fff;font:600 11.5px/1 inherit;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.22);flex-shrink:0;transition:opacity .2s ease,transform .2s ease,background .15s ease}
+.ex-brief-sbtn:hover{background:var(--pri,#0f5fa8);border-color:var(--pri,#0f5fa8)}
+.ex-brief-sbtn[hidden]{display:none!important}
 .ex-top-split>#sec-story{grid-column:2;grid-row:1;margin:0!important;height:var(--ex-split-h,470px);background:var(--card,#fff);border:1px solid var(--line,#dce5ed);border-radius:var(--r,16px);padding:16px 18px;box-shadow:var(--shadow,0 4px 18px rgba(15,23,42,.06));display:flex;flex-direction:column;overflow:hidden}
-.ex-top-split>#sec-story .ex-sh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted,#5b7085)}
+.ex-top-split>#sec-story .ex-sh{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin:0 0 10px;font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted,#5b7085)}
+.ex-top-split>#sec-story .ex-sh>div:first-child{min-width:0;flex:1 1 auto;overflow:hidden}
 .ex-top-split>#sec-story .gl-stories{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;overflow:visible!important;gap:10px;padding:0!important}
 
 /* Reset inside Mode Presentasi supaya slide ringkasan tidak terpotong */
-.pp #sec-ringkasan{height:auto!important;overflow:visible!important;grid-column:auto;grid-row:auto}
-.pp #sec-ringkasan .xb-body{overflow:visible!important}
+.pp #sec-ringkasan{height:auto!important;overflow:visible!important;grid-column:auto;grid-row:auto;padding-bottom:0}
+.pp #sec-ringkasan .ex-brief-sbtn{display:none!important}
 
 /* Floating Spatial Gallery ("Rethinking the Gallery") */
 .ex-gal-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.ex-gal-sub{font-size:11.5px;color:var(--muted,#5b7085);font-weight:500;text-transform:none;letter-spacing:0}
+.ex-gal-sub{display:block;margin-top:3px;font-size:11.5px;color:var(--muted,#5b7085);font-weight:500;text-transform:none;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ex-gal-ctrl{display:flex;align-items:center;gap:5px;flex-shrink:0}
 .ex-gbtn{border:1px solid var(--line,#dce5ed);background:var(--tint,#f7fafc);color:var(--ink,#132b43);height:28px;min-width:28px;padding:0 9px;border-radius:8px;font:600 12px/1 inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
 .ex-gbtn:hover{border-color:var(--pri,#0f5fa8);color:var(--pri-ink,#0f5fa8)}
@@ -52,10 +58,9 @@ const EXEC_STORY_BRIEF_CSS = String.raw`<style id="pmoExecStoryBriefCss">
 .ex-fmeta small{display:block;font-size:10.5px;color:#cbd5e1;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ex-fcard:not(.is-focus) .ex-fmeta small{display:none}
 
-.ex-gal-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
-.ex-gal-dots{display:flex;gap:5px;align-items:center;overflow-x:auto;max-width:100%;scrollbar-width:none;padding-bottom:1px}
-.ex-gal-dots::-webkit-scrollbar{display:none}
-.ex-gdot{border:1px solid var(--line,#dce5ed);background:var(--tint,#f7fafc);color:var(--muted,#5b7085);border-radius:99px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.ex-gal-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;flex-wrap:wrap;flex-shrink:0}
+.ex-gal-dots{display:flex;flex-wrap:wrap;gap:5px;align-items:center;flex:1 1 220px;min-width:0}
+.ex-gdot{border:1px solid var(--line,#dce5ed);background:var(--tint,#f7fafc);color:var(--muted,#5b7085);border-radius:99px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;line-height:1.25;text-align:left}
 .ex-gdot.on{background:var(--pri,#0f5fa8);border-color:var(--pri,#0f5fa8);color:#fff}
 
 /* Auto-cycling Slideshow Lightbox */
@@ -79,8 +84,8 @@ const EXEC_STORY_BRIEF_CSS = String.raw`<style id="pmoExecStoryBriefCss">
 
 @media (max-width:1080px){
   .ex-top-split{grid-template-columns:1fr;margin-bottom:18px}
-  .ex-top-split>#sec-ringkasan,.ex-top-split>#sec-story{grid-column:1;grid-row:auto;height:auto!important;min-height:0}
-  .ex-top-split>#sec-ringkasan .xb-body{overflow:visible}
+  .ex-top-split>#sec-ringkasan,.ex-top-split>#sec-story{grid-column:1;grid-row:auto;height:auto!important;min-height:0;overflow:visible!important;padding-bottom:16px}
+  .ex-brief-sbtn{display:none!important}
 }
 @media (max-width:760px){
   .ex-top-split>#sec-story,.ex-top-split>#sec-ringkasan{padding:13px 14px}
@@ -90,8 +95,8 @@ const EXEC_STORY_BRIEF_CSS = String.raw`<style id="pmoExecStoryBriefCss">
   .ex-lb-img{height:260px}
 }
 html.m-mode .ex-top-split{grid-template-columns:1fr;margin-bottom:14px}
-html.m-mode .ex-top-split>#sec-ringkasan,html.m-mode .ex-top-split>#sec-story{grid-column:1;grid-row:auto;height:auto!important;min-height:0;padding:13px 14px}
-html.m-mode .ex-top-split>#sec-ringkasan .xb-body{overflow:visible}
+html.m-mode .ex-top-split>#sec-ringkasan,html.m-mode .ex-top-split>#sec-story{grid-column:1;grid-row:auto;height:auto!important;min-height:0;padding:13px 14px;overflow:visible!important}
+html.m-mode .ex-brief-sbtn{display:none!important}
 html.m-mode .ex-gal-stage{height:245px;min-height:245px}
 html.m-mode .ex-fcard{width:136px;height:142px}
 html.m-mode .ex-fcard.is-focus{width:188px;height:194px}
@@ -139,6 +144,36 @@ const EXEC_STORY_BRIEF_JS = String.raw`<script id="pmoExecStoryBriefJs">
   }
 
   /* 1. Pastikan ukuran layar awal 2-kolom full viewport di Desktop agar card KPI tidak mengintip */
+  function syncBriefScroll(){
+    var sec=document.getElementById('sec-ringkasan');
+    if(!sec)return;
+    var btn=document.getElementById('exBriefScrollBtn');
+    if(!btn){
+      btn=document.createElement('button');
+      btn.type='button';
+      btn.id='exBriefScrollBtn';
+      btn.className='ex-brief-sbtn';
+      btn.hidden=true;
+      btn.onclick=function(){
+        var atBot=sec.scrollTop+sec.clientHeight>=sec.scrollHeight-24;
+        if(atBot)sec.scrollTo({top:0,behavior:'smooth'});
+        else sec.scrollTo({top:Math.min(sec.scrollHeight,sec.scrollTop+Math.max(180,Math.round(sec.clientHeight*0.72))),behavior:'smooth'});
+      };
+      sec.addEventListener('scroll',syncBriefScroll,{passive:true});
+      sec.appendChild(btn);
+    }else if(sec.lastElementChild!==btn){
+      sec.appendChild(btn);
+    }
+    var mob=window.innerWidth<=1080||document.documentElement.classList.contains('m-mode');
+    var hasMore=!mob&&sec.scrollHeight>sec.clientHeight+14;
+    btn.hidden=!hasMore;
+    if(hasMore){
+      var atBot=sec.scrollTop+sec.clientHeight>=sec.scrollHeight-24;
+      btn.textContent=atBot?'↑ Ke atas':'↓ Baca selengkapnya';
+      btn.setAttribute('aria-label',atBot?'Gulir ringkasan ke atas':'Gulir ringkasan ke bawah');
+    }
+  }
+
   function fitTopSplit(){
     var split=document.getElementById('exTopSplit');
     if(!split)return;
@@ -146,6 +181,7 @@ const EXEC_STORY_BRIEF_JS = String.raw`<script id="pmoExecStoryBriefJs">
     if(mob){
       split.style.removeProperty('--ex-split-h');
       positionCards();
+      syncBriefScroll();
       return;
     }
     var content=document.getElementById('content');
@@ -156,8 +192,20 @@ const EXEC_STORY_BRIEF_JS = String.raw`<script id="pmoExecStoryBriefJs">
       split.style.setProperty('--ex-split-h',h+'px');
     }
     positionCards();
+    syncBriefScroll();
   }
   window.addEventListener('resize',fitTopSplit);
+  (function(){
+    var sec=document.getElementById('sec-ringkasan');
+    if(sec&&window.MutationObserver&&!sec.__exObs){
+      sec.__exObs=true;
+      var tm=0;
+      new MutationObserver(function(){
+        if(tm)return;
+        tm=setTimeout(function(){tm=0;syncBriefScroll();},60);
+      }).observe(sec,{childList:true,subtree:true});
+    }
+  })();
 
   /* Tag #sec-story untuk tab Ringkasan di Mode HP satu tangan */
   function tagStoryMobile(){

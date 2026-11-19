@@ -14,7 +14,8 @@
 
 const PRES_PREP_JS = String.raw`<style>
 .pp-pj .ph .pp-per{display:inline-flex;align-items:center;gap:6px;margin-left:12px;padding:4px 11px;border-radius:99px;background:var(--tint,#eef4fa);border:1px solid var(--line,#dbe5ee);color:var(--muted,#4f6478);font-size:12.5px;font-weight:600;white-space:nowrap}
-.pq{position:fixed;inset:0;z-index:2147482400;display:flex;align-items:center;justify-content:center;background:rgba(3,10,20,.66);font-family:Inter,"Segoe UI",system-ui,sans-serif;color:#132b43}
+.pq{position:fixed;inset:0;z-index:2147482400;display:flex;align-items:center;justify-content:center;background:rgba(3,10,20,.66);font-family:Inter,"Segoe UI",system-ui,sans-serif;color:#132b43;color-scheme:light}
+.pq input,.pq select,.pq textarea{color-scheme:light}
 .pq-box{width:min(1240px,96vw);height:min(860px,92vh);display:flex;flex-direction:column;background:#f6f9fc;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.5);overflow:hidden}
 .pq-hd{display:flex;align-items:center;gap:12px;padding:14px 20px;background:#0f2f52;color:#fff}
 .pq-hd b{font-size:16px;display:block}.pq-hd small{color:#9fc3e2;font-size:12.5px;font-weight:500}
@@ -45,7 +46,7 @@ const PRES_PREP_JS = String.raw`<style>
 .pq-frame .px-up{opacity:1!important;transform:none!important;animation:none!important}
 .pq-frame .pq-ph{position:absolute;inset:0;display:grid;place-items:center;color:#cfd8e3;font-size:14px;text-align:center;padding:20px}
 .pq-f{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.pq-f label{font-size:12px;font-weight:600;color:#5b7085}.pq-f input{width:100%;box-sizing:border-box;margin-top:4px;padding:8px 10px;border:1px solid #c9d6e2;border-radius:9px;font:13px Inter,system-ui,sans-serif}
+.pq-f label{font-size:12px;font-weight:600;color:#5b7085}.pq-f input{width:100%;box-sizing:border-box;margin-top:4px;padding:8px 10px;border:1px solid #c9d6e2;border-radius:9px;font:13px Inter,system-ui,sans-serif;background:#fff!important;color:#132b43!important}
 .pq-opts{display:flex;flex-direction:column;gap:8px;font-size:13.5px}.pq-opts label{display:flex;gap:8px;align-items:center;cursor:pointer}.pq-opts input{width:16px;height:16px;accent-color:#0f5fa8;margin:0}
 .pq-note{font-size:12.5px;color:#5b7085;line-height:1.5;margin:0}
 .pq-ft{display:flex;align-items:center;gap:10px;padding:12px 20px;border-top:1px solid #d5e0ea;background:#fff}
@@ -55,7 +56,8 @@ const PRES_PREP_JS = String.raw`<style>
 .pq-btn:disabled{opacity:.5;cursor:default}.pq-btn.sm{padding:6px 10px;font-size:12.5px}
 .pq-btn svg{width:16px;height:16px}
 .pq-vadd{display:flex;gap:6px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid #e2e9f0;background:#fbfdff}
-.pq-vadd select{padding:7px 9px;border:1px solid #c9d6e2;border-radius:9px;font:13px Inter,system-ui,sans-serif;max-width:100%}
+.pq-vadd select{padding:7px 9px;border:1px solid #c9d6e2;border-radius:9px;font:13px Inter,system-ui,sans-serif;max-width:100%;background:#fff!important;color:#132b43!important}
+.pq-vadd select option{background:#fff;color:#132b43}
 .pq-load{flex:1;display:grid;place-items:center;color:#5b7085;font-size:14px}
 @media (max-width:860px){.pq-main{grid-template-columns:minmax(0,1fr)}.pq-right{border-top:1px solid #d5e0ea;max-height:42vh}.pq-left{border-right:0;min-height:40vh}}
 </style>

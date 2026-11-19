@@ -152,11 +152,12 @@ function accentHead(accent) {
 }
 
 const NAV_SNIPPET = String.raw`<style id="pmoNavACss">
-.pmo-pbar{position:sticky;z-index:29;background:var(--topbar,rgba(255,255,255,.94));-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line,#e0e8f0);padding:0 28px}
-.pmo-pbar-r{display:flex;align-items:center;gap:14px;min-height:44px;overflow-x:auto;scrollbar-width:none}
+.pmo-pbar{position:sticky;z-index:29;max-width:100%;min-width:0;box-sizing:border-box;background:var(--topbar,rgba(255,255,255,.94));-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line,#e0e8f0);padding:0 24px}
+.pmo-pbar-r{display:flex;align-items:center;gap:14px;min-height:44px;min-width:0;max-width:100%;overflow-x:auto;scrollbar-width:none}
 .pmo-pbar-r::-webkit-scrollbar{display:none}
 .pmo-pbar-r+.pmo-pbar-r{border-top:1px solid color-mix(in srgb,var(--line,#e0e8f0) 70%,transparent);min-height:40px}
-.pmo-crumb{display:flex;align-items:center;gap:6px;flex:none;font-size:12.5px;color:var(--muted,#5b7085);white-space:nowrap}
+.pmo-crumb{display:flex;align-items:center;gap:6px;flex:none;min-width:0;font-size:12.5px;color:var(--muted,#5b7085);white-space:nowrap}
+.pmo-pbar-r.has-drop .pmo-crumb{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis}
 .pmo-crumb b{color:var(--ink,#132b43);font-weight:600}
 .pmo-crumb .sep{opacity:.6}
 .pmo-tabs{display:flex;align-items:stretch;gap:2px;align-self:stretch}
@@ -556,6 +557,12 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
         [['#hero','Puncak Hero'],['#briefBox','Ringkasan Eksekutif'],['#vSec','Daftar Proyek']].forEach(function(p){
           var el=document.querySelector(p[0]);if(el&&el.offsetHeight>0)list.push({el:el,label:p[1]});
         });
+      }else if(page==='executive'){
+        var topEl=document.querySelector('.hero')||document.body;
+        list.push({el:topEl,label:'Ringkasan & Story',isTop:true});
+        [['section.kpis','Status Proyek (KPI)'],['#monthlyDeviationPanel','Peta Deviasi Bulanan'],['#financePanel','Realisasi Keuangan'],['#lookAheadSection','3 Month Look Ahead'],['#financeDetailSection','Tabel Keuangan RKAP'],['#sec-progress','Pencapaian Progress'],['#milestoneSection','Milestone & Laporan']].forEach(function(p){
+          var el=document.querySelector(p[0]);if(el&&el.offsetHeight>0&&list.length<7)list.push({el:el,label:p[1]});
+        });
       }else{
         var seen=[],topEl=document.querySelector('main,.wrap,.hero,header.head')||document.body;
         list.push({el:topEl,label:'Bagian Atas',isTop:true});
@@ -588,7 +595,9 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
           if(!s)return;
           if(s.isTop){window.scrollTo({top:0,behavior:'smooth'});return;}
           var padOff=(s.el&&s.el.id==='vSec')?0:16;
-          var off=(hdr&&getComputedStyle(hdr).position==='fixed'?hdr.offsetHeight:0)+padOff;
+          var hdrPos=hdr?getComputedStyle(hdr).position:'';
+          var stickyOff=hdrPos==='fixed'?hdr.offsetHeight:(page==='executive'&&hdrPos==='sticky'?hdr.offsetHeight+(bar&&!bar.hidden?bar.offsetHeight:0):0);
+          var off=stickyOff+padOff;
           var y=Math.max(0,s.el.getBoundingClientRect().top+window.scrollY-off);
           window.scrollTo({top:y,behavior:'smooth'});
         };
@@ -611,7 +620,18 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
         thumb.style.height=th+'px';
         thumb.style.top=Math.round(pct*Math.max(0,track.clientHeight-th))+'px';
       }
-      topBtn.classList.toggle('show',window.scrollY>260);
+      if(page==='executive'&&max>220){
+        var atTop=window.scrollY<=260;
+        topBtn.classList.add('show');
+        topBtn.textContent=atTop?'↓ Ke bawah':'↑ Ke atas';
+        topBtn.setAttribute('aria-label',atTop?'Gulir ke bawah ke KPI & detail':'Kembali ke atas');
+        topBtn.setAttribute('data-dir',atTop?'down':'up');
+      }else{
+        topBtn.classList.toggle('show',window.scrollY>260);
+        topBtn.textContent='↑ Ke atas';
+        topBtn.setAttribute('aria-label','Kembali ke atas');
+        topBtn.setAttribute('data-dir','up');
+      }
       var fab=document.querySelector('.aic-fab');
       var fabVis=!!(fab&&!fab.hidden&&getComputedStyle(fab).opacity!=='0'&&getComputedStyle(fab).display!=='none');
       topBtn.classList.toggle('has-fab',fabVis);
@@ -641,7 +661,20 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
     });
     track.addEventListener('pointermove',function(e){if(dragging)dragTo(e.clientY);});
     track.addEventListener('pointerup',function(){dragging=false;track.classList.remove('drag');});
-    topBtn.onclick=function(){window.scrollTo({top:0,behavior:'smooth'});};
+    topBtn.onclick=function(){
+      if(topBtn.getAttribute('data-dir')==='down'){
+        var nxt=secs[1]&&secs[1].el;
+        if(nxt){
+          var hdrPos=hdr?getComputedStyle(hdr).position:'';
+          var off=(/(sticky|fixed)/.test(hdrPos)?hdr.offsetHeight+(bar&&!bar.hidden?bar.offsetHeight:0):0)+16;
+          window.scrollTo({top:Math.max(0,nxt.getBoundingClientRect().top+window.scrollY-off),behavior:'smooth'});
+        }else{
+          window.scrollTo({top:Math.round(window.innerHeight*0.85),behavior:'smooth'});
+        }
+        return;
+      }
+      window.scrollTo({top:0,behavior:'smooth'});
+    };
 
     window.addEventListener('scroll',scheduleSync,{passive:true});
     window.addEventListener('resize',function(){collectSections();scheduleSync();},{passive:true});
