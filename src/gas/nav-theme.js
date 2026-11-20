@@ -529,7 +529,8 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
     var info=activeInfo(),h='';
     var crumb=info.g&&GRP[info.g]?'<span class="pmo-crumb"><span>'+esc(GRP[info.g])+'</span>'+(info.name?'<span class="sep">›</span><b>'+esc(info.name)+'</b>':'')+'</span>':'';
     var L=isiBtns();
-    var useDrop=(page==='executive'&&L.length>0);
+    var isMob=window.innerWidth<=900||document.documentElement.classList.contains('m-mode');
+    var useDrop=(page==='executive'||(page==='weekly'&&!isMob))&&L.length>0;
     var chips=L.length?'<span class="pmo-chips" role="list">'+L.map(function(b,i){var on=b.classList.contains('on')||b.classList.contains('active')||b.getAttribute('aria-current')==='true';var sp=b.querySelector('span');return '<button type="button" role="listitem" class="pmo-chip'+(on?' on':'')+'" data-isi="'+i+'"'+(on?' aria-current="true"':'')+'>'+esc(String((sp&&sp.textContent)||b.textContent||'').trim())+'</button>'}).join('')+'</span>':'';
     if(isEpc()){
       var cur=epcCur();
@@ -576,6 +577,12 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
         list.push({el:topEl,label:'Ringkasan & Story',isTop:true});
         [['section.kpis','Status Proyek (KPI)'],['#monthlyDeviationPanel','Peta Deviasi Bulanan'],['#financePanel','Realisasi Keuangan'],['#lookAheadSection','3 Month Look Ahead'],['#financeDetailSection','Tabel Keuangan RKAP'],['#sec-progress','Pencapaian Progress'],['#milestoneSection','Milestone & Laporan']].forEach(function(p){
           var el=document.querySelector(p[0]);if(el&&el.offsetHeight>0&&list.length<7)list.push({el:el,label:p[1]});
+        });
+      }else if(page==='weekly'){
+        var wTop=document.querySelector('#sec-ringkasan>.hero')||document.querySelector('#sec-ringkasan')||document.body;
+        list.push({el:wTop,label:'Ringkasan & KPI',isTop:true});
+        [['#sec-progres','Progres & Kurva S'],['#sec-profil','Profil & Aktivitas'],['#sec-risiko','Concern & Mitigasi'],['#sec-rtl','RTL Jadwal'],['#sec-msc','Forecast CPM'],['#sec-hse','HSE, Video & Materi']].forEach(function(p){
+          var el=document.querySelector(p[0]);if(el&&!el.hidden&&el.offsetHeight>0&&list.length<7)list.push({el:el,label:p[1]});
         });
       }else{
         var seen=[],topEl=document.querySelector('main,.wrap,.hero,header.head')||document.body;
@@ -700,7 +707,7 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
     };
 
     window.addEventListener('scroll',scheduleSync,{passive:true});
-    window.addEventListener('resize',function(){collectSections();scheduleSync();},{passive:true});
+    window.addEventListener('resize',function(){if(page==='weekly')render();collectSections();scheduleSync();},{passive:true});
     if(window.ResizeObserver)try{new ResizeObserver(function(){collectSections();scheduleSync();}).observe(document.body);}catch(e){}
     collectSections();sync();
     setTimeout(function(){collectSections();sync();},800);
