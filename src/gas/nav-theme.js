@@ -47,12 +47,12 @@ html:not([data-theme="dark"]){--pmo-side:#0B3A66;--pmo-side-act:#1E6FC0;--pmo-si
 html[data-accent="sage"]:not([data-theme="dark"]),html[data-accent="mocha"]:not([data-theme="dark"]){--pmo-x:1}
 
 /* Banner/hero ikut tema. Foto latar tetap; hanya lapisan warnanya yang berganti. */
-html[data-accent="sage"]:not([data-theme="dark"]):is([data-page="portal"],[data-page="executive"],[data-page="weekly"],[data-page="input"],[data-page="project"],[data-page="monthly"]) .hero{background-color:#0F2A1D!important;box-shadow:0 18px 40px rgba(15,42,29,.22)}
-html[data-accent="sage"]:not([data-theme="dark"]):is([data-page="portal"],[data-page="executive"],[data-page="weekly"],[data-page="input"],[data-page="project"],[data-page="monthly"]) .hero::before{background:linear-gradient(100deg,rgba(15,42,29,.95) 0%,rgba(31,58,38,.80) 45%,rgba(55,85,52,.35) 100%)!important}
+html[data-accent="sage"]:not([data-theme="dark"]):is([data-page="portal"],[data-page="executive"],[data-page="weekly"],[data-page="master"],[data-page="input"],[data-page="project"],[data-page="monthly"]) .hero{background-color:#0F2A1D!important;box-shadow:0 18px 40px rgba(15,42,29,.22)}
+html[data-accent="sage"]:not([data-theme="dark"]):is([data-page="portal"],[data-page="executive"],[data-page="weekly"],[data-page="master"],[data-page="input"],[data-page="project"],[data-page="monthly"]) .hero::before{background:linear-gradient(100deg,rgba(15,42,29,.95) 0%,rgba(31,58,38,.80) 45%,rgba(55,85,52,.35) 100%)!important}
 html[data-accent="sage"]:not([data-theme="dark"])[data-page="executive"] header.head{background:#0F2A1D!important}
 html[data-accent="sage"]:not([data-theme="dark"])[data-page="input"] .hero,html[data-accent="sage"]:not([data-theme="dark"])[data-page="project"] .hero,html[data-accent="sage"]:not([data-theme="dark"])[data-page="monthly"] .hero{background-image:linear-gradient(110deg,#0F2A1D 0%,#375534 55%,#6B9071 100%)!important}
-html[data-accent="mocha"]:not([data-theme="dark"]):is([data-page="portal"],[data-page="executive"],[data-page="weekly"],[data-page="input"],[data-page="project"],[data-page="monthly"]) .hero{background-color:#3B2A1F!important;box-shadow:0 18px 40px rgba(59,42,31,.22)}
-html[data-accent="mocha"]:not([data-theme="dark"]):is([data-page="portal"],[data-page="executive"],[data-page="weekly"],[data-page="input"],[data-page="project"],[data-page="monthly"]) .hero::before{background:linear-gradient(100deg,rgba(59,42,31,.95) 0%,rgba(84,60,43,.80) 45%,rgba(111,78,55,.35) 100%)!important}
+html[data-accent="mocha"]:not([data-theme="dark"]):is([data-page="portal"],[data-page="executive"],[data-page="weekly"],[data-page="master"],[data-page="input"],[data-page="project"],[data-page="monthly"]) .hero{background-color:#3B2A1F!important;box-shadow:0 18px 40px rgba(59,42,31,.22)}
+html[data-accent="mocha"]:not([data-theme="dark"]):is([data-page="portal"],[data-page="executive"],[data-page="weekly"],[data-page="master"],[data-page="input"],[data-page="project"],[data-page="monthly"]) .hero::before{background:linear-gradient(100deg,rgba(59,42,31,.95) 0%,rgba(84,60,43,.80) 45%,rgba(111,78,55,.35) 100%)!important}
 html[data-accent="mocha"]:not([data-theme="dark"])[data-page="executive"] header.head{background:#3B2A1F!important}
 html[data-accent="mocha"]:not([data-theme="dark"])[data-page="input"] .hero,html[data-accent="mocha"]:not([data-theme="dark"])[data-page="project"] .hero,html[data-accent="mocha"]:not([data-theme="dark"])[data-page="monthly"] .hero{background-image:linear-gradient(110deg,#3B2A1F 0%,#6F4E37 55%,#B08968 100%)!important}
 html[data-accent="sage"]:not([data-theme="dark"])[data-page="input"] .hero::after,html[data-accent="mocha"]:not([data-theme="dark"])[data-page="input"] .hero::after{opacity:.35}
@@ -134,8 +134,8 @@ function presCss() {
       A + '.px-eye,' + A + '.px-sub{color:' + t.acc2 + '!important}',
       A + '.px-h{background-image:linear-gradient(100deg,#ffffff 0%,' + t.acc2 + ' 40%,' + t.acc + ' 55%,#ffffff 75%)!important}',
       A + '.px-hd{background:' + t.dh + '!important}',
-      A.trim() + ':is([data-page="weekly"],[data-page="input"],[data-page="monthly"],[data-page="project"]) .hero h1 span{color:' + t.acc2 + '!important}',
-      A.trim() + ':is([data-page="weekly"],[data-page="input"],[data-page="monthly"],[data-page="project"]) .hero small{color:' + t.mut + '!important}',
+      A.trim() + ':is([data-page="weekly"],[data-page="master"],[data-page="input"],[data-page="monthly"],[data-page="project"]) .hero h1 span{color:' + t.acc2 + '!important}',
+      A.trim() + ':is([data-page="weekly"],[data-page="master"],[data-page="input"],[data-page="monthly"],[data-page="project"]) .hero small{color:' + t.mut + '!important}',
       A + '.px-hd small{color:' + t.mut + '!important}',
       A + '.px-btn.pri{background:' + t.ah + '!important;border-color:' + t.ah + '!important;color:#fff!important}',
       A + '.px-h4{color:' + t.dh + '!important}',
@@ -644,7 +644,7 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
     var crumb=info.g&&GRP[info.g]?'<span class="pmo-crumb"><span>'+esc(GRP[info.g])+'</span>'+(info.name?'<span class="sep">›</span><b>'+esc(info.name)+'</b>':'')+'</span>':'';
     var L=isiBtns();
     var isMob=window.innerWidth<=900||document.documentElement.classList.contains('m-mode');
-    var useDrop=(page==='executive'||(page==='weekly'&&!isMob))&&L.length>0;
+    var useDrop=(page==='executive'||((page==='weekly'||page==='master')&&!isMob))&&L.length>0;
     var chips=L.length?'<span class="pmo-chips" role="list">'+L.map(function(b,i){var on=b.classList.contains('on')||b.classList.contains('active')||b.getAttribute('aria-current')==='true';var sp=b.querySelector('span');return '<button type="button" role="listitem" class="pmo-chip'+(on?' on':'')+'" data-isi="'+i+'"'+(on?' aria-current="true"':'')+'>'+esc(String((sp&&sp.textContent)||b.textContent||'').trim())+'</button>'}).join('')+'</span>':'';
     if(isEpc()){
       var cur=epcCur();
