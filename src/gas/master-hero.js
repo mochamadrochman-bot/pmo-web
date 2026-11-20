@@ -3,10 +3,11 @@
 /**
  * Master Schedule (Desktop) · Unified Hero Banner (Alternatif B), disamakan dengan tema
  * Monthly Executive Review & Weekly Progress.
- * - Kontrol topbar (#cpTabs Monitoring EPCC/Jadwal CPM, pemilih proyek, week realisasi,
+ * - Kontrol topbar (#cpTabs Monitoring EPCC/Jadwal CPM, pemilih proyek Modern HUD Scroll,
  *   Cari Ctrl K, Notifikasi, Tema, Akun) menyatu ke dalam banner .hero, lalu berpindah halus
  *   ke #exStuckHost saat halaman digulir melewati banner bersama dropdown "Isi halaman".
- * - Menghilangkan judul ganda dan badge "Hanya baca · data otomatis" sesuai permintaan pengguna.
+ * - Menghilangkan duplikasi Week Realisasi (tetap ada di toolbar bawah), judul ganda, dan
+ *   badge "Hanya baca · data otomatis".
  * - Mobile (<= 760px / html.m-mode) dikembalikan utuh ke layout standar tanpa menyentuh #mobileNote.
  */
 
@@ -47,7 +48,7 @@ html.ex-hero-hdr[data-accent="mocha"]:not([data-theme="dark"]) #desk>.hero::befo
 html.ex-hero-hdr[data-theme="dark"] #desk>.hero::before{
   background:linear-gradient(95deg,rgba(9,14,24,.96),rgba(15,23,42,.80) 56%,rgba(9,14,24,.56))!important;
 }
-html.ex-hero-hdr :is(.hero,#exStuckHost):has(.pop:not([hidden]),.acm-pop:not([hidden]),.ntf-pop:not([hidden]),.pmo-isi-drop.open,.pmo-isi-drop:hover,.pmo-isi-drop:focus-within,.ms-proj-wrap.open,.ms-week-wrap.open){z-index:150!important}
+html.ex-hero-hdr :is(.hero,#exStuckHost):has(.pop:not([hidden]),.acm-pop:not([hidden]),.ntf-pop:not([hidden]),.pmo-isi-drop.open,.pmo-isi-drop:hover,.pmo-isi-drop:focus-within,.ms-proj-wrap.open){z-index:150!important}
 
 #exHeroSpacer{display:none;grid-column:1 / -1;grid-row:1;flex:none}
 #exPbarSpacer{display:none;flex:none}
@@ -65,10 +66,10 @@ html.ex-hero-hdr :is(.hero,#exStuckHost) header.top{
   border-bottom:1px solid rgba(255,255,255,.16)!important;gap:8px;flex-wrap:wrap;
 }
 html.ex-hero-hdr .hero>header.top{grid-column:1 / -1;grid-row:1;padding:0 0 10px 0!important;margin:0 0 12px 0!important}
-html.ex-hero-hdr .hero>div:not(#exHeroSpacer):not(#exPbarSpacer):not(.pmo-pbar){grid-column:1;grid-row:2;position:relative;min-width:0;z-index:5}
+html.ex-hero-hdr .hero>.ms-hero-txt{grid-column:1;grid-row:2;position:relative;min-width:0;z-index:5}
 html.ex-hero-hdr .hero header.top .t{display:none!important}
 
-/* Switcher Monitoring EPCC | Jadwal CPM menyatu tunggal di baris atas Hero */
+/* Switcher Monitoring EPCC | Jadwal CPM tunggal di baris atas Hero */
 html.ex-hero-hdr :is(.hero,#exStuckHost) #cpTabs{
   display:inline-flex!important;gap:2px;padding:3px;margin:0!important;border-radius:11px;
   background:rgba(8,18,32,.42);border:1px solid rgba(255,255,255,.24);
@@ -105,53 +106,103 @@ html.ex-hero-hdr :is(.hero,#exStuckHost) header.top .pmo-qs-trigger *,
 html.ex-hero-hdr :is(.hero,#exStuckHost) header.top .ntf-wrap>button svg,
 html.ex-hero-hdr :is(.hero,#exStuckHost) header.top .icon-btn svg{color:#fff!important}
 html.ex-hero-hdr :is(.hero,#exStuckHost) header.top .pmo-qs-trigger kbd{background:rgba(255,255,255,.16)!important;border-color:rgba(255,255,255,.32)!important;color:#fff!important}
-html.ex-hero-hdr :is(.hero,#exStuckHost) header.top :is(.ntf-wrap,.account-wrap,.acm-wrap,.ms-proj-wrap,.ms-week-wrap){position:relative;z-index:25}
-html.ex-hero-hdr :is(.hero,#exStuckHost) header.top :is(.ntf-wrap,.account-wrap,.acm-wrap,.ms-proj-wrap,.ms-week-wrap):has(.pop:not([hidden]),.acm-pop:not([hidden]),.ntf-pop:not([hidden]),.ms-pop:not([hidden])){z-index:55}
-html.ex-hero-hdr :is(.hero,#exStuckHost) header.top :is(.pop,.acm-pop,.ntf-pop,.ms-pop){background:var(--card,#fff);color:var(--ink,#132b43);z-index:160!important}
+html.ex-hero-hdr :is(.hero,#exStuckHost) header.top :is(.ntf-wrap,.account-wrap,.acm-wrap,.ms-proj-wrap){position:relative;z-index:25}
+html.ex-hero-hdr :is(.hero,#exStuckHost) header.top :is(.ntf-wrap,.account-wrap,.acm-wrap,.ms-proj-wrap):has(.pop:not([hidden]),.acm-pop:not([hidden]),.ntf-pop:not([hidden]),.ms-pop:not([hidden])){z-index:55}
+html.ex-hero-hdr :is(.hero,#exStuckHost) header.top :is(.pop,.acm-pop,.ntf-pop){background:var(--card,#fff);color:var(--ink,#132b43);z-index:160!important}
 
 /* Dorong sisi kanan setelah #cpTabs / .t */
 html.ex-hero-hdr .hero header.top .ms-top-sp{flex:1;min-width:8px}
 html.ex-hero-hdr #exStuckHost header.top .ms-top-sp{display:none}
 html.ex-hero-hdr #exStuckHost .ms-proj-wrap{display:none!important}
-.ms-proj-wrap,.ms-week-wrap{display:none}
-html.ex-hero-hdr .hero header.top .ms-proj-wrap,
-html.ex-hero-hdr :is(.hero,#exStuckHost) header.top .ms-week-wrap{display:inline-flex;align-items:center}
+.ms-proj-wrap{display:none}
+html.ex-hero-hdr .hero header.top .ms-proj-wrap{display:inline-flex;align-items:center}
 .ms-gl-btn{
-  display:inline-flex;align-items:center;gap:8px;padding:0 12px;border-radius:11px;
-  font:600 12.5px/1.2 inherit;cursor:pointer;max-width:250px;
+  display:inline-flex;align-items:center;gap:8px;padding:0 13px;border-radius:11px;
+  font:600 12.5px/1.2 inherit;cursor:pointer;max-width:290px;
 }
 .ms-gl-btn .ms-pl{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:rgba(219,234,254,.82);display:block;line-height:1}
-.ms-gl-btn .ms-pn{display:block;font-size:12.5px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:165px;text-align:left}
+.ms-gl-btn .ms-pn{display:block;font-size:12.5px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:210px;text-align:left}
 .ms-gl-btn svg{width:14px;height:14px;flex:none;opacity:.88}
 .ms-gl-btn.single svg.ms-chev{display:none}
-.ms-pop{
-  position:absolute;left:0;top:calc(100% + 8px);width:min(320px,calc(100vw - 48px));
-  border:1px solid var(--line,#dce5ed);border-radius:14px;
-  box-shadow:0 18px 42px rgba(5,15,30,.28);padding:10px;
+
+/* Modern HUD Hover Scroll Panel untuk Pemilih Proyek (selaras Portal & Weekly) */
+html.ex-hero-hdr .ms-proj-wrap .ms-pop{
+  position:absolute;left:50%;transform:translateX(-50%);top:calc(100% + 8px);
+  width:min(352px,calc(100vw - 32px));
+  background:rgba(16,25,39,.96);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.15);border-radius:16px;
+  box-shadow:0 24px 54px rgba(3,8,18,.62);
+  color:#f1f5f9;display:flex;flex-direction:column;overflow:hidden;z-index:160!important;
 }
-.ms-week-wrap .ms-pop{left:auto;right:0}
+html.ex-hero-hdr[data-accent="sage"]:not([data-theme="dark"]) .ms-proj-wrap .ms-pop{background:rgba(15,38,26,.96)}
+html.ex-hero-hdr[data-accent="mocha"]:not([data-theme="dark"]) .ms-proj-wrap .ms-pop{background:rgba(44,30,21,.96)}
 .ms-pop[hidden]{display:none!important}
+.ms-pop-top{flex:none;padding:12px 12px 10px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02)}
+.ms-pop-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 2px;margin-bottom:8px;font-size:13px;font-weight:600;color:#7dd3fc}
+.ms-pop-cnt{font-size:12.5px;font-weight:500;color:#9db0c4;font-variant-numeric:tabular-nums}
+.ms-pop-qwrap{position:relative;display:flex;align-items:center}
+.ms-pop-qic{position:absolute;left:11px;width:15px;height:15px;color:#9db0c4;pointer-events:none}
 .ms-pop-q{
-  width:100%;height:34px;padding:0 10px;margin-bottom:8px;
-  border:1px solid var(--line,#dce5ed);border-radius:8px;background:var(--tint,#f4f8fc);
-  color:var(--ink,#132b43);font:inherit;font-size:12.5px;
+  width:100%;height:38px;padding:0 34px;border-radius:9px;
+  border:1px solid rgba(255,255,255,.14);background:rgba(6,12,22,.56);
+  color:#f1f5f9;font:500 13.5px/1.2 inherit;transition:border-color .15s ease,background .15s ease;
 }
-.ms-pop-list{max-height:280px;overflow-y:auto;display:grid;gap:2px}
+.ms-pop-q::placeholder{color:#8fa3b8}
+.ms-pop-q:focus{outline:0;border-color:rgba(125,211,252,.7);background:rgba(6,12,22,.82)}
+.ms-pop-q::-webkit-search-cancel-button{display:none}
+.ms-pop-clr{
+  position:absolute;right:7px;width:24px;height:24px;padding:0;border:0;border-radius:6px;
+  background:rgba(255,255,255,.09);color:#e2e8f0;cursor:pointer;
+  display:none;place-items:center;text-align:center;font-size:15px;line-height:1;
+}
+.ms-pop-clr.on{display:grid}
+.ms-pop-clr:hover{background:rgba(255,255,255,.18);color:#fff}
+.ms-pop-body{position:relative}
+.ms-pop-list{
+  max-height:min(320px,56vh);overflow-y:auto;padding:8px 16px 10px 8px;
+  display:flex;flex-direction:column;gap:2px;
+  scrollbar-width:none;-ms-overflow-style:none;scroll-behavior:smooth;
+}
+.ms-pop-list::-webkit-scrollbar{display:none}
+.ms-pop-body.has-top .ms-pop-list{-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 18px,#000 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 18px,#000 100%)}
+.ms-pop-body.has-bot .ms-pop-list{-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - 24px),transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - 24px),transparent 100%)}
+.ms-pop-body.has-top.has-bot .ms-pop-list{-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 18px,#000 calc(100% - 24px),transparent 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 18px,#000 calc(100% - 24px),transparent 100%)}
+.ms-pop-rail{
+  position:absolute;top:8px;bottom:8px;right:5px;width:10px;border-radius:99px;
+  cursor:pointer;opacity:0;pointer-events:none;transition:opacity .18s ease;
+  display:flex;justify-content:center;z-index:5;
+}
+.ms-pop:hover .ms-pop-rail.needed,.ms-pop-body.scrolling .ms-pop-rail.needed,.ms-pop-rail.dragging{opacity:1;pointer-events:auto}
+.ms-pop-track{position:relative;width:3px;height:100%;border-radius:99px;background:rgba(255,255,255,.08);transition:width .14s ease,background .14s ease}
+.ms-pop-rail:hover .ms-pop-track,.ms-pop-rail.dragging .ms-pop-track{width:5px;background:rgba(255,255,255,.15)}
+.ms-pop-thumb{position:absolute;left:0;right:0;top:0;min-height:28px;border-radius:99px;background:rgba(125,211,252,.52);transition:background .14s ease}
+.ms-pop-rail:hover .ms-pop-thumb,.ms-pop-rail.dragging .ms-pop-thumb{background:rgba(125,211,252,.92)}
 .ms-pop-opt{
-  display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;
-  padding:8px 10px;border:0;border-radius:8px;background:transparent;
-  color:var(--ink,#132b43);font:500 12.5px/1.3 inherit;text-align:left;cursor:pointer;
+  position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:42px;
+  padding:9px 12px;border:1px solid transparent;border-radius:10px;background:transparent;
+  color:#f1f5f9;font:600 14px/1.35 inherit;text-align:left;cursor:pointer;
+  transition:background .12s ease,border-color .12s ease,color .12s ease,transform .12s ease;
 }
-.ms-pop-opt:hover{background:var(--tint,#f4f8fc);color:var(--pri-ink,#0f5fa8)}
-.ms-pop-opt.on{background:var(--soft,#e8f3fb);color:var(--pri-ink,#0f5fa8);font-weight:700}
-.ms-pop-opt span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms-pop-opt:hover,.ms-pop-opt:focus-visible{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);color:#fff;transform:translateX(2px);outline:0}
+.ms-pop-opt:active{transform:translateX(1px) scale(.995)}
+.ms-pop-opt:focus-visible{border-color:#7dd3fc}
+.ms-pop-opt.on{background:rgba(30,111,192,.36);border-color:rgba(125,211,252,.45);color:#fff}
+.ms-pop-nm{flex:1;min-width:0;line-height:1.35}
+.ms-pop-bdg{padding:2px 7px;border-radius:6px;background:rgba(16,185,129,.2);color:#6ee7b7;font-size:11.5px;font-weight:600;flex:none}
+.ms-pop-go{flex:none;font-size:16px;line-height:1;color:#7dd3fc;opacity:0;transform:translateX(-3px);transition:opacity .12s ease,transform .12s ease}
+.ms-pop-opt:hover .ms-pop-go,.ms-pop-opt:focus-visible .ms-pop-go,.ms-pop-opt.on .ms-pop-go{opacity:.95;transform:none}
+.ms-pop-empty{padding:24px 12px;text-align:center;font-size:13px;color:#9db0c4;line-height:1.5}
+.ms-pop-foot{flex:none;display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-top:1px solid rgba(255,255,255,.08);background:rgba(8,14,24,.55);font-size:12px;color:#9db0c4}
+.ms-pop-more{color:#7dd3fc;font-weight:600}
+.ms-pop-more.done{color:#94a3b8;font-weight:500}
+.ms-pop-kbd{font-size:11.5px;color:#9db0c4}
 
 /* Tipografi & pills Baris 2 Hero */
 html.ex-hero-hdr #desk>.hero .ey{display:inline-block;font-size:12.5px;font-weight:600;letter-spacing:0;text-transform:none;color:#c3e4f7!important}
 .ms-hero-ey{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px}
 .ms-hero-pill{
   display:inline-flex;align-items:center;padding:2px 9px;border-radius:99px;
-  font-size:11px;font-weight:700;letter-spacing:.02em;
+  font-size:11.5px;font-weight:700;letter-spacing:.01em;
   background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.28);color:#e0f2fe;
 }
 .ms-hero-pill.ok{background:rgba(79,209,160,.22);border-color:rgba(110,231,183,.45);color:#a7f3d0}
@@ -207,9 +258,6 @@ html.ex-hero-hdr #exStuckHost header.top .t b{color:#fff!important;font-size:15p
 #exStuckHost .pmo-isi-menu .pmo-chip:hover{background:rgba(255,255,255,.12)!important;color:#fff!important}
 #exStuckHost .pmo-isi-menu .pmo-chip.on{background:var(--ex-stuck-act)!important;color:#fff!important}
 
-@media (max-width:1420px){
-  html.ex-hero-hdr #exStuckHost .ms-week-wrap{display:none!important}
-}
 @media (max-width:1260px){
   html.ex-hero-hdr #exStuckHost header.top .acm-chip{max-width:170px}
   html.ex-hero-hdr #exStuckHost header.top .pmo-qs-trigger kbd{display:none!important}
@@ -219,17 +267,70 @@ html.ex-hero-hdr #exStuckHost header.top .t b{color:#fff!important;font-size:15p
   html.ex-hero-hdr #exStuckHost .pmo-isi-trig .pmo-isi-l{display:none}
 }
 @media (prefers-reduced-motion:reduce){
-  #exStuckHost,html.ex-hero-hdr :is(.hero,#exStuckHost) #cpTabs button{transition:none!important}
+  #exStuckHost,html.ex-hero-hdr :is(.hero,#exStuckHost) #cpTabs button,.ms-pop-list,.ms-pop-rail,.ms-pop-opt{transition:none!important;scroll-behavior:auto!important}
 }
 </style>`;
 
 const MASTER_HERO_JS = String.raw`<script id="pmoMasterHeroJs">
 (function(){
   if(window.__pmoMasterHeroInit)return;window.__pmoMasterHeroInit=true;
-  var stuckTimer=0,syncRaf=0,metaRaf=0;
+  var stuckTimer=0,syncRaf=0,metaRaf=0,msHudDrag=null,msHudSync=null;
 
   function deskEl(){return document.getElementById('desk')}
   function heroEl(){return document.querySelector('#desk>.hero')}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+
+  function heroTxtEl(hero){
+    if(!hero)return null;
+    for(var i=0;i<hero.children.length;i++){
+      var el=hero.children[i];
+      if(el.tagName==='DIV'&&el.id!=='exHeroSpacer'&&el.id!=='exPbarSpacer'&&!el.classList.contains('pmo-pbar')){
+        el.classList.add('ms-hero-txt');
+        return el;
+      }
+    }
+    return hero.querySelector('.ms-hero-txt');
+  }
+
+  window.addEventListener('mousemove',function(e){
+    if(!msHudDrag)return;
+    var d=msHudDrag,sh=d.sc.scrollHeight,ch=d.sc.clientHeight,th=d.track.clientHeight||ch,bh=d.thumb.offsetHeight||28,use=Math.max(1,th-bh);
+    d.sc.scrollTop=d.ds+((e.clientY-d.dy)/use)*(sh-ch);
+  });
+  window.addEventListener('mouseup',function(){
+    if(!msHudDrag)return;
+    msHudDrag.rail.classList.remove('dragging');
+    msHudDrag=null;
+  });
+
+  function bindProjHudRail(body,sc,rail,track,thumb,moreEl){
+    var scrT=null;
+    function sync(){
+      var sh=sc.scrollHeight,ch=sc.clientHeight,st=sc.scrollTop,max=Math.max(0,sh-ch),need=max>4;
+      body.classList.toggle('has-top',need&&st>6);
+      body.classList.toggle('has-bot',need&&st<max-6);
+      rail.classList.toggle('needed',need);
+      if(!need){moreEl.textContent='Semua tampil';moreEl.className='ms-pop-more done';return}
+      var th=track.clientHeight||ch,bh=Math.max(28,Math.round((ch/sh)*th)),bt=Math.round((max?st/max:0)*(th-bh));
+      thumb.style.height=bh+'px';
+      thumb.style.transform='translateY('+bt+'px)';
+      if(st>=max-6){moreEl.textContent='Akhir daftar';moreEl.className='ms-pop-more done'}
+      else{moreEl.textContent='\u2193 Scroll untuk lainnya';moreEl.className='ms-pop-more'}
+    }
+    sc.addEventListener('scroll',function(){
+      body.classList.add('scrolling');clearTimeout(scrT);
+      scrT=setTimeout(function(){body.classList.remove('scrolling')},750);
+      sync();
+    },{passive:true});
+    rail.addEventListener('mousedown',function(e){
+      e.preventDefault();e.stopPropagation();
+      var r=track.getBoundingClientRect();
+      if(e.target!==thumb){var ratio=Math.max(0,Math.min(1,(e.clientY-r.top)/Math.max(1,r.height)));sc.scrollTop=ratio*(sc.scrollHeight-sc.clientHeight)}
+      msHudDrag={sc:sc,rail:rail,track:track,thumb:thumb,dy:e.clientY,ds:sc.scrollTop};
+      rail.classList.add('dragging');
+    });
+    return sync;
+  }
 
   function ensureControls(hdr){
     if(!hdr)return;
@@ -250,54 +351,47 @@ const MASTER_HERO_JS = String.raw`<script id="pmoMasterHeroJs">
         +'<span><span class="ms-pl">Proyek aktif</span><span class="ms-pn" id="msProjBtnName">Memuat…</span></span>'
         +'<svg class="ms-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>'
         +'</button>'
-        +'<div class="ms-pop" id="msProjPop" hidden>'
-        +'<input type="search" class="ms-pop-q" id="msProjSearch" placeholder="Cari proyek…" aria-label="Cari proyek">'
-        +'<div class="ms-pop-list" id="msProjList"></div>'
+        +'<div class="ms-pop" id="msProjPop" hidden role="region" aria-label="Pilih Proyek Master Schedule">'
+          +'<div class="ms-pop-top">'
+            +'<div class="ms-pop-h"><span>Pilih Proyek</span><span class="ms-pop-cnt" id="msProjCount"></span></div>'
+            +'<div class="ms-pop-qwrap">'
+              +'<svg class="ms-pop-qic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>'
+              +'<input type="search" class="ms-pop-q" id="msProjSearch" placeholder="Cari proyek…" aria-label="Cari proyek" autocomplete="off">'
+              +'<button type="button" class="ms-pop-clr" id="msProjClear" aria-label="Bersihkan pencarian">\u00d7</button>'
+            +'</div>'
+          +'</div>'
+          +'<div class="ms-pop-body" id="msProjBody">'
+            +'<div class="ms-pop-list" id="msProjList" tabindex="0" aria-label="Daftar proyek"></div>'
+            +'<div class="ms-pop-rail" id="msProjRail" aria-hidden="true"><div class="ms-pop-track" id="msProjTrack"><div class="ms-pop-thumb" id="msProjThumb"></div></div></div>'
+          +'</div>'
+          +'<div class="ms-pop-foot"><span class="ms-pop-more" id="msProjMore"></span><span class="ms-pop-kbd">\u2191\u2193 \u00b7 Enter</span></div>'
         +'</div>';
       var anchor=hdr.querySelector('.pmo-qs-trigger,.ntf-wrap,#themeBtn');
       if(anchor)hdr.insertBefore(pw,anchor);else hdr.appendChild(pw);
 
-      var btn=document.getElementById('msProjBtn'),pop=document.getElementById('msProjPop'),qInp=document.getElementById('msProjSearch');
+      var btn=document.getElementById('msProjBtn'),pop=document.getElementById('msProjPop'),qInp=document.getElementById('msProjSearch'),clr=document.getElementById('msProjClear');
+      var body=document.getElementById('msProjBody'),list=document.getElementById('msProjList'),rail=document.getElementById('msProjRail'),track=document.getElementById('msProjTrack'),thumb=document.getElementById('msProjThumb'),more=document.getElementById('msProjMore');
+      msHudSync=bindProjHudRail(body,list,rail,track,thumb,more);
+
       btn.addEventListener('click',function(ev){
         ev.stopPropagation();
         var sel=document.getElementById('project');
         if(!sel||sel.options.length<2)return;
-        closeMenus('proj');
-        syncProjMenu();
         var open=pop.hidden;
-        pop.hidden=!open;
-        pw.classList.toggle('open',open);
-        btn.setAttribute('aria-expanded',String(open));
-        if(open){qInp.value='';filterProj('');setTimeout(function(){qInp.focus()},10)}
+        if(open){qInp.value='';syncProjMenu();pop.hidden=false;pw.classList.add('open');btn.setAttribute('aria-expanded','true');requestAnimationFrame(function(){if(msHudSync)msHudSync();qInp.focus()});}
+        else closeMenus();
       });
       pop.addEventListener('click',function(ev){ev.stopPropagation()});
-      qInp.addEventListener('input',function(){filterProj(qInp.value)});
-    }
-    if(!document.getElementById('msWeekWrap')){
-      var ww=document.createElement('div');
-      ww.id='msWeekWrap';
-      ww.className='pop-wrap ms-week-wrap';
-      ww.innerHTML='<button type="button" class="ms-gl-btn" id="msWeekBtn" aria-haspopup="true" aria-expanded="false">'
-        +'<span><span class="ms-pl">Week realisasi</span><span class="ms-pn" id="msWeekBtnName">—</span></span>'
-        +'<svg class="ms-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>'
-        +'</button>'
-        +'<div class="ms-pop" id="msWeekPop" hidden><div class="ms-pop-list" id="msWeekList"></div></div>';
-      var anchor2=hdr.querySelector('.pmo-qs-trigger,.ntf-wrap,#themeBtn');
-      if(anchor2)hdr.insertBefore(ww,anchor2);else hdr.appendChild(ww);
-
-      var wbtn=document.getElementById('msWeekBtn'),wpop=document.getElementById('msWeekPop');
-      wbtn.addEventListener('click',function(ev){
-        ev.stopPropagation();
-        var wsel=document.getElementById('week');
-        if(!wsel||wsel.disabled||!wsel.options.length)return;
-        closeMenus('week');
-        syncWeekMenu();
-        var open=wpop.hidden;
-        wpop.hidden=!open;
-        ww.classList.toggle('open',open);
-        wbtn.setAttribute('aria-expanded',String(open));
+      qInp.addEventListener('input',function(){list.scrollTop=0;syncProjMenu()});
+      clr.addEventListener('click',function(ev){ev.stopPropagation();qInp.value='';qInp.focus();syncProjMenu()});
+      pop.addEventListener('keydown',function(ev){
+        var bs=Array.prototype.slice.call(list.querySelectorAll('.ms-pop-opt'));
+        if(!bs.length)return;
+        var idx=bs.indexOf(document.activeElement);
+        if(ev.key==='ArrowDown'){ev.preventDefault();bs[Math.min(bs.length-1,idx+1)].focus()}
+        else if(ev.key==='ArrowUp'){ev.preventDefault();if(idx<=0)qInp.focus();else bs[idx-1].focus()}
+        else if(ev.key==='Escape'){closeMenus();btn.focus()}
       });
-      wpop.addEventListener('click',function(ev){ev.stopPropagation()});
     }
     if(!window.__msHeroCloseBound){
       window.__msHeroCloseBound=true;
@@ -306,26 +400,14 @@ const MASTER_HERO_JS = String.raw`<script id="pmoMasterHeroJs">
     }
   }
 
-  function closeMenus(except){
-    if(except!=='proj'){
-      var pw=document.getElementById('msProjWrap'),p=document.getElementById('msProjPop'),b=document.getElementById('msProjBtn');
-      if(p)p.hidden=true;if(pw)pw.classList.remove('open');if(b)b.setAttribute('aria-expanded','false');
-    }
-    if(except!=='week'){
-      var ww=document.getElementById('msWeekWrap'),wp=document.getElementById('msWeekPop'),wb=document.getElementById('msWeekBtn');
-      if(wp)wp.hidden=true;if(ww)ww.classList.remove('open');if(wb)wb.setAttribute('aria-expanded','false');
-    }
-  }
-
-  function filterProj(val){
-    var q=String(val||'').trim().toLocaleLowerCase('id');
-    document.querySelectorAll('#msProjList .ms-pop-opt').forEach(function(b){
-      b.hidden=!!(q&&String(b.textContent||'').toLocaleLowerCase('id').indexOf(q)<0);
-    });
+  function closeMenus(){
+    var pw=document.getElementById('msProjWrap'),p=document.getElementById('msProjPop'),b=document.getElementById('msProjBtn');
+    if(p)p.hidden=true;if(pw)pw.classList.remove('open');if(b)b.setAttribute('aria-expanded','false');
   }
 
   function syncProjMenu(){
     var sel=document.getElementById('project'),list=document.getElementById('msProjList'),btn=document.getElementById('msProjBtn'),lbl=document.getElementById('msProjBtnName');
+    var qInp=document.getElementById('msProjSearch'),clr=document.getElementById('msProjClear'),cnt=document.getElementById('msProjCount');
     if(!sel||!lbl)return;
     var opts=Array.prototype.slice.call(sel.options||[]);
     var curOpt=opts.find(function(o){return o.selected})||opts[0];
@@ -333,12 +415,27 @@ const MASTER_HERO_JS = String.raw`<script id="pmoMasterHeroJs">
     lbl.textContent=pname;
     if(btn)btn.classList.toggle('single',opts.length<2);
     if(!list)return;
+    var rawQ=qInp?(qInp.value||''):'',ql=rawQ.trim().toLocaleLowerCase('id');
+    if(clr)clr.classList.toggle('on',rawQ.length>0);
+    var shown=opts.filter(function(o){return !ql||String(o.textContent||'').toLocaleLowerCase('id').indexOf(ql)>=0});
+    if(cnt)cnt.textContent=shown.length+(ql?' dari '+opts.length:' Proyek');
     list.innerHTML='';
-    opts.forEach(function(o){
+    if(!shown.length){
+      var em=document.createElement('div');
+      em.className='ms-pop-empty';
+      em.innerHTML='Tidak ada proyek cocok dengan "<b>'+esc(rawQ.trim())+'</b>".';
+      list.appendChild(em);
+      if(msHudSync)msHudSync();
+      return;
+    }
+    shown.forEach(function(o){
+      var raw=String(o.textContent||'').trim();
+      var done=/selesai$/i.test(raw);
+      var nm=done?raw.replace(/\s*selesai$/i,'').trim():raw;
       var b=document.createElement('button');
       b.type='button';
       b.className='ms-pop-opt'+(o.selected?' on':'');
-      b.innerHTML='<span>'+String(o.textContent||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})+'</span>';
+      b.innerHTML='<span class="ms-pop-nm">'+esc(nm)+'</span>'+(done?'<span class="ms-pop-bdg">Selesai</span>':'')+'<span class="ms-pop-go" aria-hidden="true">\u203a</span>';
       b.onclick=function(){
         closeMenus();
         if(sel.value!==o.value){
@@ -348,49 +445,44 @@ const MASTER_HERO_JS = String.raw`<script id="pmoMasterHeroJs">
       };
       list.appendChild(b);
     });
+    if(msHudSync)msHudSync();
   }
 
-  function syncWeekMenu(){
-    var wsel=document.getElementById('week'),list=document.getElementById('msWeekList'),btn=document.getElementById('msWeekBtn'),lbl=document.getElementById('msWeekBtnName');
-    if(!wsel||!lbl)return;
-    var opts=Array.prototype.slice.call(wsel.options||[]);
-    var curOpt=opts.find(function(o){return o.selected})||opts[0];
-    var full=(curOpt&&curOpt.textContent)||'—';
-    var shortTxt=/^(W\d+)\s*·\s*(?:[^–]+–\s*)?(.+)$/.exec(full);
-    lbl.textContent=shortTxt?(shortTxt[1]+' · '+shortTxt[2].trim()):full;
-    if(btn)btn.classList.toggle('single',wsel.disabled||opts.length<2);
-    if(!list)return;
-    list.innerHTML='';
-    opts.forEach(function(o){
-      var b=document.createElement('button');
-      b.type='button';
-      b.className='ms-pop-opt'+(o.selected?' on':'');
-      b.innerHTML='<span>'+String(o.textContent||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})+'</span>';
-      b.onclick=function(){
-        closeMenus();
-        if(wsel.value!==o.value){
-          wsel.value=o.value;
-          wsel.dispatchEvent(new Event('change',{bubbles:true}));
-        }
-      };
-      list.appendChild(b);
-    });
+  function currentWeekBadgeText(){
+    var wsel=document.getElementById('week');
+    if(!wsel||wsel.disabled||!wsel.options||!wsel.options.length)return '';
+    var cur=wsel.options[wsel.selectedIndex>=0?wsel.selectedIndex:0];
+    var full=(cur&&cur.textContent)||'';
+    if(!full||/Memuat|Belum/i.test(full))return '';
+    var m=/^(W\d+)\s*·\s*(?:[^–]+–\s*)?(.+)$/.exec(full);
+    return m?(m[1]+' · Cut-off '+m[2].trim()):full;
   }
 
   function syncHeroMeta(){
     var hero=heroEl();if(!hero)return;
-    var txtWrap=hero.querySelector('div:not(#exHeroSpacer):not(#exPbarSpacer):not(.pmo-pbar)');
+    var txtWrap=heroTxtEl(hero);
     if(!txtWrap)return;
     var h1=txtWrap.querySelector('h1'),ey=txtWrap.querySelector('.ey'),sub=txtWrap.querySelector('p');
+
     var pn='';
     if(typeof MS!=='undefined'&&MS.data&&MS.data.project&&MS.data.project.name)pn=MS.data.project.name;
-    else{var sel=document.getElementById('project');if(sel&&sel.selectedOptions&&sel.selectedOptions[0])pn=sel.selectedOptions[0].textContent||''}
-    if(!pn||/Memuat/i.test(pn)){var pt=document.getElementById('projTitle');if(pt&&pt.textContent)pn=pt.textContent.replace(/^Master Schedule\s*·\s*/i,'').trim()}
+    if(!pn){
+      var sel=document.getElementById('project');
+      if(sel&&sel.selectedOptions&&sel.selectedOptions[0])pn=sel.selectedOptions[0].textContent||'';
+    }
+    if(!pn||/Memuat/i.test(pn)){
+      var pt=document.getElementById('projTitle');
+      if(pt&&pt.textContent){
+        var rawPt=pt.textContent.trim();
+        if(/^Master Schedule\s*·\s*/i.test(rawPt))pn=rawPt.replace(/^Master Schedule\s*·\s*/i,'').trim();
+      }
+    }
     if(h1){
-      var wantProj=pn&&!/Master Schedule/i.test(pn)?pn:'';
-      var nextHtml=wantProj?'Master Schedule — <span>'+wantProj.replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})+'</span>':'Master Schedule';
+      var wantProj=pn&&!/Memuat|Master Schedule/i.test(pn)?pn.trim():'';
+      var nextHtml=wantProj?'Master Schedule — <span>'+esc(wantProj)+'</span>':'Master Schedule';
       if(h1.innerHTML!==nextHtml)h1.innerHTML=nextHtml;
     }
+
     var row=txtWrap.querySelector('.ms-hero-ey');
     if(ey&&!row){
       row=document.createElement('div');row.className='ms-hero-ey';
@@ -400,8 +492,7 @@ const MASTER_HERO_JS = String.raw`<script id="pmoMasterHeroJs">
       var wp=document.getElementById('msHeroWeekPill'),lp=document.getElementById('msHeroWarnPill');
       if(!wp){wp=document.createElement('span');wp.id='msHeroWeekPill';wp.className='ms-hero-pill ok';row.appendChild(wp)}
       if(!lp){lp=document.createElement('span');lp.id='msHeroWarnPill';lp.className='ms-hero-pill warn';row.appendChild(lp)}
-      var wlbl=document.getElementById('msWeekBtnName');
-      var wTxt=wlbl&&wlbl.textContent&&wlbl.textContent!=='—'&&!/Memuat/i.test(wlbl.textContent)?wlbl.textContent:'';
+      var wTxt=currentWeekBadgeText();
       wp.hidden=!wTxt;
       if(wTxt&&wp.textContent!==wTxt)wp.textContent=wTxt;
 
@@ -418,7 +509,6 @@ const MASTER_HERO_JS = String.raw`<script id="pmoMasterHeroJs">
       if(sub.textContent!==sTxt)sub.textContent=sTxt;
     }
     syncProjMenu();
-    syncWeekMenu();
   }
 
   function ensureStuckNodes(hero,mainEl){
@@ -518,6 +608,7 @@ const MASTER_HERO_JS = String.raw`<script id="pmoMasterHeroJs">
     }
 
     H.classList.add('ex-hero-hdr');
+    heroTxtEl(hero);
     ensureControls(hdr);
     if(tabs&&tabs.parentNode!==hdr){
       var t=hdr.querySelector('.t');
@@ -549,9 +640,9 @@ const MASTER_HERO_JS = String.raw`<script id="pmoMasterHeroJs">
     }).observe(mainNode,{childList:true});
   }
 
-  ['summary','project','week'].forEach(function(id){
+  ['summary','project','week','projTitle'].forEach(function(id){
     var el=document.getElementById(id);
-    if(el&&window.MutationObserver)new MutationObserver(schedMeta).observe(el,{childList:true,subtree:true});
+    if(el&&window.MutationObserver)new MutationObserver(schedMeta).observe(el,{childList:true,characterData:true,subtree:true});
   });
 
   if(typeof window.msAccept==='function'){
