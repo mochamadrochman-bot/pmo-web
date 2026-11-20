@@ -31,7 +31,7 @@ html.ex-hero-hdr #sec-ringkasan>.hero{
   align-items:end;column-gap:16px;padding:12px 24px 20px;min-height:156px;border-radius:var(--r,14px);
 }
 html.ex-hero-hdr :is(.hero,#exStuckHost):has(.pop:not([hidden]),.acm-pop:not([hidden]),.ntf-pop:not([hidden]),.pmo-isi-drop.open,.pmo-isi-drop:hover,.pmo-isi-drop:focus-within,.wk-proj-wrap.open){z-index:150!important}
-html.ex-hero-hdr .hero::before{border-radius:inherit;overflow:hidden}
+html.ex-hero-hdr .hero::before{border-radius:inherit;overflow:hidden;box-shadow:inset 0 72px 58px -28px rgba(0,0,0,.44)}
 #exHeroSpacer{display:none;grid-column:1 / -1;grid-row:1;flex:none}
 #exPbarSpacer{display:none;flex:none}
 html.ex-hero-hdr.ex-hdr-mounted #exHeroSpacer{display:block}
@@ -368,10 +368,10 @@ const WEEKLY_HERO_JS = String.raw`<script id="pmoWeeklyHeroJs">
       hero.insertBefore(hSp,hero.firstChild);
     }
     var pSp=document.getElementById('exPbarSpacer');
-    if(!pSp&&hero&&content){
+    if(!pSp&&hero&&hero.parentNode){
       pSp=document.createElement('div');
       pSp.id='exPbarSpacer';
-      content.insertBefore(pSp,hero.nextSibling);
+      hero.parentNode.insertBefore(pSp,hero.nextSibling);
     }
     return {host:host,hSp:hSp,pSp:pSp};
   }
