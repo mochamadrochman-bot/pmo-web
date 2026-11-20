@@ -14,7 +14,12 @@ const EXEC_STORY_BRIEF_CSS = String.raw`<style id="pmoExecStoryBriefCss">
 .ex-brief-shell{position:relative;grid-column:1;grid-row:1;height:var(--ex-split-h,470px);min-width:0;border-radius:var(--r,16px)}
 .ex-brief-shell>#sec-ringkasan{margin:0!important;height:100%;display:block;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding-bottom:46px!important;box-sizing:border-box}
 .ex-brief-shell>#sec-ringkasan::-webkit-scrollbar{display:none}
-.ex-brief-rail{position:absolute;right:5px;top:12px;bottom:44px;width:9px;border-radius:99px;z-index:10;cursor:pointer;display:none;background:rgba(255,255,255,.22);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid rgba(15,23,42,.06)}
+@media (min-width:1081px){
+  html:not(.m-mode) .ex-brief-shell>#sec-ringkasan #xbExec{padding:0 26px 20px 24px!important}
+  html:not(.m-mode) .ex-brief-shell>#sec-ringkasan .xbn-head{position:sticky;top:0;z-index:6;background:var(--card,#fff);margin:0 -26px 4px -24px;padding:18px 26px 12px 24px;border-bottom:1px solid var(--line,#e2e8f0)}
+  html:not(.m-mode) .ex-brief-shell>#sec-ringkasan .xbn-memo{padding:8px 0 4px}
+}
+.ex-brief-rail{position:absolute;right:6px;top:62px;bottom:46px;width:9px;border-radius:99px;z-index:10;cursor:pointer;display:none;background:rgba(255,255,255,.22);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid rgba(15,23,42,.06)}
 .ex-brief-rail.on{display:block}
 .ex-brief-thumb{position:absolute;left:1px;right:1px;min-height:36px;border-radius:99px;background:rgba(19,43,67,.26);border:1px solid rgba(255,255,255,.45);transition:background .15s}
 .ex-brief-rail:hover .ex-brief-thumb,.ex-brief-rail.drag .ex-brief-thumb{background:color-mix(in srgb,var(--pri,#0f5fa8) 80%,transparent)}
@@ -37,6 +42,8 @@ html[data-theme="dark"] .ex-brief-sbtn:hover{background:rgba(14,165,233,.72);bor
 
 /* Reset inside Mode Presentasi supaya slide ringkasan tidak terpotong */
 .pp #sec-ringkasan{height:auto!important;overflow:visible!important;grid-column:auto;grid-row:auto;padding-bottom:0!important}
+.pp #sec-ringkasan #xbExec{padding:16px 20px 14px!important}
+.pp #sec-ringkasan .xbn-head{position:static!important;margin:0!important;padding:0 0 10px!important}
 .pp #sec-ringkasan .ex-brief-tabs,.pp .ex-brief-sbtn,.pp .ex-brief-rail{display:none!important}
 .pp #sec-ringkasan [data-xbgrp]{display:block!important}
 
