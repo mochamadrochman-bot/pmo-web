@@ -200,7 +200,7 @@ html.pv2 main.wrap>section.grp.v-hide{display:none!important}
 html.pv2 .foot.v-foot{max-width:none!important;margin:0!important;background:var(--v-foot);border-top:1px solid rgba(255,255,255,.1);padding:32px 136px 32px 48px;color:#cbd5e1;font-size:12.5px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px;text-align:left}
 
 /* ---------- Tanya Sena ---------- */
-html.pv2 .v-sena{position:fixed;right:0;top:52%;transform:translateY(-50%);z-index:70;writing-mode:vertical-rl;text-orientation:mixed;padding:16px 10px;border:0;border-radius:12px 0 0 12px;cursor:pointer;background:linear-gradient(180deg,var(--v-acc) 0%,var(--v-acc2) 100%);color:#fff;font:700 11.5px/1 Inter,system-ui,sans-serif;letter-spacing:.14em;box-shadow:-4px 8px 24px rgba(0,0,0,.35);min-width:40px}
+html.pv2 .v-sena{position:fixed;right:18px;top:auto;bottom:152px;transform:none;z-index:70;writing-mode:vertical-rl;text-orientation:mixed;padding:14px 10px;border:1px solid rgba(255,255,255,.22);border-radius:99px;cursor:pointer;background:linear-gradient(180deg,var(--v-acc) 0%,var(--v-acc2) 100%);color:#fff;font:700 11.5px/1 Inter,system-ui,sans-serif;letter-spacing:.14em;box-shadow:0 10px 26px rgba(0,0,0,.36);min-width:40px}
 html.pv2 .aic-fab{opacity:0!important;pointer-events:none!important}
 
 /* ---------- menu HP ---------- */
@@ -244,7 +244,7 @@ html.pv2 .v-sheet-in>button:hover,html.pv2 .v-sheet-in>button.on{background:rgba
   html.pv2 #briefBox.story{padding:16px!important}
   html.pv2 .v-sum{gap:10px}html.pv2 .v-sum .hk{padding:12px 14px}html.pv2 .v-sum .hk b{font-size:20px}
   html.pv2 .foot.v-foot{padding:24px 20px}
-  html.pv2 .v-sena{top:auto;bottom:96px;transform:none;padding:12px 8px}
+  html.pv2 .v-sena{right:0;top:auto;bottom:96px;transform:none;border:0;border-radius:12px 0 0 12px;padding:12px 8px}
 }
 @media (max-width:600px){html.pv2 .v-sum{grid-template-columns:1fr 1fr}}
 @media (prefers-reduced-motion:reduce){html.pv2 #hero .hero-bg>div,html.pv2 .v20-bg-slide,html.pv2 .v20-card,html.pv2 .v20-left{transition:none!important}}
