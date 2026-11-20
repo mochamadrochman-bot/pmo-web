@@ -12,7 +12,7 @@ const PRES_EXTRA_JS = String.raw`<script>
 (function(){
   if(window.pmoPresExtra)return;
   var LOGO='https://drive.google.com/thumbnail?id=1JP0hqePxcaiFN0aZ2dv6WJ6qCNwrRLxf&sz=w480';
-  var cache={key:null,items:[],settings:{},layout:{order:[],hidden:[]},canManage:false,base:[],err:'',photos:[]};
+  var cache={key:null,items:[],settings:{},layout:{order:[],hidden:[]},canManage:false,isAdmin:false,allowedProjects:[],pagePid:'',base:[],err:'',photos:[]};
   var BULAN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],HARI=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function api(url,opt){return fetch(url,Object.assign({credentials:'same-origin',headers:{'content-type':'application/json'}},opt||{})).then(function(r){return r.json().catch(function(){return {ok:false,error:'Server tidak merespons ('+r.status+').'}})}).then(function(j){if(!j.ok)throw new Error(j.error||'Permintaan gagal.');return j.data})}
@@ -78,7 +78,7 @@ const PRES_EXTRA_JS = String.raw`<script>
       '.px-note{font-size:13px;color:#5b7085;margin:0 0 12px;line-height:1.5}',
       '.px-row{display:grid;grid-template-columns:96px minmax(0,1fr) 240px auto;gap:12px;align-items:center;padding:10px;border:1px solid #d9e3ec;border-radius:12px;background:#fff;margin-bottom:8px}',
       '.px-row img{width:96px;border-radius:6px;border:1px solid #e2e8f0;display:block}.px-row b{font-size:13px;display:block}.px-row small{font-size:12px;color:#6b7c8a}',
-      '.px-row select,.px-f input,.px-pick select{width:100%;padding:8px 10px;border:1px solid #c9d6e2;border-radius:9px;font:13px Inter,system-ui,sans-serif;background:#fff!important;color:#132b43!important}',
+      '.px-row select,.px-f input,.px-pick select,.px-up-box select{width:100%;padding:8px 10px;border:1px solid #c9d6e2;border-radius:9px;font:13px Inter,system-ui,sans-serif;background:#fff!important;color:#132b43!important}.px-up-box select{width:auto;min-width:210px;max-width:100%}.px-proj-pill{display:inline-flex;align-items:center;padding:5px 10px;border-radius:99px;background:#e8f2fd;color:#0f5fa8;font-size:12px;font-weight:700}',
       '.px-acts{display:flex;gap:4px}',
       '.px-h4{margin:0 0 4px;font-size:14px;color:#0f2f52}.px-h4 span{font-weight:500;color:#6b7c8a;font-size:12px;margin-left:6px}',
       '.px-brow{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid #d9e3ec;border-radius:10px;background:#fff;margin-bottom:6px}.px-brow label{display:flex;align-items:center;gap:10px;flex:1;min-width:0;font-size:13px;font-weight:600;cursor:pointer}.px-brow label span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.px-brow input{width:16px;height:16px;accent-color:#0f5fa8}.px-brow.off{background:#f3f5f8}.px-brow.off label span{color:#9aa5b1;text-decoration:line-through}',
@@ -250,7 +250,7 @@ const PRES_EXTRA_JS = String.raw`<script>
     cache.err='';
     var fb=nameKeyOf(cfg);
     var q='key='+encodeURIComponent(key)+(fb&&fb!==key?'&fallbackKey='+encodeURIComponent(fb):'');
-    return api('/api/pres/set?'+q).then(function(d){cache.items=d.items||[];cache.settings=d.settings||{};cache.layout=d.layout||{order:[],hidden:[]};cache.canManage=!!d.canManage}).catch(function(e){cache.items=[];cache.layout={order:[],hidden:[]};cache.err=(e&&e.message)||'Data materi tambahan tidak dapat dimuat.';try{console.warn('pmoPresExtra',cache.err)}catch(x){}}).then(function(){return vids});
+    return api('/api/pres/set?'+q).then(function(d){cache.items=d.items||[];cache.settings=d.settings||{};cache.layout=d.layout||{order:[],hidden:[]};cache.canManage=!!d.canManage;cache.isAdmin=!!d.isAdmin;cache.allowedProjects=d.allowedProjects||[];cache.pagePid=d.pageProjectId||''}).catch(function(e){cache.items=[];cache.layout={order:[],hidden:[]};cache.canManage=false;cache.isAdmin=false;cache.allowedProjects=[];cache.pagePid='';cache.err=(e&&e.message)||'Data materi tambahan tidak dapat dimuat.';try{console.warn('pmoPresExtra',cache.err)}catch(x){}}).then(function(){return vids}).then(function(){if(!cache.isAdmin&&Array.isArray(cache.vidList)&&cache.allowedProjects.length){var ap={};cache.allowedProjects.forEach(function(p){ap[nk(p.id)]=1;ap[nk(p.name)]=1});cache.vidList=cache.vidList.filter(function(v){return ap[nk(v.id)]||ap[nk(v.name)]})}});
   }
   function btn(){
     if(!cache.key)return '';
@@ -312,19 +312,33 @@ const PRES_EXTRA_JS = String.raw`<script>
         [['coverTitle','Judul sampul','Rapat Progres Proyek'],['coverSub','Subjudul sampul','otomatis: nama halaman · periode'],['thanksSub','Subjudul terima kasih','Sesi diskusi & tanya jawab'],['thanksContact','Kontak / keterangan penutup','mis. PMO Infrastruktur · ext. 1234']].map(function(f){return '<label>'+f[1]+'<input data-k="'+f[0]+'" maxlength="200" placeholder="'+esc(f[2])+'" value="'+esc(S[f[0]]||'')+'"></label>'}).join('')+'</div>';
     }
     function drawLib(){
-      bd.innerHTML='<p class="px-note">Pustaka dipakai bersama untuk semua presentasi. Unggah file <b>PDF</b> (dari PowerPoint: File → Save As / Export → PDF). Setiap halaman disimpan sebagai gambar; animasi dan video tidak ikut.</p>'+
-        '<div class="px-up-box"><input type="file" accept="application/pdf,.pdf" hidden><button type="button" class="px-btn pri" data-u="pick">Unggah PDF…</button><span class="px-up-t" style="font-size:13px;color:#5b7085">Maksimal 120 halaman.</span><div class="px-prog" hidden><i></i></div></div><div class="px-lib"><div class="px-empty">Memuat pustaka…</div></div>';
+      var projs=cache.allowedProjects||[],adm=!!cache.isAdmin,wkPid=cache.pagePid||'';
+      var projCtrl='';
+      if(wkPid){
+        var wkObj=projs.filter(function(p){return String(p.id)===String(wkPid)})[0];
+        projCtrl='<input type="hidden" id="pxDeckProj" value="'+esc(wkPid)+'"><span class="px-proj-pill">Proyek: '+esc((wkObj&&wkObj.name)||wkPid)+'</span>';
+      }else if(!adm){
+        if(projs.length===1)projCtrl='<input type="hidden" id="pxDeckProj" value="'+esc(projs[0].id)+'"><span class="px-proj-pill">Proyek: '+esc(projs[0].name)+'</span>';
+        else if(projs.length>1)projCtrl='<select id="pxDeckProj" aria-label="Pilih proyek PDF">'+projs.map(function(p){return '<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>'}).join('')+'</select>';
+      }else if(projs.length){
+        projCtrl='<select id="pxDeckProj" aria-label="Cakupan proyek PDF"><option value="">Semua / Portofolio (Umum)</option>'+projs.map(function(p){return '<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>'}).join('')+'</select>';
+      }
+      var noteTxt=adm?'Pustaka dipakai bersama untuk semua presentasi. Unggah file <b>PDF</b> (dari PowerPoint: File → Save As / Export → PDF). Setiap halaman disimpan sebagai gambar; animasi dan video tidak ikut.'
+        :'Pustaka PDF khusus proyek yang Anda kelola. Unggah file <b>PDF</b> (dari PowerPoint: File → Save As / Export → PDF), lalu klik <b>Pilih halaman</b> untuk menambahkannya ke presentasi.';
+      bd.innerHTML='<p class="px-note">'+noteTxt+'</p>'+
+        '<div class="px-up-box"><input type="file" accept="application/pdf,.pdf" hidden>'+projCtrl+'<button type="button" class="px-btn pri" data-u="pick"'+(!adm&&!projs.length&&!wkPid?' disabled':'')+'>Unggah PDF…</button><span class="px-up-t" style="font-size:13px;color:#5b7085">Maksimal 120 halaman.</span><div class="px-prog" hidden><i></i></div></div><div class="px-lib"><div class="px-empty">Memuat pustaka…</div></div>';
       var file=bd.querySelector('input[type=file]');
       bd.querySelector('[data-u=pick]').onclick=function(){file.click()};
       file.onchange=function(){if(file.files&&file.files[0])upload(file.files[0]);file.value=''};
       refreshLib();
     }
     function refreshLib(){
-      api('/api/pres/library').then(function(d){lib=d.decks||[];drawDecks()}).catch(function(e){var l=bd.querySelector('.px-lib');if(l)l.innerHTML='<div class="px-empty">'+esc(e.message)+'</div>'});
+      var lq=cache.pagePid?('?project='+encodeURIComponent(cache.pagePid)):'';
+      api('/api/pres/library'+lq).then(function(d){lib=d.decks||[];if(Array.isArray(d.projects)&&d.projects.length&&!(cache.allowedProjects||[]).length)cache.allowedProjects=d.projects;drawDecks()}).catch(function(e){var l=bd.querySelector('.px-lib');if(l)l.innerHTML='<div class="px-empty">'+esc(e.message)+'</div>'});
     }
     function drawDecks(){
       var l=bd.querySelector('.px-lib');if(!l)return;
-      l.innerHTML=lib.length?lib.map(function(d){var dt=new Date(d.created_at);return '<div class="px-deck" data-d="'+d.id+'"><div class="px-deck-h"><div><b>'+esc(d.title)+'</b><small>'+d.pages+' halaman · '+esc(d.created_by||'')+' · '+dt.getDate()+' '+BULAN[dt.getMonth()].slice(0,3)+' '+dt.getFullYear()+'</small></div><div class="px-acts"><button type="button" class="px-btn sm" data-a="open">Pilih halaman</button><button type="button" class="px-btn sm" data-a="del">Hapus</button></div></div><div class="px-dbody"></div></div>'}).join(''):'<div class="px-empty">Pustaka masih kosong. Unggah PDF pertama.</div>';
+      l.innerHTML=lib.length?lib.map(function(d){var dt=new Date(d.created_at),ptag=d.project_name?'<span class="px-proj-pill" style="margin-right:6px;padding:1px 8px;font-size:11px">'+esc(d.project_name)+'</span>':'';return '<div class="px-deck" data-d="'+d.id+'"><div class="px-deck-h"><div><b>'+esc(d.title)+'</b><small>'+ptag+d.pages+' halaman · '+esc(d.created_by||'')+' · '+dt.getDate()+' '+BULAN[dt.getMonth()].slice(0,3)+' '+dt.getFullYear()+'</small></div><div class="px-acts"><button type="button" class="px-btn sm" data-a="open">Pilih halaman</button>'+(d.canDelete!==false?'<button type="button" class="px-btn sm" data-a="del">Hapus</button>':'')+'</div></div><div class="px-dbody"></div></div>'}).join(''):'<div class="px-empty">Pustaka masih kosong. Unggah PDF pertama.</div>';
     }
     function openDeck(box,id){
       var body=box.querySelector('.px-dbody');if(body.innerHTML){body.innerHTML='';return}
@@ -336,7 +350,7 @@ const PRES_EXTRA_JS = String.raw`<script>
         body.querySelectorAll('.px-th').forEach(function(t){var tg=function(){t.classList.toggle('on');t.setAttribute('aria-checked',String(t.classList.contains('on')));upd()};t.onclick=tg;t.onkeydown=function(e){if(e.key===' '||e.key==='Enter'){e.preventDefault();tg()}}});
         body.querySelector('[data-a=all]').onclick=function(){var all=Array.prototype.every.call(body.querySelectorAll('.px-th'),function(t){return t.classList.contains('on')});body.querySelectorAll('.px-th').forEach(function(t){t.classList.toggle('on',!all)});upd()};
         body.querySelector('[data-a=add]').onclick=function(){
-          if(OPT.onAdd){var got=[];body.querySelectorAll('.px-th.on').forEach(function(t){got.push({deck:id,page:Number(t.getAttribute('data-p')),pos:'end',title:d.title,width:Number(t.getAttribute('data-w')),height:Number(t.getAttribute('data-h'))})});OPT.onAdd(got);dirty=false;window.removeEventListener('keydown',onKey,true);m.remove();return}
+          if(OPT.onAdd){var got=[];body.querySelectorAll('.px-th.on').forEach(function(t){got.push({deck:id,page:Number(t.getAttribute('data-p')),pos:'end',title:d.title,width:Number(t.getAttribute('data-w')),height:Number(t.getAttribute('data-h')),canEdit:true})});OPT.onAdd(got);dirty=false;window.removeEventListener('keydown',onKey,true);m.remove();return}
           var pos=body.querySelector('.px-pick select').value;
           body.querySelectorAll('.px-th.on').forEach(function(t){items.push({deck:id,page:Number(t.getAttribute('data-p')),pos:pos,title:d.title,width:Number(t.getAttribute('data-w')),height:Number(t.getAttribute('data-h'))});t.classList.remove('on')});
           upd();mark();say(items.length+' slide tambahan disusun. Klik Simpan & terapkan.');
@@ -349,9 +363,11 @@ const PRES_EXTRA_JS = String.raw`<script>
       pick.disabled=true;pg.hidden=false;bar.style.width='2%';t.textContent='Membaca PDF…';say('');
       var title=f.name.replace(/\.pdf$/i,'').replace(/[_]+/g,' ').trim().slice(0,160)||'Materi';
       var deckId=null,doc=null;
+      var projSel=bd.querySelector('#pxDeckProj');
+      var projId=projSel?String(projSel.value||'').trim():(cache.pagePid||'');
       loadPdfjs().then(function(lib){return f.arrayBuffer().then(function(b){return lib.getDocument({data:b}).promise})})
       .then(function(d){doc=d;if(d.numPages>120)throw new Error('PDF berisi '+d.numPages+' halaman. Maksimal 120 halaman per file.');
-        return api('/api/pres/decks',{method:'POST',body:JSON.stringify({title:title,fileName:f.name,pages:d.numPages})})})
+        return api('/api/pres/decks',{method:'POST',body:JSON.stringify({title:title,fileName:f.name,pages:d.numPages,projectId:projId})})})
       .then(function(r){deckId=r.id;var n=doc.numPages,i=0;
         var next=function(){i++;if(i>n)return Promise.resolve();t.textContent='Memproses halaman '+i+' dari '+n+'…';
           return doc.getPage(i).then(function(p){return render(p,1920,0.86).then(function(big){return render(p,360,0.72).then(function(th){p.cleanup();

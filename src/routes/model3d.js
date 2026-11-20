@@ -42,7 +42,7 @@ const VIEW_CSP = [
   "frame-ancestors 'self'",
 ].join('; ');
 
-function isPic(u) { return u && u.role === 'input' && String(u.legacy_role || '').toUpperCase() === 'PIC'; }
+function isPic(u) { return !!u && u.role === 'input'; }
 function isKtr(u) { return !!u && u.role === 'kontraktor'; }
 function scopeOk(u, pid) {
   if (!pid) return false;

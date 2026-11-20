@@ -140,7 +140,7 @@ const PRES_PREP_JS = String.raw`<style>
       var built=[];try{built=((cfg.build?cfg.build():[])||[]).filter(Boolean)}catch(e){console.warn(e)}
       try{X.decorate(cfg,built)}catch(e){}
       var C=X.state(),r=rowsFrom(cfg,built);
-      P.rows=r.rows;P.byT=r.byT;P.can=!!C.canManage;P.S=Object.assign({},C.settings||{});P.bn=X.parts.banners();
+      P.rows=r.rows;P.byT=r.byT;P.can=!!C.canManage;P.isAdmin=!!C.isAdmin;P.allowed=C.allowedProjects||[];P.pagePid=C.pageProjectId||'';P.S=Object.assign({},C.settings||{});P.bn=X.parts.banners();
       P.vidList=C.vidList||[];P.key=C.key;P.err=C.err;
       if(opt.at){var k=P.rows.map(titleOf).indexOf(opt.at);if(k>=0)P.sel=k}
       draw();
@@ -165,6 +165,7 @@ const PRES_PREP_JS = String.raw`<style>
     var list=box.querySelector('.pq-list'),last=P.rows.length-1;
     list.innerHTML=P.rows.map(function(r,i){
       var ic=r.k==='pdf'?I.pdf:r.k==='vid'?I.vid:r.k==='m3d'?I.cube:(r.k==='cover'||r.k==='thanks')?I.cover:/^Proyek ·/.test(r.t||'')?I.proj:I.dash;
+      var canDel=(r.k==='pdf'||r.k==='vid'||r.k==='m3d')&&(P.isAdmin||r.x.canEdit!==false);
       var tag=r.k==='pdf'?'<span class="pq-tag pdf">PDF</span>':r.k==='vid'?'<span class="pq-tag vid">Video</span>':r.k==='m3d'?'<span class="pq-tag vid">3D</span>':r.fix?'<span class="pq-tag fix">Tetap</span>':'';
       var up=!r.fix&&i>1,dn=!r.fix&&i<last-1;
       return '<div class="pq-row'+(i===P.sel?' sel':'')+(shown(r)?'':' off')+'" data-i="'+i+'" role="option" aria-selected="'+(i===P.sel)+'"'+(r.fix?'':' draggable="true"')+'>'+
@@ -172,20 +173,21 @@ const PRES_PREP_JS = String.raw`<style>
         (r.k==='dash'?'<input type="checkbox" '+(r.show?'checked':'')+' aria-label="Tampilkan slide">':'<span style="width:16px"></span>')+
         '<span class="pq-ic">'+sv(ic)+'</span><span class="pq-t" title="'+esc(titleOf(r))+'">'+esc(titleOf(r))+'</span>'+tag+
         (r.fix?'':'<span class="pq-mv"><button type="button" data-mv="-1" '+(up?'':'disabled')+' aria-label="Naikkan">↑</button><button type="button" data-mv="1" '+(dn?'':'disabled')+' aria-label="Turunkan">↓</button></span>')+
-        ((r.k==='pdf'||r.k==='vid'||r.k==='m3d')?'<button type="button" class="pq-del" data-del="1" title="Hapus dari presentasi" aria-label="Hapus">×</button>':'')+'</div>';
+        (canDel?'<button type="button" class="pq-del" data-del="1" title="Hapus dari presentasi" aria-label="Hapus">×</button>':((r.k==='pdf'||r.k==='vid'||r.k==='m3d')?'<span class="pq-tag fix" title="Dikelola Admin atau proyek lain">Terkunci</span>':''))+'</div>';
     }).join('');
     preview();
   }
 
   function preview(){
     var r=P.rows[P.sel],R=P.m.querySelector('.pq-right');if(!r||!R)return;
-    var can=P.can;
+    var can=P.can,canTxt=can&&!!P.isAdmin;
     var txt='';
-    if(r.k==='cover'&&can)txt='<div class="pq-f"><label>Judul sampul<input data-s="coverTitle" placeholder="Rapat Progres Proyek" value="'+esc(P.S.coverTitle||'')+'"></label><label>Subjudul sampul<input data-s="coverSub" placeholder="otomatis: nama halaman · periode" value="'+esc(P.S.coverSub||'')+'"></label></div>';
-    if(r.k==='thanks'&&can)txt='<div class="pq-f"><label>Subjudul penutup<input data-s="thanksSub" placeholder="Sesi diskusi &amp; tanya jawab" value="'+esc(P.S.thanksSub||'')+'"></label><label>Kontak / keterangan<input data-s="thanksContact" placeholder="mis. PMO Infrastruktur · ext. 1234" value="'+esc(P.S.thanksContact||'')+'"></label></div>';
+    if(r.k==='cover'&&canTxt)txt='<div class="pq-f"><label>Judul sampul<input data-s="coverTitle" placeholder="Rapat Progres Proyek" value="'+esc(P.S.coverTitle||'')+'"></label><label>Subjudul sampul<input data-s="coverSub" placeholder="otomatis: nama halaman · periode" value="'+esc(P.S.coverSub||'')+'"></label></div>';
+    if(r.k==='thanks'&&canTxt)txt='<div class="pq-f"><label>Subjudul penutup<input data-s="thanksSub" placeholder="Sesi diskusi &amp; tanya jawab" value="'+esc(P.S.thanksSub||'')+'"></label><label>Kontak / keterangan<input data-s="thanksContact" placeholder="mis. PMO Infrastruktur · ext. 1234" value="'+esc(P.S.thanksContact||'')+'"></label></div>';
+    var roleNote=can?(P.isAdmin?'Susunan yang disimpan dipakai semua orang saat presentasi halaman ini. ':'Anda dapat menambah & menyusun slide PDF'+(P.key==='executive'?', video,':'')+' dan Visual 3D khusus proyek Anda ('+(P.allowed.map(function(x){return x.name}).join(', ')||'sesuai akses')+'). '):'Perubahan susunan hanya berlaku untuk sesi presentasi ini. ';
     R.innerHTML='<div class="pq-pt">Pratinjau slide '+(P.rows.slice(0,P.sel+1).filter(shown).length)+(shown(r)?'':' (disembunyikan)')+'<b>'+esc(titleOf(r))+'</b></div><div class="pq-frame"></div>'+txt+
       '<div class="pq-opts"><label><input type="checkbox" data-o="anim" '+(ls(ANIM)==='0'?'':'checked')+'> Animasi slide (angka, grafik, kartu bergerak)</label><label><input type="checkbox" data-o="skip" '+(ls(SKIP)==='1'?'checked':'')+'> Lain kali langsung mulai, lewati layar ini</label></div>'+
-      '<p class="pq-note">'+(can?'Susunan yang disimpan dipakai semua orang saat presentasi halaman ini. ':'Perubahan susunan hanya berlaku untuk sesi presentasi ini. ')+'Tombol <b>P</b> di keyboard langsung memulai presentasi dengan susunan tersimpan. Selama presentasi, buka layar ini lagi lewat tombol <b>Ubah susunan</b>.</p>';
+      '<p class="pq-note">'+roleNote+'Tombol <b>P</b> di keyboard langsung memulai presentasi dengan susunan tersimpan. Selama presentasi, buka layar ini lagi lewat tombol <b>Ubah susunan</b>.</p>';
     var fr=R.querySelector('.pq-frame');
     var s=null;try{s=slideOf(r)}catch(e){s=null}
     if(!s){fr.innerHTML='<div class="pq-ph">Pratinjau tidak tersedia.</div>';return}
@@ -215,7 +217,7 @@ const PRES_PREP_JS = String.raw`<style>
     list.addEventListener('click',function(e){
       var row=e.target.closest('.pq-row');if(!row)return;var i=Number(row.getAttribute('data-i')),r=P.rows[i];
       var mv=e.target.closest('[data-mv]');if(mv){move(i,i+Number(mv.getAttribute('data-mv')));return}
-      if(e.target.closest('[data-del]')){P.rows.splice(i,1);P.sel=Math.min(P.sel,P.rows.length-1);mark();draw();return}
+      if(e.target.closest('[data-del]')){if(!P.isAdmin&&r.x&&r.x.canEdit===false)return;P.rows.splice(i,1);P.sel=Math.min(P.sel,P.rows.length-1);mark();draw();return}
       if(e.target.tagName==='INPUT'){r.show=e.target.checked;mark();P.sel=i;draw();return}
       P.sel=i;list.querySelectorAll('.pq-row').forEach(function(x,k){x.classList.toggle('sel',k===i);x.setAttribute('aria-selected',String(k===i))});preview();
     });
@@ -255,23 +257,41 @@ const PRES_PREP_JS = String.raw`<style>
     var b=w.querySelector('[data-va]');if(b)b.onclick=function(){
       var pid=w.querySelector('[data-vp]').value,wk=Number(w.querySelector('[data-vw]').value),pj=L.filter(function(x){return x.id===pid})[0];
       if(P.rows.some(function(r){return r.k==='vid'&&r.x.project===pid&&Number(r.x.week)===wk})){say('Video ini sudah ada di susunan.','bad');return}
-      var at=Math.min(P.sel+1,P.rows.length-1);P.rows.splice(at,0,{k:'vid',x:{type:'video',project:pid,week:wk,title:pj?pj.name:pid}});P.sel=at;w.hidden=true;mark();draw();say('Video ditambahkan setelah slide terpilih.','ok');
+      var at=Math.min(P.sel+1,P.rows.length-1);P.rows.splice(at,0,{k:'vid',x:{type:'video',project:pid,week:wk,title:pj?pj.name:pid,canEdit:true}});P.sel=at;w.hidden=true;mark();draw();say('Video ditambahkan setelah slide terpilih.','ok');
     };
   }
 
-  function toggleM3d(){
-    var w=P.m.querySelector('.pq-vadd');
-    if(!w.hidden&&w.getAttribute('data-m')==='m3d'){w.hidden=true;return}
-    var C=window.pmoPresExtra.state(),L=C.m3d||[],PN=C.m3dProj||{};
-    w.setAttribute('data-m','m3d');
-    w.innerHTML=L.length?'<select data-mm aria-label="Model 3D">'+L.map(function(m){return '<option value="'+m.id+'">'+esc((PN[m.pid]||m.pid)+' · '+m.title)+'</option>'}).join('')+'</select><button type="button" class="pq-btn pri sm" data-ma="1">Tambahkan</button>'
-      :'<span class="pq-note">Belum ada model 3D. Unggah di menu Visual 3D Proyek terlebih dahulu.</span>';
-    w.hidden=false;
+  function renderM3dBar(w){
+    var C=window.pmoPresExtra.state(),PN=C.m3dProj||{},allowMap={};
+    (P.allowed||[]).forEach(function(p){allowMap[String(p.id)]=1});
+    var L=(C.m3d||[]).filter(function(m){
+      if(P.isAdmin)return true;
+      var ok=!!(m.canEdit||allowMap[String(m.pid)]);
+      if(!ok)return false;
+      return !P.pagePid||String(m.pid)===String(P.pagePid);
+    });
+    var targetPid=P.pagePid||(P.allowed&&P.allowed[0]&&P.allowed[0].id)||'';
+    var v3dUrl='/app?page=visual3d'+(targetPid?'&project='+encodeURIComponent(targetPid):'');
+    w.innerHTML=(L.length?'<select data-mm aria-label="Model 3D">'+L.map(function(m){return '<option value="'+m.id+'">'+esc((PN[m.pid]||m.pid)+' · '+m.title)+'</option>'}).join('')+'</select><button type="button" class="pq-btn pri sm" data-ma="1">Tambahkan</button><button type="button" class="pq-btn sm" data-m3r="1" title="Muat ulang daftar model 3D">↻</button><a class="pq-btn sm" href="'+v3dUrl+'" target="_blank" rel="noopener">Unggah / Kelola 3D ↗</a>'
+      :'<span class="pq-note">Belum ada model 3D'+(P.isAdmin?'':' untuk proyek Anda')+'.</span><button type="button" class="pq-btn sm" data-m3r="1" title="Muat ulang daftar model 3D">↻ Muat ulang</button><a class="pq-btn pri sm" href="'+v3dUrl+'" target="_blank" rel="noopener">+ Unggah Model 3D ↗</a>');
     var b=w.querySelector('[data-ma]');if(b)b.onclick=function(){
       var id=Number(w.querySelector('[data-mm]').value),m=L.filter(function(x){return x.id===id})[0];if(!m)return;
       if(P.rows.some(function(r){return r.k==='m3d'&&Number(r.x.model)===id})){say('Model ini sudah ada di susunan.','bad');return}
-      var at=Math.min(P.sel+1,P.rows.length-1);P.rows.splice(at,0,{k:'m3d',x:{type:'model3d',model:id,title:m.title}});P.sel=at;w.hidden=true;mark();draw();say('Model 3D ditambahkan setelah slide terpilih.','ok');
+      var at=Math.min(P.sel+1,P.rows.length-1);P.rows.splice(at,0,{k:'m3d',x:{type:'model3d',model:id,title:m.title,canEdit:true}});P.sel=at;w.hidden=true;mark();draw();say('Model 3D ditambahkan setelah slide terpilih.','ok');
     };
+    var rf=w.querySelector('[data-m3r]');if(rf)rf.onclick=function(){
+      rf.disabled=true;
+      fetch('/api/model3d',{credentials:'same-origin'}).then(function(r){return r.json()}).then(function(j){
+        if(j&&j.ok&&j.data){var pm={};(j.data.projects||[]).forEach(function(p){pm[p.id]=p.name});C.m3d=j.data.models||[];C.m3dProj=pm}
+      }).catch(function(){}).then(function(){if(P&&w.isConnected)renderM3dBar(w)});
+    };
+  }
+  function toggleM3d(){
+    var w=P.m.querySelector('.pq-vadd');
+    if(!w.hidden&&w.getAttribute('data-m')==='m3d'){w.hidden=true;return}
+    w.setAttribute('data-m','m3d');
+    renderM3dBar(w);
+    w.hidden=false;
   }
   function payload(){
     var items=[],last=null,order=[],hidden=[];
