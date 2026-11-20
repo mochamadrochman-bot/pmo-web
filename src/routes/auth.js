@@ -115,7 +115,7 @@ async function login(req, res, next) {
 
     const { token, expires } = await session.create(user.id, req.headers['user-agent']);
     await db.query(
-      'update users set last_login_at = now(), failed_count = 0, locked_until = null where id = $1',
+      'update users set last_login_at = now(), last_seen_at = now(), failed_count = 0, locked_until = null where id = $1',
       [user.id]
     );
     session.setCookie(res, token, expires);

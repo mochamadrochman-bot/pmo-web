@@ -61,8 +61,20 @@ router.get('/api/admin/users', onlyAdmin, async (req, res, next) => {
   try {
     const rows = await db.query(
       `select id, username, full_name, role, legacy_role, project_ids, status,
-              last_login_at, locked_until, must_change_password, created_at, sena_access,
-              (locked_until is not null and locked_until > now()) as locked
+              last_login_at, last_seen_at, locked_until, must_change_password, created_at, sena_access,
+              (locked_until is not null and locked_until > now()) as locked,
+              exists (
+                select 1 from sessions s
+                 where s.user_id = users.id and s.expires_at > now()
+              ) as has_session,
+              (
+                exists (
+                  select 1 from sessions s
+                   where s.user_id = users.id and s.expires_at > now()
+                )
+                and coalesce(last_seen_at, last_login_at) is not null
+                and coalesce(last_seen_at, last_login_at) > now() - interval '5 minutes'
+              ) as online
          from users order by role, username`
     );
     res.json({ ok: true, data: rows.rows });

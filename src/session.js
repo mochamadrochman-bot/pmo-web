@@ -5,6 +5,14 @@ const db = require('./db');
 
 const COOKIE = 'pmo_sid';
 const TTL_HOURS = Number(process.env.SESSION_TTL_HOURS || 6);
+const TOUCH_MS = 45 * 1000;
+const lastTouch = new Map();
+
+function markTouch(userId) {
+  if (!userId) return;
+  if (lastTouch.size > 2000) lastTouch.clear();
+  lastTouch.set(String(userId), Date.now());
+}
 
 function newToken() {
   return crypto.randomBytes(32).toString('base64url');
@@ -30,7 +38,16 @@ async function read(token) {
       where s.token = $1 and s.expires_at > now() and u.status = 'aktif'`,
     [token]
   );
-  return res.rows[0] || null;
+  const row = res.rows[0] || null;
+  if (row) {
+    const now = Date.now();
+    const prev = lastTouch.get(String(row.id)) || 0;
+    if (now - prev >= TOUCH_MS) {
+      markTouch(row.id);
+      db.query('update users set last_seen_at = now() where id = $1', [row.id]).catch(() => {});
+    }
+  }
+  return row;
 }
 
 async function destroy(token) {
