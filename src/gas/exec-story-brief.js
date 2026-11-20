@@ -61,7 +61,8 @@ html.ex-hero-hdr[data-theme="dark"]{
   --ex-stuck-top:#0f172a;--ex-stuck-sub:#0f172a;--ex-stuck-menu:#111c33;--ex-stuck-act:#2563eb;
 }
 html.ex-hero-hdr .content{padding-top:14px!important}
-html.ex-hero-hdr .hero{position:relative;overflow:visible!important;z-index:71;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;align-items:end;column-gap:16px;padding:12px 24px 20px;min-height:156px}
+html.ex-hero-hdr .hero{position:relative;overflow:visible!important;z-index:34;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;align-items:end;column-gap:16px;padding:12px 24px 20px;min-height:156px}
+html.ex-hero-hdr :is(.hero,#exStuckHost):has(.pop:not([hidden]),.acm-pop:not([hidden]),.ntf-pop:not([hidden]),.pmo-isi-drop.open,.pmo-isi-drop:hover,.pmo-isi-drop:focus-within){z-index:150!important}
 html.ex-hero-hdr .hero::before{border-radius:inherit;overflow:hidden}
 #exHeroSpacer{display:none;grid-column:1 / -1;grid-row:1;flex:none}#exPbarSpacer{display:none;flex:none}
 html.ex-hero-hdr.ex-hdr-mounted #exHeroSpacer{display:block}
@@ -95,7 +96,9 @@ html.ex-hero-hdr :is(.hero,#exStuckHost) header.topbar .pmo-qs-trigger *,
 html.ex-hero-hdr :is(.hero,#exStuckHost) header.topbar .pp-btn *,
 html.ex-hero-hdr :is(.hero,#exStuckHost) header.topbar .ntf-wrap>button svg{color:#fff!important}
 html.ex-hero-hdr :is(.hero,#exStuckHost) header.topbar .pmo-qs-trigger kbd{background:rgba(255,255,255,.16)!important;border-color:rgba(255,255,255,.32)!important;color:#fff!important}
-html.ex-hero-hdr :is(.hero,#exStuckHost) header.topbar .pop{background:var(--card,#fff);color:var(--ink,#132b43);z-index:80}
+html.ex-hero-hdr :is(.hero,#exStuckHost) header.topbar :is(.period-control,.ntf-wrap,.account-wrap){position:relative;z-index:25}
+html.ex-hero-hdr :is(.hero,#exStuckHost) header.topbar :is(.period-control,.ntf-wrap,.account-wrap):has(.pop:not([hidden]),.acm-pop:not([hidden]),.ntf-pop:not([hidden])){z-index:50}
+html.ex-hero-hdr :is(.hero,#exStuckHost) header.topbar :is(.pop,.acm-pop,.ntf-pop){background:var(--card,#fff);color:var(--ink,#132b43);z-index:160!important}
 html.ex-hero-hdr .pmo-pbar .pmo-crumb{display:none!important}
 html.ex-hero-hdr :is(.hero,#exStuckHost) .pmo-pbar{position:relative!important;top:auto!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important;flex:none;overflow:visible!important}
 html.ex-hero-hdr :is(.hero,#exStuckHost) .pmo-pbar[hidden]{display:none!important}
@@ -106,19 +109,19 @@ html.ex-hero-hdr :is(.hero,#exStuckHost) .pmo-pbar .pmo-isi-trig:hover,html.ex-h
 html.ex-hero-hdr :is(.hero,#exStuckHost) .pmo-pbar .pmo-isi-trig .pmo-isi-l{color:rgba(219,234,254,.84)!important}
 html.ex-hero-hdr :is(.hero,#exStuckHost) .pmo-pbar .pmo-isi-trig svg{color:#fff!important;opacity:.9}
 html.ex-hero-hdr .hero>.pmo-pbar{grid-column:2;grid-row:2;align-self:end;justify-self:end;z-index:10!important}
-html.ex-hero-hdr .hero>.pmo-pbar .pmo-isi-menu{background:var(--card,#fff)!important;border:1px solid var(--line,#dce5ed)!important;color:var(--ink,#132b43)!important;z-index:80}
+html.ex-hero-hdr .hero>.pmo-pbar .pmo-isi-menu{background:var(--card,#fff)!important;border:1px solid var(--line,#dce5ed)!important;color:var(--ink,#132b43)!important;z-index:160!important}
 html.ex-hero-hdr .content>.notice{margin-top:12px}
 html.ex-hero-hdr .anchor{scroll-margin-top:82px!important}
 
 /* Sticky Header Host: satu baris ramping bertema dengan Isi halaman tepat di kiri Periode */
-#exStuckHost{position:fixed;top:0;right:0;left:var(--ex-stuck-left,0);z-index:72;background:var(--ex-stuck-top);color:#fff;box-shadow:0 10px 28px rgba(0,0,0,.24);border-bottom:1px solid rgba(255,255,255,.14);transform:translate3d(0,-104%,0);opacity:0;pointer-events:none;transition:transform .38s cubic-bezier(.22,1,.36,1),opacity .30s ease,background-color .30s ease;will-change:transform,opacity}
+#exStuckHost{position:fixed;top:0;right:0;left:var(--ex-stuck-left,0);z-index:48;background:var(--ex-stuck-top);color:#fff;box-shadow:0 10px 28px rgba(0,0,0,.24);border-bottom:1px solid rgba(255,255,255,.14);transform:translate3d(0,-104%,0);opacity:0;pointer-events:none;transition:transform .38s cubic-bezier(.22,1,.36,1),opacity .30s ease,background-color .30s ease;will-change:transform,opacity}
 #exStuckHost[hidden]{display:none}
 html.ex-hero-hdr.ex-hdr-stuck #exStuckHost{transform:translate3d(0,0,0);opacity:1;pointer-events:auto}
 html.ex-hero-hdr #exStuckHost header.topbar{margin:0!important;padding:12px 24px!important;min-height:62px;border-bottom:0!important;gap:8px;flex-wrap:nowrap;align-items:center}
 #exStuckHost header.topbar .crumbs{display:block!important;min-width:110px;flex:1 1 130px;overflow:hidden}
 #exStuckHost header.topbar .crumbs small{color:rgba(255,255,255,.74);font-size:11px;display:block;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #exStuckHost header.topbar .crumbs h2{color:#fff;font-size:16px;margin:0;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#exStuckHost .pmo-isi-menu{background:var(--ex-stuck-menu)!important;border:1px solid rgba(255,255,255,.18)!important;box-shadow:0 18px 40px rgba(0,0,0,.44);z-index:80}
+#exStuckHost .pmo-isi-menu{background:var(--ex-stuck-menu)!important;border:1px solid rgba(255,255,255,.18)!important;box-shadow:0 18px 40px rgba(0,0,0,.44);z-index:160!important}
 #exStuckHost .pmo-isi-menu .pmo-chip{color:rgba(255,255,255,.9)!important}
 #exStuckHost .pmo-isi-menu .pmo-chip:hover{background:rgba(255,255,255,.12)!important;color:#fff!important}
 #exStuckHost .pmo-isi-menu .pmo-chip.on{background:var(--ex-stuck-act)!important;color:#fff!important}
