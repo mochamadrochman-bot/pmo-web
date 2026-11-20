@@ -255,18 +255,44 @@ html[data-theme="dark"] .app.collapsed aside.side .pmo-mod-hd{color:var(--ink,#e
 .pmo-fly .dot{width:8px;height:8px;border-radius:50%;flex:none}
 .pmo-fly button.has-sub{justify-content:space-between}
 .pmo-fly .chev{opacity:.7;font-size:15px;line-height:1;margin-left:8px}
-.pmo-fly2{z-index:145;min-width:240px;max-width:300px}
+.pmo-fly2{z-index:145;width:304px;max-width:calc(100vw - 24px);padding:0!important;border-radius:16px!important;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 54px rgba(3,8,18,.55),0 0 0 1px rgba(255,255,255,.12)!important}
 .pmo-fly2::before{content:"";position:absolute;top:-14px;bottom:-14px;left:-14px;width:16px}
-.pmo-fly-sub{margin:2px 6px 6px;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
-.pmo-fly-q{width:100%;box-sizing:border-box;margin:0 0 6px;padding:6px 9px;border-radius:8px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.22);color:#fff;font:inherit;font-size:12.5px;outline:none}
-.pmo-fly-q::placeholder{color:rgba(255,255,255,.55)}
-.pmo-fly-q:focus{border-color:rgba(255,255,255,.45)}
-.pmo-fly-projs{max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
-.pmo-fly-projs button{font-size:12.5px;padding:6px 10px;justify-content:space-between}
-.pmo-fly-projs button span.nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
-.pmo-fly-projs button em.st{font-style:normal;font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px;background:rgba(22,163,74,.28);color:#86efac;flex:none}
+.pmo-fly2-top{flex:none;padding:12px 12px 10px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02)}
+.pmo-fly-sub{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px;padding:0 2px;font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#7dd3fc}
+.pmo-fly-cnt{font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;color:rgba(255,255,255,.65);font-variant-numeric:tabular-nums}
+.pmo-fly-qwrap{position:relative;display:flex;align-items:center}
+.pmo-fly-qic{position:absolute;left:9px;width:14px;height:14px;color:rgba(255,255,255,.55);pointer-events:none}
+.pmo-fly-q{width:100%;height:32px;box-sizing:border-box;margin:0;padding:0 26px 0 28px;border-radius:9px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.28);color:#fff;font:500 12.5px/1 inherit;outline:none;transition:border-color .14s ease,background .14s ease}
+.pmo-fly-q::placeholder{color:rgba(255,255,255,.52)}
+.pmo-fly-q:focus{border-color:rgba(125,211,252,.65);background:rgba(0,0,0,.44)}
+.pmo-fly2 .pmo-fly-clr{position:absolute;right:5px;width:22px;height:22px;padding:0;justify-content:center;border:0;border-radius:6px;background:rgba(255,255,255,.08);color:#cbd5e1;font-size:13px;line-height:1;display:none}
+.pmo-fly2 .pmo-fly-clr.on{display:flex}
+.pmo-fly2 .pmo-fly-clr:hover{background:rgba(255,255,255,.18);color:#fff}
+.pmo-fly-body{position:relative}
+.pmo-fly-projs{max-height:min(288px,54vh);overflow-y:auto;padding:8px 16px 10px 8px;display:flex;flex-direction:column;gap:2px;scrollbar-width:none;-ms-overflow-style:none;scroll-behavior:smooth}
+.pmo-fly-projs::-webkit-scrollbar{display:none}
+.pmo-fly-body.has-top .pmo-fly-projs{-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 20px,#000 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 20px,#000 100%)}
+.pmo-fly-body.has-bot .pmo-fly-projs{-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - 26px),transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - 26px),transparent 100%)}
+.pmo-fly-body.has-top.has-bot .pmo-fly-projs{-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 20px,#000 calc(100% - 26px),transparent 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 20px,#000 calc(100% - 26px),transparent 100%)}
+.pmo-fly-rail{position:absolute;top:8px;bottom:8px;right:5px;width:10px;border-radius:99px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .18s ease;display:flex;justify-content:center;z-index:5}
+.pmo-fly2:hover .pmo-fly-rail.needed,.pmo-fly-body.scrolling .pmo-fly-rail.needed,.pmo-fly-rail.dragging{opacity:1;pointer-events:auto}
+.pmo-fly-track{position:relative;width:3px;height:100%;border-radius:99px;background:rgba(255,255,255,.1);transition:width .14s ease,background .14s ease}
+.pmo-fly-rail:hover .pmo-fly-track,.pmo-fly-rail.dragging .pmo-fly-track{width:5px;background:rgba(255,255,255,.18)}
+.pmo-fly-thumb{position:absolute;left:0;right:0;top:0;min-height:28px;border-radius:99px;background:rgba(125,211,252,.52);transition:background .14s ease}
+.pmo-fly-rail:hover .pmo-fly-thumb,.pmo-fly-rail.dragging .pmo-fly-thumb{background:rgba(125,211,252,.92)}
+.pmo-fly-projs button{font-size:12.5px;padding:8px 10px;justify-content:space-between;border:1px solid transparent;border-radius:9px;transition:background .12s ease,border-color .12s ease}
+.pmo-fly-projs button:hover,.pmo-fly-projs button:focus-visible{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.14)}
+.pmo-fly-projs button span.nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;flex:1;min-width:0}
+.pmo-fly-projs button em.st{font-style:normal;font-size:10px;font-weight:700;padding:1px 6px;border-radius:5px;background:rgba(16,185,129,.2);color:#6ee7b7;flex:none}
+.pmo-fly-projs button .go{flex:none;font-size:13px;color:#7dd3fc;opacity:0;transform:translateX(-2px);transition:opacity .12s ease,transform .12s ease}
+.pmo-fly-projs button:hover .go,.pmo-fly-projs button:focus-visible .go,.pmo-fly-projs button.on .go{opacity:.9;transform:none}
+.pmo-fly-empty{padding:20px 10px;text-align:center;font-size:12px;color:rgba(255,255,255,.62);line-height:1.45}
+.pmo-fly-foot{flex:none;display:flex;align-items:center;justify-content:space-between;padding:7px 14px;border-top:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.22);font-size:11px;color:rgba(255,255,255,.6)}
+.pmo-fly-more{color:#7dd3fc;font-weight:600}
+.pmo-fly-more.done{color:rgba(255,255,255,.45);font-weight:500}
+.pmo-fly-kbd{font-size:10px;opacity:.68}
 html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
-@media (prefers-reduced-motion:reduce){.pmo-fly{transition:none}}
+@media (prefers-reduced-motion:reduce){.pmo-fly,.pmo-fly-projs,.pmo-fly-rail{transition:none;scroll-behavior:auto}}
 @media (max-width:760px){.pmo-fly{display:none!important}}
 </style>
 <script>
@@ -373,7 +399,44 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
     var rx=dx>0?r.left:r.right;
     return flyInTri(cur,prev,{x:rx,y:r.top-18},{x:rx,y:r.bottom+18});
   }
-  var flyPrev=null,flyCur=null;
+  var flyPrev=null,flyCur=null,fly2Drag=null,fly2ScrT=null;
+  window.addEventListener('mousemove',function(e){
+    if(!fly2Drag)return;
+    var d=fly2Drag,sh=d.sc.scrollHeight,ch=d.sc.clientHeight,th=d.track.clientHeight||ch,bh=d.thumb.offsetHeight||28,use=Math.max(1,th-bh);
+    d.sc.scrollTop=d.ds+((e.clientY-d.dy)/use)*(sh-ch);
+  });
+  window.addEventListener('mouseup',function(){
+    if(!fly2Drag)return;
+    fly2Drag.rail.classList.remove('dragging');
+    fly2Drag=null;
+  });
+  function fly2SyncHud(){
+    if(!fly2)return;
+    var body=fly2.querySelector('.pmo-fly-body'),sc=fly2.querySelector('.pmo-fly-projs'),rail=fly2.querySelector('.pmo-fly-rail'),track=fly2.querySelector('.pmo-fly-track'),thumb=fly2.querySelector('.pmo-fly-thumb'),more=fly2.querySelector('.pmo-fly-more');
+    if(!body||!sc||!rail||!track||!thumb||!more)return;
+    var sh=sc.scrollHeight,ch=sc.clientHeight,st=sc.scrollTop,max=Math.max(0,sh-ch),need=max>4;
+    body.classList.toggle('has-top',need&&st>6);
+    body.classList.toggle('has-bot',need&&st<max-6);
+    rail.classList.toggle('needed',need);
+    if(!need){more.textContent='Semua tampil';more.className='pmo-fly-more done';return}
+    var th=track.clientHeight||ch,bh=Math.max(28,Math.round((ch/sh)*th)),bt=Math.round((max?st/max:0)*(th-bh));
+    thumb.style.height=bh+'px';
+    thumb.style.transform='translateY('+bt+'px)';
+    if(st>=max-6){more.textContent='Akhir daftar';more.className='pmo-fly-more done'}
+    else{more.textContent='↓ Scroll · lainnya';more.className='pmo-fly-more'}
+  }
+  function fly2Filter(qRaw){
+    if(!fly2)return;
+    var q=String(qRaw||'').toLowerCase().trim();
+    var btns=fly2.querySelectorAll('.pmo-fly-projs button'),shown=0;
+    btns.forEach(function(b){var ok=!q||b.textContent.toLowerCase().indexOf(q)>=0;b.style.display=ok?'':'none';if(ok)shown++});
+    var cnt=fly2.querySelector('.pmo-fly-cnt'),clr=fly2.querySelector('.pmo-fly-clr'),emp=fly2.querySelector('.pmo-fly-empty'),sc=fly2.querySelector('.pmo-fly-projs');
+    if(cnt)cnt.textContent=shown+(q?' dari '+btns.length:' Proyek');
+    if(clr)clr.classList.toggle('on',String(qRaw||'').length>0);
+    if(emp)emp.style.display=shown?'none':'block';
+    if(sc)sc.scrollTop=0;
+    fly2SyncHud();
+  }
   function fly2Hide(){clearTimeout(fly2T);if(fly2)fly2.classList.remove('on')}
   function fly2HideSoon(ms){clearTimeout(fly2T);fly2T=setTimeout(fly2Hide,ms||300)}
   function fly2Show(anchorBtn){
@@ -382,21 +445,49 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
       fly2=document.createElement('div');fly2.className='pmo-fly pmo-fly2';fly2.setAttribute('role','menu');document.body.appendChild(fly2);
       fly2.addEventListener('mouseenter',function(){clearTimeout(flyT);clearTimeout(fly2T)});
       fly2.addEventListener('mouseleave',function(){fly2HideSoon();flyHideSoon()});
-      fly2.addEventListener('keydown',function(e){if(e.key==='Escape'){fly2Hide();if(anchorBtn)anchorBtn.focus()}});
-      fly2.addEventListener('input',function(e){if(!e.target.classList.contains('pmo-fly-q'))return;var q=e.target.value.toLowerCase().trim();fly2.querySelectorAll('.pmo-fly-projs button').forEach(function(b){b.style.display=!q||b.textContent.toLowerCase().indexOf(q)>=0?'':'none'})});
-      fly2.addEventListener('click',function(e){var px=e.target.closest('[data-fp]');if(!px||!fly.__projs)return;var pb=fly.__projs[+px.getAttribute('data-fp')];flyHide();if(pb)pb.click()});
+      fly2.addEventListener('keydown',function(e){
+        if(e.key==='Escape'){fly2Hide();if(anchorBtn)anchorBtn.focus();return}
+        var vis=Array.prototype.slice.call(fly2.querySelectorAll('.pmo-fly-projs button')).filter(function(b){return b.style.display!=='none'});
+        if(!vis.length)return;
+        var idx=vis.indexOf(document.activeElement);
+        if(e.key==='ArrowDown'){e.preventDefault();vis[Math.min(vis.length-1,idx+1)].focus()}
+        else if(e.key==='ArrowUp'){e.preventDefault();var qi=fly2.querySelector('.pmo-fly-q');if(idx<=0&&qi)qi.focus();else if(idx>0)vis[idx-1].focus()}
+      });
+      fly2.addEventListener('input',function(e){if(e.target.classList.contains('pmo-fly-q'))fly2Filter(e.target.value)});
+      fly2.addEventListener('scroll',function(e){
+        if(!e.target||!e.target.classList||!e.target.classList.contains('pmo-fly-projs'))return;
+        var body=fly2.querySelector('.pmo-fly-body');
+        if(body){body.classList.add('scrolling');clearTimeout(fly2ScrT);fly2ScrT=setTimeout(function(){if(body)body.classList.remove('scrolling')},750)}
+        fly2SyncHud();
+      },true);
+      fly2.addEventListener('mousedown',function(e){
+        var rail=e.target.closest('.pmo-fly-rail');if(!rail)return;
+        e.preventDefault();e.stopPropagation();
+        var sc=fly2.querySelector('.pmo-fly-projs'),track=fly2.querySelector('.pmo-fly-track'),thumb=fly2.querySelector('.pmo-fly-thumb');
+        if(!sc||!track||!thumb)return;
+        var r=track.getBoundingClientRect();
+        if(e.target!==thumb){var ratio=Math.max(0,Math.min(1,(e.clientY-r.top)/Math.max(1,r.height)));sc.scrollTop=ratio*(sc.scrollHeight-sc.clientHeight)}
+        fly2Drag={sc:sc,rail:rail,track:track,thumb:thumb,dy:e.clientY,ds:sc.scrollTop};
+        rail.classList.add('dragging');
+      });
+      fly2.addEventListener('click',function(e){
+        var clr=e.target.closest('.pmo-fly-clr');
+        if(clr){e.stopPropagation();var qi=fly2.querySelector('.pmo-fly-q');if(qi){qi.value='';qi.focus()}fly2Filter('');return}
+        var px=e.target.closest('[data-fp]');if(!px||!fly.__projs)return;var pb=fly.__projs[+px.getAttribute('data-fp')];flyHide();if(pb)pb.click();
+      });
     }
     clearTimeout(fly2T);
     var pBtns=fly.__projs;
-    fly2.innerHTML='<div class="pmo-fly-sub">Pilih Proyek Weekly</div>'
-      +(pBtns.length>4?'<input type="search" class="pmo-fly-q" placeholder="Cari proyek…" aria-label="Cari proyek weekly">':'')
-      +'<div class="pmo-fly-projs">'+pBtns.map(function(pb,pi){
+    fly2.innerHTML='<div class="pmo-fly2-top"><div class="pmo-fly-sub"><span>Pilih Proyek Weekly</span><span class="pmo-fly-cnt">'+pBtns.length+' Proyek</span></div>'
+      +'<div class="pmo-fly-qwrap"><svg class="pmo-fly-qic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="text" class="pmo-fly-q" placeholder="Cari proyek…" aria-label="Cari proyek weekly" autocomplete="off"><button type="button" class="pmo-fly-clr" aria-label="Bersihkan pencarian">×</button></div></div>'
+      +'<div class="pmo-fly-body"><div class="pmo-fly-projs">'+pBtns.map(function(pb,pi){
         var raw=String(pb.textContent||'').replace(/[›»]/g,'').replace(/\s+/g,' ').trim();
         var done=/selesai$/i.test(raw);
         var lbl=done?raw.replace(/\s*selesai$/i,'').trim():raw;
         var on=pb.classList.contains('active')||pb.classList.contains('on')||pb.getAttribute('aria-current')==='true';
-        return '<button type="button" role="menuitem" data-fp="'+pi+'" class="'+(on?'on':'')+'"><span class="nm">'+esc(lbl)+'</span>'+(done?'<em class="st">Selesai</em>':'')+'</button>';
-      }).join('')+'</div>';
+        return '<button type="button" role="menuitem" data-fp="'+pi+'" class="'+(on?'on':'')+'"><span class="nm">'+esc(lbl)+'</span>'+(done?'<em class="st">Selesai</em>':'')+'<span class="go" aria-hidden="true">›</span></button>';
+      }).join('')+'<div class="pmo-fly-empty" style="display:none">Tidak ada proyek yang cocok.</div></div><div class="pmo-fly-rail" aria-hidden="true"><div class="pmo-fly-track"><div class="pmo-fly-thumb"></div></div></div></div>'
+      +'<div class="pmo-fly-foot"><span class="pmo-fly-more"></span><span class="pmo-fly-kbd">↑↓ · Enter</span></div>';
     var fr=fly.getBoundingClientRect(),br=anchorBtn.getBoundingClientRect();
     fly2.classList.add('on');
     var w2=fly2.offsetWidth,h2=fly2.offsetHeight;
@@ -404,6 +495,7 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
     if(left+w2>innerWidth-8)left=Math.max(8,Math.round(fr.left-w2-2));
     fly2.style.left=left+'px';
     fly2.style.top=Math.max(8,Math.min(Math.round(br.top-8),innerHeight-h2-8))+'px';
+    requestAnimationFrame(fly2SyncHud);
   }
   function flyShow(w){
     if(!collapsed())return;

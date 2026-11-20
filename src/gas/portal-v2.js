@@ -41,14 +41,53 @@ html.pv2 .v-dd-pop button.on{background:var(--v-acc);color:#fff;font-weight:600}
 html.pv2 .v-has-sub{position:relative}
 html.pv2 .v-has-sub>button{display:flex!important;align-items:center;justify-content:space-between;gap:10px}
 html.pv2 .v-has-sub>button span{font-size:16px;opacity:.8}
-html.pv2 .v-sub{position:absolute;left:calc(100% + 2px);top:-8px;min-width:270px;max-height:70vh;overflow:auto;background:#131c2b;border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:8px;box-shadow:0 18px 40px rgba(0,0,0,.45);opacity:0;pointer-events:none;transform:translateX(-4px);transition:opacity .14s ease,transform .14s ease}
+html.pv2 .v-sub{position:absolute;left:calc(100% + 2px);top:-10px;width:316px;background:rgba(16,25,39,.95);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.14);border-radius:16px;box-shadow:0 24px 54px rgba(3,8,18,.6);opacity:0;pointer-events:none;transform:translateX(-4px);transition:opacity .14s ease,transform .14s ease;display:flex;flex-direction:column;overflow:hidden}
 html.pv2 .v-sub::before{content:"";position:absolute;top:-16px;bottom:-16px;left:-18px;width:20px}
 html.pv2 .v-has-sub.open>.v-sub,html.pv2 .v-has-sub:focus-within>.v-sub{opacity:1;pointer-events:auto;transform:none}
 html.pv2 .v-has-sub.open>button{background:rgba(255,255,255,.1);color:#fff}
-html.pv2 .v-sub-h{padding:6px 12px 8px;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#7dd3fc}
-html.pv2 .v-sub button,html.pv2 .v-sh-sub button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:9px 12px;border-radius:9px;color:#dbe5f0;font:500 13px/1.3 Inter,system-ui,sans-serif;cursor:pointer}
-html.pv2 .v-sub button:hover,html.pv2 .v-sub button:focus-visible,html.pv2 .v-sh-sub button:hover{background:rgba(255,255,255,.1);color:#fff;outline:0}
-html.pv2 .v-sub small,html.pv2 .v-sh-sub small{display:block;font-size:11px;color:#94a3b8;margin-top:2px}
+html.pv2 .v-sub-top{flex:none;padding:12px 12px 10px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02)}
+html.pv2 .v-sub-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 2px;margin-bottom:8px;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#7dd3fc}
+html.pv2 .v-sub-cnt{font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;color:#94a3b8;font-variant-numeric:tabular-nums}
+html.pv2 .v-sub-qwrap{position:relative;display:flex;align-items:center}
+html.pv2 .v-sub-qic{position:absolute;left:10px;width:14px;height:14px;color:#94a3b8;pointer-events:none}
+html.pv2 .v-sub-q{width:100%;height:34px;padding:0 28px 0 30px;border-radius:9px;border:1px solid rgba(255,255,255,.13);background:rgba(6,12,22,.54);color:#fff;font:500 12.5px/1 Inter,system-ui,sans-serif;transition:border-color .15s ease,background .15s ease}
+html.pv2 .v-sub-q::placeholder{color:#7c8fa6}
+html.pv2 .v-sub-q:focus{outline:0;border-color:rgba(125,211,252,.65);background:rgba(6,12,22,.8)}
+html.pv2 .v-sub-clr{position:absolute;right:6px;width:22px;height:22px;border:0;border-radius:6px;background:rgba(255,255,255,.08);color:#cbd5e1;cursor:pointer;display:none;place-items:center;font-size:13px;line-height:1}
+html.pv2 .v-sub-clr.on{display:grid}
+html.pv2 .v-sub-clr:hover{background:rgba(255,255,255,.16);color:#fff}
+html.pv2 .v-sub-body{position:relative}
+html.pv2 .v-sub-scroll{max-height:min(292px,56vh);overflow-y:auto;padding:8px 16px 12px 8px;scrollbar-width:none;-ms-overflow-style:none;scroll-behavior:smooth}
+html.pv2 .v-sub-scroll::-webkit-scrollbar{display:none}
+html.pv2 .v-sub-body.has-top .v-sub-scroll{-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 20px,#000 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 20px,#000 100%)}
+html.pv2 .v-sub-body.has-bot .v-sub-scroll{-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - 26px),transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - 26px),transparent 100%)}
+html.pv2 .v-sub-body.has-top.has-bot .v-sub-scroll{-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 20px,#000 calc(100% - 26px),transparent 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 20px,#000 calc(100% - 26px),transparent 100%)}
+html.pv2 .v-sub-rail{position:absolute;top:8px;bottom:8px;right:5px;width:10px;border-radius:99px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .18s ease;display:flex;justify-content:center;z-index:5}
+html.pv2 .v-sub:hover .v-sub-rail.needed,html.pv2 .v-sub-body.scrolling .v-sub-rail.needed,html.pv2 .v-sub-rail.dragging{opacity:1;pointer-events:auto}
+html.pv2 .v-sub-track{position:relative;width:3px;height:100%;border-radius:99px;background:rgba(255,255,255,.08);transition:width .14s ease,background .14s ease}
+html.pv2 .v-sub-rail:hover .v-sub-track,html.pv2 .v-sub-rail.dragging .v-sub-track{width:5px;background:rgba(255,255,255,.15)}
+html.pv2 .v-sub-thumb{position:absolute;left:0;right:0;top:0;min-height:28px;border-radius:99px;background:rgba(125,211,252,.5);transition:background .14s ease}
+html.pv2 .v-sub-rail:hover .v-sub-thumb,html.pv2 .v-sub-rail.dragging .v-sub-thumb{background:rgba(125,211,252,.9)}
+html.pv2 .v-sub-btn{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;border:1px solid transparent;background:transparent;padding:9px 11px;border-radius:10px;color:#e7eef7;font:500 13px/1.35 Inter,system-ui,sans-serif;cursor:pointer;transition:background .12s ease,border-color .12s ease,color .12s ease}
+html.pv2 .v-sub-btn+.v-sub-btn{margin-top:2px}
+html.pv2 .v-sub-btn:hover,html.pv2 .v-sub-btn:focus-visible{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);color:#fff;outline:0}
+html.pv2 .v-sub-btn:focus-visible{border-color:#7dd3fc}
+html.pv2 .v-sub-main{min-width:0;flex:1}
+html.pv2 .v-sub-nm{display:block;font-weight:550;color:inherit}
+html.pv2 .v-sub-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:3px}
+html.pv2 .v-sub-bdg{display:inline-flex;align-items:center;padding:1px 6px;border-radius:5px;font-size:10px;font-weight:700;letter-spacing:.02em}
+html.pv2 .v-sub-bdg.ok{background:rgba(16,185,129,.18);color:#6ee7b7}
+html.pv2 .v-sub-bdg.sub{background:rgba(255,255,255,.09);color:#cbd5e1;font-weight:600}
+html.pv2 .v-sub-go{flex:none;font-size:14px;color:#7dd3fc;opacity:0;transform:translateX(-3px);transition:opacity .12s ease,transform .12s ease}
+html.pv2 .v-sub-btn:hover .v-sub-go,html.pv2 .v-sub-btn:focus-visible .v-sub-go{opacity:.95;transform:none}
+html.pv2 .v-sub-empty{padding:24px 12px;text-align:center;font-size:12.5px;color:#94a3b8;line-height:1.5}
+html.pv2 .v-sub-foot{flex:none;display:flex;align-items:center;justify-content:space-between;padding:7px 14px;border-top:1px solid rgba(255,255,255,.08);background:rgba(8,14,24,.55);font-size:11px;color:#94a3b8}
+html.pv2 .v-sub-more{color:#7dd3fc;font-weight:600}
+html.pv2 .v-sub-more.done{color:#64748b;font-weight:500}
+html.pv2 .v-sub-kbd{font-size:10px;color:#7c8fa6}
+html.pv2 .v-sh-sub button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:9px 12px;border-radius:9px;color:#dbe5f0;font:500 13px/1.3 Inter,system-ui,sans-serif;cursor:pointer}
+html.pv2 .v-sh-sub button:hover{background:rgba(255,255,255,.1);color:#fff;outline:0}
+html.pv2 .v-sh-sub small{display:block;font-size:11px;color:#94a3b8;margin-top:2px}
 html.pv2 .v-sh-sub{margin:0 0 6px 14px;padding-left:8px;border-left:2px solid rgba(255,255,255,.14)}
 html.pv2 .v-sh-sub button{min-height:44px;font-size:13.5px}
 html.pv2 .v-burger{display:none;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.1);color:#fff;border-radius:99px;min-height:40px;padding:0 14px;font:600 12px/1 Inter,system-ui,sans-serif;cursor:pointer;align-items:center;gap:6px}
@@ -247,7 +286,7 @@ html.pv2 .v-sheet-in>button:hover,html.pv2 .v-sheet-in>button.on{background:rgba
   html.pv2 .v-sena{right:0;top:auto;bottom:96px;transform:none;border:0;border-radius:12px 0 0 12px;padding:12px 8px}
 }
 @media (max-width:600px){html.pv2 .v-sum{grid-template-columns:1fr 1fr}}
-@media (prefers-reduced-motion:reduce){html.pv2 #hero .hero-bg>div,html.pv2 .v20-bg-slide,html.pv2 .v20-card,html.pv2 .v20-left{transition:none!important}}
+@media (prefers-reduced-motion:reduce){html.pv2 #hero .hero-bg>div,html.pv2 .v20-bg-slide,html.pv2 .v20-card,html.pv2 .v20-left,html.pv2 .v-sub,html.pv2 .v-sub-scroll,html.pv2 .v-sub-rail{transition:none!important;scroll-behavior:auto!important}}
 </style>`;
 
 const JS = String.raw`<script>
@@ -273,9 +312,85 @@ const JS = String.raw`<script>
   function weeklySub(){
     return (ST.items||[]).map(function(m){return {t:NM(m.i.name)+(m.par?'':''),par:m.par?NM(m.par):'',done:m.done,fn:function(){if(typeof goWeek==='function')goWeek(m.i.name,m.wk);else location.href='/app?page=weekly&project='+encodeURIComponent(m.i.name)}}});
   }
+  var hudDrag=null;
+  window.addEventListener('mousemove',function(e){
+    if(!hudDrag)return;
+    var d=hudDrag,sh=d.sc.scrollHeight,ch=d.sc.clientHeight,th=d.track.clientHeight||ch,bh=d.thumb.offsetHeight||28,use=Math.max(1,th-bh);
+    d.sc.scrollTop=d.ds+((e.clientY-d.dy)/use)*(sh-ch);
+  });
+  window.addEventListener('mouseup',function(){
+    if(!hudDrag)return;
+    hudDrag.rail.classList.remove('dragging');
+    hudDrag=null;
+  });
+  function bindHudRail(body,sc,rail,track,thumb,moreEl){
+    var scrT=null;
+    function sync(){
+      var sh=sc.scrollHeight,ch=sc.clientHeight,st=sc.scrollTop,max=Math.max(0,sh-ch),need=max>4;
+      body.classList.toggle('has-top',need&&st>6);
+      body.classList.toggle('has-bot',need&&st<max-6);
+      rail.classList.toggle('needed',need);
+      if(!need){moreEl.textContent='Semua tampil';moreEl.className='v-sub-more done';return}
+      var th=track.clientHeight||ch,bh=Math.max(28,Math.round((ch/sh)*th)),bt=Math.round((max?st/max:0)*(th-bh));
+      thumb.style.height=bh+'px';
+      thumb.style.transform='translateY('+bt+'px)';
+      if(st>=max-6){moreEl.textContent='Akhir daftar';moreEl.className='v-sub-more done'}
+      else{moreEl.textContent='\u2193 Scroll \u00b7 masih ada di bawah';moreEl.className='v-sub-more'}
+    }
+    sc.addEventListener('scroll',function(){
+      body.classList.add('scrolling');clearTimeout(scrT);
+      scrT=setTimeout(function(){body.classList.remove('scrolling')},750);
+      sync();
+    },{passive:true});
+    rail.addEventListener('mousedown',function(e){
+      e.preventDefault();e.stopPropagation();
+      var r=track.getBoundingClientRect();
+      if(e.target!==thumb){var ratio=Math.max(0,Math.min(1,(e.clientY-r.top)/Math.max(1,r.height)));sc.scrollTop=ratio*(sc.scrollHeight-sc.clientHeight)}
+      hudDrag={sc:sc,rail:rail,track:track,thumb:thumb,dy:e.clientY,ds:sc.scrollTop};
+      rail.classList.add('dragging');
+    });
+    return sync;
+  }
   function subEl(it,sheet){
-    var w=D.createElement('div');w.className=sheet?'v-sh-sub':'v-sub';
-    it.sub.forEach(function(s){var b=D.createElement('button');b.type='button';b.innerHTML=E(s.t)+(s.par?'<small>Sub \u00b7 '+E(s.par)+'</small>':'')+(s.done?'<small>Selesai</small>':'');b.onclick=function(){closeAll();s.fn()};w.appendChild(b)});
+    if(sheet){
+      var w=D.createElement('div');w.className='v-sh-sub';
+      it.sub.forEach(function(s){var b=D.createElement('button');b.type='button';b.innerHTML=E(s.t)+(s.par?'<small>Sub \u00b7 '+E(s.par)+'</small>':'')+(s.done?'<small>Selesai</small>':'');b.onclick=function(){closeAll();s.fn()};w.appendChild(b)});
+      return w;
+    }
+    var w=D.createElement('div');w.className='v-sub';w.setAttribute('role','region');w.setAttribute('aria-label','Pilih Proyek Weekly Progress');
+    w.innerHTML='<div class="v-sub-top"><div class="v-sub-h"><span>Pilih Proyek</span><span class="v-sub-cnt"></span></div><div class="v-sub-qwrap"><svg class="v-sub-qic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="text" class="v-sub-q" placeholder="Cari proyek..." aria-label="Cari proyek weekly progress" autocomplete="off"><button type="button" class="v-sub-clr" aria-label="Bersihkan pencarian">\u00d7</button></div></div><div class="v-sub-body"><div class="v-sub-scroll" tabindex="0" aria-label="Daftar proyek"></div><div class="v-sub-rail" aria-hidden="true"><div class="v-sub-track"><div class="v-sub-thumb"></div></div></div></div><div class="v-sub-foot"><span class="v-sub-more"></span><span class="v-sub-kbd">\u2191\u2193 \u00b7 Enter</span></div>';
+    var cnt=q('.v-sub-cnt',w),inp=q('.v-sub-q',w),clr=q('.v-sub-clr',w),body=q('.v-sub-body',w),sc=q('.v-sub-scroll',w),rail=q('.v-sub-rail',w),track=q('.v-sub-track',w),thumb=q('.v-sub-thumb',w),more=q('.v-sub-more',w);
+    var sync=bindHudRail(body,sc,rail,track,thumb,more);
+    function render(){
+      var raw=inp.value||'',ql=raw.trim().toLowerCase();
+      clr.classList.toggle('on',raw.length>0);
+      var rows=it.sub.filter(function(s){return !ql||s.t.toLowerCase().indexOf(ql)>=0||(s.par&&s.par.toLowerCase().indexOf(ql)>=0)});
+      cnt.textContent=rows.length+(ql?' dari '+it.sub.length:' Proyek');
+      sc.innerHTML='';
+      if(!rows.length){
+        var em=D.createElement('div');em.className='v-sub-empty';em.innerHTML='Tidak ada proyek cocok dengan "<b>'+E(raw.trim())+'</b>".';sc.appendChild(em);
+        sync();return;
+      }
+      rows.forEach(function(s){
+        var b=D.createElement('button');b.type='button';b.className='v-sub-btn';
+        var meta=(s.done||s.par)?'<span class="v-sub-meta">'+(s.done?'<span class="v-sub-bdg ok">Selesai</span>':'')+(s.par?'<span class="v-sub-bdg sub">Sub \u00b7 '+E(s.par)+'</span>':'')+'</span>':'';
+        b.innerHTML='<span class="v-sub-main"><span class="v-sub-nm">'+E(s.t)+'</span>'+meta+'</span><span class="v-sub-go" aria-hidden="true">\u203a</span>';
+        b.onclick=function(){closeAll();s.fn()};
+        sc.appendChild(b);
+      });
+      sync();
+    }
+    inp.addEventListener('input',function(){sc.scrollTop=0;render()});
+    inp.addEventListener('click',function(e){e.stopPropagation()});
+    clr.addEventListener('click',function(e){e.stopPropagation();inp.value='';inp.focus();render()});
+    w.addEventListener('keydown',function(e){
+      var bs=qa('.v-sub-btn',sc);if(!bs.length)return;
+      var i=bs.indexOf(D.activeElement);
+      if(e.key==='ArrowDown'){e.preventDefault();bs[Math.min(bs.length-1,i+1)].focus()}
+      else if(e.key==='ArrowUp'){e.preventDefault();if(i<=0)inp.focus();else bs[i-1].focus()}
+    });
+    w.__syncHud=sync;
+    render();
     return w;
   }
   function itemBtn(it,cls){var b=D.createElement('button');b.type='button';b.textContent=it.t;if(it.on)b.className='on';b.onclick=function(){closeAll();it.fn()};return b}
@@ -307,7 +422,7 @@ const JS = String.raw`<script>
         if(it.sub&&it.sub.length){
           var row=D.createElement('div');row.className='v-has-sub';
           var ib=itemBtn(it);ib.innerHTML=E(it.t)+'<span aria-hidden="true">\u203a</span>';ib.setAttribute('aria-haspopup','true');row.appendChild(ib);
-          var sp=subEl(it,false);var h=D.createElement('div');h.className='v-sub-h';h.textContent='Pilih proyek';sp.insertBefore(h,sp.firstChild);row.appendChild(sp);
+          var sp=subEl(it,false);row.appendChild(sp);
           subRow=row;subBox=sp;pop.appendChild(row);
         }else pop.appendChild(itemBtn(it));
       });
@@ -325,7 +440,7 @@ const JS = String.raw`<script>
       dd.addEventListener('mouseenter',function(){openDd()});
       dd.addEventListener('mouseleave',function(){closeDdSoon(300)});
       if(subRow&&subBox){
-        var keepSub=function(){clearTimeout(subRow.__subT);clearTimeout(dd.__ddT);subRow.classList.add('open')};
+        var keepSub=function(){clearTimeout(subRow.__subT);clearTimeout(dd.__ddT);subRow.classList.add('open');if(subBox.__syncHud)requestAnimationFrame(subBox.__syncHud)};
         var hideSubSoon=function(ms){clearTimeout(subRow.__subT);subRow.__subT=setTimeout(function(){subRow.classList.remove('open')},ms)};
         subRow.addEventListener('mouseenter',keepSub);
         subBox.addEventListener('mouseenter',keepSub);
