@@ -35,56 +35,57 @@ html.pv2 .v-dd>button:hover,html.pv2 .v-dd.open>button,html.pv2 .v-dd:focus-with
 html.pv2 .v-dd-pop{position:absolute;left:0;top:calc(100% + 6px);min-width:240px;background:#131c2b;border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:8px;box-shadow:0 18px 40px rgba(0,0,0,.45);opacity:0;pointer-events:none;transform:translateY(4px);transition:opacity .16s ease,transform .16s ease;z-index:90}
 html.pv2 .v-dd-pop::before{content:"";position:absolute;left:0;right:0;top:-10px;height:10px}
 html.pv2 .v-dd:focus-within .v-dd-pop,html.pv2 .v-dd.open .v-dd-pop{opacity:1;pointer-events:auto;transform:none}
-html.pv2 .v-dd-pop button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:10px 12px;border-radius:9px;color:#dbe5f0;font:500 13px/1.3 Inter,system-ui,sans-serif;cursor:pointer}
-html.pv2 .v-dd-pop button:hover,html.pv2 .v-dd-pop button:focus-visible{background:rgba(255,255,255,.1);color:#fff;outline:0}
-html.pv2 .v-dd-pop button.on{background:var(--v-acc);color:#fff;font-weight:600}
+html.pv2 .v-dd-pop>button,html.pv2 .v-has-sub>button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:10px 12px;border-radius:9px;color:#dbe5f0;font:500 13.5px/1.35 Inter,system-ui,sans-serif;cursor:pointer}
+html.pv2 .v-dd-pop>button:hover,html.pv2 .v-dd-pop>button:focus-visible,html.pv2 .v-has-sub>button:hover,html.pv2 .v-has-sub>button:focus-visible{background:rgba(255,255,255,.1);color:#fff;outline:0}
+html.pv2 .v-dd-pop>button.on{background:var(--v-acc);color:#fff;font-weight:600}
 html.pv2 .v-has-sub{position:relative}
 html.pv2 .v-has-sub>button{display:flex!important;align-items:center;justify-content:space-between;gap:10px}
 html.pv2 .v-has-sub>button span{font-size:16px;opacity:.8}
-html.pv2 .v-sub{position:absolute;left:calc(100% + 2px);top:-10px;width:316px;background:rgba(16,25,39,.95);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.14);border-radius:16px;box-shadow:0 24px 54px rgba(3,8,18,.6);opacity:0;pointer-events:none;transform:translateX(-4px);transition:opacity .14s ease,transform .14s ease;display:flex;flex-direction:column;overflow:hidden}
+html.pv2 .v-sub{position:absolute;left:calc(100% + 2px);top:-10px;width:344px;max-width:calc(100vw - 270px);background:rgba(16,25,39,.96);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.14);border-radius:16px;box-shadow:0 24px 54px rgba(3,8,18,.62);opacity:0;pointer-events:none;transform:translateX(-4px);transition:opacity .14s ease,transform .14s ease;display:flex;flex-direction:column;overflow:hidden}
 html.pv2 .v-sub::before{content:"";position:absolute;top:-16px;bottom:-16px;left:-18px;width:20px}
 html.pv2 .v-has-sub.open>.v-sub,html.pv2 .v-has-sub:focus-within>.v-sub{opacity:1;pointer-events:auto;transform:none}
 html.pv2 .v-has-sub.open>button{background:rgba(255,255,255,.1);color:#fff}
 html.pv2 .v-sub-top{flex:none;padding:12px 12px 10px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02)}
-html.pv2 .v-sub-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 2px;margin-bottom:8px;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#7dd3fc}
-html.pv2 .v-sub-cnt{font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;color:#94a3b8;font-variant-numeric:tabular-nums}
+html.pv2 .v-sub-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 2px;margin-bottom:8px;font-size:13px;font-weight:600;color:#7dd3fc}
+html.pv2 .v-sub-cnt{font-size:12.5px;font-weight:500;color:#9db0c4;font-variant-numeric:tabular-nums}
 html.pv2 .v-sub-qwrap{position:relative;display:flex;align-items:center}
-html.pv2 .v-sub-qic{position:absolute;left:10px;width:14px;height:14px;color:#94a3b8;pointer-events:none}
-html.pv2 .v-sub-q{width:100%;height:34px;padding:0 28px 0 30px;border-radius:9px;border:1px solid rgba(255,255,255,.13);background:rgba(6,12,22,.54);color:#fff;font:500 12.5px/1 Inter,system-ui,sans-serif;transition:border-color .15s ease,background .15s ease}
-html.pv2 .v-sub-q::placeholder{color:#7c8fa6}
-html.pv2 .v-sub-q:focus{outline:0;border-color:rgba(125,211,252,.65);background:rgba(6,12,22,.8)}
-html.pv2 .v-sub-clr{position:absolute;right:6px;width:22px;height:22px;border:0;border-radius:6px;background:rgba(255,255,255,.08);color:#cbd5e1;cursor:pointer;display:none;place-items:center;font-size:13px;line-height:1}
-html.pv2 .v-sub-clr.on{display:grid}
-html.pv2 .v-sub-clr:hover{background:rgba(255,255,255,.16);color:#fff}
+html.pv2 .v-sub-qic{position:absolute;left:11px;width:15px;height:15px;color:#9db0c4;pointer-events:none}
+html.pv2 .v-sub-q{width:100%;height:38px;padding:0 34px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:rgba(6,12,22,.56);color:#f1f5f9;font:500 13.5px/1.2 Inter,system-ui,sans-serif;transition:border-color .15s ease,background .15s ease}
+html.pv2 .v-sub-q::placeholder{color:#8fa3b8}
+html.pv2 .v-sub-q:focus{outline:0;border-color:rgba(125,211,252,.7);background:rgba(6,12,22,.82)}
+html.pv2 .v-sub .v-sub-clr{position:absolute;right:7px;width:24px;height:24px;padding:0;border:0;border-radius:6px;background:rgba(255,255,255,.09);color:#e2e8f0;cursor:pointer;display:none;place-items:center;text-align:center;font-size:15px;line-height:1}
+html.pv2 .v-sub .v-sub-clr.on{display:grid}
+html.pv2 .v-sub .v-sub-clr:hover{background:rgba(255,255,255,.18);color:#fff}
 html.pv2 .v-sub-body{position:relative}
-html.pv2 .v-sub-scroll{max-height:min(292px,56vh);overflow-y:auto;padding:8px 16px 12px 8px;scrollbar-width:none;-ms-overflow-style:none;scroll-behavior:smooth}
+html.pv2 .v-sub-scroll{max-height:min(328px,60vh);overflow-y:auto;padding:8px 16px 10px 8px;scrollbar-width:none;-ms-overflow-style:none;scroll-behavior:smooth}
 html.pv2 .v-sub-scroll::-webkit-scrollbar{display:none}
-html.pv2 .v-sub-body.has-top .v-sub-scroll{-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 20px,#000 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 20px,#000 100%)}
-html.pv2 .v-sub-body.has-bot .v-sub-scroll{-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - 26px),transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - 26px),transparent 100%)}
-html.pv2 .v-sub-body.has-top.has-bot .v-sub-scroll{-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 20px,#000 calc(100% - 26px),transparent 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 20px,#000 calc(100% - 26px),transparent 100%)}
+html.pv2 .v-sub-body.has-top .v-sub-scroll{-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 18px,#000 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 18px,#000 100%)}
+html.pv2 .v-sub-body.has-bot .v-sub-scroll{-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - 24px),transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - 24px),transparent 100%)}
+html.pv2 .v-sub-body.has-top.has-bot .v-sub-scroll{-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 18px,#000 calc(100% - 24px),transparent 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 18px,#000 calc(100% - 24px),transparent 100%)}
 html.pv2 .v-sub-rail{position:absolute;top:8px;bottom:8px;right:5px;width:10px;border-radius:99px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .18s ease;display:flex;justify-content:center;z-index:5}
 html.pv2 .v-sub:hover .v-sub-rail.needed,html.pv2 .v-sub-body.scrolling .v-sub-rail.needed,html.pv2 .v-sub-rail.dragging{opacity:1;pointer-events:auto}
 html.pv2 .v-sub-track{position:relative;width:3px;height:100%;border-radius:99px;background:rgba(255,255,255,.08);transition:width .14s ease,background .14s ease}
 html.pv2 .v-sub-rail:hover .v-sub-track,html.pv2 .v-sub-rail.dragging .v-sub-track{width:5px;background:rgba(255,255,255,.15)}
-html.pv2 .v-sub-thumb{position:absolute;left:0;right:0;top:0;min-height:28px;border-radius:99px;background:rgba(125,211,252,.5);transition:background .14s ease}
-html.pv2 .v-sub-rail:hover .v-sub-thumb,html.pv2 .v-sub-rail.dragging .v-sub-thumb{background:rgba(125,211,252,.9)}
-html.pv2 .v-sub-btn{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;border:1px solid transparent;background:transparent;padding:9px 11px;border-radius:10px;color:#e7eef7;font:500 13px/1.35 Inter,system-ui,sans-serif;cursor:pointer;transition:background .12s ease,border-color .12s ease,color .12s ease}
-html.pv2 .v-sub-btn+.v-sub-btn{margin-top:2px}
-html.pv2 .v-sub-btn:hover,html.pv2 .v-sub-btn:focus-visible{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);color:#fff;outline:0}
-html.pv2 .v-sub-btn:focus-visible{border-color:#7dd3fc}
+html.pv2 .v-sub-thumb{position:absolute;left:0;right:0;top:0;min-height:28px;border-radius:99px;background:rgba(125,211,252,.52);transition:background .14s ease}
+html.pv2 .v-sub-rail:hover .v-sub-thumb,html.pv2 .v-sub-rail.dragging .v-sub-thumb{background:rgba(125,211,252,.92)}
+html.pv2 .v-sub .v-sub-btn{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:42px;text-align:left;border:1px solid transparent;background:transparent;padding:9px 12px;border-radius:10px;color:#f1f5f9;font:600 14px/1.35 Inter,system-ui,sans-serif;cursor:pointer;transition:background .12s ease,border-color .12s ease,color .12s ease,transform .12s ease}
+html.pv2 .v-sub .v-sub-btn+.v-sub-btn{margin-top:2px}
+html.pv2 .v-sub .v-sub-btn:hover,html.pv2 .v-sub .v-sub-btn:focus-visible{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);color:#fff;transform:translateX(2px);outline:0}
+html.pv2 .v-sub .v-sub-btn:active{transform:translateX(1px) scale(.995)}
+html.pv2 .v-sub .v-sub-btn:focus-visible{border-color:#7dd3fc}
 html.pv2 .v-sub-main{min-width:0;flex:1}
-html.pv2 .v-sub-nm{display:block;font-weight:550;color:inherit}
-html.pv2 .v-sub-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:3px}
-html.pv2 .v-sub-bdg{display:inline-flex;align-items:center;padding:1px 6px;border-radius:5px;font-size:10px;font-weight:700;letter-spacing:.02em}
-html.pv2 .v-sub-bdg.ok{background:rgba(16,185,129,.18);color:#6ee7b7}
-html.pv2 .v-sub-bdg.sub{background:rgba(255,255,255,.09);color:#cbd5e1;font-weight:600}
-html.pv2 .v-sub-go{flex:none;font-size:14px;color:#7dd3fc;opacity:0;transform:translateX(-3px);transition:opacity .12s ease,transform .12s ease}
-html.pv2 .v-sub-btn:hover .v-sub-go,html.pv2 .v-sub-btn:focus-visible .v-sub-go{opacity:.95;transform:none}
-html.pv2 .v-sub-empty{padding:24px 12px;text-align:center;font-size:12.5px;color:#94a3b8;line-height:1.5}
-html.pv2 .v-sub-foot{flex:none;display:flex;align-items:center;justify-content:space-between;padding:7px 14px;border-top:1px solid rgba(255,255,255,.08);background:rgba(8,14,24,.55);font-size:11px;color:#94a3b8}
+html.pv2 .v-sub-nm{display:block;font-size:14px;font-weight:600;line-height:1.35;color:inherit}
+html.pv2 .v-sub-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:3px}
+html.pv2 .v-sub-bdg{display:inline-flex;align-items:center;font-size:12px;line-height:1.25}
+html.pv2 .v-sub-bdg.ok{padding:2px 7px;border-radius:6px;background:rgba(16,185,129,.18);color:#6ee7b7;font-size:11.5px;font-weight:600}
+html.pv2 .v-sub-bdg.sub{color:#9db0c4;font-weight:500}
+html.pv2 .v-sub-go{flex:none;font-size:16px;line-height:1;color:#7dd3fc;opacity:0;transform:translateX(-3px);transition:opacity .12s ease,transform .12s ease}
+html.pv2 .v-sub .v-sub-btn:hover .v-sub-go,html.pv2 .v-sub .v-sub-btn:focus-visible .v-sub-go{opacity:.95;transform:none}
+html.pv2 .v-sub-empty{padding:24px 12px;text-align:center;font-size:13px;color:#9db0c4;line-height:1.5}
+html.pv2 .v-sub-foot{flex:none;display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-top:1px solid rgba(255,255,255,.08);background:rgba(8,14,24,.55);font-size:12px;color:#9db0c4}
 html.pv2 .v-sub-more{color:#7dd3fc;font-weight:600}
-html.pv2 .v-sub-more.done{color:#64748b;font-weight:500}
-html.pv2 .v-sub-kbd{font-size:10px;color:#7c8fa6}
+html.pv2 .v-sub-more.done{color:#94a3b8;font-weight:500}
+html.pv2 .v-sub-kbd{font-size:11.5px;color:#9db0c4}
 html.pv2 .v-sh-sub button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:9px 12px;border-radius:9px;color:#dbe5f0;font:500 13px/1.3 Inter,system-ui,sans-serif;cursor:pointer}
 html.pv2 .v-sh-sub button:hover{background:rgba(255,255,255,.1);color:#fff;outline:0}
 html.pv2 .v-sh-sub small{display:block;font-size:11px;color:#94a3b8;margin-top:2px}

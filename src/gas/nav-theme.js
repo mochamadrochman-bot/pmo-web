@@ -255,42 +255,43 @@ html[data-theme="dark"] .app.collapsed aside.side .pmo-mod-hd{color:var(--ink,#e
 .pmo-fly .dot{width:8px;height:8px;border-radius:50%;flex:none}
 .pmo-fly button.has-sub{justify-content:space-between}
 .pmo-fly .chev{opacity:.7;font-size:15px;line-height:1;margin-left:8px}
-.pmo-fly2{z-index:145;width:304px;max-width:calc(100vw - 24px);padding:0!important;border-radius:16px!important;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 54px rgba(3,8,18,.55),0 0 0 1px rgba(255,255,255,.12)!important}
+.pmo-fly2{z-index:145;width:332px;max-width:calc(100vw - 24px);padding:0!important;border-radius:16px!important;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 54px rgba(3,8,18,.55),0 0 0 1px rgba(255,255,255,.12)!important}
 .pmo-fly2::before{content:"";position:absolute;top:-14px;bottom:-14px;left:-14px;width:16px}
 .pmo-fly2-top{flex:none;padding:12px 12px 10px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02)}
-.pmo-fly-sub{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px;padding:0 2px;font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#7dd3fc}
-.pmo-fly-cnt{font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;color:rgba(255,255,255,.65);font-variant-numeric:tabular-nums}
+.pmo-fly-sub{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px;padding:0 2px;font-size:13px;font-weight:600;color:#7dd3fc}
+.pmo-fly-cnt{font-size:12.5px;font-weight:500;color:#cbd5e1;font-variant-numeric:tabular-nums}
 .pmo-fly-qwrap{position:relative;display:flex;align-items:center}
-.pmo-fly-qic{position:absolute;left:9px;width:14px;height:14px;color:rgba(255,255,255,.55);pointer-events:none}
-.pmo-fly-q{width:100%;height:32px;box-sizing:border-box;margin:0;padding:0 26px 0 28px;border-radius:9px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.28);color:#fff;font:500 12.5px/1 inherit;outline:none;transition:border-color .14s ease,background .14s ease}
-.pmo-fly-q::placeholder{color:rgba(255,255,255,.52)}
-.pmo-fly-q:focus{border-color:rgba(125,211,252,.65);background:rgba(0,0,0,.44)}
-.pmo-fly2 .pmo-fly-clr{position:absolute;right:5px;width:22px;height:22px;padding:0;justify-content:center;border:0;border-radius:6px;background:rgba(255,255,255,.08);color:#cbd5e1;font-size:13px;line-height:1;display:none}
-.pmo-fly2 .pmo-fly-clr.on{display:flex}
-.pmo-fly2 .pmo-fly-clr:hover{background:rgba(255,255,255,.18);color:#fff}
+.pmo-fly-qic{position:absolute;left:10px;width:15px;height:15px;color:#9db0c4;pointer-events:none}
+.pmo-fly-q{width:100%;height:36px;box-sizing:border-box;margin:0;padding:0 32px;border-radius:9px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.3);color:#f1f5f9;font:500 13.5px/1.2 inherit;outline:none;transition:border-color .14s ease,background .14s ease}
+.pmo-fly-q::placeholder{color:#8fa3b8}
+.pmo-fly-q:focus{border-color:rgba(125,211,252,.7);background:rgba(0,0,0,.48)}
+.pmo-fly.pmo-fly2 .pmo-fly-clr{position:absolute;right:6px;width:24px;height:24px;padding:0;justify-content:center;text-align:center;border:0;border-radius:6px;background:rgba(255,255,255,.09);color:#e2e8f0;font-size:15px;line-height:1;display:none}
+.pmo-fly.pmo-fly2 .pmo-fly-clr.on{display:flex}
+.pmo-fly.pmo-fly2 .pmo-fly-clr:hover{background:rgba(255,255,255,.18);color:#fff}
 .pmo-fly-body{position:relative}
-.pmo-fly-projs{max-height:min(288px,54vh);overflow-y:auto;padding:8px 16px 10px 8px;display:flex;flex-direction:column;gap:2px;scrollbar-width:none;-ms-overflow-style:none;scroll-behavior:smooth}
+.pmo-fly-projs{max-height:min(316px,56vh);overflow-y:auto;padding:8px 16px 10px 8px;display:flex;flex-direction:column;gap:2px;scrollbar-width:none;-ms-overflow-style:none;scroll-behavior:smooth}
 .pmo-fly-projs::-webkit-scrollbar{display:none}
-.pmo-fly-body.has-top .pmo-fly-projs{-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 20px,#000 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 20px,#000 100%)}
-.pmo-fly-body.has-bot .pmo-fly-projs{-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - 26px),transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - 26px),transparent 100%)}
-.pmo-fly-body.has-top.has-bot .pmo-fly-projs{-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 20px,#000 calc(100% - 26px),transparent 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 20px,#000 calc(100% - 26px),transparent 100%)}
+.pmo-fly-body.has-top .pmo-fly-projs{-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 18px,#000 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 18px,#000 100%)}
+.pmo-fly-body.has-bot .pmo-fly-projs{-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - 24px),transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 calc(100% - 24px),transparent 100%)}
+.pmo-fly-body.has-top.has-bot .pmo-fly-projs{-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 18px,#000 calc(100% - 24px),transparent 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 18px,#000 calc(100% - 24px),transparent 100%)}
 .pmo-fly-rail{position:absolute;top:8px;bottom:8px;right:5px;width:10px;border-radius:99px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .18s ease;display:flex;justify-content:center;z-index:5}
 .pmo-fly2:hover .pmo-fly-rail.needed,.pmo-fly-body.scrolling .pmo-fly-rail.needed,.pmo-fly-rail.dragging{opacity:1;pointer-events:auto}
 .pmo-fly-track{position:relative;width:3px;height:100%;border-radius:99px;background:rgba(255,255,255,.1);transition:width .14s ease,background .14s ease}
 .pmo-fly-rail:hover .pmo-fly-track,.pmo-fly-rail.dragging .pmo-fly-track{width:5px;background:rgba(255,255,255,.18)}
 .pmo-fly-thumb{position:absolute;left:0;right:0;top:0;min-height:28px;border-radius:99px;background:rgba(125,211,252,.52);transition:background .14s ease}
 .pmo-fly-rail:hover .pmo-fly-thumb,.pmo-fly-rail.dragging .pmo-fly-thumb{background:rgba(125,211,252,.92)}
-.pmo-fly-projs button{font-size:12.5px;padding:8px 10px;justify-content:space-between;border:1px solid transparent;border-radius:9px;transition:background .12s ease,border-color .12s ease}
-.pmo-fly-projs button:hover,.pmo-fly-projs button:focus-visible{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.14)}
-.pmo-fly-projs button span.nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;flex:1;min-width:0}
-.pmo-fly-projs button em.st{font-style:normal;font-size:10px;font-weight:700;padding:1px 6px;border-radius:5px;background:rgba(16,185,129,.2);color:#6ee7b7;flex:none}
-.pmo-fly-projs button .go{flex:none;font-size:13px;color:#7dd3fc;opacity:0;transform:translateX(-2px);transition:opacity .12s ease,transform .12s ease}
-.pmo-fly-projs button:hover .go,.pmo-fly-projs button:focus-visible .go,.pmo-fly-projs button.on .go{opacity:.9;transform:none}
-.pmo-fly-empty{padding:20px 10px;text-align:center;font-size:12px;color:rgba(255,255,255,.62);line-height:1.45}
-.pmo-fly-foot{flex:none;display:flex;align-items:center;justify-content:space-between;padding:7px 14px;border-top:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.22);font-size:11px;color:rgba(255,255,255,.6)}
+.pmo-fly.pmo-fly2 .pmo-fly-projs button{font-size:14px;font-weight:600;line-height:1.35;padding:9px 12px;min-height:40px;justify-content:space-between;gap:10px;border:1px solid transparent;border-radius:9px;transition:background .12s ease,border-color .12s ease,transform .12s ease}
+.pmo-fly.pmo-fly2 .pmo-fly-projs button:hover,.pmo-fly.pmo-fly2 .pmo-fly-projs button:focus-visible{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.14);transform:translateX(2px)}
+.pmo-fly.pmo-fly2 .pmo-fly-projs button:active{transform:translateX(1px) scale(.995)}
+.pmo-fly.pmo-fly2 .pmo-fly-projs button span.nm{text-align:left;flex:1;min-width:0;line-height:1.35;color:#f1f5f9}
+.pmo-fly.pmo-fly2 .pmo-fly-projs button em.st{font-style:normal;font-size:11.5px;font-weight:600;padding:2px 7px;border-radius:6px;background:rgba(16,185,129,.2);color:#6ee7b7;flex:none}
+.pmo-fly.pmo-fly2 .pmo-fly-projs button .go{flex:none;font-size:16px;line-height:1;color:#7dd3fc;opacity:0;transform:translateX(-2px);transition:opacity .12s ease,transform .12s ease}
+.pmo-fly.pmo-fly2 .pmo-fly-projs button:hover .go,.pmo-fly.pmo-fly2 .pmo-fly-projs button:focus-visible .go,.pmo-fly.pmo-fly2 .pmo-fly-projs button.on .go{opacity:.95;transform:none}
+.pmo-fly-empty{padding:20px 10px;text-align:center;font-size:13px;color:#9db0c4;line-height:1.45}
+.pmo-fly-foot{flex:none;display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-top:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.22);font-size:12px;color:#9db0c4}
 .pmo-fly-more{color:#7dd3fc;font-weight:600}
-.pmo-fly-more.done{color:rgba(255,255,255,.45);font-weight:500}
-.pmo-fly-kbd{font-size:10px;opacity:.68}
+.pmo-fly-more.done{color:#94a3b8;font-weight:500}
+.pmo-fly-kbd{font-size:11.5px;color:#9db0c4}
 html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
 @media (prefers-reduced-motion:reduce){.pmo-fly,.pmo-fly-projs,.pmo-fly-rail{transition:none;scroll-behavior:auto}}
 @media (max-width:760px){.pmo-fly{display:none!important}}
