@@ -134,8 +134,10 @@ html.pv2 .v-ub.pri{background:var(--v-acc);border-color:var(--v-acc);color:#fff}
 html.pv2[data-theme="dark"] .v-ub:not(.pri){background:#1b2330;border-color:rgba(255,255,255,.16);color:#e2e8f0}
 
 /* ---------- kanvas ---------- */
-html.pv2 main.wrap{max-width:none!important;margin:0!important;padding:44px 48px 56px!important;background:var(--v-bg)}
+html.pv2 main.wrap{max-width:none!important;margin:0!important;padding:20px 48px 52px!important;background:var(--v-bg)}
 html.pv2 main.wrap>*{max-width:1280px;margin-left:auto!important;margin-right:auto!important}
+html.pv2 main.wrap>section.grp:first-of-type{margin-top:0!important}
+html.pv2 main.wrap>section.grp:first-of-type+.v-sum{margin-top:16px!important}
 html.pv2 main.wrap>section.grp>h2{font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--v-eye)!important}
 html.pv2 main.wrap>section.grp>h2::after{background:var(--v-line)!important}
 html.pv2 .v-sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:22px!important}
@@ -280,7 +282,7 @@ html.pv2 .v-sheet-in>button:hover,html.pv2 .v-sheet-in>button.on{background:rgba
   html.pv2 #hero .hero-dots{left:20px!important;right:auto!important;bottom:26px!important}
   html.pv2 .v-util{padding:14px 20px}
   html.pv2 .v-ub{flex:1 1 auto;justify-content:center}
-  html.pv2 main.wrap{padding:28px 16px 40px!important}
+  html.pv2 main.wrap{padding:16px 16px 40px!important}
   html.pv2 #briefBox.story{padding:16px!important}
   html.pv2 .v-sum{gap:10px}html.pv2 .v-sum .hk{padding:12px 14px}html.pv2 .v-sum .hk b{font-size:20px}
   html.pv2 .foot.v-foot{padding:24px 20px}
