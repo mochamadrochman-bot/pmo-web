@@ -703,19 +703,39 @@ function msEvaluate(node,field,cut){
       const rec=msLatest(node.history,MS.week);
       if(rec&&rec.actual!=null){copy.actual=Object.assign({},rec,{start:'',finish:''});copy.summaryOnly=copy.coverage<copy.leaves;}
       if(rec&&rec.plan!=null&&copy.planValue==null){copy.planValue=rec.plan;}
+      if(rec&&rec.weight!=null&&Number(rec.weight)>=0)copy.weight=Number(rec.weight);
+      else if(node.weight!=null&&Number(node.weight)>=0)copy.weight=Number(node.weight);
       if(node.code==='ENG'&&rec&&rec.revision!=null&&rec.revision!==node.revision)copy.revNote='Progres W'+rec.week+' tercatat pada baseline engineering Rev '+rec.revision+' (baseline aktif Rev '+node.revision+').';
     }
     if(node.kind==='project'){
+      const weightedFields=copy.children.filter(f=>f.weight!=null&&Number(f.weight)>=0);
+      const totalWeight=weightedFields.reduce((t,f)=>t+Number(f.weight||0),0);
+      const useWeighted=totalWeight>0&&(weightedFields.length===copy.children.length||Math.abs(totalWeight-100)<=1);
       const activeFields=copy.children.filter(f=>f.actual&&f.actual.actual!=null);
-      if(activeFields.length){
-        const avgAct=activeFields.reduce((t,f)=>t+Number(f.actual.actual||0),0)/activeFields.length;
-        const maxWk=Math.max.apply(null,activeFields.map(f=>f.actual.week||0));
-        copy.actual={actual:avgAct,week:maxWk,start:'',finish:''};
-      }else copy.actual=null;
-      const planFields=copy.children.filter(f=>f.planValue!=null);
-      if(planFields.length){
-        copy.planValue=planFields.reduce((t,f)=>t+Number(f.planValue||0),0)/planFields.length;
-      }else copy.planValue=null;
+      if(useWeighted){
+        const activeW=weightedFields.filter(f=>f.actual&&f.actual.actual!=null);
+        if(activeW.length){
+          const sumAct=activeW.reduce((t,f)=>t+Number(f.weight||0)*Number(f.actual.actual||0),0);
+          const maxWk=Math.max.apply(null,activeW.map(f=>f.actual.week||0));
+          copy.actual={actual:sumAct/totalWeight,week:maxWk,start:'',finish:''};
+        }else copy.actual=null;
+        const planW=weightedFields.filter(f=>f.planValue!=null);
+        if(planW.length){
+          copy.planValue=planW.reduce((t,f)=>t+Number(f.weight||0)*Number(f.planValue||0),0)/totalWeight;
+        }else copy.planValue=null;
+        copy.weighted=true;
+      }else{
+        if(activeFields.length){
+          const avgAct=activeFields.reduce((t,f)=>t+Number(f.actual.actual||0),0)/activeFields.length;
+          const maxWk=Math.max.apply(null,activeFields.map(f=>f.actual.week||0));
+          copy.actual={actual:avgAct,week:maxWk,start:'',finish:''};
+        }else copy.actual=null;
+        const planFields=copy.children.filter(f=>f.planValue!=null);
+        if(planFields.length){
+          copy.planValue=planFields.reduce((t,f)=>t+Number(f.planValue||0),0)/planFields.length;
+        }else copy.planValue=null;
+        copy.weighted=false;
+      }
     }
   }
   if(copy.actual){
@@ -829,9 +849,10 @@ function msRender(){
   const recorded=fields.filter(f=>f.actual).length,based=fields.filter(f=>f.revision!=null).length;
   const pAct=tree.actual?tree.actual.actual:null,pPlan=tree.planValue,pDev=tree.dev;
   const devCls=pDev!=null?(pDev<-2?'bad':pDev<-0.05?'warn':'ok'):'info';
+  const progTitle=tree.weighted?'Progres proyek berbobot':'Rata-rata progres bidang';
   $('summary').innerHTML=
     '<div class="kpi"><div class="kpi-top"><small>Periode realisasi</small>'+(current?'<span class="kpi-badge info">Berjalan W'+current+'</span>':'')+'</div><div class="v">'+(MS.week?'W'+MS.week:'—')+'</div><p>Cut-off '+msD(cut)+' · Kalender proyek</p></div>'+
-    '<div class="kpi"><div class="kpi-top"><small>Rata-rata progres bidang</small>'+(pDev!=null?'<span class="kpi-badge '+devCls+'">'+msDevFmt(pDev)+'</span>':'')+'</div><div class="v">'+(pAct!=null?msPct(pAct):'—')+' <span>vs Plan '+msPct(pPlan)+'</span></div><div class="kpi-bar"><i style="width:'+(pAct!=null?Math.min(100,Math.max(0,pAct)):0)+'%"></i></div></div>'+
+    '<div class="kpi"><div class="kpi-top"><small>'+progTitle+'</small>'+(pDev!=null?'<span class="kpi-badge '+devCls+'">'+msDevFmt(pDev)+'</span>':'')+'</div><div class="v">'+(pAct!=null?msPct(pAct):'—')+' <span>vs Plan '+msPct(pPlan)+'</span></div><div class="kpi-bar"><i style="width:'+(pAct!=null?Math.min(100,Math.max(0,pAct)):0)+'%"></i></div></div>'+
     '<div class="kpi"><div class="kpi-top"><small>Cakupan baseline &amp; item</small><span class="kpi-badge ok">'+recorded+'/'+based+' Bidang</span></div><div class="v">'+totalLeaves.toLocaleString('id-ID')+' <span>item WBS/dok</span></div><p>Baseline aktif tersubmit pada '+based+' bidang EPCC</p></div>'+
     '<div class="kpi'+(lateFields>0||lateLeaves>0?' kpi-warn':'')+'"><div class="kpi-top"><small>Ketepatan jadwal</small>'+(lateFields>0||lateLeaves>0?'<button type="button" class="kpi-act-btn" id="kpiFilterLateBtn">'+(onlyLate?'Tampilkan semua':'Filter terlambat')+'</button>':'<span class="kpi-badge ok">On Schedule</span>')+'</div><div class="v" style="color:'+(lateFields>0||lateLeaves>0?'var(--bad)':'var(--ok)')+'">'+(lateLeaves>0?lateLeaves+' <span>item melewati baseline</span>':(lateFields>0?lateFields+' <span>bidang melewati baseline</span>':'0 <span>item terlambat</span>'))+'</div><p>'+(lateFields>0?lateFields+' bidang memiliki pekerjaan melewati finish baseline':'Seluruh pekerjaan berada dalam rentang jadwal baseline')+'</p></div>';
 
@@ -949,7 +970,8 @@ function msRender(){
       const opened=children&&(forceOpen||MS.open[n.id]===true||(MS.open[n.id]!==false&&row.d<MS.depth));
       const fCode=n.field||n.code||'PROJ';
       const badgeLbl=FLBL[fCode]||fCode;
-      const metaText=n.kind==='field'?'Baseline Rev '+(n.revision==null?'—':n.revision):n.kind==='group'&&(!n.code||n.code===n.name)?'Group WBS':n.code;
+      const wBadge=n.kind==='field'&&n.weight!=null?' · Bobot '+Number(n.weight).toLocaleString('id-ID',{maximumFractionDigits:2})+'%':'';
+      const metaText=n.kind==='field'?'Baseline Rev '+(n.revision==null?'—':n.revision)+wBadge:n.kind==='group'&&(!n.code||n.code===n.name)?'Group WBS':n.code;
       const selCls=MS.selectedId===n.id?' is-selected':'';
       return '<tr class="kind-'+n.kind+selCls+'" data-row-idx="'+i+'" data-epcc-field="'+E(fCode)+'">'+
         '<td class="name-col"><div style="padding-left:'+(row.d*16+8)+'px">'+

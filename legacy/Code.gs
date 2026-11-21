@@ -2538,10 +2538,21 @@ function getMasterScheduleMonitoring(token, requestedProject) {
   const er=read(EPC.SHEETS.REAL),eh=read(EPC.SHEETS.PROGRES);
   ['PROC','CONS','COM'].forEach(function(f){records[f]=er.filter(function(r){return String(r.BIDANG).trim().toUpperCase()===f;});history[f]=eh.filter(function(r){return String(r.BIDANG).trim().toUpperCase()===f;});});
   const weeks={};
+  const fieldWeightMap={ENG:'ENGINEERING',PROC:'PROCUREMENT',CONS:'CONSTRUCTION',COM:'COMMISSIONING'};
   base.children.forEach(function(field){
-    const f=field.code;field.history=[];field.snapshots={};
+    const f=field.code,fwName=fieldWeightMap[f],fwItem=fwName?'BOBOT_'+fwName:'';
+    let baseWeight=fwItem?weekPercent_(db.weekly,p.id,fwItem,Math.max(1,info.latestWeek)):null;
+    if(baseWeight===null&&fwItem)baseWeight=lastPercentBefore_(db.weekly,p.id,fwItem,9999);
+    field.weight=(baseWeight!==null&&isFinite(baseWeight)&&baseWeight>=0)?Number(baseWeight):null;
+    field.history=[];field.snapshots={};
     const byWeek={};
-    history[f].forEach(function(r){const w=Number(r.WEEK);if(!(w>=1&&w<=10000))return;weeks[w]=true;const rev=f==='ENG'&&r.REVISI!==''?Number(r.REVISI):null;byWeek[w]={week:w,plan:masterScheduleNumber_(r.RENCANA),actual:masterScheduleNumber_(r.REALISASI),revision:rev};});
+    history[f].forEach(function(r){
+      const w=Number(r.WEEK);if(!(w>=1&&w<=10000))return;weeks[w]=true;
+      const rev=f==='ENG'&&r.REVISI!==''?Number(r.REVISI):null;
+      let wkW=fwItem?weekPercent_(db.weekly,p.id,fwItem,w):null;
+      if(wkW===null||!isFinite(wkW)||wkW<0)wkW=field.weight;
+      byWeek[w]={week:w,plan:masterScheduleNumber_(r.RENCANA),actual:masterScheduleNumber_(r.REALISASI),revision:rev,weight:wkW!=null&&isFinite(wkW)&&wkW>=0?Number(wkW):null};
+    });
     field.history=Object.keys(byWeek).map(function(w){return byWeek[w];}).sort(function(a,b){return a.week-b.week;});
     records[f].forEach(function(r){
       const w=Number(r.WEEK),key=String(f==='ENG'?r.NOMOR_DOKUMEN:r.ID).trim();
