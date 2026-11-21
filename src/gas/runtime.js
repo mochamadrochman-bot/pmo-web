@@ -1318,7 +1318,7 @@ function load() {
     const { rewrite } = require('../routes/brand');
     for (const [k, v] of htmlFiles) { const t = rewrite(v); if (t !== v) htmlFiles.set(k, t); }
   } catch (e) { console.log(JSON.stringify({ ev: 'brand_rewrite_skip', message: String(e.message || e) })); }
-  for (const p of GS_PATCHES.concat(require('./live-lan').GS_PATCHES, require('./visual3d').GS_PATCHES, require('./ktr-docs').GS_PATCHES, require('./ktr-access').GS_PATCHES, require('./library-v2').GS_PATCHES)) {
+  for (const p of GS_PATCHES.concat(require('./live-lan').GS_PATCHES, require('./visual3d').GS_PATCHES, require('./ktr-docs').GS_PATCHES, require('./ktr-access').GS_PATCHES, require('./library-v2').GS_PATCHES, require('./master-hero').MASTER_HERO_GS_PATCHES)) {
     const f = gsFiles.find((x) => x.name === p.file);
     if (f && f.src.includes(p.find)) f.src = f.src.replace(p.find, () => p.replace);
     else console.warn(JSON.stringify({ ev: 'gas_patch_miss', file: p.file + '.gs' }));
