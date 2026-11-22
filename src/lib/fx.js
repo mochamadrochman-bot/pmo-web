@@ -15,6 +15,10 @@ const db = require('../db');
 const CUR = ['usd', 'cny', 'cnh'];
 let rates = {};      // { 'YYYY-MM': { usd, cny, cnh, date, source } }
 let contracts = {};  // { PID: { idr, usd, cny, cnh, kind, at, by, history: [...] } }
+let fsMap = {};      // { PID: { rateDate, rates:{usd,cny,cnh}, source, items:{plant|idc|pm|other:{idr,usd,cny,cnh,total}}, otherName, by, at } }
+let costs = {};      // { PID: { 'YYYY-MM': { plant|idc|pm|other: { idr,usd,cny,cnh, rates:{usd,cny,cnh}, total } } } }
+const ITEMS = ['plant', 'idc', 'pm', 'other'];
+const dayCache = {}; // { 'YYYY-MM-DD': { usd, cny, cnh, date, source } }
 let timer = null;
 
 const ym = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
@@ -38,10 +42,49 @@ async function load() {
     Object.assign(p, { idr: e.idr, usd: e.usd, cny: e.cny, cnh: e.cnh, kind: e.kind, at: e.at, by: e.by });
   });
   contracts = cm;
-  return { months: Object.keys(m).length, contracts: Object.keys(cm).length };
+  await loadCosts();
+  return { months: Object.keys(m).length, contracts: Object.keys(cm).length, fs: Object.keys(fsMap).length };
 }
 
-function snapshot() { return { rates, contracts }; }
+const rnum = (v) => (v === null || v === undefined || v === '' ? null : Number(v) || null);
+/** Rupiah = idr + valas × kurs (CNH tanpa kurs memakai kurs CNY). */
+function idrOf(v, r) {
+  r = r || {};
+  return num(v.idr) + num(v.usd) * num(r.usd) + num(v.cny) * num(r.cny) + num(v.cnh) * num(r.cnh || r.cny);
+}
+async function loadCosts() {
+  const fm = {};
+  try {
+    const f = await db.query('select * from fs_fx');
+    f.rows.forEach((x) => {
+      const rates = { usd: rnum(x.usd), cny: rnum(x.cny), cnh: rnum(x.cnh) };
+      const items = {};
+      ITEMS.forEach((k) => {
+        const v = (x.items || {})[k];
+        if (!v) return;
+        const o = { idr: num(v.idr), usd: num(v.usd), cny: num(v.cny), cnh: num(v.cnh) };
+        o.total = Math.round(idrOf(o, rates));
+        items[k] = o;
+      });
+      fm[x.project_id] = { rateDate: x.rate_date ? ymd(new Date(x.rate_date)) : '', rates, source: x.rate_source || '', items,
+        otherName: x.other_name || '', by: x.updated_by || '', at: x.updated_at };
+    });
+  } catch (e) { if (!/does not exist/.test(String(e.message))) throw e; }
+  const cm = {};
+  try {
+    const c = await db.query('select * from cost_fx order by project_id, month');
+    c.rows.forEach((x) => {
+      const p = cm[x.project_id] || (cm[x.project_id] = {});
+      const mo = p[x.month] || (p[x.month] = {});
+      mo[x.item] = { idr: num(x.idr), usd: num(x.usd), cny: num(x.cny), cnh: num(x.cnh),
+        rates: { usd: rnum(x.rate_usd), cny: rnum(x.rate_cny), cnh: rnum(x.rate_cnh) }, total: num(x.total), by: x.updated_by || '', at: x.updated_at };
+    });
+  } catch (e) { if (!/does not exist/.test(String(e.message))) throw e; }
+  fsMap = fm;
+  costs = cm;
+}
+
+function snapshot() { return { rates, contracts, fs: fsMap, costs }; }
 function rateFor(month) {
   if (month && rates[month]) return Object.assign({ month }, rates[month]);
   const keys = Object.keys(rates).filter((k) => rates[k] && rates[k].usd).sort();
@@ -154,4 +197,88 @@ function toIdr(projectId, month) {
   return c.idr + c.usd * (r.usd || 0) + c.cny * (r.cny || 0) + c.cnh * (r.cnh || r.cny || 0);
 }
 
-module.exports = { load, snapshot, rateFor, refreshMonth, ensure, start, saveContract, toIdr, CUR };
+/** Kurs pada tanggal tertentu (untuk kurs FS). Disimpan di memori; tidak ditulis ke fx_rates. */
+async function rateOn(date) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date || ''))) throw new Error('Tanggal kurs tidak valid.');
+  if (dayCache[date]) return dayCache[date];
+  const out = { date }, source = {};
+  for (const c of CUR) {
+    try {
+      const x = await fetchOne(c, date);
+      out[c] = x.rate; source[c] = x.source; if (x.date) out.date = String(x.date).slice(0, 10);
+    } catch (e) { out[c] = null; source[c] = 'gagal'; }
+  }
+  if (!out.cnh && out.cny) { out.cnh = out.cny; source.cnh = 'mengikuti kurs CNY'; }
+  if (!out.usd && !out.cny) throw new Error('Kurs tanggal ' + date + ' belum bisa diambil. Isi kurs FS secara manual.');
+  out.source = source.usd || source.cny || '';
+  dayCache[date] = out;
+  return out;
+}
+
+const cleanVal = (v) => {
+  const o = {};
+  ['idr', 'usd', 'cny', 'cnh'].forEach((k) => {
+    const n = v && v[k] !== undefined && v[k] !== null && v[k] !== '' ? Number(v[k]) : 0;
+    if (!Number.isFinite(n) || n < 0) throw new Error('Nilai per mata uang harus angka positif.');
+    o[k] = n;
+  });
+  return o;
+};
+const cleanRates = (r, need, label) => {
+  const o = {};
+  CUR.forEach((k) => {
+    const n = r && r[k] !== undefined && r[k] !== null && r[k] !== '' ? Number(r[k]) : null;
+    if (n !== null && (!Number.isFinite(n) || n <= 0)) throw new Error('Kurs ' + k.toUpperCase() + ' tidak valid.');
+    o[k] = n;
+  });
+  if (!o.cnh && o.cny) o.cnh = null; // dihitung memakai kurs CNY
+  need.forEach((k) => { if (!o[k] && !(k === 'cnh' && o.cny)) throw new Error('Kurs ' + k.toUpperCase() + ' ' + label + ' wajib diisi karena ada nilai dalam ' + k.toUpperCase() + '.'); });
+  return o;
+};
+const usedCur = (items) => CUR.filter((k) => Object.values(items).some((v) => v && v[k] > 0));
+
+/** Simpan nilai FS per mata uang (kurs FS tetap). */
+async function saveFs(projectId, b, actor) {
+  const items = {};
+  ITEMS.forEach((k) => { if (b.items && b.items[k]) items[k] = cleanVal(b.items[k]); });
+  const rates = cleanRates(b.rates || {}, usedCur(items), 'FS');
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(String(b.rateDate || '')) ? b.rateDate : null;
+  if (usedCur(items).length && !date) throw new Error('Tanggal kurs FS wajib diisi.');
+  await db.query(
+    `insert into fs_fx (project_id, rate_date, usd, cny, cnh, rate_source, items, other_name, updated_by, updated_at)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,now())
+     on conflict (project_id) do update set rate_date=excluded.rate_date, usd=excluded.usd, cny=excluded.cny, cnh=excluded.cnh,
+       rate_source=excluded.rate_source, items=excluded.items, other_name=excluded.other_name, updated_by=excluded.updated_by, updated_at=now()`,
+    [projectId, date, rates.usd, rates.cny, rates.cnh, String(b.rateSource || '').slice(0, 40), JSON.stringify(items),
+      String(b.otherName || '').trim().slice(0, 80), actor || null]);
+  await loadCosts();
+  return fsMap[projectId] || null;
+}
+
+/** Simpan realisasi satu bulan per pos dan mata uang. Nilai Rupiah dihitung dengan kurs bulan itu. */
+async function saveCost(projectId, month, b, actor) {
+  if (!/^\d{4}-\d{2}$/.test(String(month || ''))) throw new Error('Bulan realisasi tidak valid.');
+  const items = {};
+  ITEMS.forEach((k) => { if (b.items && b.items[k]) items[k] = cleanVal(b.items[k]); });
+  const rates = cleanRates(b.rates || {}, usedCur(items), month);
+  const client = await db.pool.connect();
+  try {
+    await client.query('begin');
+    for (const k of Object.keys(items)) {
+      const v = items[k];
+      const total = Math.round(idrOf(v, rates));
+      await client.query(
+        `insert into cost_fx (project_id, month, item, idr, usd, cny, cnh, rate_usd, rate_cny, rate_cnh, total, updated_by, updated_at)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,now())
+         on conflict (project_id, month, item) do update set idr=excluded.idr, usd=excluded.usd, cny=excluded.cny, cnh=excluded.cnh,
+           rate_usd=excluded.rate_usd, rate_cny=excluded.rate_cny, rate_cnh=excluded.rate_cnh, total=excluded.total,
+           updated_by=excluded.updated_by, updated_at=now()`,
+        [projectId, month, k, v.idr, v.usd, v.cny, v.cnh, rates.usd, rates.cny, rates.cnh, total, actor || null]);
+    }
+    await client.query('commit');
+  } catch (e) { await client.query('rollback').catch(() => {}); throw e; } finally { client.release(); }
+  await loadCosts();
+  return (costs[projectId] || {})[month] || null;
+}
+
+module.exports = { load, snapshot, rateFor, rateOn, refreshMonth, ensure, start, saveContract, saveFs, saveCost, toIdr, idrOf, CUR };

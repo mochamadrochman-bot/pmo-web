@@ -1300,7 +1300,7 @@ function load() {
   });
   const v3d = require('./visual3d');
   htmlFiles.set('Visual3D', v3d.VISUAL3D_HTML);
-  for (const p of HTML_PATCHES.concat(v3d.HTML_PATCHES, require('./monthly-fin').HTML_PATCHES, require('./portal-v2').PORTAL_V2_PATCHES, require('./spotlight-v2').SPOTLIGHT_V2_PATCHES, require('./ktr-docs').HTML_PATCHES, require('./ktr-access').HTML_PATCHES, require('./library-v2').HTML_PATCHES, require('./pres-proj').HTML_PATCHES, require('./contract-fx').HTML_PATCHES)) {
+  for (const p of HTML_PATCHES.concat(v3d.HTML_PATCHES, require('./monthly-fin').HTML_PATCHES, require('./portal-v2').PORTAL_V2_PATCHES, require('./spotlight-v2').SPOTLIGHT_V2_PATCHES, require('./ktr-docs').HTML_PATCHES, require('./ktr-access').HTML_PATCHES, require('./library-v2').HTML_PATCHES, require('./pres-proj').HTML_PATCHES, require('./contract-fx').HTML_PATCHES, require('./cost-fx').HTML_PATCHES)) {
     const src = htmlFiles.get(p.file);
     if (src && src.includes(p.find)) htmlFiles.set(p.file, src.replace(p.find, p.replace));
     else console.warn(JSON.stringify({ ev: 'gas_patch_miss', file: p.file }));
@@ -1318,7 +1318,7 @@ function load() {
     const { rewrite } = require('../routes/brand');
     for (const [k, v] of htmlFiles) { const t = rewrite(v); if (t !== v) htmlFiles.set(k, t); }
   } catch (e) { console.log(JSON.stringify({ ev: 'brand_rewrite_skip', message: String(e.message || e) })); }
-  for (const p of GS_PATCHES.concat(require('./live-lan').GS_PATCHES, require('./visual3d').GS_PATCHES, require('./ktr-docs').GS_PATCHES, require('./ktr-access').GS_PATCHES, require('./library-v2').GS_PATCHES, require('./master-hero').MASTER_HERO_GS_PATCHES, require('./pres-proj').GS_PATCHES, require('./contract-fx').GS_PATCHES)) {
+  for (const p of GS_PATCHES.concat(require('./live-lan').GS_PATCHES, require('./visual3d').GS_PATCHES, require('./ktr-docs').GS_PATCHES, require('./ktr-access').GS_PATCHES, require('./library-v2').GS_PATCHES, require('./master-hero').MASTER_HERO_GS_PATCHES, require('./pres-proj').GS_PATCHES, require('./contract-fx').GS_PATCHES, require('./cost-fx').GS_PATCHES)) {
     const f = gsFiles.find((x) => x.name === p.file);
     if (f && f.src.includes(p.find)) f.src = f.src.replace(p.find, () => p.replace);
     else console.warn(JSON.stringify({ ev: 'gas_patch_miss', file: p.file + '.gs' }));
@@ -1326,7 +1326,8 @@ function load() {
   const code = gsFiles.map((f) => '// ---- ' + f.name + '.gs\n' + f.src).join('\n;\n') +
     '\n;\n// ---- pres-video (server)\n' + require('./pres-video').PRES_VIDEO_GS +
     '\n;\n// ---- pres-proj (server)\n' + require('./pres-proj').PRES_PROJ_GS +
-    '\n;\n// ---- contract-fx (server)\n' + require('./contract-fx').FX_GS;
+    '\n;\n// ---- contract-fx (server)\n' + require('./contract-fx').FX_GS +
+    '\n;\n// ---- cost-fx (server)\n' + require('./cost-fx').COST_GS;
   const fnNames = new Set();
   const varNames = new Set();
   for (const m of code.matchAll(/^function\s+([A-Za-z_$][\w$]*)\s*\(/gm)) fnNames.add(m[1]);

@@ -6,6 +6,10 @@
  *   POST /api/fx/refresh             (Admin) ambil ulang kurs sekarang
  *   GET  /api/contract-fx?project=   komponen kontrak proyek + kurs terbaru
  *   POST /api/contract-fx            simpan komponen {project, kind:'BASE'|'ADD', idr, usd, cny, cnh, note}
+ *   GET  /api/fx/rate-on?date=       kurs USD/CNY/CNH pada tanggal tertentu (kurs FS)
+ *   GET  /api/fs-fx?project=         nilai FS per mata uang + kurs FS tetap
+ *   POST /api/fs-fx                  {project, rateDate, rates:{usd,cny,cnh}, rateSource, items:{plant|idc|pm|other:{idr,usd,cny,cnh}}, otherName}
+ *   POST /api/cost-fx                {project, month:'YYYY-MM', rates:{usd,cny,cnh}, items:{plant|idc|pm|other:{idr,usd,cny,cnh}}}
  */
 
 const express = require('express');
@@ -67,6 +71,46 @@ router.post('/api/contract-fx', requireUser, async (req, res, next) => {
     const c = await fx.saveContract(pid, b.kind, vals, req.user.username, b.note);
     bumpData();
     res.json({ ok: true, data: { contract: c, rate: fx.rateFor(''), idr: fx.toIdr(pid, '') } });
+  } catch (err) { next(err); }
+});
+
+const pidOk = (pid) => /^[A-Za-z0-9_\- .]+$/.test(pid);
+
+router.get('/api/fx/rate-on', requireUser, async (req, res) => {
+  if (!req.user || ['admin', 'input'].indexOf(req.user.role) < 0) return fail(res, 403, 'Tidak tersedia untuk akun ini.');
+  try { res.json({ ok: true, data: await fx.rateOn(String(req.query.date || '')) }); } catch (e) { fail(res, 502, e.message); }
+});
+
+router.get('/api/fs-fx', requireUser, (req, res) => {
+  if (req.user && req.user.role === 'kontraktor') return fail(res, 403, 'Tidak tersedia untuk akun ini.');
+  const pid = String(req.query.project || '').trim();
+  const snap = fx.snapshot();
+  res.json({ ok: true, data: { fs: pid ? snap.fs[pid] || null : null, contract: pid ? snap.contracts[pid] || null : null, rate: fx.rateFor(''), canEdit: canEdit(req.user, pid) } });
+});
+
+router.post('/api/fs-fx', requireUser, async (req, res, next) => {
+  try {
+    const b = req.body || {};
+    const pid = String(b.project || '').trim().slice(0, 60);
+    if (!pidOk(pid)) return fail(res, 400, 'Kode proyek tidak valid.');
+    if (!canEdit(req.user, pid)) return fail(res, 403, 'Anda tidak berhak mengubah nilai FS proyek ini.');
+    let f;
+    try { f = await fx.saveFs(pid, b, req.user.username); } catch (e) { if (/wajib|valid|positif/.test(e.message)) return fail(res, 400, e.message); throw e; }
+    bumpData();
+    res.json({ ok: true, data: { fs: f } });
+  } catch (err) { next(err); }
+});
+
+router.post('/api/cost-fx', requireUser, async (req, res, next) => {
+  try {
+    const b = req.body || {};
+    const pid = String(b.project || '').trim().slice(0, 60);
+    if (!pidOk(pid)) return fail(res, 400, 'Kode proyek tidak valid.');
+    if (!canEdit(req.user, pid)) return fail(res, 403, 'Anda tidak berhak mengisi realisasi proyek ini.');
+    let c;
+    try { c = await fx.saveCost(pid, String(b.month || ''), b, req.user.username); } catch (e) { if (/wajib|valid|positif/.test(e.message)) return fail(res, 400, e.message); throw e; }
+    bumpData();
+    res.json({ ok: true, data: { month: b.month, items: c } });
   } catch (err) { next(err); }
 });
 
