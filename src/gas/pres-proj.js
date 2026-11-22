@@ -97,8 +97,10 @@ function presProgItems_(token, projectId, Y) {
     const pr = (r.projects || []).find(function(x) { return normKey_(x.id) === want; });
     if (!pr) return { items: [], months: [] };
     const months = (r.months || []).map(function(m, i) { return { i: i, label: m.label, year: Number(String(m.label || '').slice(-4)) }; }).filter(function(m) { return m.year === Number(Y); });
+    // Selalu baseline EPCC Control (seragam untuk semua proyek; jadwal XML hanya ada di sebagian proyek).
+    const fields = pr.source === 'XML' ? (pr.alt || []) : (pr.fields || []);
     const map = {}, list = [];
-    (pr.fields || []).forEach(function(f) {
+    fields.forEach(function(f) {
       months.forEach(function(m) {
         ((f.months && f.months[m.i]) || []).forEach(function(t) {
           const k = f.name + '|' + (t.groupCode || '') + '|' + t.code + '|' + t.name;
@@ -109,7 +111,7 @@ function presProgItems_(token, projectId, Y) {
       });
     });
     list.sort(function(a, b) { return b.contribution - a.contribution; });
-    return { items: list.slice(0, 6), total: list.length, months: months.map(function(m) { return m.label; }), source: pr.source || '' };
+    return { items: list.slice(0, 6), total: list.length, months: months.map(function(m) { return m.label; }), source: 'EPCC', noBaseline: !fields.some(function(f) { return f.baseline; }) };
   } catch (e) { return { items: [], months: [], error: String(e && e.message || e) }; }
 }
 
@@ -358,7 +360,7 @@ html.m-mode #progBox{padding:12px}
     if(w===undefined)return '<div class="pjx-work" data-wait="1"><h4>Pekerjaan berbobot besar s.d. akhir tahun</h4><div class="pjx-empty" style="padding:12px 0">Memuat pekerjaan…</div></div>';
     var L=(w&&w.items)||[];
     var h='<div class="pjx-work"><h4>Pekerjaan berbobot besar yang menunjang kenaikan s.d. akhir tahun'+(w&&w.months&&w.months.length?' <small>('+esc(w.months.join(', '))+')</small>':'')+'</h4>';
-    if(!L.length)return h+'<div class="pjx-empty" style="padding:12px 0">'+esc(w&&w.error?'Data pekerjaan belum dapat dibaca.':'Tidak ada pekerjaan dengan kenaikan rencana pada sisa tahun ini (atau baseline EPCC / jadwal belum tersedia).')+'</div></div>';
+    if(!L.length)return h+'<div class="pjx-empty" style="padding:12px 0">'+esc(w&&w.error?'Data pekerjaan belum dapat dibaca.':w&&w.noBaseline?'Baseline EPCC Control proyek ini belum tersedia.':'Tidak ada pekerjaan dengan kenaikan rencana pada sisa tahun ini di baseline EPCC Control.')+'</div></div>';
     h+='<table class="pjx-tbl"><thead><tr><th style="text-align:left">Bidang</th><th style="text-align:left">Pekerjaan</th><th>Aktual</th><th>Target</th><th>+ Bobot proyek</th></tr></thead><tbody>'+
       L.map(function(t){return '<tr><td style="color:var(--muted,#5b7085)">'+esc(t.field)+'</td><td><b>'+esc(t.name)+'</b>'+(t.group?'<br><small style="color:var(--muted,#5b7085)">'+esc(t.group)+'</small>':'')+'</td><td data-l="Aktual" style="text-align:right">'+pc(t.actual)+'</td><td data-l="Target" style="text-align:right"><span class="pjx-tv">'+pc(t.target)+'<small>akhir '+esc(t.until)+'</small></span></td><td data-l="+ Bobot proyek" style="text-align:right"><b>+'+pc(t.contribution)+'</b></td></tr>'}).join('')+'</tbody></table>';
     return h+'<p class="pjx-note">Diurutkan dari kontribusi terbesar terhadap progres proyek'+(w.total>L.length?' (6 dari '+w.total+' pekerjaan)':'')+'. Sumber: '+(w.source==='XML'?'Jadwal XML (Master Schedule)':'EPCC Control')+'.</p></div>';
