@@ -95,7 +95,7 @@ const PRES_PREP_JS = String.raw`<style>
     var base=(C.base||[]).filter(function(t){return byT.hasOwnProperty(t)});
     var start=[],end=[],after={};
     (mine?C.items:[]).forEach(function(x){
-      var p=String(x.pos||'end'),it={k:x.type==='video'?'vid':x.type==='model3d'?'m3d':'pdf',x:Object.assign({},x)};
+      var p=String(x.pos||'end'),it={k:x.type==='proj'?'pj':x.type==='video'?'vid':x.type==='model3d'?'m3d':'pdf',x:Object.assign({},x)};
       if(p==='start')start.push(it);
       else if(p.indexOf('after:')===0&&base.indexOf(p.slice(6))>=0)(after[p.slice(6)]=after[p.slice(6)]||[]).push(it);
       else end.push(it);
@@ -109,6 +109,7 @@ const PRES_PREP_JS = String.raw`<style>
     if(r.k==='cover')return 'Sampul';if(r.k==='thanks')return 'Terima kasih';if(r.k==='dash')return r.t||'Slide';
     if(r.k==='vid')return 'Video · '+(r.x.title||r.x.project)+' · W'+r.x.week;
     if(r.k==='m3d')return '3D · '+(r.x.title||'Model 3D');
+    if(r.k==='pj')return window.pmoPresProj?pmoPresProj.title(r.x):'Slide proyek · '+(r.x.title||r.x.project);
     return (r.x.title||'Materi PDF')+' · hal. '+r.x.page;
   }
   function slideOf(r){
@@ -152,7 +153,7 @@ const PRES_PREP_JS = String.raw`<style>
     var ld=box.querySelector('.pq-load');if(ld)ld.remove();
     if(!box.querySelector('.pq-main')){
       box.insertAdjacentHTML('beforeend','<div class="pq-main"><div class="pq-left"><div class="pq-tools">'+
-        (can?'<button type="button" class="pq-btn sm" data-q="pdf">'+sv(I.plus)+'Tambah PDF</button>'+(isExec?'<button type="button" class="pq-btn sm" data-q="vid">'+sv(I.plus)+'Tambah video</button>':'')+'<button type="button" class="pq-btn sm" data-q="m3d">'+sv(I.plus)+'Tambah 3D</button>':'')+
+        (can?'<button type="button" class="pq-btn sm" data-q="pdf">'+sv(I.plus)+'Tambah PDF</button>'+(isExec?'<button type="button" class="pq-btn sm" data-q="vid">'+sv(I.plus)+'Tambah video</button>':'')+'<button type="button" class="pq-btn sm" data-q="m3d">'+sv(I.plus)+'Tambah 3D</button>'+(window.pmoPresProj?'<button type="button" class="pq-btn sm" data-q="pj">'+sv(I.plus)+'Tambah slide proyek</button>':''):'')+
         '<button type="button" class="pq-btn sm" data-q="all">Tampilkan semua</button><button type="button" class="pq-btn sm" data-q="reset">Urutan bawaan</button><span class="pq-n"></span></div>'+
         '<div class="pq-vadd" hidden></div><div class="pq-list" role="listbox" aria-label="Susunan slide"></div></div>'+
         '<div class="pq-right"></div></div>'+
@@ -164,16 +165,16 @@ const PRES_PREP_JS = String.raw`<style>
     box.querySelector('.pq-n').textContent=n+' slide';
     var list=box.querySelector('.pq-list'),last=P.rows.length-1;
     list.innerHTML=P.rows.map(function(r,i){
-      var ic=r.k==='pdf'?I.pdf:r.k==='vid'?I.vid:r.k==='m3d'?I.cube:(r.k==='cover'||r.k==='thanks')?I.cover:/^Proyek ·/.test(r.t||'')?I.proj:I.dash;
-      var canDel=(r.k==='pdf'||r.k==='vid'||r.k==='m3d')&&(P.isAdmin||r.x.canEdit!==false);
-      var tag=r.k==='pdf'?'<span class="pq-tag pdf">PDF</span>':r.k==='vid'?'<span class="pq-tag vid">Video</span>':r.k==='m3d'?'<span class="pq-tag vid">3D</span>':r.fix?'<span class="pq-tag fix">Tetap</span>':'';
+      var ic=r.k==='pdf'?I.pdf:r.k==='vid'?I.vid:r.k==='m3d'?I.cube:r.k==='pj'?I.proj:(r.k==='cover'||r.k==='thanks')?I.cover:/^Proyek ·/.test(r.t||'')?I.proj:I.dash;
+      var canDel=(r.k==='pdf'||r.k==='vid'||r.k==='m3d'||r.k==='pj')&&(P.isAdmin||r.x.canEdit!==false);
+      var tag=r.k==='pdf'?'<span class="pq-tag pdf">PDF</span>':r.k==='vid'?'<span class="pq-tag vid">Video</span>':r.k==='m3d'?'<span class="pq-tag vid">3D</span>':r.k==='pj'?'<span class="pq-tag vid">Proyek</span>':r.fix?'<span class="pq-tag fix">Tetap</span>':'';
       var up=!r.fix&&i>1,dn=!r.fix&&i<last-1;
       return '<div class="pq-row'+(i===P.sel?' sel':'')+(shown(r)?'':' off')+'" data-i="'+i+'" role="option" aria-selected="'+(i===P.sel)+'"'+(r.fix?'':' draggable="true"')+'>'+
         '<span class="pq-g'+(r.fix?' fix':'')+'" title="Seret untuk memindah">'+sv(I.grip)+'</span>'+
         (r.k==='dash'?'<input type="checkbox" '+(r.show?'checked':'')+' aria-label="Tampilkan slide">':'<span style="width:16px"></span>')+
         '<span class="pq-ic">'+sv(ic)+'</span><span class="pq-t" title="'+esc(titleOf(r))+'">'+esc(titleOf(r))+'</span>'+tag+
         (r.fix?'':'<span class="pq-mv"><button type="button" data-mv="-1" '+(up?'':'disabled')+' aria-label="Naikkan">↑</button><button type="button" data-mv="1" '+(dn?'':'disabled')+' aria-label="Turunkan">↓</button></span>')+
-        (canDel?'<button type="button" class="pq-del" data-del="1" title="Hapus dari presentasi" aria-label="Hapus">×</button>':((r.k==='pdf'||r.k==='vid'||r.k==='m3d')?'<span class="pq-tag fix" title="Dikelola Admin atau proyek lain">Terkunci</span>':''))+'</div>';
+        (canDel?'<button type="button" class="pq-del" data-del="1" title="Hapus dari presentasi" aria-label="Hapus">×</button>':((r.k==='pdf'||r.k==='vid'||r.k==='m3d'||r.k==='pj')?'<span class="pq-tag fix" title="Dikelola Admin atau proyek lain">Terkunci</span>':''))+'</div>';
     }).join('');
     preview();
   }
@@ -184,7 +185,7 @@ const PRES_PREP_JS = String.raw`<style>
     var txt='';
     if(r.k==='cover'&&canTxt)txt='<div class="pq-f"><label>Judul sampul<input data-s="coverTitle" placeholder="Rapat Progres Proyek" value="'+esc(P.S.coverTitle||'')+'"></label><label>Subjudul sampul<input data-s="coverSub" placeholder="otomatis: nama halaman · periode" value="'+esc(P.S.coverSub||'')+'"></label></div>';
     if(r.k==='thanks'&&canTxt)txt='<div class="pq-f"><label>Subjudul penutup<input data-s="thanksSub" placeholder="Sesi diskusi &amp; tanya jawab" value="'+esc(P.S.thanksSub||'')+'"></label><label>Kontak / keterangan<input data-s="thanksContact" placeholder="mis. PMO Infrastruktur · ext. 1234" value="'+esc(P.S.thanksContact||'')+'"></label></div>';
-    var roleNote=can?(P.isAdmin?'Susunan yang disimpan dipakai semua orang saat presentasi halaman ini. ':'Anda dapat menambah & menyusun slide PDF'+(P.key==='executive'?', video,':'')+' dan Visual 3D khusus proyek Anda ('+(P.allowed.map(function(x){return x.name}).join(', ')||'sesuai akses')+'). '):'Perubahan susunan hanya berlaku untuk sesi presentasi ini. ';
+    var roleNote=can?(P.isAdmin?'Susunan yang disimpan dipakai semua orang saat presentasi halaman ini. ':'Anda dapat menambah & menyusun slide PDF'+(P.key==='executive'?', video,':'')+', Visual 3D, dan slide proyek (ringkasan minggu, keuangan cut-off, look ahead, prognosa) khusus proyek Anda ('+(P.allowed.map(function(x){return x.name}).join(', ')||'sesuai akses')+'). '):'Perubahan susunan hanya berlaku untuk sesi presentasi ini. ';
     R.innerHTML='<div class="pq-pt">Pratinjau slide '+(P.rows.slice(0,P.sel+1).filter(shown).length)+(shown(r)?'':' (disembunyikan)')+'<b>'+esc(titleOf(r))+'</b></div><div class="pq-frame"></div>'+txt+
       '<div class="pq-opts"><label><input type="checkbox" data-o="anim" '+(ls(ANIM)==='0'?'':'checked')+'> Animasi slide (angka, grafik, kartu bergerak)</label><label><input type="checkbox" data-o="skip" '+(ls(SKIP)==='1'?'checked':'')+'> Lain kali langsung mulai, lewati layar ini</label></div>'+
       '<p class="pq-note">'+roleNote+'Tombol <b>P</b> di keyboard langsung memulai presentasi dengan susunan tersimpan. Selama presentasi, buka layar ini lagi lewat tombol <b>Ubah susunan</b>.</p>';
@@ -242,13 +243,14 @@ const PRES_PREP_JS = String.raw`<style>
       else if(q==='pdf')window.pmoPresExtra.manage(P.cfg,{onAdd:function(got){if(!P||!got.length)return;var at=Math.min(P.sel+1,P.rows.length-1);got.forEach(function(x,k){P.rows.splice(at+k,0,{k:'pdf',x:x})});P.sel=at;mark();draw();say(got.length+' halaman PDF ditambahkan setelah slide terpilih.','ok')}});
       else if(q==='vid')toggleVid();
       else if(q==='m3d')toggleM3d();
+      else if(q==='pj')togglePj();
     });
     m.querySelector('.pq-ft').addEventListener('click',function(e){var b=e.target.closest('[data-q]');if(!b)return;if(b.getAttribute('data-q')==='save')save();else go()});
   }
   function weekOpts(p){return ((p&&p.videos)||[]).map(function(v){return '<option value="'+v.week+'">W'+v.week+(v.range?' · '+esc(v.range):'')+'</option>'}).join('')}
   function toggleVid(){
     var w=P.m.querySelector('.pq-vadd');
-    if(!w.hidden&&w.getAttribute('data-m')!=='m3d'){w.hidden=true;return}
+    if(!w.hidden&&w.getAttribute('data-m')==='vid'){w.hidden=true;return}
     w.setAttribute('data-m','vid');
     var L=P.vidList;
     w.innerHTML=L.length?'<select data-vp aria-label="Proyek">'+L.map(function(p){return '<option value="'+esc(p.id)+'">'+esc(p.name)+' ('+p.videos.length+' video)</option>'}).join('')+'</select><select data-vw aria-label="Minggu">'+weekOpts(L[0])+'</select><button type="button" class="pq-btn pri sm" data-va="1">Tambahkan</button>'
@@ -293,13 +295,40 @@ const PRES_PREP_JS = String.raw`<style>
     renderM3dBar(w);
     w.hidden=false;
   }
+  /* slide proyek: pilih proyek + jenis slide (src/gas/pres-proj.js) */
+  function togglePj(){
+    var w=P.m.querySelector('.pq-vadd');
+    if(!w.hidden&&w.getAttribute('data-m')==='pj'){w.hidden=true;return}
+    w.setAttribute('data-m','pj');
+    var L=(P.allowed||[]).slice();
+    if(P.pagePid&&!P.isAdmin){var top=L.filter(function(p){return String(p.id)===String(P.pagePid)});L=top.concat(L.filter(function(p){return String(p.id)!==String(P.pagePid)}))}
+    else if(P.pagePid){L.sort(function(a,b){return (String(b.id)===String(P.pagePid))-(String(a.id)===String(P.pagePid))})}
+    var K=window.pmoPresProj.KINDS;
+    w.innerHTML=L.length?'<select data-pp aria-label="Proyek">'+L.map(function(p){return '<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>'}).join('')+'</select>'+
+      K.map(function(k){return '<label style="display:inline-flex;gap:5px;align-items:center;font-size:12.5px;cursor:pointer"><input type="checkbox" data-pk="'+k[0]+'" checked style="width:15px;height:15px;margin:0;accent-color:#0f5fa8">'+esc(window.pmoPresProj.SHORT[k[0]])+'</label>'}).join('')+
+      '<button type="button" class="pq-btn pri sm" data-pa="1">Tambahkan</button><span class="pq-note" style="flex-basis:100%">Data selalu memakai minggu terakhir yang terinput dan laporan keuangan bulan cut-off terakhir.'+(P.isAdmin?'':' Pilihan proyek sesuai akses Anda (proyek & sub-proyek).')+'</span>'
+      :'<span class="pq-note">Tidak ada proyek yang dapat Anda tambahkan.</span>';
+    w.hidden=false;
+    var b=w.querySelector('[data-pa]');if(b)b.onclick=function(){
+      var pid=w.querySelector('[data-pp]').value,pj=L.filter(function(x){return String(x.id)===String(pid)})[0],nm=pj?pj.name:pid;
+      var kinds=[].slice.call(w.querySelectorAll('[data-pk]')).filter(function(c){return c.checked}).map(function(c){return c.getAttribute('data-pk')});
+      if(!kinds.length){say('Pilih minimal satu jenis slide.','bad');return}
+      var at=Math.min(P.sel+1,P.rows.length-1),n=0,dup=0;
+      kinds.forEach(function(k){
+        if(P.rows.some(function(r){return r.k==='pj'&&String(r.x.project)===String(pid)&&r.x.kind===k})){dup++;return}
+        P.rows.splice(at+n,0,{k:'pj',x:{type:'proj',project:pid,kind:k,title:nm,canEdit:true}});n++;
+      });
+      if(!n){say('Slide '+nm+' yang dipilih sudah ada di susunan.','bad');return}
+      P.sel=at;w.hidden=true;mark();draw();say(n+' slide proyek '+nm+' ditambahkan setelah slide terpilih'+(dup?' ('+dup+' sudah ada)':'')+'.','ok');
+    };
+  }
   function payload(){
     var items=[],last=null,order=[],hidden=[];
     P.rows.forEach(function(r){
       if(r.k==='dash'){order.push(r.t);if(!r.show)hidden.push(r.t);last=r.t;return}
-      if(r.k!=='pdf'&&r.k!=='vid'&&r.k!=='m3d')return;
+      if(r.k!=='pdf'&&r.k!=='vid'&&r.k!=='m3d'&&r.k!=='pj')return;
       var pos=last?'after:'+last:'start',x=r.x;
-      items.push(r.k==='m3d'?{type:'model3d',model:x.model,pos:pos,title:x.title}:r.k==='vid'?{type:'video',project:x.project,week:x.week,pos:pos,title:x.title}:{deck:x.deck,page:x.page,pos:pos});
+      items.push(r.k==='pj'?{type:'proj',project:x.project,kind:x.kind,pos:pos,title:x.title}:r.k==='m3d'?{type:'model3d',model:x.model,pos:pos,title:x.title}:r.k==='vid'?{type:'video',project:x.project,week:x.week,pos:pos,title:x.title}:{deck:x.deck,page:x.page,pos:pos});
     });
     return {key:P.key,items:items,layout:{order:order,hidden:hidden},settings:P.S};
   }

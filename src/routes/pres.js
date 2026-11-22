@@ -154,6 +154,7 @@ function itemSig(x) {
   if (!x) return '';
   if (x.type === 'model3d') return 'm:' + (Number(x.model) || 0);
   if (x.type === 'video') return 'v:' + String(x.project || '') + ':' + (Number(x.week) || 0);
+  if (x.type === 'proj') return 'j:' + String(x.project || '') + ':' + String(x.kind || '');
   return 'p:' + (Number(x.deck) || 0) + ':' + (Number(x.page) || 0);
 }
 
@@ -161,6 +162,7 @@ function onlyManager(req, res, next) {
   if (!canManageAny(req.user)) return res.status(403).json({ ok: false, error: 'Hanya Admin dan PIC / Input yang dapat mengatur susunan presentasi.' });
   next();
 }
+const PROJ_KINDS = ['week', 'fin', 'la', 'prog'];
 const bad = (res, msg) => res.status(400).json({ ok: false, error: msg });
 const KEY_RE = /^(executive|weekly:[A-Z0-9 ._&()\-/]{1,120}|_settings)$/;
 
@@ -351,6 +353,11 @@ router.get('/api/pres/set', requireUser, async (req, res, next) => {
         const pid = m ? m.project_id : '';
         return { type: 'model3d', model: Number(x.model) || 0, pos: x.pos || 'end', title: m ? m.title : String(x.title || ''), project: pid, missing: !m, canEdit: isAdmin(req.user) || (!!pid && scopeOk(req.user, pid)) };
       }
+      if (x && x.type === 'proj') {
+        const pid = String(x.project || '');
+        const rpid = resolveProjectId(pid) || pid;
+        return { type: 'proj', project: pid, kind: String(x.kind || ''), pos: x.pos || 'end', title: String(x.title || ''), canEdit: isAdmin(req.user) || scopeOk(req.user, rpid) };
+      }
       if (x && x.type === 'video') {
         const pid = String(x.project || '');
         const rpid = resolveProjectId(pid) || pid;
@@ -396,8 +403,14 @@ router.put('/api/pres/set', requireUser, onlyManager, async (req, res, next) => 
         if (!/^[A-Za-z0-9_\- .]+$/.test(project) || !Number.isInteger(week) || week < 1 || week > 2000) return null;
         return { type: 'video', project, week, pos: String(x.pos || 'end').slice(0, 200), title: String(x.title || '').slice(0, 160) };
       }
+      if (x && x.type === 'proj') {
+        // Slide proyek: ringkasan minggu terakhir, keuangan cut-off, look ahead, prognosa (src/gas/pres-proj.js).
+        const project = String(x.project || '').trim().slice(0, 60), kind = String(x.kind || '');
+        if (!/^[A-Za-z0-9_\- .]+$/.test(project) || !PROJ_KINDS.includes(kind)) return null;
+        return { type: 'proj', project, kind, pos: String(x.pos || 'end').slice(0, 200), title: String(x.title || '').slice(0, 160) };
+      }
       return { deck: Number(x.deck), page: Number(x.page), pos: String(x.pos || 'end').slice(0, 200) };
-    }).filter((x) => x && (x.type === 'video' || x.type === 'model3d' || (Number.isInteger(x.deck) && Number.isInteger(x.page))));
+    }).filter((x) => x && (x.type === 'video' || x.type === 'model3d' || x.type === 'proj' || (Number.isInteger(x.deck) && Number.isInteger(x.page))));
 
     const admin = isAdmin(req.user);
     const pagePid = key.startsWith('weekly:') ? keyProjectId(key, b.fallbackKey) : '';
@@ -425,6 +438,10 @@ router.put('/api/pres/set', requireUser, onlyManager, async (req, res, next) => 
           const m = mMap.get(Number(x.model));
           return !!(m && scopeOk(req.user, m.project_id) && (!pagePid || sameProj(m.project_id)));
         }
+        if (x.type === 'proj') {
+          // Slide proyek: PIC/Input boleh memakai proyek mana pun dalam aksesnya (proyek & sub-proyek), juga di halaman Weekly proyek lain miliknya.
+          return scopeOk(req.user, resolveProjectId(x.project) || x.project);
+        }
         if (x.type === 'video') {
           const vp = resolveProjectId(x.project) || x.project;
           return scopeOk(req.user, vp) && (!pagePid || sameProj(vp));
@@ -434,7 +451,7 @@ router.put('/api/pres/set', requireUser, onlyManager, async (req, res, next) => 
       };
       for (const x of items) {
         if (!itemAllowed(x) && (pagePid || !exSigs.has(itemSig(x)))) {
-          return res.status(403).json({ ok: false, error: 'Anda hanya dapat menambahkan PDF, video, atau model 3D milik proyek Anda sendiri.' });
+          return res.status(403).json({ ok: false, error: 'Anda hanya dapat menambahkan PDF, video, model 3D, atau slide proyek milik proyek Anda sendiri (dan sub-proyeknya).' });
         }
       }
       if (!pagePid) {
