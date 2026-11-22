@@ -37,10 +37,15 @@ function presPrognosis_(db, p, week) {
   const wDec = weekForDate_(info.startDate, new Date(Y, 11, 31));
   let planDec = null;
   if (pe) planDec = wDec >= pe ? 100 : pct('KOMULATIF_PLAN', wDec);
-  let progF = null;
-  if (actNow !== null && planDec !== null && planNow !== null) progF = Math.min(100, Math.max(actNow, actNow + Math.max(0, planDec - planNow)));
-  const physical = { week: week, weekDec: pe ? Math.max(1, Math.min(wDec, pe)) : wDec, planNow: planNow, actualNow: actNow, planDec: planDec,
-    prognosis: progF, deviation: progF === null || planDec === null ? null : progF - planDec, finishInYear: !!pe && wDec >= pe };
+  // Target = rencana baseline s.d. akhir Desember; dibandingkan dengan aktual minggu terakhir (tanpa forecast).
+  const weekDec = pe ? Math.max(1, Math.min(wDec, pe)) : wDec;
+  const left = Math.max(0, weekDec - week);
+  const gap = planDec === null || actNow === null ? null : Math.max(0, planDec - actNow);
+  const back = Math.max(1, week - 4), actBack = pct('KOMULATIF_REALISASI', back);
+  const physical = { week: week, weekDec: weekDec, weeksLeft: left, planNow: planNow, actualNow: actNow, planDec: planDec,
+    gap: gap, perWeek: gap === null ? null : (left ? gap / left : gap), planPerWeek: planDec === null || planNow === null || !left ? null : Math.max(0, planDec - planNow) / left,
+    recentPerWeek: actNow === null || actBack === null || week <= back ? null : (actNow - actBack) / (week - back), recentWeeks: week - back,
+    finishInYear: !!pe && wDec >= pe };
 
   let cost = null;
   try {
@@ -84,6 +89,29 @@ function presPrognosis_(db, p, week) {
   return { year: Y, week: week, physical: physical, cost: cost };
 }
 
+/** Pekerjaan berbobot besar yang rencananya naik s.d. akhir tahun Y (dari 3 Month Look Ahead). */
+function presProgItems_(token, projectId, Y) {
+  try {
+    const r = getExecutiveLookAhead(token, ''), want = normKey_(projectId);
+    const pr = (r.projects || []).find(function(x) { return normKey_(x.id) === want; });
+    if (!pr) return { items: [], months: [] };
+    const months = (r.months || []).map(function(m, i) { return { i: i, label: m.label, year: Number(String(m.label || '').slice(-4)) }; }).filter(function(m) { return m.year === Number(Y); });
+    const map = {}, list = [];
+    (pr.fields || []).forEach(function(f) {
+      months.forEach(function(m) {
+        ((f.months && f.months[m.i]) || []).forEach(function(t) {
+          const k = f.name + '|' + (t.groupCode || '') + '|' + t.code + '|' + t.name;
+          let x = map[k];
+          if (!x) { x = map[k] = { field: f.name, code: t.code, name: t.name, group: t.groupName || '', actual: t.actual, target: t.target, contribution: 0, status: t.status || '', until: m.label }; list.push(x); }
+          x.contribution += Number(t.contribution) || 0; x.target = t.target; x.until = m.label;
+        });
+      });
+    });
+    list.sort(function(a, b) { return b.contribution - a.contribution; });
+    return { items: list.slice(0, 6), total: list.length, months: months.map(function(m) { return m.label; }), source: pr.source || '' };
+  } catch (e) { return { items: [], months: [], error: String(e && e.message || e) }; }
+}
+
 /** Data satu slide proyek untuk presentasi: kind = week | fin | la | prog. */
 function getPresProjSlide(token, projectId, kind) {
   dbReadOnly_();
@@ -101,6 +129,12 @@ function getPresProjSlide(token, projectId, kind) {
     const pr = (r.projects || []).find(function(x) { return normKey_(x.id) === want; }) || null;
     return { success: true, kind: kind, project: head, data: { period: r.period, months: r.months, project: pr } };
   }
+  if (kind === 'prog') {
+    const base = perfCached_('presProj|' + p.id + '|prog', function() { return presPrognosis_(db, p, weeklyInfo_(db, p).latestWeek); });
+    const out = Object.assign({}, base);
+    if (base && base.year) out.work = presProgItems_(token, p.id, base.year);
+    return { success: true, kind: kind, project: head, data: out };
+  }
   return perfCached_('presProj|' + p.id + '|' + kind, function() {
     const info = weeklyInfo_(db, p);
     if (kind === 'week') {
@@ -109,7 +143,6 @@ function getPresProjSlide(token, projectId, kind) {
       return { success: true, kind: kind, project: head, data: { week: d.week, period: d.period, overall: d.overall, fields: d.fields,
         duration: d.duration, highlight: d.highlight || '', concern: d.concern || null, stage: d.lifecycle && d.lifecycle.stage || '' } };
     }
-    if (kind === 'prog') return { success: true, kind: kind, project: head, data: presPrognosis_(db, p, info.latestWeek) };
     const M = db.monthly, now = new Date(), nk = now.getFullYear() * 12 + now.getMonth();
     let m = null;
     M.months.forEach(function(mm) { if (mm.year * 12 + mm.month <= nk) m = mm; });
@@ -186,6 +219,8 @@ const PRES_PROJ_JS = String.raw`<style>
 .pjx-pc dl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;margin:0;font-size:13px;font-variant-numeric:tabular-nums}
 .pjx-pc dt{color:var(--muted,#5b7085)}.pjx-pc dd{margin:0;text-align:right;font-weight:600}
 .pjx-pc .pjx-bar{margin:8px 0 10px;height:10px}
+.pjx-fnarr{margin-top:16px;font-size:15px;line-height:1.6}.pjx-fnarr p{margin:0 0 8px}.pjx-fnarr ul{margin:0 0 12px;padding-left:22px}.pjx-fnarr li{margin:0 0 6px}.pjx-ref{font-weight:700}
+.pjx-work{margin-top:14px}.pjx-work h4{margin:0 0 8px;font-size:14px;font-weight:700}.pjx-work h4 small{font-weight:500;color:var(--muted,#5b7085)}.pjx-work .pjx-tbl{font-size:13px}
 #progBox{padding:4px 18px 18px}
 #progBox .pjx-pc .pjx-big{font-size:22px}
 .pp-card .pjx .pjx-pc .pjx-big{font-size:34px}
@@ -273,14 +308,27 @@ const PRES_PROJ_JS = String.raw`<style>
         '<dl><dt>Realisasi s.d. '+esc(c.cutoff)+(c.lag?' (cut-off terakhir)':'')+'</dt><dd>'+mly(c.real)+'</dd><dt>Rencana '+esc(c.restLabel||'sisa tahun')+'</dt><dd>'+mly(c.rest)+'</dd>'+
         '<dt>Posisi akhir '+esc(Y)+' vs Nilai Investasi</dt><dd>'+mly(c.posEnd)+' · '+pc(fin(c.pctInv)?c.pctInv*100:null)+'</dd></dl>'+(c.method?'<p class="pjx-note">Dasar: '+esc(c.method)+'.</p>':'')+'</div>';
     }else h+='<div class="pjx-pc"><h4>Biaya · prognosa akhir '+esc(Y)+'</h4><div class="pjx-empty" style="padding:18px 0">'+esc(c&&c.error?'Tidak bisa dihitung: '+c.error:'Realisasi keuangan atau RKAP '+Y+' belum diinput di Laporan Bulanan.')+'</div></div>';
-    if(fin(f.prognosis)){
-      var a=Math.max(0,Math.min(100,f.prognosis)),pd=fin(f.planDec)?Math.max(0,Math.min(100,f.planDec)):null;
-      h+='<div class="pjx-pc"><h4>Fisik · prognosa akhir '+esc(Y)+'</h4><div class="pjx-big">'+pc(f.prognosis)+'</div><div class="pjx-sub">Rencana akhir '+esc(Y)+' '+pc(f.planDec)+(f.finishInYear?' (baseline selesai tahun ini)':' · W'+esc(f.weekDec))+'</div>'+
-        '<div class="pjx-bar"><i style="width:'+a+'%"></i>'+(pd===null?'':'<u style="left:calc('+pd+'% - 1px)"></u>')+'</div>'+
-        '<dl><dt>Aktual W'+esc(f.week)+'</dt><dd>'+pc(f.actualNow)+'</dd><dt>Plan W'+esc(f.week)+'</dt><dd>'+pc(f.planNow)+'</dd><dt>Deviasi akhir '+esc(Y)+'</dt><dd class="'+devCls(f.deviation)+'">'+(fin(f.deviation)&&f.deviation>0?'+':'')+pc(f.deviation)+'</dd></dl>'+
-        '<p class="pjx-note">Dasar: aktual minggu terakhir ditambah kenaikan rencana s.d. akhir Desember (deviasi dianggap tetap).</p></div>';
-    }else h+='<div class="pjx-pc"><h4>Fisik · prognosa akhir '+esc(Y)+'</h4><div class="pjx-empty" style="padding:18px 0">Plan atau realisasi kumulatif belum lengkap.</div></div>';
-    return h+'</div>';
+    if(fin(f.planDec)&&fin(f.actualNow)){
+      var a=Math.max(0,Math.min(100,f.actualNow)),pd=Math.max(0,Math.min(100,f.planDec)),done=f.gap<=0.005;
+      h+='<div class="pjx-pc"><h4>Fisik · target baseline akhir '+esc(Y)+'</h4><div class="pjx-big">'+pc(f.planDec)+'</div><div class="pjx-sub">Rencana baseline s.d. '+(f.finishInYear?'selesai (W'+esc(f.weekDec)+')':'W'+esc(f.weekDec)+' · 31 Desember '+esc(Y))+'</div>'+
+        '<div class="pjx-bar"><i style="width:'+a+'%"></i><u style="left:calc('+pd+'% - 1px)"></u></div>'+
+        '<dl><dt>Aktual W'+esc(f.week)+'</dt><dd>'+pc(f.actualNow)+'</dd><dt>Sisa yang harus dicapai</dt><dd class="'+(done?'pjx-good':'pjx-bad')+'">'+(done?'Sudah tercapai':pc(f.gap))+'</dd>'+
+        '<dt>Sisa waktu</dt><dd>'+(f.weeksLeft?esc(f.weeksLeft)+' minggu (W'+esc(f.week+1)+'–W'+esc(f.weekDec)+')':'minggu terakhir')+'</dd>'+
+        (done?'':'<dt><b>Kenaikan yang dibutuhkan</b></dt><dd><b>'+pc(f.perWeek)+' / minggu</b></dd>')+
+        (fin(f.planPerWeek)?'<dt>Kenaikan rencana baseline</dt><dd>'+pc(f.planPerWeek)+' / minggu</dd>':'')+
+        (fin(f.recentPerWeek)?'<dt>Rata-rata aktual '+esc(f.recentWeeks)+' minggu terakhir</dt><dd>'+pc(f.recentPerWeek)+' / minggu</dd>':'')+'</dl></div>';
+    }else h+='<div class="pjx-pc"><h4>Fisik · target baseline akhir '+esc(Y)+'</h4><div class="pjx-empty" style="padding:18px 0">Plan atau realisasi kumulatif belum lengkap.</div></div>';
+    h+='</div>'+workHtml(d.work);
+    return h;
+  }
+  function workHtml(w){
+    if(w===undefined)return '<div class="pjx-work" data-wait="1"><h4>Pekerjaan berbobot besar s.d. akhir tahun</h4><div class="pjx-empty" style="padding:12px 0">Memuat pekerjaan…</div></div>';
+    var L=(w&&w.items)||[];
+    var h='<div class="pjx-work"><h4>Pekerjaan berbobot besar yang menunjang kenaikan s.d. akhir tahun'+(w&&w.months&&w.months.length?' <small>('+esc(w.months.join(', '))+')</small>':'')+'</h4>';
+    if(!L.length)return h+'<div class="pjx-empty" style="padding:12px 0">'+esc(w&&w.error?'Data pekerjaan belum dapat dibaca.':'Tidak ada pekerjaan dengan kenaikan rencana pada sisa tahun ini (atau baseline EPCC / jadwal belum tersedia).')+'</div></div>';
+    h+='<table class="pjx-tbl"><thead><tr><th style="text-align:left">Bidang</th><th style="text-align:left">Pekerjaan</th><th>Aktual</th><th>Target</th><th>+ Bobot proyek</th></tr></thead><tbody>'+
+      L.map(function(t){return '<tr><td>'+esc(t.field)+'</td><td><b>'+esc(t.name)+'</b>'+(t.group?'<br><small style="color:var(--muted,#5b7085)">'+esc(t.group)+'</small>':'')+'</td><td style="text-align:right">'+pc(t.actual)+'</td><td style="text-align:right">'+pc(t.target)+'<br><small style="color:var(--muted,#5b7085)">akhir '+esc(t.until)+'</small></td><td style="text-align:right"><b>+'+pc(t.contribution)+'</b></td></tr>'}).join('')+'</tbody></table>';
+    return h+'<p class="pjx-note">Diurutkan dari kontribusi terbesar terhadap progres proyek'+(w.total>L.length?' (6 dari '+w.total+' pekerjaan)':'')+'. Sumber: '+(w.source==='XML'?'Jadwal XML (Master Schedule)':'EPCC Control')+'.</p></div>';
   }
   function rProg(d,P){return head('Prognosa akhir tahun'+(d&&d.year?' '+d.year:''),P.name,d&&d.week?'Data s.d. W'+d.week:'')+progHtml(d)}
   function render(kind,data,P){P=P||{};try{return kind==='week'?rWeek(data,P):kind==='fin'?rFin(data,P):kind==='la'?rLa(data,P):rProg(data,P)}catch(e){return '<div class="pjx-empty">Slide tidak bisa ditampilkan: '+esc(e.message||e)+'</div>'}}
@@ -299,13 +347,52 @@ const PRES_PROJ_JS = String.raw`<style>
     var box=document.getElementById('progBox'),yr=document.getElementById('progYear');if(!box)return;
     if(yr)yr.textContent=d&&d.year?String(d.year):'';
     box.innerHTML=progHtml(d);
+    var wb=box.querySelector('.pjx-work[data-wait]'),pid=String(window.__pmoWeeklyPid||'');
+    if(wb&&pid)load(pid,'prog').then(function(r){if(wb.isConnected)wb.outerHTML=workHtml(r&&r.data&&r.data.work||{items:[]})}).catch(function(){if(wb.isConnected)wb.outerHTML=workHtml({items:[],error:1})});
+    else if(wb)wb.remove();
   }
-  window.pmoPresProj={KINDS:KINDS,SHORT:SHORT,slide:slide,title:title,render:render,load:load,progCard:progCard};
+  /* Ringkasan eksekutif di mode presentasi: tautan bagian halaman diganti nama slide yang menjelaskannya */
+  function briefRefs(card,map){
+    card.querySelectorAll('a[data-xgo]').forEach(function(a){var t=map[a.getAttribute('data-xgo')]||a.textContent;var b=document.createElement('b');b.className='pjx-ref';b.textContent='slide “'+t+'”';a.replaceWith(b)});
+    card.querySelectorAll('.xb-act').forEach(function(x){x.remove()});
+  }
+  /* Narasi realisasi keuangan portofolio (gaya Laporan Bulanan) dari data Monthly Executive Review */
+  function finNarr(d){
+    var F=d&&d.financial;if(!F||!Array.isArray(F.rows)||!F.rows.length)return '';
+    var G=(d.groups&&d.groups.map)||{},ty=function(id){var g=G[id]||{};var t=g.type||'PENGEMBANGAN';if(t==='SUB'&&g.parent)t=(G[g.parent]&&G[g.parent].type)||'PENGEMBANGAN';return t==='RUTIN'?'RUTIN':'PENGEMBANGAN'};
+    var per=String(F.period||d.period||''),mon=per.split(' ')[0]||'',yr=per.split(' ')[1]||'';
+    var rp=function(j){return fin(j)?'Rp. '+Math.round(j*1e6).toLocaleString('id-ID'):'-'},px=function(v){return fin(v)?(v*100).toLocaleString('id-ID',{minimumFractionDigits:2,maximumFractionDigits:2})+'%':'-'};
+    var B=function(t){return String(t).split(/(Rp\.?\s?[\d.]+(?:,\d+)?|\d+(?:,\d+)?\s?%)/).map(function(x,i){return i%2?'<b>'+esc(x)+'</b>':esc(x)}).join('')};
+    var sent=function(a,r,inv,pos){return 'realisasi biaya sampai dengan bulan '+mon+' '+yr+' sebesar '+rp(a)+' atau '+px(r?a/r:null)+' dari nilai RKAP '+yr+' sebesar '+rp(r)+',- dan posisi biaya dari awal sampai dengan bulan '+mon+' '+yr+' sebesar '+rp(pos)+' atau '+px(inv&&pos!=null?pos/inv:null)+' dari Total Nilai Investasi sebesar '+rp(inv)+',-'};
+    var nm=function(r){var n=String(r.project||r.projectId||'');return typeof pmoProjName==='function'?pmoProjName(n):n};
+    var h='<div class="pjx-fnarr"><p style="margin:0 0 6px">catatan :</p>';
+    [['PENGEMBANGAN','Proyek Pengembangan'],['RUTIN','Proyek Investasi Rutin']].forEach(function(g){
+      var L=F.rows.filter(function(r){return ty(r.projectId)===g[0]});if(!L.length)return;
+      var S=function(k){var t=null;L.forEach(function(r){if(fin(r[k]))t=(t||0)+Number(r[k])});return t};
+      h+='<p><b>'+g[1]+'</b> ('+L.length+' proyek): '+B(sent(S('actualToDate'),S('rkap2026'),S('investment'),S('totalToDate')))+'</p><ul>'+
+        L.map(function(r){return '<li><b>'+esc(nm(r))+'</b>: '+B(sent(r.actualToDate,r.rkap2026,r.investment,r.totalToDate))+'</li>'}).join('')+'</ul>';
+    });
+    if(F.basis)h+='<p class="pjx-note">Berdasarkan Laporan Keuangan Bulan '+esc(F.basis.period||'')+' (data '+esc(F.basis.selected||'')+' belum lengkap).</p>';
+    return h+'</div>';
+  }
+  window.pmoPresProj={KINDS:KINDS,SHORT:SHORT,slide:slide,title:title,render:render,load:load,progCard:progCard,briefRefs:briefRefs,finNarr:finNarr};
 })();
 </script>`;
 
 /** Patch halaman: card Prognosa + slide bawaan Weekly. */
 const HTML_PATCHES = [
+  {
+    // Monthly Executive Review · slide Ringkasan eksekutif: "dapat dilihat pada <tautan>" → nama slide.
+    file: 'ExecutiveDashboard',
+    find: "const br=q('#sec-ringkasan');if(vis(br))S.push({title:'Ringkasan eksekutif',node:br});",
+    replace: "const br=q('#sec-ringkasan');if(vis(br))S.push({title:'Ringkasan eksekutif',node:br,after:function(card){if(window.pmoPresProj)pmoPresProj.briefRefs(card,{'sec-progress':ttl(q('#sec-progress>article'),'Pencapaian progress proyek'),financeDetailSection:'Realisasi keuangan proyek'})}});",
+  },
+  {
+    // Slide Realisasi keuangan proyek: tabel saja (tanpa kartu pencapaian) + narasi seperti Laporan Bulanan.
+    file: 'ExecutiveDashboard',
+    find: "      if(vis(fp)){const a=fp.cloneNode(true),g=a.querySelector('.fin-cards');if(g)g.style.gridTemplateColumns='repeat(5,minmax(0,1fr))';host.appendChild(a)}\n      if(vis(fd)){const b=fd.cloneNode(true);b.style.marginTop='18px';host.appendChild(b)}",
+    replace: "      if(vis(fd)){const b=fd.cloneNode(true);host.appendChild(b);if(window.pmoPresProj)b.insertAdjacentHTML('beforeend',pmoPresProj.finNarr(d))}\n      else if(vis(fp)){const a=fp.cloneNode(true),g=a.querySelector('.fin-cards');if(g)g.style.gridTemplateColumns='repeat(5,minmax(0,1fr))';host.appendChild(a)}",
+  },
   {
     file: 'Dashboard',
     find: '<div id="finBox" class="fin"><div class="fin-empty">Memuat realisasi keuangan…</div></div>',
