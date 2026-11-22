@@ -581,7 +581,7 @@ const HTML_PATCHES = [
     file: 'Dashboard',
     find: 'try{renderFin(data.finance)}catch(e){}',
     replace: 'try{renderFin(data.finance)}catch(e){}try{if(window.pmoPresProj)pmoPresProj.progCard(data.prognosis)}catch(e){}' +
-      'setTimeout(function(){try{var __pp=document.getElementById(\'projectPurpose\');if(__pp)__pp.title=__pp.textContent;var __hc=document.getElementById(\'hlCount\'),__hn=document.querySelectorAll(\'#highlights>li:not(.empty)\').length;if(__hc)__hc.textContent=__hn?__hn+\' kegiatan\':\'\';[\'projectInvestment\',\'projectContract\'].forEach(function(id){var e=document.getElementById(id);if(!e)return;var t=e.textContent.trim(),n=Number(t.replace(/[^0-9]/g,\'\'));if(!/^Rp/.test(t)||!(n>=1e9))return;e.title=t;e.textContent=\'Rp \'+(n>=1e12?(n/1e12).toLocaleString(\'id-ID\',{maximumFractionDigits:2})+\' T\':(n/1e9).toLocaleString(\'id-ID\',{minimumFractionDigits:2,maximumFractionDigits:2})+\' M\')})}catch(e){}},80);',
+      'setTimeout(function(){try{var __pp=document.getElementById(\'projectPurpose\');if(__pp)__pp.title=__pp.textContent;var __hc=document.getElementById(\'hlCount\'),__hn=document.querySelectorAll(\'#highlights>li:not(.empty)\').length;if(__hc)__hc.textContent=__hn?__hn+\' kegiatan\':\'\';[\'projectInvestment\',\'projectContract\'].forEach(function(id){var e=document.getElementById(id);if(!e)return;var tn=e.firstChild;if(!tn||tn.nodeType!==3)return;var t=tn.nodeValue.trim(),n=Number(t.replace(/[^0-9]/g,\'\'));if(!/^Rp/.test(t)||!(n>=1e9))return;e.title=t;tn.nodeValue=\'Rp \'+(n>=1e12?(n/1e12).toLocaleString(\'id-ID\',{maximumFractionDigits:2})+\' T\':(n/1e9).toLocaleString(\'id-ID\',{minimumFractionDigits:2,maximumFractionDigits:2})+\' M\')})}catch(e){}},80);',
   },
   {
     file: 'Dashboard',

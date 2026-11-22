@@ -133,6 +133,7 @@ app.use('/', cspRoutes);
 app.use('/', require('./routes/arsip'));
 app.use('/', require('./routes/pres'));
 app.use('/', require('./routes/model3d'));
+app.use('/', require('./routes/fx').router);
 app.use('/', require('./routes/library'));
 app.use('/', require('./routes/drive-preview'));
 app.use('/', gasRoutes);
@@ -170,6 +171,7 @@ async function start() {
     const g = await googleAuth.load();
     console.log(JSON.stringify({ ev: 'google_auth', configured: g.configured, connected: g.connected }));
     await require('./lib/groups').load();
+    await require('./lib/fx').load().catch((e) => console.error(JSON.stringify({ ev: 'fx_load_fail', message: String(e.message || e) })));
     const info = await gasStore.load();
     try {
       const fixed = require('./gas/repair-dup-blocks').run(gasStore);
@@ -179,6 +181,7 @@ async function start() {
     const rt = gasRuntime.load();
     await require('./lib/project-sync').syncProjects().catch((e) => console.error(JSON.stringify({ ev: 'projects_sync_fail', message: String(e.message || e) })));
     console.log(JSON.stringify({ ev: 'gas_ready', sheets: info.sheets, functions: rt.functions, html: rt.html }));
+    require('./lib/fx').start(() => require('./routes/fx').bumpData());
     const auto = gasSync.start();
     console.log(JSON.stringify({ ev: 'gas_sync_schedule', auto, minutes: gasSync.info().minutes }));
   } catch (err) {
