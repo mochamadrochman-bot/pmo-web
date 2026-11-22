@@ -482,7 +482,7 @@ Keputusan pemilik: dashboard internal **tidak diindeks** mesin pencari; alamat u
   - Admin melihat dan mengosongkan catatan di `/admin/csp` (menu header "Laporan CSP").
   - Env: `CSP_MODE=report|enforce|off`, `CSP_EXTRA_FRAME` (sumber frame tambahan, mis. alamat NVR CCTV).
   - Uji lokal: Portal, Monthly, Weekly, Input, Live, dan presentasi tidak menghasilkan laporan.
-- **Belum dikerjakan:** penegakan CSP setelah beberapa hari pemantauan; logo Petrokimia pada gambar latar login yang terpotong di lebar ±1000px.
+- ~~Belum dikerjakan: penegakan CSP; logo login terpotong.~~ Logo login sudah disesuaikan pemilik (pertahankan versi sekarang). Daftar sumber CSP dilengkapi 22 Nov (lihat Riwayat perubahan); penegakan menunggu laporan sepi.
 - **Kontraktor · dokumen EPCC** (18 Nov), `src/gas/ktr-docs.js` (patch .gs + HTML). Kontraktor dengan bidang **ENG**: Engineering › Dokumen boleh *Tambah lampiran* (link / unggah) dan *Link massal* (template Excel); pindai folder Drive tetap ADMIN/tim proyek; hapus hanya lampiran miliknya (`byU`). Kontraktor bidang **PROC**: Long lead & impor boleh *Isi jadwal / Ubah* (PO, FAT, FOB, ETA, MOS, vendor/negara, tanggal aktual) dan Pengiriman boleh *Tambah dari dokumen FOB* / *Perbarui status / ETA* (termasuk baca otomatis B/L / AWB); hapus pengiriman tetap ADMIN/tim proyek. Isian langsung tersimpan (bukan pengajuan), tercatat atas nama akun kontraktor. Flag tampilan: `canEngDocs`, `canProcDocs`.
 - **Kontraktor · akses halaman** (18 Nov), `src/gas/ktr-access.js` + `routes/gas.js` (KONTRAKTOR_PAGES) + `routes/model3d.js`. Kontraktor kini boleh membuka (khusus proyeknya): Portal, **Weekly Progress**, EPCC, **Live View CCTV**, **Spotlight Lobby**, **Visual 3D** (lihat + unggah; ganti/ubah/hapus/unduh hanya model unggahannya sendiri; judul yang sama dengan model tim PMO ditolak). Tetap tertutup (403) dan **tidak tampil di menu**: Monthly Executive Review, Master Schedule, Galeri, Document Control, Library, Pelaporan Manajemen, Input. Data dibatasi di server: Weekly dipaksa ke PROYEK_ID akun, Spotlight memakai data Executive yang sudah disaring `userCanAccess_` (ktrBlock_ di `getExecutiveDashboardData` dan `getSpotlightIntro` dibuang; halaman Executive tetap 403), Live View menyaring proyek & kamera. Menu yang disaring: header Portal v2 (`KTR_OK` di portal-v2.js, tombol Monthly Executive Review disembunyikan), sidebar (`HIDE` di gerbang AccountMenu), menu akun/ponsel, Ctrl K (nav-theme.js).
 - **`pmoUser` di sessionStorage** (18 Nov): `clientShim(user)` di `routes/gas.js` kini mengisi `pmoUser` {username, name, role, project, projectId} di setiap halaman. Sebelumnya hanya Login Apps Script yang mengisinya, sehingga menu berbasis peran (Ctrl K, menu akun, gerbang kontraktor) di server baru selalu menganggap peran kosong.
@@ -496,7 +496,7 @@ Keputusan pemilik: dashboard internal **tidak diindeks** mesin pencari; alamat u
   - Tab "TANYA SENA" di tepi kanan membuka widget Sena (`.aic-fab` disembunyikan secara visual, di-klik lewat skrip).
   - Tema: Terang/Gelap dan Biru/Sage/Mocha tetap dari menu akun (`data-theme`, `data-accent`); variabel warna `--v-*` mengikuti keduanya.
 - **Visual 3D Proyek** (17 Nov), halaman `?page=visual3d`:
-  - Letak menu: sidebar kelompok Dokumen & Lapangan (setelah Live View CCTV), menu HP, dan Ctrl K. Akun kontraktor tidak melihatnya.
+  - Letak menu: sidebar kelompok Dokumen & Lapangan (setelah Live View CCTV), menu HP, dan Ctrl K. Akun kontraktor melihatnya hanya untuk proyeknya sendiri (sejak 18 Nov, lihat *Kontraktor · akses halaman*).
   - Berkas: `src/gas/visual3d.html` (templat virtual "Visual3D"), `src/gas/visual3d.js` (rute Code.gs, patch sidebar, tombol Weekly), `src/routes/model3d.js` (API), migrasi `009-model3d.sql`.
   - Tim mengunggah **satu berkas .html mandiri** per model (mis. three.js), maks 15 MB, disimpan di Postgres (tabel `model3d`). Hanya versi terbaru: judul sama di proyek yang sama, atau pilihan "Ganti: …", menimpa berkas lama.
   - Yang boleh unggah, ganti, ubah judul, unduh asli, dan hapus: **Admin**, dan **PIC** untuk proyeknya sendiri serta sub-proyeknya (aturan sama dengan Arsip). Semua akun lain (kecuali kontraktor) hanya melihat.
@@ -504,6 +504,35 @@ Keputusan pemilik: dashboard internal **tidak diindeks** mesin pencari; alamat u
   - Tema terang/gelap dashboard diteruskan ke model (`?theme=` dan postMessage `pmoTheme`).
   - Weekly Progress: tombol **Lihat model 3D** muncul di kartu judul bila proyek itu punya model.
   - Presentasi: tombol **Tambah 3D** di layar Siapkan presentasi (Executive & Weekly). Jenis item `{type:'model3d', model, pos}` di `pres_sets`. Model dimuat hanya saat slidenya tampil.
+
+### Riwayat perubahan (log) · mulai 18 Nov 2026
+
+Aturan: **setiap pembaruan dicatat di sini**, baik yang dikerjakan pemilik lewat Antigravity maupun oleh Claude. Satu baris per commit/kelompok commit, terbaru di bawah. Rinciannya (bila perlu) ditulis di bagian fitur masing-masing di atas.
+
+| Tanggal | Oleh | Commit | Perubahan |
+|---|---|---|---|
+| 18 Nov | Claude | `a19bbbd` | Kontraktor: buka Weekly, Live View, Spotlight, Visual 3D untuk proyeknya sendiri; menu tanpa halaman yang tidak berhak (`ktr-access.js`, `pmoUser` di `clientShim`). |
+| 18 Nov | Antigravity | `09b920d` `ec3a080` `2085a17` `104e962` | Resume Weekly menjadi tabel 4 Bidang × 4 Disiplin, dibaca dari kolom DISIPLIN baseline; pemetaan khusus Dermaga A, Conveyor, Fosfat; perbaikan bentrok `type` vs `epcType`. |
+| 18 Nov | Antigravity | `3c5fe32` `d9e8ade` | Buat Laporan Bulanan: tabel kontribusi per disiplin (bobot & kontribusi, tanpa kolom kendala/action); susunan scope pekerjaan. |
+| 18 Nov | Antigravity | `53ef651` `149dd18` `ffc924a` | Spotlight Lobby tampilan baru (`src/gas/spotlight-v2.js`, acuan `docs/spotlight-adobe-preview.html`), transisi 2,5 detik. |
+| 19 Nov | Antigravity | `f7a4f4b` `406eb79` `2af7b48` `19ac1d5` `bd5fb6f` `2b032eb` | Portal: Ringkasan Konsep B (badge inline), scroll rail + section dots + "↑ Ke atas", Daftar Proyek gaya showcase Vision 2030, klik logo Petrokimia/PMO kembali ke Portal, halaman penuh, perbaikan versi HP. Acuan `docs/portal-*-preview.html`. |
+| 19 Nov | Antigravity | `19ca9c5` | Bug hapus foto galeri (`legacy/Gallery.html`). |
+| 19 Nov | Antigravity | `be61d80` `baaedbb` | Library & Knowledge tampilan modern (`src/gas/library-v2.js`, `src/routes/library.js`), parser lebih akurat, unggah ke Drive Library. |
+| 19 Nov | Antigravity | `77cf392` | Tampilan halaman admin (`views/layout.ejs`, `views/pages/admin-*.ejs`, `arsip.ejs`). |
+| 20 Nov | Antigravity | `c1d797e` | Pratinjau dokumen Drive dengan tombol muat ulang (`src/gas/drive-preview.js`, `src/routes/drive-preview.js`). |
+| 20 Nov | Antigravity | `59eef0c` `d340339` `affa72f` `54f67a2` `5f2942e` `6d0d6e6` `c2a3f32` `86bf2fd` `d336d26` | Monthly Executive Review: tata letak baru, header menyatu dengan banner, kartu isi halaman frosted glass (breadcrumb dihapus), menu isi halaman dinamis, header sticky, perbaikan race condition galeri story; presentasi tampilan gelap (`src/gas/exec-story-brief.js`). |
+| 20 Nov | Antigravity | `9855295` | Menu melayang sidebar diperiksa di semua halaman (`nav-theme.js`). |
+| 20 Nov | Antigravity | `1804fb0` | Presentasi: Input/PIC bisa menambah PDF; migrasi `010-pres-project-scope.sql`. |
+| 20 Nov | Antigravity | `dbe7018` | Kelola Akun `/admin/akun` + pelacakan aktivitas online; migrasi `011-user-last-seen.sql`, `src/session.js`. |
+| 20 Nov | Antigravity | `6d43bc4` | Perbaikan `live-lan.js` (CCTV jaringan internal). |
+| 21 Nov | Antigravity | `65df265` `2ba1967` `a727403` `ad94d0a` `cda61bf` `100f3d4` `ec81a2c` | Weekly Progress: Unified Hero Banner (`src/gas/weekly-hero.js`), scroll HUD, dropdown proyek dengan hover, perbaikan daftar proyek. |
+| 21 Nov | Antigravity | `c1c9a3d` `61e7a6e` `a1a195f` `13dc20f` `167acff` | Master Schedule: header Alternatif B (`src/gas/master-hero.js`), banner otomatis dari foto banner tiap proyek, progres tingkat proyek (`legacy/Code.gs`, `legacy/MasterSchedule.html`, `Gallery.html`). |
+| 21 Nov | Antigravity | `bae9480` `d7f067a` | Pembaruan `nav-theme.js` dan `portal-v2.js`. |
+| 21 Nov | Pemilik | – | Halaman "sudah pindah" di Apps Script disesuaikan pemilik (di proyek Apps Script, bukan repo ini). Logo login disesuaikan pemilik; pertahankan. |
+| 22 Nov | Claude | (commit ini) | Uji asap versi `d7f067a`: semua halaman admin & kontraktor terbuka tanpa error JS, tidak ada `gas_patch_miss`. Catatan tab Pengiriman (EPCC › Procurement) kini menyebut ADMIN, tim proyek, atau kontraktor bidang Procurement sebagai pengunggah dokumen FOB (patch di `ktr-docs.js`). CSP (`src/routes/csp.js`): `'wasm-unsafe-eval'` di script-src; `data:` + OneDrive di media-src; `cdn.jsdelivr.net`, `cdnjs`, `api-badgerp.svc.ms`, `*.microsoftpersonalcontent.com`, `*.1drv.com` di connect-src; OneDrive di img-src. Riwayat ini dimulai. |
+
+**Ditunda (disimpan dulu atas keputusan pemilik, 22 Nov):** label Rev-n, CCTV opsi B, Dashboard HSE, halaman pengenalan untuk kontraktor.
+**Masih terbuka:** penegakan CSP (`CSP_MODE=enforce` di Coolify) setelah /admin/csp sepi beberapa hari; nilai Fosfat "Rp 0,0 M".
 
 ---
 
@@ -516,4 +545,5 @@ Keputusan pemilik: dashboard internal **tidak diindeks** mesin pencari; alamat u
   - Summary commit yang disarankan;
   - langkah **Commit → Push origin → Redeploy**;
   - apa yang perlu dicek di browser.
+- Setiap pembaruan (termasuk yang dikerjakan pemilik lewat Antigravity) **dicatat di tabel Riwayat perubahan** di akhir bagian 6.
 - Tampilan harus tetap **sama dengan versi Apps Script** kecuali diminta berbeda.

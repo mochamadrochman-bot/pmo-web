@@ -24,15 +24,23 @@ function policy() {
   const frameExtra = String(process.env.CSP_EXTRA_FRAME || '').trim();
   const d = {
     'default-src': ["'self'"],
-    'script-src': ["'self'", "'unsafe-inline'", 'https://cdnjs.cloudflare.com', 'https://cdn.jsdelivr.net'],
+    // 'wasm-unsafe-eval': hanya mengizinkan WebAssembly (bukan eval JavaScript). Laporan "wasm-eval" muncul di
+    // hampir semua halaman termasuk /login, kemungkinan dari pustaka PDF/ekstensi browser; aman dibuka.
+    'script-src': ["'self'", "'unsafe-inline'", "'wasm-unsafe-eval'", 'https://cdnjs.cloudflare.com', 'https://cdn.jsdelivr.net'],
     'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com', 'https://cdn.jsdelivr.net'],
     'font-src': ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com', 'https://cdn.jsdelivr.net'],
-    'img-src': ["'self'", 'data:', 'blob:', 'https://drive.google.com', 'https://*.googleusercontent.com', 'https://*.google.com', 'https://i.ytimg.com'],
-    'media-src': ["'self'", 'blob:', 'https://drive.google.com', 'https://*.googleusercontent.com'],
+    'img-src': ["'self'", 'data:', 'blob:', 'https://drive.google.com', 'https://*.googleusercontent.com', 'https://*.google.com', 'https://i.ytimg.com',
+      'https://*.microsoftpersonalcontent.com', 'https://*.1drv.com'],
+    // data: untuk video pembuka di /login; OneDrive untuk video mingguan/eksekutif dari tautan 1drv.ms.
+    'media-src': ["'self'", 'data:', 'blob:', 'https://drive.google.com', 'https://*.googleusercontent.com',
+      'https://*.microsoftpersonalcontent.com', 'https://*.1drv.com', 'https://*.sharepoint.com'],
     'frame-src': ["'self'", 'https://drive.google.com', 'https://docs.google.com', 'https://www.youtube.com', 'https://www.youtube-nocookie.com',
       'https://view.officeapps.live.com', 'https://onedrive.live.com', 'https://*.sharepoint.com', 'https://my.microsoftpersonalcontent.com',
       'https://www.vesselfinder.com', 'https://www.flightradar24.com'].concat(frameExtra ? frameExtra.split(/\s+/) : []),
-    'connect-src': ["'self'", 'https://www.googleapis.com'],
+    // cdn: pdf.js mengambil berkas worker lewat fetch (Engineering, Library).
+    // svc.ms + microsoftpersonalcontent: membuka video OneDrive (token tamu lalu alamat unduh).
+    'connect-src': ["'self'", 'https://www.googleapis.com', 'https://cdn.jsdelivr.net', 'https://cdnjs.cloudflare.com',
+      'https://api-badgerp.svc.ms', 'https://my.microsoftpersonalcontent.com', 'https://*.microsoftpersonalcontent.com', 'https://*.1drv.com'],
     'worker-src': ["'self'", 'blob:'],
     'object-src': ["'none'"],
     'base-uri': ["'self'"],

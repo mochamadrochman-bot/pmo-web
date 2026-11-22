@@ -102,4 +102,11 @@ try {
   }
 } catch (e) { console.warn(JSON.stringify({ ev: 'ktr_docs_read_fail', message: String(e.message || e) })); }
 
+// Catatan di tab Pengiriman: yang mengunggah dokumen FOB bukan hanya ADMIN lagi (dipasang setelah patch baris di atas).
+HTML_PATCHES.push({
+  file: 'Epcc',
+  find: "' ADMIN mengunggah PDF/foto dokumen; Asisten PMO membaca nomor dokumen, kapal/penerbangan, pelabuhan dan tanggal, lalu ADMIN memeriksa sebelum menyimpan.'",
+  replace: "' ADMIN, tim proyek, atau kontraktor bidang Procurement mengunggah PDF/foto dokumen; Asisten PMO membaca nomor dokumen, kapal/penerbangan, pelabuhan dan tanggal, lalu pengunggah memeriksa hasilnya sebelum menyimpan.'",
+});
+
 module.exports = { GS_PATCHES, HTML_PATCHES };
