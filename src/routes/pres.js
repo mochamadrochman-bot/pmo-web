@@ -499,4 +499,76 @@ router.put('/api/pres/set', requireUser, onlyManager, async (req, res, next) => 
   } catch (err) { next(err); }
 });
 
+// ---------------------------------------------------------------- isu manajemen (slide presentasi)
+// Satu sumber untuk Monthly & Weekly. Isu terbuka selalu tampil; isu Selesai tampil selama `days` hari
+// setelah ditutup (Weekly 7, Monthly 31). Admin: semua proyek; PIC/Input: proyek & sub-proyeknya.
+const ISSUE_CAT = ['Biaya', 'Jadwal', 'Teknis', 'Perizinan', 'Kontrak', 'K3', 'SDM', 'Lainnya'];
+const ISSUE_SEV = ['Tinggi', 'Sedang', 'Rendah'];
+const ISSUE_ST = ['Baru', 'Proses', 'Selesai'];
+const isKtr = (u) => !!u && u.role === 'kontraktor';
+// Kolom date dibaca node-postgres sebagai tengah malam waktu lokal: format dengan komponen lokal (bukan toISOString/UTC).
+const ymd = (v) => { if (!v) return ''; const d = v instanceof Date ? v : new Date(v); return isNaN(d) ? String(v).slice(0, 10) : d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+function issueOut(r, u) {
+  return {
+    id: Number(r.id), project: r.project_id, category: r.category, title: r.title, detail: r.detail, ask: r.ask,
+    severity: r.severity, status: r.status, pic: r.pic, target: ymd(r.target),
+    createdBy: r.created_by || '', createdAt: r.created_at, updatedBy: r.updated_by || '', updatedAt: r.updated_at, closedAt: r.closed_at,
+    canEdit: scopeOk(u, r.project_id),
+  };
+}
+router.get('/api/pres/issues', requireUser, async (req, res, next) => {
+  try {
+    if (isKtr(req.user)) return res.status(403).json({ ok: false, error: 'Isu manajemen tidak tersedia untuk akun ini.' });
+    const days = Math.max(1, Math.min(120, Number(req.query.days) || 31));
+    const pid = resolveProjectId(req.query.project) || String(req.query.project || '').trim();
+    const r = await db.query(
+      `select * from pres_issues where status <> 'Selesai' or closed_at is null or closed_at >= now() - ($1::int * interval '1 day') order by created_at`, [days]);
+    let rows = r.rows;
+    if (pid) rows = rows.filter((x) => x.project_id === pid || ((groups.get(x.project_id) || {}).parent === pid));
+    const names = {};
+    allProjects().forEach((p) => { names[p.id] = p.name; });
+    res.json({ ok: true, data: { issues: rows.map((x) => Object.assign(issueOut(x, req.user), { projectName: names[x.project_id] || x.project_id })),
+      allowedProjects: canManageAny(req.user) ? allowedProjects(req.user) : [], isAdmin: isAdmin(req.user),
+      options: { categories: ISSUE_CAT, severities: ISSUE_SEV, statuses: ISSUE_ST } } });
+  } catch (err) { next(err); }
+});
+router.post('/api/pres/issues', requireUser, async (req, res, next) => {
+  try {
+    const b = req.body || {};
+    const clip = (v, n) => String(v == null ? '' : v).trim().slice(0, n);
+    const project = resolveProjectId(b.project) || clip(b.project, 60);
+    if (!project || !scopeOk(req.user, project)) return res.status(403).json({ ok: false, error: 'Anda hanya dapat mengisi isu untuk proyek Anda sendiri (dan sub-proyeknya).' });
+    const title = clip(b.title, 200);
+    if (!title) return bad(res, 'Judul isu wajib diisi.');
+    const cat = ISSUE_CAT.includes(b.category) ? b.category : 'Lainnya';
+    const sev = ISSUE_SEV.includes(b.severity) ? b.severity : 'Sedang';
+    const st = ISSUE_ST.includes(b.status) ? b.status : 'Baru';
+    const target = /^\d{4}-\d{2}-\d{2}$/.test(String(b.target || '')) ? b.target : null;
+    const vals = [project, cat, title, clip(b.detail, 1200), clip(b.ask, 600), sev, st, clip(b.pic, 120), target, req.user.username];
+    let row;
+    if (b.id) {
+      const cur = (await db.query('select * from pres_issues where id = $1', [Number(b.id)])).rows[0];
+      if (!cur) return res.status(404).json({ ok: false, error: 'Isu tidak ditemukan.' });
+      if (!scopeOk(req.user, cur.project_id)) return res.status(403).json({ ok: false, error: 'Anda tidak berhak mengubah isu ini.' });
+      row = (await db.query(
+        `update pres_issues set project_id=$1, category=$2, title=$3, detail=$4, ask=$5, severity=$6, status=$7, pic=$8, target=$9, updated_by=$10, updated_at=now(),
+           closed_at = case when $7 = 'Selesai' then coalesce(closed_at, now()) else null end where id = $11 returning *`, vals.concat([Number(b.id)]))).rows[0];
+    } else {
+      row = (await db.query(
+        `insert into pres_issues (project_id, category, title, detail, ask, severity, status, pic, target, created_by, updated_by, closed_at)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$10, case when $7 = 'Selesai' then now() else null end) returning *`, vals)).rows[0];
+    }
+    res.json({ ok: true, data: issueOut(row, req.user) });
+  } catch (err) { next(err); }
+});
+router.post('/api/pres/issues/:id/delete', requireUser, async (req, res, next) => {
+  try {
+    const cur = (await db.query('select project_id from pres_issues where id = $1', [Number(req.params.id) || 0])).rows[0];
+    if (!cur) return res.status(404).json({ ok: false, error: 'Isu tidak ditemukan.' });
+    if (!scopeOk(req.user, cur.project_id)) return res.status(403).json({ ok: false, error: 'Anda tidak berhak menghapus isu ini.' });
+    await db.query('delete from pres_issues where id = $1', [Number(req.params.id)]);
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;

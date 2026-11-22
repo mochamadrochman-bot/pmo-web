@@ -136,7 +136,7 @@ const PRES_PREP_JS = String.raw`<style>
     P.onKey=onKey;window.addEventListener('keydown',onKey,true);
     m.querySelector('.pq-x').onclick=close;
     m.addEventListener('mousedown',function(e){if(e.target===m)close()});
-    X.load(cfg).catch(function(){}).then(function(){
+    Promise.all([X.load(cfg).catch(function(){}),window.pmoPresProj?pmoPresProj.prefetch(cfg):null]).then(function(){
       if(!P||P.m!==m)return;
       var built=[];try{built=((cfg.build?cfg.build():[])||[]).filter(Boolean)}catch(e){console.warn(e)}
       try{X.decorate(cfg,built)}catch(e){}
@@ -153,7 +153,7 @@ const PRES_PREP_JS = String.raw`<style>
     var ld=box.querySelector('.pq-load');if(ld)ld.remove();
     if(!box.querySelector('.pq-main')){
       box.insertAdjacentHTML('beforeend','<div class="pq-main"><div class="pq-left"><div class="pq-tools">'+
-        (can?'<button type="button" class="pq-btn sm" data-q="pdf">'+sv(I.plus)+'Tambah PDF</button>'+(isExec?'<button type="button" class="pq-btn sm" data-q="vid">'+sv(I.plus)+'Tambah video</button>':'')+'<button type="button" class="pq-btn sm" data-q="m3d">'+sv(I.plus)+'Tambah 3D</button>'+(window.pmoPresProj?'<button type="button" class="pq-btn sm" data-q="pj">'+sv(I.plus)+'Tambah slide proyek</button>':''):'')+
+        (can?'<button type="button" class="pq-btn sm" data-q="pdf">'+sv(I.plus)+'Tambah PDF</button>'+(isExec?'<button type="button" class="pq-btn sm" data-q="vid">'+sv(I.plus)+'Tambah video</button>':'')+'<button type="button" class="pq-btn sm" data-q="m3d">'+sv(I.plus)+'Tambah 3D</button>'+(window.pmoPresProj?'<button type="button" class="pq-btn sm" data-q="pj">'+sv(I.plus)+'Tambah slide proyek</button><button type="button" class="pq-btn sm" data-q="iss">'+sv('<path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/>')+'Isu manajemen</button>':''):'')+
         '<button type="button" class="pq-btn sm" data-q="all">Tampilkan semua</button><button type="button" class="pq-btn sm" data-q="reset">Urutan bawaan</button><span class="pq-n"></span></div>'+
         '<div class="pq-vadd" hidden></div><div class="pq-list" role="listbox" aria-label="Susunan slide"></div></div>'+
         '<div class="pq-right"></div></div>'+
@@ -244,6 +244,7 @@ const PRES_PREP_JS = String.raw`<style>
       else if(q==='vid')toggleVid();
       else if(q==='m3d')toggleM3d();
       else if(q==='pj')togglePj();
+      else if(q==='iss')pmoPresProj.manageIssues(P.cfg,{onClose:function(){if(P)preview()}});
     });
     m.querySelector('.pq-ft').addEventListener('click',function(e){var b=e.target.closest('[data-q]');if(!b)return;if(b.getAttribute('data-q')==='save')save();else go()});
   }

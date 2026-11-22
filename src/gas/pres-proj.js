@@ -219,6 +219,32 @@ const PRES_PROJ_JS = String.raw`<style>
 .pjx-pc dl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;margin:0;font-size:13px;font-variant-numeric:tabular-nums}
 .pjx-pc dt{color:var(--muted,#5b7085)}.pjx-pc dd{margin:0;text-align:right;font-weight:600}
 .pjx-pc .pjx-bar{margin:8px 0 10px;height:10px}
+.pjx-ig{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.pjx-ic{border:1px solid var(--line,#dbe5ee);border-top:4px solid #f5c547;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:7px;font-size:13.5px;line-height:1.45;min-width:0}
+.pjx-ic.hi{border-top-color:#ed4c4c}.pjx-ic.lo{border-top-color:#9bd8f7}.pjx-ic.closed{opacity:.72}
+.pjx-ict{display:flex;gap:6px;flex-wrap:wrap}
+.pjx-sv,.pjx-tg,.pjx-st2{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11.5px;font-weight:700}
+.pjx-sv.hi{background:rgba(237,76,76,.16);color:#b42318}.pjx-sv.md{background:rgba(245,197,71,.22);color:#8a5a00}.pjx-sv.lo{background:rgba(8,127,193,.12);color:#0c5f93}
+.pjx-tg{background:rgba(127,140,153,.14);color:var(--muted,#5b7085);font-weight:600}
+.pjx-ih{font-size:16px;font-weight:800;line-height:1.3}
+.pjx-id{color:var(--muted,#5b7085)}
+.pjx-ia{background:rgba(8,127,193,.10);color:#0c5f93;border-radius:9px;padding:7px 10px}
+[data-theme=dark] .pjx-ia{color:#9fd3ff}
+.pjx-if{margin-top:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--muted,#5b7085)}
+.pjx-st2{margin-left:auto;background:rgba(245,197,71,.22);color:#8a5a00}.pjx-st2.new{background:rgba(237,76,76,.14);color:#b42318}.pjx-st2.done{background:rgba(54,189,131,.18);color:#16875d}
+.pjx-cnt{display:flex;gap:6px;border:0!important;padding:0!important}.pjx-cnt i{font-style:normal;padding:4px 11px;border-radius:99px;font-size:12.5px;font-weight:700;background:rgba(127,140,153,.14)}
+.pjx-cnt i.hi{background:rgba(237,76,76,.16);color:#b42318}.pjx-cnt i.md{background:rgba(245,197,71,.22);color:#8a5a00}.pjx-cnt i.ask{background:rgba(8,127,193,.12);color:#0c5f93}
+.pp-card .pjx-ic{font-size:15px;gap:9px;padding:14px 16px}.pp-card .pjx-ih{font-size:19px}.pp-card .pjx-if{font-size:13.5px}
+.pjx-im{position:fixed;inset:0;z-index:2147482600;display:flex;align-items:center;justify-content:center;background:rgba(3,10,20,.55);font-family:Inter,"Segoe UI",system-ui,sans-serif;color:#132b43;color-scheme:light}
+.pjx-imb{width:min(980px,94vw);max-height:90vh;display:flex;flex-direction:column;background:#f6f9fc;border-radius:16px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.pjx-imh{display:flex;align-items:center;gap:12px;padding:12px 18px;background:#0f2f52;color:#fff}.pjx-imh b{display:block;font-size:15px}.pjx-imh small{color:#9fc3e2;font-size:12px}
+.pjx-imx{margin-left:auto;background:rgba(255,255,255,.12);border:0;color:#fff;width:32px;height:32px;border-radius:9px;font-size:18px;cursor:pointer}
+.pjx-imc{overflow:auto;padding:14px 18px 18px;--line:#d9e3ec;--muted:#5b7085}
+.pjx-imr{display:flex;gap:10px;align-items:stretch;margin-bottom:10px}.pjx-imr .pjx-ic{background:#fff}
+.pjx-ima{display:flex;flex-direction:column;gap:6px;justify-content:center}
+.pjx-fm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;background:#fff;border:1px solid #d5e0ea;border-radius:12px;padding:14px;margin-bottom:14px}
+.pjx-fm label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:#5b7085}.pjx-fm .w{grid-column:1/3}
+.pjx-fm input,.pjx-fm select,.pjx-fm textarea{padding:8px 10px;border:1px solid #c9d6e2;border-radius:9px;font:13px Inter,system-ui,sans-serif;background:#fff!important;color:#132b43!important}
 .pjx-fnarr{margin-top:16px;font-size:15px;line-height:1.6}.pjx-fnarr p{margin:0 0 8px}.pjx-fnarr ul{margin:0 0 12px;padding-left:22px}.pjx-fnarr li{margin:0 0 6px}.pjx-ref{font-weight:700}
 .pjx-work{margin-top:14px}.pjx-work h4{margin:0 0 8px;font-size:14px;font-weight:700}.pjx-work h4 small{font-weight:500;color:var(--muted,#5b7085)}.pjx-work .pjx-tbl{font-size:13px}
 #progBox{padding:4px 18px 18px}
@@ -375,12 +401,129 @@ const PRES_PROJ_JS = String.raw`<style>
     if(F.basis)h+='<p class="pjx-note">Berdasarkan Laporan Keuangan Bulan '+esc(F.basis.period||'')+' (data '+esc(F.basis.selected||'')+' belum lengkap).</p>';
     return h+'</div>';
   }
-  window.pmoPresProj={KINDS:KINDS,SHORT:SHORT,slide:slide,title:title,render:render,load:load,progCard:progCard,briefRefs:briefRefs,finNarr:finNarr};
+  /* ================= Isu manajemen (satu sumber untuk Monthly & Weekly) ================= */
+  var ISS={},SEVR={Tinggi:0,Sedang:1,Rendah:2},PER=3;
+  function role(){try{var u=JSON.parse(sessionStorage.getItem('pmoUser')||'null');return String(u&&u.role||'').toUpperCase()}catch(e){return ''}}
+  function api(url,opt){return fetch(url,Object.assign({credentials:'same-origin',headers:{'content-type':'application/json'}},opt||{})).then(function(r){return r.json().catch(function(){return {ok:false,error:'Server tidak merespons ('+r.status+').'}})}).then(function(j){if(!j.ok)throw new Error(j.error||'Permintaan gagal.');return j.data})}
+  function issKey(o){return o.pid?'w:'+o.pid:'m'}
+  function issScope(cfg){
+    if(/weekly/i.test(String(cfg&&cfg.page||''))){var el=document.getElementById('weeklyProjectName');var pid=String((el&&el.dataset&&el.dataset.pid)||window.__pmoWeeklyPid||'');return {pid:pid,days:7,name:String((el||{}).textContent||'').trim()}}
+    var per='';try{per=String((document.getElementById('periodValue')||{}).textContent||'').trim()}catch(e){}
+    return {pid:'',days:31,period:per};
+  }
+  function fetchIss(o,force){
+    var k=issKey(o);if(ISS[k]&&ISS[k].p&&!force)return ISS[k].p;
+    var e=ISS[k]=ISS[k]||{};
+    e.p=api('/api/pres/issues?days='+o.days+(o.pid?'&project='+encodeURIComponent(o.pid):'')).then(function(d){e.d=d;return d}).catch(function(err){e.p=null;throw err});
+    return e.p;
+  }
+  function grpType(id){var G=null;try{G=(currentReportData&&currentReportData.groups&&currentReportData.groups.map)||null}catch(e){}G=G||{};var g=G[id]||{};var t=g.type||'PENGEMBANGAN';if(t==='SUB'&&g.parent)t=(G[g.parent]&&G[g.parent].type)||'PENGEMBANGAN';return t==='RUTIN'?1:0}
+  function sorted(list,o){
+    return list.slice().sort(function(a,b){
+      var ca=a.status==='Selesai'?1:0,cb=b.status==='Selesai'?1:0;if(ca!==cb)return ca-cb;
+      if(!o.pid){var ga=grpType(a.project),gb=grpType(b.project);if(ga!==gb)return ga-gb}
+      var sa=SEVR[a.severity]==null?1:SEVR[a.severity],sb=SEVR[b.severity]==null?1:SEVR[b.severity];if(sa!==sb)return sa-sb;
+      var ka=a.ask?0:1,kb=b.ask?0:1;if(ka!==kb)return ka-kb;
+      return String(a.projectName||'').localeCompare(String(b.projectName||''));
+    });
+  }
+  function nmP(n){return typeof pmoProjName==='function'?pmoProjName(n):n}
+  function dt(v){if(!v)return '';var d=new Date(v+'T00:00:00');return isNaN(d)?v:d.getDate()+' '+['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][d.getMonth()]+' '+d.getFullYear()}
+  function issCard(x,showProj){
+    var sc=x.severity==='Tinggi'?'hi':x.severity==='Rendah'?'lo':'md',stc=x.status==='Selesai'?'done':x.status==='Baru'?'new':'run';
+    return '<div class="pjx-ic '+sc+(x.status==='Selesai'?' closed':'')+'"><div class="pjx-ict"><span class="pjx-sv '+sc+'">'+esc(x.severity)+'</span>'+(showProj?'<span class="pjx-tg">'+esc(nmP(x.projectName||x.project))+'</span>':'')+'<span class="pjx-tg">'+esc(x.category)+'</span></div>'+
+      '<div class="pjx-ih">'+esc(x.title)+'</div>'+(x.detail?'<div class="pjx-id">'+esc(x.detail)+'</div>':'')+
+      (x.ask?'<div class="pjx-ia"><b>Dukungan yang diminta:</b> '+esc(x.ask)+'</div>':'')+
+      '<div class="pjx-if">'+[x.pic?esc(x.pic):'',x.target?'target '+esc(dt(x.target)):''].filter(Boolean).join(' · ')+'<span class="pjx-st2 '+stc+'">'+esc(x.status)+'</span></div></div>';
+  }
+  function issHtml(list,o,part,parts){
+    var open=list.filter(function(x){return x.status!=='Selesai'}),hi=open.filter(function(x){return x.severity==='Tinggi'}).length,md=open.filter(function(x){return x.severity==='Sedang'}).length,ask=open.filter(function(x){return x.ask}).length;
+    var eye='Isu manajemen'+(o.pid?'':o.period?' · cut-off '+o.period:'')+(parts>1?' · '+part+'/'+parts:'');
+    var h='<div class="pjx-h"><div><small>'+esc(eye)+'</small><h3>'+(o.pid?esc(nmP(o.name||o.pid)):'Isu dan keputusan yang diperlukan')+'</h3></div><span class="pjx-per pjx-cnt">'+
+      (hi?'<i class="hi">'+hi+' tinggi</i>':'')+(md?'<i class="md">'+md+' sedang</i>':'')+(ask?'<i class="ask">'+ask+' butuh keputusan</i>':'')+(!open.length?'<i>Tidak ada isu terbuka</i>':'')+'</span></div>';
+    var chunk=list.slice((part-1)*PER,part===parts?list.length:part*PER);
+    if(!list.length)return h+'<div class="pjx-empty">Belum ada isu manajemen'+(o.pid?' untuk proyek ini':'')+'. Tambahkan lewat tombol <b>Isu manajemen</b> di layar Siapkan presentasi.</div>';
+    return h+'<div class="pjx-ig">'+chunk.map(function(x){return issCard(x,!o.pid||x.project!==o.pid)}).join('')+'</div><p class="pjx-note">Urutan: tingkat, lalu yang butuh keputusan. Isu yang belum selesai otomatis terbawa ke periode berikutnya; isu selesai tampil '+(o.pid?'7':'31')+' hari setelah ditutup.</p>';
+  }
+  /* slide isu untuk build(): dipecah 3 isu per slide bila data sudah dimuat */
+  function issueSlides(cfgOrScope){
+    if(role()==='KONTRAKTOR')return [];
+    var o=cfgOrScope&&cfgOrScope.days?cfgOrScope:issScope(cfgOrScope),e=ISS[issKey(o)],list=e&&e.d?sorted(e.d.issues||[],o):null;
+    if(!e||!e.p)fetchIss(o).catch(function(){});
+    var parts=list?Math.max(1,Math.ceil(list.length/PER)):1,out=[];
+    for(var i=1;i<=parts;i++)(function(part){
+      out.push({title:'Isu manajemen'+(part>1?' ('+part+'/'+parts+')':''),scroll:true,dw:1320,html:'<div class="pjx" data-iss="'+part+'"><div class="pjx-load">Memuat isu manajemen…</div></div>',
+        after:function(card){var box=card.querySelector('.pjx[data-iss]');if(!box)return;
+          var fill=function(){var d=ISS[issKey(o)]&&ISS[issKey(o)].d;var L=sorted((d&&d.issues)||[],o);box.innerHTML=issHtml(L,o,part,part===parts?part:parts)};
+          var e2=ISS[issKey(o)];if(e2&&e2.d)fill();else fetchIss(o).then(fill).catch(function(err){box.innerHTML='<div class="pjx-empty">'+esc(err.message||'Isu manajemen gagal dimuat.')+'</div>'})}});
+    })(i);
+    return out;
+  }
+  function prefetch(cfg){if(role()==='KONTRAKTOR')return Promise.resolve();return fetchIss(issScope(cfg),true).catch(function(){})}
+  /* panel kelola isu (dari layar Siapkan presentasi) */
+  function manageIssues(cfg,opt){
+    opt=opt||{};var o=issScope(cfg),list=[],D={},edit=null;
+    var m=document.createElement('div');m.className='px-mg pjx-im';m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('aria-label','Isu manajemen');
+    m.innerHTML='<div class="pjx-imb"><div class="pjx-imh"><div><b>Isu manajemen</b><small>'+(o.pid?'Proyek '+esc(nmP(o.name||o.pid))+' dan sub-proyeknya':'Semua proyek · satu sumber dengan Weekly')+'</small></div><button type="button" class="pjx-imx" aria-label="Tutup">×</button></div><div class="pjx-imc"><div class="pjx-load">Memuat…</div></div></div>';
+    document.body.appendChild(m);
+    var C=m.querySelector('.pjx-imc');
+    var onKey=function(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();done()}};window.addEventListener('keydown',onKey,true);
+    function done(){window.removeEventListener('keydown',onKey,true);m.remove();fetchIss(o,true).catch(function(){}).then(function(){if(opt.onClose)opt.onClose()})}
+    m.querySelector('.pjx-imx').onclick=done;
+    function refresh(){return fetchIss(o,true).then(function(d){D=d;list=sorted(d.issues||[],o);draw()}).catch(function(e){C.innerHTML='<div class="pjx-empty">'+esc(e.message)+'</div>'})}
+    function draw(){
+      var can=(D.allowedProjects||[]).length>0;
+      C.innerHTML=(can?'<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><button type="button" class="pq-btn pri sm" data-in="new">+ Tambah isu</button><span class="pq-note">'+list.filter(function(x){return x.status!=='Selesai'}).length+' isu terbuka</span></div>':'<p class="pq-note">Anda hanya dapat melihat isu.</p>')+
+        '<div class="pjx-imf"></div>'+(list.length?list.map(function(x){return '<div class="pjx-imr" data-id="'+x.id+'"><div style="flex:1;min-width:0">'+issCard(x,true)+'</div>'+(x.canEdit?'<div class="pjx-ima"><button type="button" class="pq-btn sm" data-ie="'+x.id+'">Ubah</button>'+(x.status!=='Selesai'?'<button type="button" class="pq-btn sm" data-ic="'+x.id+'">Tandai selesai</button>':'')+'<button type="button" class="pq-btn sm" data-id2="'+x.id+'" style="color:#b42318">Hapus</button></div>':'')+'</div>'}).join(''):'<div class="pjx-empty">Belum ada isu.</div>');
+    }
+    function form(x){
+      var P=D.allowedProjects||[],op=D.options||{},f=C.querySelector('.pjx-imf');edit=x||{};
+      var def=x?x.project:(o.pid&&P.some(function(p){return p.id===o.pid})?o.pid:(P[0]&&P[0].id));
+      var sel=function(k,a,v){return '<select data-f="'+k+'">'+a.map(function(t){return '<option'+(t===v?' selected':'')+'>'+esc(t)+'</option>'}).join('')+'</select>'};
+      f.innerHTML='<div class="pjx-fm"><label>Proyek<select data-f="project">'+P.map(function(p){return '<option value="'+esc(p.id)+'"'+(p.id===def?' selected':'')+'>'+esc(nmP(p.name))+'</option>'}).join('')+'</select></label>'+
+        '<label>Kategori'+sel('category',op.categories||[],edit.category||'Lainnya')+'</label>'+
+        '<label class="w">Judul isu<input data-f="title" maxlength="200" value="'+esc(edit.title||'')+'" placeholder="Izin PBG belum terbit"></label>'+
+        '<label class="w">Uraian dan dampak<textarea data-f="detail" rows="2" maxlength="1200" placeholder="Pemasangan tangki tertunda ±3 minggu">'+esc(edit.detail||'')+'</textarea></label>'+
+        '<label class="w">Dukungan / keputusan yang diminta dari manajemen<input data-f="ask" maxlength="600" value="'+esc(edit.ask||'')+'" placeholder="Eskalasi ke Pemkab via Direksi (kosongkan bila tidak ada)"></label>'+
+        '<label>Tingkat'+sel('severity',op.severities||[],edit.severity||'Sedang')+'</label><label>Status'+sel('status',op.statuses||[],edit.status||'Baru')+'</label>'+
+        '<label>PIC tindak lanjut<input data-f="pic" maxlength="120" value="'+esc(edit.pic||'')+'" placeholder="PIC Teknik"></label><label>Target selesai<input type="date" data-f="target" value="'+esc(edit.target||'')+'"></label>'+
+        '<div class="w" style="display:flex;gap:8px;justify-content:flex-end;align-items:center"><span class="pjx-fmm" style="margin-right:auto;font-size:12.5px"></span><button type="button" class="pq-btn sm" data-in="cancel">Batal</button><button type="button" class="pq-btn pri sm" data-in="save">Simpan isu</button></div></div>';
+      var t=f.querySelector('[data-f=title]');if(t)t.focus();
+    }
+    C.addEventListener('click',function(e){
+      var b=e.target.closest('button');if(!b)return;
+      var a=b.getAttribute('data-in');
+      if(a==='new')return form(null);
+      if(a==='cancel'){C.querySelector('.pjx-imf').innerHTML='';return}
+      if(a==='save'){var f=C.querySelector('.pjx-imf'),body={id:edit&&edit.id||undefined};f.querySelectorAll('[data-f]').forEach(function(i){body[i.getAttribute('data-f')]=i.value});
+        var msg=f.querySelector('.pjx-fmm');if(!String(body.title||'').trim()){msg.textContent='Isi judul isu dulu.';msg.style.color='#b42318';return}
+        b.disabled=true;msg.textContent='Menyimpan…';msg.style.color='';
+        api('/api/pres/issues',{method:'POST',body:JSON.stringify(body)}).then(refresh).catch(function(err){b.disabled=false;msg.textContent=err.message;msg.style.color='#b42318'});return}
+      var id=Number(b.getAttribute('data-ie')||b.getAttribute('data-ic')||b.getAttribute('data-id2'));if(!id)return;var x=list.filter(function(y){return y.id===id})[0];if(!x)return;
+      if(b.hasAttribute('data-ie'))return form(x);
+      if(b.hasAttribute('data-ic')){b.disabled=true;api('/api/pres/issues',{method:'POST',body:JSON.stringify(Object.assign({},x,{status:'Selesai'}))}).then(refresh).catch(function(err){b.disabled=false;alert(err.message)});return}
+      if(b.hasAttribute('data-id2')){if(!confirm('Hapus isu "'+x.title+'"? Isu yang sudah selesai sebaiknya ditandai Selesai, bukan dihapus.'))return;api('/api/pres/issues/'+id+'/delete',{method:'POST',body:'{}'}).then(refresh).catch(function(err){alert(err.message)})}
+    });
+    refresh();
+  }
+  window.pmoPresProj={KINDS:KINDS,SHORT:SHORT,slide:slide,title:title,render:render,load:load,progCard:progCard,briefRefs:briefRefs,finNarr:finNarr,issueSlides:issueSlides,prefetch:prefetch,manageIssues:manageIssues};
 })();
 </script>`;
 
 /** Patch halaman: card Prognosa + slide bawaan Weekly. */
 const HTML_PATCHES = [
+  {
+    // Monthly Executive Review: slide Isu manajemen setelah Ringkasan eksekutif.
+    file: 'ExecutiveDashboard',
+    find: "    add('#sec-progress>article');",
+    replace: "    if(window.pmoPresProj)pmoPresProj.issueSlides({page:'Executive'}).forEach(function(s){S.push(s)});\n    add('#sec-progress>article');",
+  },
+  {
+    // Weekly: slide Isu manajemen setelah Mitigasi risiko.
+    file: 'Dashboard',
+    find: "[['#sec-profil',1],['#sec-risiko',0],['#sec-risiko',1],['#sec-rtl',0],['#sec-msc',0],['#sec-hse',0]].forEach(function(x){const a=art(x[0],x[1]);if(a)S.push({title:ttl(a,'Slide'),node:a})});",
+    replace: "[['#sec-profil',1],['#sec-risiko',0],['#sec-risiko',1],['#sec-rtl',0],['#sec-msc',0],['#sec-hse',0]].forEach(function(x){const a=art(x[0],x[1]);if(a)S.push({title:ttl(a,'Slide'),node:a});if(x[0]==='#sec-risiko'&&x[1]===1&&window.pmoPresProj)pmoPresProj.issueSlides({page:'Weekly Progress'}).forEach(function(s){S.push(s)})});",
+  },
   {
     // Monthly Executive Review · slide Ringkasan eksekutif: "dapat dilihat pada <tautan>" → nama slide.
     file: 'ExecutiveDashboard',
