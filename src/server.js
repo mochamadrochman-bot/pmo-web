@@ -70,6 +70,11 @@ app.use((req, res, next) => ((req.path.startsWith('/app/rpc/') || req.path === '
 // Media statis (video animasi pembuka Portal, poster).
 app.use('/media', express.static(path.join(__dirname, '..', 'public', 'media'), { maxAge: '7d', index: false }));
 app.use('/vendor/pdfjs', express.static(path.join(__dirname, '..', 'node_modules', 'pdfjs-dist', 'build'), { maxAge: '7d', index: false }));
+// OCR Tesseract (baca otomatis surat / risalah hasil scan di Document Control), dijalankan di browser tanpa layanan luar.
+app.use('/vendor/tesseract', express.static(path.join(__dirname, '..', 'node_modules', 'tesseract.js', 'dist'), { maxAge: '7d', index: false }));
+app.use('/vendor/tesseract-core', express.static(path.join(__dirname, '..', 'node_modules', 'tesseract.js-core'), { maxAge: '7d', index: false }));
+app.use('/vendor/tessdata', express.static(path.join(__dirname, '..', 'node_modules', '@tesseract.js-data', 'ind', '4.0.0_best_int'), { maxAge: '30d', index: false }));
+app.use('/vendor/tessdata', express.static(path.join(__dirname, '..', 'node_modules', '@tesseract.js-data', 'eng', '4.0.0_best_int'), { maxAge: '30d', index: false }));
 app.use(express.urlencoded({ extended: false, limit: '1mb' }));
 
 // Parser cookie ringan, cukup untuk satu cookie sesi.
@@ -134,6 +139,7 @@ app.use('/', require('./routes/arsip'));
 app.use('/', require('./routes/pres'));
 app.use('/', require('./routes/model3d'));
 app.use('/', require('./routes/fx').router);
+app.use('/', require('./routes/docmeta'));
 app.use('/', require('./routes/library'));
 app.use('/', require('./routes/drive-preview'));
 app.use('/', gasRoutes);

@@ -6,7 +6,8 @@
  * Kontraktor boleh membuka, khusus proyeknya sendiri:
  *   Portal, Weekly Progress, EPCC Control (E/P/C/C), Live View CCTV, Spotlight Lobby, Visual 3D
  *   (lihat + unggah model; ganti/hapus hanya unggahannya sendiri, lihat routes/model3d.js).
- * Tidak boleh: Monthly Executive Review, Master Schedule, Galeri foto, Document Control, Library,
+ * Document Control: hanya MoM / risalah rapat proyeknya + status tindak lanjut pihak kontraktor (22 Nov 2026).
+ * Tidak boleh: Monthly Executive Review, Master Schedule, Galeri foto, Library,
  *   Pelaporan Manajemen, Input. Menu-menu itu tidak ditampilkan sama sekali untuk kontraktor.
  *
  * Gerbang halaman di server: routes/gas.js (KONTRAKTOR_PAGES). Data tetap dibatasi di server:
@@ -52,8 +53,8 @@ const HTML_PATCHES = [
     file: 'AccountMenu',
     find: String.raw`  var allowed=/^(Portal Proyek|EPCC Control)/i.test(title);
   var HIDE=/^(Executive Dashboard|Weekly Progress|Master Schedule|Document Control|Library|Pelaporan Manajemen|Input Progress|Laporan Bulanan|Tambah \/ Edit Proyek|Live View|Spotlight)/i;`,
-    replace: String.raw`  var allowed=/^(Portal Proyek|EPCC Control|Weekly Progress|Live View|Visual 3D|PMO Spotlight)/i.test(title);
-  var HIDE=/^(Executive Dashboard|Monthly Executive|Master Schedule|Galeri|Document Control|Library|Pelaporan Manajemen|Management Report|Buat Laporan|Input Progress|Laporan Bulanan|Tambah \/ Edit Proyek)/i;`,
+    replace: String.raw`  var allowed=/^(Portal Proyek|EPCC Control|Weekly Progress|Live View|Visual 3D|PMO Spotlight|Document Control)/i.test(title);
+  var HIDE=/^(Executive Dashboard|Monthly Executive|Master Schedule|Galeri|Library|Pelaporan Manajemen|Management Report|Buat Laporan|Input Progress|Laporan Bulanan|Tambah \/ Edit Proyek)/i;`,
   },
   {
     // Menu halaman (ponsel / menu akun): kelompok khusus kontraktor.
@@ -65,7 +66,7 @@ const HTML_PATCHES = [
   {
     file: 'AccountMenu',
     find: "    if(!ktr&&mr)out.push({tag:'M5'",
-    replace: "    if(ktr)out.push({tag:'M4',t:'Lapangan & 3D',items:[['live','Live View CCTV','cam'],['visual3d','Visual 3D Proyek','cube','Model 3D proyek Anda']]});\n" +
+    replace: "    if(ktr)out.push({tag:'M4',t:'Lapangan & 3D',items:[['live','Live View CCTV','cam'],['visual3d','Visual 3D Proyek','cube','Model 3D proyek Anda'],['documents','MoM / Risalah rapat','folder','Risalah rapat & tindak lanjut']]});\n" +
       "    if(!ktr&&mr)out.push({tag:'M5'",
   },
   {

@@ -24,7 +24,7 @@ const router = express.Router();
 
 // Halaman yang boleh dibuka akun kontraktor (selain itu ditolak sebelum kode lama berjalan).
 // Data tiap halaman tetap dibatasi ke proyek kontraktor di sisi server (lihat src/gas/ktr-access.js).
-const KONTRAKTOR_PAGES = ['', 'portal', 'weekly', 'engineering', 'epcc', 'procurement', 'construction', 'commissioning', 'live', 'spotlight', 'lobby', 'visual3d'];
+const KONTRAKTOR_PAGES = ['', 'portal', 'weekly', 'engineering', 'epcc', 'procurement', 'construction', 'commissioning', 'live', 'spotlight', 'lobby', 'visual3d', 'documents'];
 
 function appUrl(req) {
   const base = process.env.APP_BASE_URL || (req.protocol + '://' + req.get('host'));

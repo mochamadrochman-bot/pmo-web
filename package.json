@@ -15,11 +15,14 @@
   },
   "dependencies": {
     "@node-rs/argon2": "^2.0.2",
+    "@tesseract.js-data/eng": "^1.0.0",
+    "@tesseract.js-data/ind": "^1.0.0",
     "ejs": "^3.1.10",
     "express": "^4.21.2",
     "helmet": "^8.0.0",
     "pdfjs-dist": "^4.10.38",
     "pg": "^8.13.1",
+    "tesseract.js": "^6.0.1",
     "xlsx": "^0.18.5"
   }
 }

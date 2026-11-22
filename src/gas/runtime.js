@@ -1300,25 +1300,47 @@ function load() {
   });
   const v3d = require('./visual3d');
   htmlFiles.set('Visual3D', v3d.VISUAL3D_HTML);
-  for (const p of HTML_PATCHES.concat(v3d.HTML_PATCHES, require('./monthly-fin').HTML_PATCHES, require('./portal-v2').PORTAL_V2_PATCHES, require('./spotlight-v2').SPOTLIGHT_V2_PATCHES, require('./ktr-docs').HTML_PATCHES, require('./ktr-access').HTML_PATCHES, require('./library-v2').HTML_PATCHES, require('./pres-proj').HTML_PATCHES, require('./contract-fx').HTML_PATCHES, require('./cost-fx').HTML_PATCHES)) {
+  for (const p of HTML_PATCHES.concat(v3d.HTML_PATCHES, require('./monthly-fin').HTML_PATCHES, require('./portal-v2').PORTAL_V2_PATCHES, require('./spotlight-v2').SPOTLIGHT_V2_PATCHES, require('./ktr-docs').HTML_PATCHES, require('./ktr-access').HTML_PATCHES, require('./library-v2').HTML_PATCHES, require('./pres-proj').HTML_PATCHES, require('./contract-fx').HTML_PATCHES, require('./cost-fx').HTML_PATCHES, require('./doc-mom').HTML_PATCHES)) {
     const src = htmlFiles.get(p.file);
     if (src && src.includes(p.find)) htmlFiles.set(p.file, src.replace(p.find, p.replace));
     else console.warn(JSON.stringify({ ev: 'gas_patch_miss', file: p.file }));
   }
 
+  const MENU_RENAMES = [
+    ['title="Input Progress"', 'title="Input Progress Mingguan"'], ['<span>Input Progress</span>', '<span>Input Progress Mingguan</span>'],
+    ['<h1>Input Progress <span id="heroProject">', '<h1>Input Progress Mingguan <span id="heroProject">'],
+    ['title="Laporan Bulanan"', 'title="Input Progress Bulanan"'], ['<span>Laporan Bulanan</span>', '<span>Input Progress Bulanan</span>'],
+    ['<title>Laporan Bulanan</title>', '<title>Input Progress Bulanan</title>'], ['<h1>Laporan Bulanan <span id="heroProject">', '<h1>Input Progress Bulanan <span id="heroProject">'],
+    ["input:'Input Progress',monthly:'Laporan Bulanan'", "input:'Input Progress Mingguan',monthly:'Input Progress Bulanan'"],
+    ["['input','Input Progress','edit'],['monthly','Laporan Bulanan',", "['input','Input Progress Mingguan','edit'],['monthly','Input Progress Bulanan',"],
+    ['Input progress mingguan<i', 'Input Progress Mingguan<i'], ['Laporan bulanan<i class="ic go"', 'Input Progress Bulanan<i class="ic go"'],
+    ['<i class="ic" data-ic="edit"></i>Input progress</button>', '<i class="ic" data-ic="edit"></i>Input Progress Mingguan</button>'],
+    ['<i class="ic" data-ic="cal"></i>Laporan bulanan</button>', '<i class="ic" data-ic="cal"></i>Input Progress Bulanan</button>'],
+    ['Input progress mingguan, laporan bulanan (biaya, milestone, RKAP)', 'Input progress mingguan & bulanan (biaya, milestone, RKAP)'],
+    ["(PAGE==='input'?'Input progress':'Laporan bulanan')", "(PAGE==='input'?'Input Progress Mingguan':'Input Progress Bulanan')"],
+    // Teks penunjuk tempat mengisi data.
+    ['di Laporan Bulanan', 'di Input Progress Bulanan'], ['Otomatis dari Laporan Bulanan', 'Otomatis dari Input Progress Bulanan'],
+  ];
   // Ganti nama halaman: "Executive Dashboard" → "Monthly Executive Review" (alamat ?page=executive tetap).
   for (const [k, v] of htmlFiles) {
     let t = v.split('Executive Dashboard').join('Monthly Executive Review').split('EXECUTIVE DASHBOARD').join('MONTHLY EXECUTIVE REVIEW');
     t = t.split("'Buat Laporan Bulanan'").join("'Buat Laporan Bulanan (dokumen)'");
+    // Ganti nama menu (22 Nov): "Input Progress" → "Input Progress Mingguan", "Laporan Bulanan" → "Input Progress Bulanan".
+    // "Buat Laporan Bulanan" (dokumen Word) tetap. Alamat ?page=input / ?page=monthly tidak berubah.
+    for (const [a, b] of MENU_RENAMES) t = t.split(a).join(b);
     if (t !== v) htmlFiles.set(k, t);
   }
-  for (const f of gsFiles) f.src = f.src.split('Executive Dashboard').join('Monthly Executive Review');
+  for (const f of gsFiles) {
+    f.src = f.src.split('Executive Dashboard').join('Monthly Executive Review')
+      .split("APP_TITLE + ' — Laporan Bulanan'").join("APP_TITLE + ' — Input Progress Bulanan'")
+      .split("title: 'Laporan bulanan ' + m.label + ' belum diisi',").join("title: 'Input progress bulanan ' + m.label + ' belum diisi',");
+  }
   // Logo, ikon, dan gambar latar yang ditulis tetap di halaman lama: sajikan dari server sendiri (routes/brand.js).
   try {
     const { rewrite } = require('../routes/brand');
     for (const [k, v] of htmlFiles) { const t = rewrite(v); if (t !== v) htmlFiles.set(k, t); }
   } catch (e) { console.log(JSON.stringify({ ev: 'brand_rewrite_skip', message: String(e.message || e) })); }
-  for (const p of GS_PATCHES.concat(require('./live-lan').GS_PATCHES, require('./visual3d').GS_PATCHES, require('./ktr-docs').GS_PATCHES, require('./ktr-access').GS_PATCHES, require('./library-v2').GS_PATCHES, require('./master-hero').MASTER_HERO_GS_PATCHES, require('./pres-proj').GS_PATCHES, require('./contract-fx').GS_PATCHES, require('./cost-fx').GS_PATCHES)) {
+  for (const p of GS_PATCHES.concat(require('./live-lan').GS_PATCHES, require('./visual3d').GS_PATCHES, require('./ktr-docs').GS_PATCHES, require('./ktr-access').GS_PATCHES, require('./library-v2').GS_PATCHES, require('./master-hero').MASTER_HERO_GS_PATCHES, require('./pres-proj').GS_PATCHES, require('./contract-fx').GS_PATCHES, require('./cost-fx').GS_PATCHES, require('./doc-mom').GS_PATCHES)) {
     const f = gsFiles.find((x) => x.name === p.file);
     if (f && f.src.includes(p.find)) f.src = f.src.replace(p.find, () => p.replace);
     else console.warn(JSON.stringify({ ev: 'gas_patch_miss', file: p.file + '.gs' }));

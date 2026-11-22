@@ -169,6 +169,12 @@ const FS_JS = String.raw`<style>
   .fsk-r label::before,.fsk-tot::before{content:attr(data-l);display:block;font-size:11px;color:var(--muted,#5b7085);margin-bottom:2px;text-align:left;font-weight:600}
   .fsk-tot{grid-column:1/-1;text-align:left}
 }
+html[data-theme="dark"] .fxk{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.16)}
+html[data-theme="dark"] .fxk-h b,html[data-theme="dark"] .fsk-l b,html[data-theme="dark"] .fsk-tot{color:#e3ecf4}
+html[data-theme="dark"] .fxk-h span,html[data-theme="dark"] .fsk-hd span,html[data-theme="dark"] .fxk-r{color:#9fb3c8}
+html[data-theme="dark"] .fxk-lock{background:rgba(255,255,255,.07)!important;color:#cbd8e6}
+html[data-theme="dark"] .fsk-warn{color:#fbbf24!important}
+@media (max-width:720px){html[data-theme="dark"] .fsk-r{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12)}html[data-theme="dark"] .fsk-r label::before,html[data-theme="dark"] .fsk-tot::before{color:#9fb3c8}}
 </style>
 <script>
 (function(){
@@ -286,6 +292,12 @@ const MONTHLY_JS = String.raw`<style>
   #cfx .cfx-l,#cfx .cfx-tot,#cfx .cfx-r label[data-l="Rupiah"]{grid-column:1/-1}#cfx .cfx-tot{text-align:left}
   #cfx .cfx-r label::before,#cfx .cfx-tot::before{content:attr(data-l);display:block;font-size:11px;color:var(--muted,#5b7085);margin-bottom:2px;text-align:left;font-weight:600}
 }
+html[data-theme="dark"] #cfx .cfx-box{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.16)}
+html[data-theme="dark"] #cfx .cfx-h b,html[data-theme="dark"] #cfx .cfx-l b,html[data-theme="dark"] #cfx .cfx-tot{color:#e3ecf4}
+html[data-theme="dark"] #cfx .cfx-h span,html[data-theme="dark"] #cfx .cfx-hd span,html[data-theme="dark"] #cfx .cfx-l small,html[data-theme="dark"] #cfx .cfx-n{color:#9fb3c8}
+html[data-theme="dark"] .cfx-lock{background:rgba(255,255,255,.07)!important;color:#cbd8e6}
+html[data-theme="dark"] #cfx .cfx-warn{color:#fbbf24}
+@media (max-width:720px){html[data-theme="dark"] #cfx .cfx-r{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12)}html[data-theme="dark"] #cfx .cfx-r label::before,html[data-theme="dark"] #cfx .cfx-tot::before{color:#9fb3c8}}
 </style>
 <script>
 (function(){
