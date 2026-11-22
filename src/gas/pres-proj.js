@@ -246,9 +246,13 @@ const PRES_PROJ_JS = String.raw`<style>
 .pjx-fm label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:#5b7085}.pjx-fm .w{grid-column:1/3}
 .pjx-fm input,.pjx-fm select,.pjx-fm textarea{padding:8px 10px;border:1px solid #c9d6e2;border-radius:9px;font:13px Inter,system-ui,sans-serif;background:#fff!important;color:#132b43!important}
 .pjx-fnarr{margin-top:16px;font-size:15px;line-height:1.6}.pjx-fnarr p{margin:0 0 8px}.pjx-fnarr ul{margin:0 0 12px;padding-left:22px}.pjx-fnarr li{margin:0 0 6px}.pjx-ref{font-weight:700}
-.pjx-work{margin-top:14px}.pjx-work h4{margin:0 0 8px;font-size:14px;font-weight:700}.pjx-work h4 small{font-weight:500;color:var(--muted,#5b7085)}.pjx-work .pjx-tbl{font-size:13px}
-#progBox{padding:4px 18px 18px}
-#progBox .pjx-pc .pjx-big{font-size:22px}
+.pjx-work{margin-top:14px}.pjx-tv small{display:block;color:var(--muted,#5b7085);font-size:11.5px}.pjx-work h4{margin:0 0 8px;font-size:14px;font-weight:700}.pjx-work h4 small{font-weight:500;color:var(--muted,#5b7085)}.pjx-work .pjx-tbl{font-size:13px}
+#sec-prog{margin-bottom:var(--gap,18px)}
+#progBox{padding:16px 18px 18px}
+#progBox .pjx-pc .pjx-big{font-size:24px}
+#progBox .pjx-pg{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+@media (max-width:700px){#progBox{padding:12px}.pjx-work .pjx-tbl thead{display:none}.pjx-work .pjx-tbl,.pjx-work .pjx-tbl tbody,.pjx-work .pjx-tbl tr,.pjx-work .pjx-tbl td{display:block;width:100%;box-sizing:border-box}.pjx-work .pjx-tbl tr{border:1px solid var(--line,#dbe5ee);border-radius:12px;padding:10px 12px;margin-bottom:10px}.pjx-work .pjx-tbl td{border:0;padding:3px 0;text-align:left!important}.pjx-work .pjx-tbl td[data-l]{display:flex;justify-content:space-between;gap:12px}.pjx-work .pjx-tbl td[data-l]::before{content:attr(data-l);color:var(--muted,#5b7085);font-weight:500}.pjx-work .pjx-tv small{display:inline!important;margin-left:6px}.pjx-pc dl{grid-template-columns:minmax(0,1fr) auto}}
+html.m-mode #progBox{padding:12px}
 .pp-card .pjx .pjx-pc .pjx-big{font-size:34px}
 </style>
 <script>
@@ -353,7 +357,7 @@ const PRES_PROJ_JS = String.raw`<style>
     var h='<div class="pjx-work"><h4>Pekerjaan berbobot besar yang menunjang kenaikan s.d. akhir tahun'+(w&&w.months&&w.months.length?' <small>('+esc(w.months.join(', '))+')</small>':'')+'</h4>';
     if(!L.length)return h+'<div class="pjx-empty" style="padding:12px 0">'+esc(w&&w.error?'Data pekerjaan belum dapat dibaca.':'Tidak ada pekerjaan dengan kenaikan rencana pada sisa tahun ini (atau baseline EPCC / jadwal belum tersedia).')+'</div></div>';
     h+='<table class="pjx-tbl"><thead><tr><th style="text-align:left">Bidang</th><th style="text-align:left">Pekerjaan</th><th>Aktual</th><th>Target</th><th>+ Bobot proyek</th></tr></thead><tbody>'+
-      L.map(function(t){return '<tr><td>'+esc(t.field)+'</td><td><b>'+esc(t.name)+'</b>'+(t.group?'<br><small style="color:var(--muted,#5b7085)">'+esc(t.group)+'</small>':'')+'</td><td style="text-align:right">'+pc(t.actual)+'</td><td style="text-align:right">'+pc(t.target)+'<br><small style="color:var(--muted,#5b7085)">akhir '+esc(t.until)+'</small></td><td style="text-align:right"><b>+'+pc(t.contribution)+'</b></td></tr>'}).join('')+'</tbody></table>';
+      L.map(function(t){return '<tr><td style="color:var(--muted,#5b7085)">'+esc(t.field)+'</td><td><b>'+esc(t.name)+'</b>'+(t.group?'<br><small style="color:var(--muted,#5b7085)">'+esc(t.group)+'</small>':'')+'</td><td data-l="Aktual" style="text-align:right">'+pc(t.actual)+'</td><td data-l="Target" style="text-align:right"><span class="pjx-tv">'+pc(t.target)+'<small>akhir '+esc(t.until)+'</small></span></td><td data-l="+ Bobot proyek" style="text-align:right"><b>+'+pc(t.contribution)+'</b></td></tr>'}).join('')+'</tbody></table>';
     return h+'<p class="pjx-note">Diurutkan dari kontribusi terbesar terhadap progres proyek'+(w.total>L.length?' (6 dari '+w.total+' pekerjaan)':'')+'. Sumber: '+(w.source==='XML'?'Jadwal XML (Master Schedule)':'EPCC Control')+'.</p></div>';
   }
   function rProg(d,P){return head('Prognosa akhir tahun'+(d&&d.year?' '+d.year:''),P.name,d&&d.week?'Data s.d. W'+d.week:'')+progHtml(d)}
@@ -537,11 +541,25 @@ const HTML_PATCHES = [
     replace: "      if(vis(fd)){const b=fd.cloneNode(true);host.appendChild(b);if(window.pmoPresProj)b.insertAdjacentHTML('beforeend',pmoPresProj.finNarr(d))}\n      else if(vis(fp)){const a=fp.cloneNode(true),g=a.querySelector('.fin-cards');if(g)g.style.gridTemplateColumns='repeat(5,minmax(0,1fr))';host.appendChild(a)}",
   },
   {
+    // Weekly: card Prognosa akhir tahun sebagai bagian tersendiri (lebar penuh) di bawah Progres & Kurva S.
     file: 'Dashboard',
-    find: '<div id="finBox" class="fin"><div class="fin-empty">Memuat realisasi keuangan…</div></div>',
-    replace: '<div id="finBox" class="fin"><div class="fin-empty">Memuat realisasi keuangan…</div></div>\n' +
-      '        <div class="ph ph-sub" id="progHead"><span class="pi"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg></span><h3>Prognosa akhir tahun <span id="progYear"></span></h3></div>\n' +
-      '        <div id="progBox"><div class="pjx-empty">Memuat prognosa…</div></div>',
+    find: '    <section id="sec-profil" class="grid g-b anchor">',
+    replace: '    <section id="sec-prog" class="anchor">\n      <article class="panel" id="progPanel">\n' +
+      '        <div class="ph"><span class="pi"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg></span><h3>Prognosa akhir tahun <span id="progYear"></span></h3><span class="hint">Biaya dan target fisik s.d. 31 Desember</span></div>\n' +
+      '        <div id="progBox"><div class="pjx-empty">Memuat prognosa…</div></div>\n      </article>\n    </section>\n\n' +
+      '    <section id="sec-profil" class="grid g-b anchor">',
+  },
+  {
+    file: 'Dashboard',
+    find: '<button type="button" class="nav sub" data-target="sec-progres" title="Progres dan kurva S"><i class="ic" data-ic="chart"></i><span>Progres dan kurva S</span></button>',
+    replace: '<button type="button" class="nav sub" data-target="sec-progres" title="Progres dan kurva S"><i class="ic" data-ic="chart"></i><span>Progres dan kurva S</span></button>\n' +
+      '    <button type="button" class="nav sub" data-target="sec-prog" title="Prognosa akhir tahun"><i class="ic" data-ic="chart"></i><span>Prognosa akhir tahun</span></button>',
+  },
+  {
+    // Tampilan HP: Prognosa ikut tab Ringkasan.
+    file: 'Dashboard',
+    find: "tag(art('sec-progres',1),'kurva');",
+    replace: "tag(art('sec-progres',1),'kurva');tag(document.getElementById('sec-prog'),'ringkasan');",
   },
   {
     file: 'Dashboard',
@@ -552,7 +570,7 @@ const HTML_PATCHES = [
     file: 'Dashboard',
     find: "      if(fin)S.push({title:'Realisasi keuangan',wrap:'panel',nodes:[subs[1],fin]});",
     replace: "      if(fin)S.push({title:'Realisasi keuangan',wrap:'panel',nodes:[subs[1],fin]});\n" +
-      "      const pgH=q('#progHead'),pgB=q('#progBox');if(pgB)S.push({title:'Prognosa akhir tahun',wrap:'panel',dw:1040,nodes:[pgH,pgB]});\n" +
+      "      const pgP=q('#progPanel');if(pgP)S.push({title:'Prognosa akhir tahun',node:pgP});\n" +
       "      const wpid=String(((q('#weeklyProjectName')||{}).dataset||{}).pid||window.__pmoWeeklyPid||'');\n" +
       "      if(wpid&&window.pmoPresProj){S.push(pmoPresProj.slide({project:wpid,kind:'fin',title:proj},{title:'Realisasi keuangan (cut-off bulanan)'}));S.push(pmoPresProj.slide({project:wpid,kind:'la',title:proj},{title:'3 Month Look Ahead'}))}",
   },
