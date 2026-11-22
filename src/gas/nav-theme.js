@@ -697,8 +697,8 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
       }else if(page==='weekly'){
         var wTop=document.querySelector('#sec-ringkasan>.hero')||document.querySelector('#sec-ringkasan')||document.body;
         list.push({el:wTop,label:'Ringkasan & KPI',isTop:true});
-        [['#sec-progres','Progres & Kurva S'],['#sec-prog','Target Akhir Tahun'],['#sec-profil','Profil & Aktivitas'],['#sec-risiko','Concern & Mitigasi'],['#sec-rtl','RTL Jadwal'],['#sec-msc','Forecast CPM'],['#sec-hse','HSE, Video & Materi']].forEach(function(p){
-          var el=document.querySelector(p[0]);if(el&&!el.hidden&&el.offsetHeight>0&&list.length<8)list.push({el:el,label:p[1]});
+        [['#sec-profil','Profil Proyek'],['#sec-progres','Progres & Kurva S'],['#sec-hl','Highlight Aktivitas'],['#sec-prog','Target Akhir Tahun'],['#sec-risiko','Concern & Mitigasi'],['#sec-rtl','RTL Jadwal'],['#sec-msc','Forecast CPM'],['#sec-hse','HSE, Video & Materi']].forEach(function(p){
+          var el=document.querySelector(p[0]);if(el&&!el.hidden&&el.offsetHeight>0&&list.length<10)list.push({el:el,label:p[1]});
         });
       }else{
         var seen=[],topEl=document.querySelector('main,.wrap,.hero,header.head')||document.body;

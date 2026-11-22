@@ -238,6 +238,19 @@ const PRES_PROJ_JS = String.raw`<style>
 .pjx-cnt{display:flex;gap:6px;border:0!important;padding:0!important}.pjx-cnt i{font-style:normal;padding:4px 11px;border-radius:99px;font-size:12.5px;font-weight:700;background:rgba(127,140,153,.14)}
 .pjx-cnt i.hi{background:rgba(237,76,76,.16);color:#b42318}.pjx-cnt i.md{background:rgba(245,197,71,.22);color:#8a5a00}.pjx-cnt i.ask{background:rgba(8,127,193,.12);color:#0c5f93}
 .pp-card .pjx-ic{font-size:15px;gap:9px;padding:14px 16px}.pp-card .pjx-ih{font-size:19px}.pp-card .pjx-if{font-size:13.5px}
+/* Weekly: Profil proyek horizontal + Highlight 2 kolom */
+.pp-card #highlights{columns:2;column-gap:32px}.pp-card #highlights li{break-inside:avoid}
+#sec-profil.prof-h,#sec-hl{margin-bottom:var(--gap,18px)}
+#sec-profil.prof-h .pb.flush{display:grid;grid-template-columns:minmax(0,2.2fr) repeat(5,minmax(0,1fr));gap:12px;padding:16px 18px}
+#sec-profil.prof-h .profile-row{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--soft);min-width:0}
+#sec-profil.prof-h .profile-row:last-child{border-bottom:1px solid var(--line)}
+#sec-profil.prof-h .profile-row>b{font-size:12px;gap:8px;color:var(--muted)}#sec-profil.prof-h .profile-row>b .ic{width:24px;height:24px;padding:4px;border-radius:7px}
+#sec-profil.prof-h .profile-row>span{font-weight:700;color:var(--ink);font-size:14px;line-height:1.4;overflow-wrap:anywhere}
+#sec-profil.prof-h #projectPurpose{font-weight:500;font-size:13px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+#sec-hl ol.highlight{columns:2;column-gap:32px}#sec-hl ol.highlight li{break-inside:avoid}
+@media (max-width:1100px){#sec-profil.prof-h .pb.flush{grid-template-columns:repeat(3,minmax(0,1fr))}#sec-profil.prof-h .profile-row:first-child{grid-column:1/-1}}
+@media (max-width:700px){#sec-profil.prof-h .pb.flush{grid-template-columns:repeat(2,minmax(0,1fr));padding:12px}#sec-hl ol.highlight{columns:1}}
+html.m-mode #sec-profil.prof-h .pb.flush{grid-template-columns:repeat(2,minmax(0,1fr));padding:12px}html.m-mode #sec-hl ol.highlight{columns:1}
 .pjx-im{position:fixed;inset:0;z-index:2147482600;display:flex;align-items:center;justify-content:center;background:rgba(3,10,20,.55);font-family:Inter,"Segoe UI",system-ui,sans-serif;color:#132b43;color-scheme:light}
 .pjx-imb{width:min(980px,94vw);max-height:90vh;display:flex;flex-direction:column;background:#f6f9fc;border-radius:16px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.45)}
 .pjx-imh{display:flex;align-items:center;gap:12px;padding:12px 18px;background:#0f2f52;color:#fff}.pjx-imh b{display:block;font-size:15px}.pjx-imh small{color:#9fc3e2;font-size:12px}
@@ -531,7 +544,7 @@ const HTML_PATCHES = [
     // Weekly: slide Isu manajemen setelah Mitigasi risiko.
     file: 'Dashboard',
     find: "[['#sec-profil',1],['#sec-risiko',0],['#sec-risiko',1],['#sec-rtl',0],['#sec-msc',0],['#sec-hse',0]].forEach(function(x){const a=art(x[0],x[1]);if(a)S.push({title:ttl(a,'Slide'),node:a})});",
-    replace: "[['#sec-profil',1],['#sec-risiko',0],['#sec-risiko',1],['#sec-rtl',0],['#sec-msc',0],['#sec-hse',0]].forEach(function(x){const a=art(x[0],x[1]);if(a)S.push({title:ttl(a,'Slide'),node:a});if(x[0]==='#sec-risiko'&&x[1]===1&&window.pmoPresProj)pmoPresProj.issueSlides({page:'Weekly Progress'}).forEach(function(s){S.push(s)})});",
+    replace: "[['#sec-hl',0],['#sec-risiko',0],['#sec-risiko',1],['#sec-rtl',0],['#sec-msc',0],['#sec-hse',0]].forEach(function(x){const a=art(x[0],x[1]);if(a)S.push({title:ttl(a,'Slide'),node:a});if(x[0]==='#sec-risiko'&&x[1]===1&&window.pmoPresProj)pmoPresProj.issueSlides({page:'Weekly Progress'}).forEach(function(s){S.push(s)})});",
   },
   {
     // Monthly Executive Review · slide Ringkasan eksekutif: "dapat dilihat pada <tautan>" → nama slide.
@@ -546,30 +559,29 @@ const HTML_PATCHES = [
     replace: "      if(vis(fd)){const b=fd.cloneNode(true);host.appendChild(b);if(window.pmoPresProj)b.insertAdjacentHTML('beforeend',pmoPresProj.finNarr(d))}\n      else if(vis(fp)){const a=fp.cloneNode(true),g=a.querySelector('.fin-cards');if(g)g.style.gridTemplateColumns='repeat(5,minmax(0,1fr))';host.appendChild(a)}",
   },
   {
-    // Weekly: card Prognosa akhir tahun sebagai bagian tersendiri (lebar penuh) di bawah Progres & Kurva S.
     file: 'Dashboard',
-    find: '    <section id="sec-profil" class="grid g-b anchor">',
-    replace: '    <section id="sec-prog" class="anchor">\n      <article class="panel" id="progPanel">\n' +
-      '        <div class="ph"><span class="pi"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg></span><h3>Target akhir tahun <span id="progYear"></span></h3><span class="hint">Target RKAP biaya dan target fisik baseline s.d. 31 Desember</span></div>\n' +
-      '        <div id="progBox"><div class="pjx-empty">Memuat prognosa…</div></div>\n      </article>\n    </section>\n\n' +
-      '    <section id="sec-profil" class="grid g-b anchor">',
+    find: '<button type="button" class="nav sub" data-target="sec-progres" title="Progres dan kurva S"><i class="ic" data-ic="chart"></i><span>Progres dan kurva S</span></button>',
+    replace: '<button type="button" class="nav sub" data-target="sec-profil" title="Profil proyek"><i class="ic" data-ic="file"></i><span>Profil proyek</span></button>\n' +
+      '    <button type="button" class="nav sub" data-target="sec-progres" title="Progres dan kurva S"><i class="ic" data-ic="chart"></i><span>Progres dan kurva S</span></button>\n' +
+      '    <button type="button" class="nav sub" data-target="sec-hl" title="Highlight aktivitas"><i class="ic" data-ic="list"></i><span>Highlight aktivitas</span></button>\n' +
+      '    <button type="button" class="nav sub" data-target="sec-prog" title="Target akhir tahun"><i class="ic" data-ic="chart"></i><span>Target akhir tahun</span></button>',
   },
   {
     file: 'Dashboard',
-    find: '<button type="button" class="nav sub" data-target="sec-progres" title="Progres dan kurva S"><i class="ic" data-ic="chart"></i><span>Progres dan kurva S</span></button>',
-    replace: '<button type="button" class="nav sub" data-target="sec-progres" title="Progres dan kurva S"><i class="ic" data-ic="chart"></i><span>Progres dan kurva S</span></button>\n' +
-      '    <button type="button" class="nav sub" data-target="sec-prog" title="Target akhir tahun"><i class="ic" data-ic="chart"></i><span>Target akhir tahun</span></button>',
+    find: '\n    <button type="button" class="nav sub" data-target="sec-profil" title="Profil dan aktivitas"><i class="ic" data-ic="file"></i><span>Profil dan aktivitas</span></button>',
+    replace: '',
   },
   {
     // Tampilan HP: Prognosa ikut tab Ringkasan.
     file: 'Dashboard',
     find: "tag(art('sec-progres',1),'kurva');",
-    replace: "tag(art('sec-progres',1),'kurva');tag(document.getElementById('sec-prog'),'ringkasan');",
+    replace: "tag(art('sec-progres',1),'kurva');tag(document.getElementById('sec-prog'),'ringkasan');tag(document.getElementById('sec-hl'),'isu');",
   },
   {
     file: 'Dashboard',
     find: 'try{renderFin(data.finance)}catch(e){}',
-    replace: 'try{renderFin(data.finance)}catch(e){}try{if(window.pmoPresProj)pmoPresProj.progCard(data.prognosis)}catch(e){}',
+    replace: 'try{renderFin(data.finance)}catch(e){}try{if(window.pmoPresProj)pmoPresProj.progCard(data.prognosis)}catch(e){}' +
+      'setTimeout(function(){try{var __pp=document.getElementById(\'projectPurpose\');if(__pp)__pp.title=__pp.textContent;var __hc=document.getElementById(\'hlCount\'),__hn=document.querySelectorAll(\'#highlights>li:not(.empty)\').length;if(__hc)__hc.textContent=__hn?__hn+\' kegiatan\':\'\';[\'projectInvestment\',\'projectContract\'].forEach(function(id){var e=document.getElementById(id);if(!e)return;var t=e.textContent.trim(),n=Number(t.replace(/[^0-9]/g,\'\'));if(!/^Rp/.test(t)||!(n>=1e9))return;e.title=t;e.textContent=\'Rp \'+(n>=1e12?(n/1e12).toLocaleString(\'id-ID\',{maximumFractionDigits:2})+\' T\':(n/1e9).toLocaleString(\'id-ID\',{minimumFractionDigits:2,maximumFractionDigits:2})+\' M\')})}catch(e){}},80);',
   },
   {
     file: 'Dashboard',
@@ -580,5 +592,33 @@ const HTML_PATCHES = [
       "      if(wpid&&window.pmoPresProj){S.push(pmoPresProj.slide({project:wpid,kind:'fin',title:proj},{title:'Realisasi keuangan (cut-off bulanan)'}));S.push(pmoPresProj.slide({project:wpid,kind:'la',title:proj},{title:'3 Month Look Ahead'}))}",
   },
 ];
+
+/*
+ * Weekly (22 Nov): tata letak baru
+ *   Ringkasan → Profil proyek (horizontal, 6 kotak) → Progres & Kurva S → Highlight aktivitas (lebar penuh, 2 kolom)
+ *   → Target akhir tahun → Concern & Mitigasi …
+ * Blok <section id="sec-profil"> lama dibaca dari legacy/Dashboard.html saat dimuat, lalu dipecah.
+ */
+try {
+  const fs = require('node:fs'), path = require('node:path');
+  const src = fs.readFileSync(path.join(__dirname, '..', '..', 'legacy', 'Dashboard.html'), 'utf8');
+  const a = src.indexOf('    <section id="sec-profil" class="grid g-b anchor">'), b = src.indexOf('    <section id="sec-risiko"', a);
+  if (a < 0 || b < 0) throw new Error('blok sec-profil tidak ditemukan');
+  const block = src.slice(a, b);
+  const arts = block.split('      <article class="panel">');
+  if (arts.length !== 3) throw new Error('struktur sec-profil berubah');
+  const prof = '      <article class="panel">' + arts[1].replace(/\s*$/, '\n');
+  const hl = ('      <article class="panel">' + arts[2]).replace(/\s*<\/section>\s*$/, '\n');
+  HTML_PATCHES.push(
+    { file: 'Dashboard', find: block, replace:
+      '    <section id="sec-hl" class="anchor">\n' + hl.replace('<h3>Highlight activities pekan ini</h3>', '<h3>Highlight activities pekan ini</h3><span class="hint" id="hlCount"></span>') + '    </section>\n\n' +
+      '    <section id="sec-prog" class="anchor">\n      <article class="panel" id="progPanel">\n' +
+      '        <div class="ph"><span class="pi"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg></span><h3>Target akhir tahun <span id="progYear"></span></h3><span class="hint">Target RKAP biaya dan target fisik baseline s.d. 31 Desember</span></div>\n' +
+      '        <div id="progBox"><div class="pjx-empty">Memuat prognosa…</div></div>\n      </article>\n    </section>\n\n' },
+    { file: 'Dashboard', find: '    <section id="sec-progres" class="grid g-a anchor">', replace:
+      '    <section id="sec-profil" class="anchor prof-h">\n' + prof + '    </section>\n\n    <section id="sec-progres" class="grid g-a anchor">' },
+    { file: 'Dashboard', find: "tag(art('sec-profil',1),'isu');", replace: "" }
+  );
+} catch (e) { console.warn(JSON.stringify({ ev: 'pres_proj_layout_skip', message: String(e.message || e) })); }
 
 module.exports = { PRES_PROJ_GS, PRES_PROJ_JS, GS_PATCHES, HTML_PATCHES };
