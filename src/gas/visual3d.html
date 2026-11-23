@@ -153,11 +153,13 @@ function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){retur
 function go(page){if(typeof window.pmoGoWithProject==='function'&&page!=='portal')return window.pmoGoWithProject(page);window.top.location.href=(appUrl||'/app')+'?page='+page}
 function toast(msg){let t=$('toast');if(!t){t=document.createElement('div');t.id='toast';t.className='toast';t.setAttribute('role','status');document.body.appendChild(t)}t.textContent=msg;t.hidden=false;clearTimeout(window.__tt);window.__tt=setTimeout(function(){t.hidden=true},3200)}
 function isDark(){return document.documentElement.getAttribute('data-theme')==='dark'}
+function curAccent(){return document.documentElement.getAttribute('data-accent')||window.__pmoAccent||'blue'}
+function postModelTheme(f){if(f&&f.contentWindow)f.contentWindow.postMessage({pmoTheme:isDark()?'dark':'light',pmoAccent:curAccent()},'*')}
 function setThemeIcon(){$('themeBtn').firstElementChild.setAttribute('data-ic',isDark()?'sun':'moon');paint($('themeBtn'))}
 function toggleTheme(){const dark=!isDark();document.documentElement.setAttribute('data-theme',dark?'dark':'light');try{localStorage.setItem('pmoExecutiveTheme',dark?'dark':'light')}catch(e){}setThemeIcon()}
 setThemeIcon();
-// Tema bisa diganti dari menu akun: teruskan ke model di iframe.
-new MutationObserver(function(){const f=$('stage').querySelector('iframe');if(f&&f.contentWindow)f.contentWindow.postMessage({pmoTheme:isDark()?'dark':'light'},'*')}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+// Tema & aksen warna bisa diganti dari menu akun: teruskan ke model di iframe.
+new MutationObserver(function(){postModelTheme($('stage').querySelector('iframe'))}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','data-accent']});
 function api(path,body){return fetch(path,body?{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(body)}:{credentials:'same-origin'}).then(function(r){if(r.status===401){location.href='/login';throw new Error('Sesi berakhir.')}return r.json().catch(function(){throw new Error('Server tidak merespons dengan benar ('+r.status+').')})}).then(function(j){if(!j.ok)throw new Error(j.error||'Gagal.');return j.data})}
 function fmtSize(b){return b>=1048576?(b/1048576).toFixed(1).replace('.',',')+' MB':Math.max(1,Math.round(b/1024))+' KB'}
 function fmtDate(s){try{return new Date(s).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}catch(e){return ''}}
@@ -203,8 +205,10 @@ function emptyStage(){
 function show(id){
   const m=D.models.find(function(x){return x.id===id});if(!m)return;
   curId=id;
-  const src='/model3d/'+m.id+'/view?theme='+(isDark()?'dark':'light')+'&v='+encodeURIComponent(m.updatedAt||'');
+  const src='/model3d/'+m.id+'/view?theme='+(isDark()?'dark':'light')+'&accent='+encodeURIComponent(curAccent())+'&v='+encodeURIComponent(m.updatedAt||'');
   $('stage').innerHTML='<iframe title="'+esc(m.title)+'" src="'+esc(src)+'" sandbox="allow-scripts allow-popups allow-pointer-lock allow-downloads" allow="fullscreen" referrerpolicy="no-referrer"></iframe>';
+  const ifr=$('stage').querySelector('iframe');
+  if(ifr)ifr.addEventListener('load',function(){postModelTheme(ifr)});
   $('under').innerHTML='<span class="meta"><b>'+esc(m.title)+'</b><span>'+esc(projName(m.pid))+' · diperbarui '+esc(fmtDate(m.updatedAt))+(m.by?' oleh '+esc(m.by):'')+'</span></span>'+
     '<button type="button" class="btn" onclick="reloadModel()"><i class="ic" data-ic="reload"></i>Muat ulang</button>'+
     '<a class="btn" href="'+esc(src)+'" target="_blank" rel="noopener noreferrer"><i class="ic" data-ic="ext"></i>Tab baru</a>'+

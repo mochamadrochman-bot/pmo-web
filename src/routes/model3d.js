@@ -161,18 +161,44 @@ router.post('/api/model3d/:id/delete', requireUser, wrap(async (req) => {
   return { id };
 }));
 
-// Tampilan model (dimuat di iframe sandbox). ?theme=dark|light menyelaraskan tema.
-const THEME_JS = (theme) => '<script>(function(){var d=document.documentElement;' +
-  (theme ? 'd.setAttribute("data-theme",' + JSON.stringify(theme) + ');' : '') +
-  'addEventListener("message",function(e){var t=e&&e.data&&e.data.pmoTheme;if(t==="dark"||t==="light")d.setAttribute("data-theme",t)})})();</script>';
+// Tampilan model (dimuat di iframe sandbox). ?theme=dark|light&accent=blue|sage|mocha menyelaraskan tema.
+const THEME_JS = (theme, accent) => '<script>(function(){' +
+  'var d=document.documentElement,curT=' + JSON.stringify(theme || 'light') + ',curA=' + JSON.stringify(accent || 'blue') + ';' +
+  'var PAL={blue:{dk:"#0B3A66",pri:"#0F5FA8",br:"#1E6FC0",soft:"#E8F3FB"},sage:{dk:"#0F2A1D",pri:"#375534",br:"#6B9071",soft:"#E3EED4"},mocha:{dk:"#3B2A1F",pri:"#6F4E37",br:"#B08968",soft:"#EDE3D4"},dark:{dk:"#0F172A",pri:"#2563EB",br:"#38BDF8",soft:"#1E293B"}};' +
+  'function hex2rgb(h){h=h.slice(1);if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];var n=parseInt(h,16);return [(n>>16)&255,(n>>8)&255,n&255];}' +
+  'function isGreen(r,g,b){return g>=r+10&&g>=b+4&&!(r>180&&b<90);}' +
+  'function lum(r,g,b){return (0.2126*r+0.7152*g+0.0722*b)/255;}' +
+  'function pickColor(r,g,b,a,pal){var L=lum(r,g,b);var c=(r>190&&g>205&&b>185)?pal.soft:(L<0.16?pal.dk:(L<0.34?pal.pri:pal.br));if(a==null)return c;var x=hex2rgb(c);return "rgba("+x[0]+","+x[1]+","+x[2]+","+a+")";}' +
+  'function recolorCss(css,pal){return css.replace(/#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\\b|rgba?\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)(?:\\s*,\\s*([\\d.]+))?\\s*\\)/g,function(m,hx,rr,gg,bb,aa){var rgb=hx?hex2rgb("#"+hx):[+rr,+gg,+bb];if(!isGreen(rgb[0],rgb[1],rgb[2]))return m;return pickColor(rgb[0],rgb[1],rgb[2],aa,pal);});}' +
+  'function apply(){' +
+    'd.setAttribute("data-theme",curT);d.setAttribute("data-accent",curA);' +
+    'var key=curT==="dark"?"dark":(PAL[curA]?curA:"blue"),pal=PAL[key];' +
+    'var st=document.getElementById("__pmoAccOv");if(!st){st=document.createElement("style");st.id="__pmoAccOv";(document.head||d).appendChild(st);}' +
+    'st.textContent=":root{--accent:"+pal.pri+";--pri:"+pal.pri+"}input[type=checkbox],input[type=radio]{accent-color:"+pal.pri+"!important}";' +
+    'var list=document.querySelectorAll("style:not(#__pmoAccOv)");' +
+    'for(var i=0;i<list.length;i++){var el=list[i];if(el.__pmoOrig==null)el.__pmoOrig=el.textContent;el.textContent=key==="sage"?el.__pmoOrig:recolorCss(el.__pmoOrig,pal);}' +
+    'var stEls=document.querySelectorAll("[style]");' +
+    'for(var j=0;j<stEls.length;j++){var sEl=stEls[j];if(sEl.__pmoOrigSt==null)sEl.__pmoOrigSt=sEl.getAttribute("style")||"";var nw=key==="sage"?sEl.__pmoOrigSt:recolorCss(sEl.__pmoOrigSt,pal);if(nw!==sEl.getAttribute("style"))sEl.setAttribute("style",nw);}' +
+  '}' +
+  'apply();' +
+  'document.addEventListener("DOMContentLoaded",apply);' +
+  'addEventListener("message",function(e){' +
+    'var msg=e&&e.data;if(!msg||typeof msg!=="object")return;' +
+    'var ch=false;' +
+    'if(msg.pmoTheme==="dark"||msg.pmoTheme==="light"){curT=msg.pmoTheme;ch=true;}' +
+    'if(msg.pmoAccent&&PAL[msg.pmoAccent]){curA=msg.pmoAccent;ch=true;}' +
+    'if(ch)apply();' +
+  '});' +
+'})();</script>';
 
 router.get('/model3d/:id/view', requireUser, async (req, res) => {
   const r = await db.query('select project_id, html from model3d where id = $1', [Number(req.params.id) || 0]).catch(() => ({ rows: [] }));
   if (!r.rows[0]) return res.status(404).type('text').send('Model tidak ditemukan.');
   if (!canView(req.user, r.rows[0].project_id)) return res.status(403).type('text').send('Tidak tersedia untuk akun ini.');
-  const theme = ['dark', 'light'].includes(String(req.query.theme)) ? String(req.query.theme) : '';
+  const theme = ['dark', 'light'].includes(String(req.query.theme)) ? String(req.query.theme) : 'light';
+  const accent = ['blue', 'sage', 'mocha'].includes(String(req.query.accent)) ? String(req.query.accent) : 'blue';
   let html = r.rows[0].html;
-  const inj = THEME_JS(theme);
+  const inj = THEME_JS(theme, accent);
   html = /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, (m) => m + inj) : inj + html;
   res.removeHeader('Content-Security-Policy-Report-Only');
   res.set({

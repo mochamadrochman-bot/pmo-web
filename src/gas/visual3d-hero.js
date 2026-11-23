@@ -54,7 +54,8 @@ html.ex-hero-hdr :is(#v3dHero,#exStuckHost):has(.pop:not([hidden]),.acm-pop:not(
 
 /* Sembunyikan bilah chips duplikat & judul header lama; simpan .back sebagai tombol frosted-glass kembali ke Portal (kecuali jika sidebar ada) */
 html.ex-hero-hdr #content>.bar,
-html.ex-hero-hdr header.top .t{display:none!important}
+html.ex-hero-hdr header.top .t,
+html.ex-hero-hdr #v3dHero .v3d-stuck-t{display:none!important}
 html.ex-hero-hdr body:has(aside.side) header.top .back{display:none!important}
 html.ex-hero-hdr .pmo-pbar{display:none!important}
 
