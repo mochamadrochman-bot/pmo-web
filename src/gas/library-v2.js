@@ -59,9 +59,9 @@ html[data-theme=dark]{--lk-ok:#36c48c;--lk-ok-bg:#12382c;--lk-warn:#f5b942;--lk-
 .cov-strip{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);display:grid;gap:7px}
 .cov-lbl{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:11.5px;color:var(--muted)}
 .cov-bars{display:flex;gap:2px;height:11px;align-items:stretch}
-.cov-b{flex:1;min-width:2px;border-radius:2px;background:var(--lk-ok);opacity:.85}
+.cov-b{flex:1;min-width:2px;height:12px;min-height:0;border:0;padding:0;margin:0;border-radius:2px;background:var(--lk-ok);opacity:.85}
 .cov-b.ocr{background:var(--pri)}
-.cov-b.toc{background:var(--muted);opacity:.42}
+.cov-b.cov-toc{background:var(--muted);opacity:.42}
 .cov-b.need{background:var(--lk-warn)}
 .qchap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:9px;margin-top:10px}
 .qchap{text-align:left;border:1px solid var(--line);background:var(--tint);border-radius:9px;padding:11px 13px;transition:border-color .15s}
@@ -301,7 +301,7 @@ function renderOverview(){
     const isOcr=ocrSet.has(p),isToc=tocSet.has(p),hasTxt=txt.length>=40;
     if(isOcr)ocrCount++;else if(hasTxt)digCount++;else scanCount++;
     if((p-1)%step===0){
-      const cls=isOcr?'ocr':(isToc?'toc':(hasTxt?'':'need'));
+      const cls=isOcr?'ocr':(isToc?'cov-toc':(hasTxt?'':'need'));
       bars.push('<button type="button" class="cov-b '+cls+'" data-op="'+p+'" title="Hal. '+p+(isOcr?' (OCR AI)':isToc?' (Daftar Isi)':hasTxt?' (Teks PDF)':' (Scan / teks sedikit)')+'"></button>');
     }
   }
@@ -326,7 +326,7 @@ function renderOverview(){
         '<button type="button" class="vov-btn" id="ovGoToc">Lihat Bab &amp; Pasal</button>'+
         (ADMIN&&(scanCount>0||d.status==='PERLU_OCR')?'<button type="button" class="vov-btn" id="ovRunOcr">Jalankan OCR AI'+(scanCount?' ('+scanCount+' hal. scan)':'')+'</button>':'')+
       '</div>'+
-      (ix?'<div class="cov-strip"><div class="cov-lbl"><span><b>Peta Keterbacaan ('+total+' hal.)</b></span><span class="cov-leg"><span class="cov-leg-it"><i class="cov-dot pdf"></i>Teks PDF</span><span class="cov-leg-it"><i class="cov-dot ocr"></i>OCR AI</span><span class="cov-leg-it"><i class="cov-dot toc"></i>Daftar Isi</span><span class="cov-leg-it"><i class="cov-dot scan"></i>Scan</span></span></div><div class="cov-bars">'+bars.join('')+'</div></div>':'')+
+      (ix?'<div class="cov-strip"><div class="cov-lbl"><span><b>Peta Keterbacaan ('+total+' hal.)</b></span><span class="cov-leg"><span class="cov-leg-it"><i class="cov-dot cov-pdf"></i>Teks PDF</span><span class="cov-leg-it"><i class="cov-dot cov-ocr"></i>OCR AI</span><span class="cov-leg-it"><i class="cov-dot cov-toc"></i>Daftar Isi</span><span class="cov-leg-it"><i class="cov-dot cov-scan"></i>Scan</span></span></div><div class="cov-bars">'+bars.join('')+'</div></div>':'')+
     '</div>'+
     (chaps.length?'<div class="vov-card"><div class="vov-kicker">LOMPAT CEPAT KE BAB UTAMA</div><div class="qchap-grid">'+
       chaps.map(c=>'<button type="button" class="qchap" data-op="'+c.p+'"><small>Halaman '+c.p+'</small><b>'+esc(c.t)+'</b></button>').join('')+
