@@ -147,7 +147,7 @@ const LIBRARY_MAIN_HTML = `<main class="lk" id="lk">
         <a id="vDrive" class="vb" href="#" target="_blank" rel="noopener" hidden title="Buka di Google Drive"><i class="ic" data-ic="ext"></i><span>Drive</span></a>
         <button type="button" class="vb vclose" id="vClose" aria-label="Tutup penampil"><i class="ic" data-ic="x"></i></button>
       </div>
-      <div class="vctl" id="vPdfCtl">
+      <div class="vctl" id="vPdfCtl" hidden>
         <span class="vnav"><button type="button" id="vPrev" aria-label="Halaman sebelumnya"><i class="ic" data-ic="chevl"></i></button><label>hal.<input id="vPage" inputmode="numeric" value="–" aria-label="Nomor halaman"></label><span>/ <b id="vTotal">–</b></span><button type="button" id="vNext" aria-label="Halaman berikutnya"><i class="ic" data-ic="chevr"></i></button></span>
         <span class="vhit" id="vHitBox" hidden><button type="button" id="hPrev" aria-label="Temuan sebelumnya"><i class="ic" data-ic="chevl"></i></button><span id="vHit"></span><button type="button" id="hNext" aria-label="Temuan berikutnya"><i class="ic" data-ic="chevr"></i></button></span>
         <span class="vzoom"><button type="button" id="zOut" aria-label="Perkecil">−</button><button type="button" id="zFit" title="Pas lebar">100%</button><button type="button" id="zIn" aria-label="Perbesar">+</button></span>
@@ -164,6 +164,20 @@ const LIBRARY_MAIN_HTML = `<main class="lk" id="lk">
 const LIBRARY_V2_SCRIPT = `
 /* ---------- Navigasi tab panel kiri & Mode Fokus ---------- */
 let LTAB='docs';
+function syncIsiNav(gotoId){
+  var lbl='';
+  document.querySelectorAll('aside.side .nav.sub[data-goto]').forEach(function(b){
+    var on=b.getAttribute('data-goto')===gotoId;
+    b.classList.toggle('on',on);
+    if(on){var sp=b.querySelector('span');lbl=(sp&&sp.textContent)||'';}
+  });
+  var trigSp=document.querySelector('#pmoPbar .pmo-isi-trig > span:nth-of-type(2)');
+  if(trigSp&&lbl)trigSp.textContent=lbl;
+  document.querySelectorAll('#pmoPbar .pmo-isi-menu .pmo-chip').forEach(function(c,i){
+    var target=(i===0?'colDocs':(i===1?'colSearch':'colView'));
+    c.classList.toggle('on',target===gotoId);
+  });
+}
 function switchLTab(name){
   LTAB=name;
   document.querySelectorAll('[data-ltab]').forEach(b=>{
@@ -174,6 +188,7 @@ function switchLTab(name){
   if($('colDocs'))$('colDocs').hidden=(name!=='docs');
   if($('colToc'))$('colToc').hidden=(name!=='toc');
   if($('colSearch'))$('colSearch').hidden=(name!=='search');
+  if($('vModePdf')&&!$('vModePdf').classList.contains('active'))syncIsiNav(name==='search'?'colSearch':'colDocs');
   if(name==='search')setTimeout(()=>{if($('q'))$('q').focus();},60);
 }
 document.querySelectorAll('[data-ltab]').forEach(b=>b.addEventListener('click',()=>switchLTab(b.getAttribute('data-ltab'))));
@@ -189,7 +204,8 @@ function setViewerMode(mode){
   if($('vOverview'))$('vOverview').hidden=showPdf||!ACTIVE;
   if($('pgWrap'))$('pgWrap').hidden=!showPdf||!VIEW.pdf;
   if($('vEmpty'))$('vEmpty').hidden=!!ACTIVE||!!VIEW.pdf;
-  if($('vPdfCtl'))$('vPdfCtl').style.opacity=showPdf?'1':'.45';
+  if($('vPdfCtl'))$('vPdfCtl').hidden=!showPdf;
+  syncIsiNav(showPdf?'colView':(LTAB==='search'?'colSearch':'colDocs'));
 }
 if($('vModeOv'))$('vModeOv').onclick=()=>{setViewerMode('ov');renderOverview();};
 if($('vModePdf'))$('vModePdf').onclick=()=>{if(ACTIVE){if(VIEW.doc===ACTIVE&&VIEW.pdf)setViewerMode('pdf');else openViewer(ACTIVE,VIEW.page||1,TERMS);}};
@@ -286,7 +302,7 @@ function renderOverview(){
     if(isOcr)ocrCount++;else if(hasTxt)digCount++;else scanCount++;
     if((p-1)%step===0){
       const cls=isOcr?'ocr':(isToc?'toc':(hasTxt?'':'need'));
-      bars.push('<div class="cov-b '+cls+'" title="Hal. '+p+(isOcr?' (OCR AI)':isToc?' (Daftar Isi)':hasTxt?' (Teks PDF)':' (Scan / teks sedikit)')+'"></div>');
+      bars.push('<button type="button" class="cov-b '+cls+'" data-op="'+p+'" title="Hal. '+p+(isOcr?' (OCR AI)':isToc?' (Daftar Isi)':hasTxt?' (Teks PDF)':' (Scan / teks sedikit)')+'"></button>');
     }
   }
   const chaps=(ix&&ix.toc?ix.toc.filter(t=>t.l===1):[]).slice(0,12);
@@ -296,8 +312,13 @@ function renderOverview(){
       '<h2 class="vov-title">'+esc(d.title)+'</h2>'+
       '<div class="vov-meta">'+
         '<span>File: '+esc(d.fileName||'PDF')+'</span>'+
-        '<span>'+esc(total+' Halaman')+'</span>'+
-        (ix?'<span>'+digCount+' hal. teks PDF · '+ocrCount+' hal. OCR AI · '+scanCount+' hal. scan</span>':'<span>'+(searchable(d)?'Memuat detail indeks…':'Belum diindeks / hasil scan')+'</span>')+
+        (ix?'':'<span>'+(searchable(d)?'Memuat detail indeks…':'Belum diindeks / hasil scan')+'</span>')+
+      '</div>'+
+      '<div class="vov-stats">'+
+        '<div class="vst"><small>Total Halaman</small><b>'+esc(total)+'</b><span>Dokumen PDF</span></div>'+
+        '<div class="vst"><small>Teks PDF Digital</small><b>'+(ix?digCount+' hal.':'-')+'</b><span>Indeks instan</span></div>'+
+        '<div class="vst"><small>Ekstraksi OCR AI</small><b>'+(ix?ocrCount+' hal.':'-')+'</b><span>Terbaca AI</span></div>'+
+        '<div class="vst"><small>Bab / Lampiran</small><b>'+esc((d.sections||chaps.length||0)+' bagian')+'</b><span>'+(ix?scanCount+' hal. scan':'Menunggu indeks')+'</span></div>'+
       '</div>'+
       (d.note?'<div class="vov-note">'+esc(d.note)+'</div>':'')+
       '<div class="vov-acts">'+
@@ -305,7 +326,7 @@ function renderOverview(){
         '<button type="button" class="vov-btn" id="ovGoToc">Lihat Bab &amp; Pasal</button>'+
         (ADMIN&&(scanCount>0||d.status==='PERLU_OCR')?'<button type="button" class="vov-btn" id="ovRunOcr">Jalankan OCR AI'+(scanCount?' ('+scanCount+' hal. scan)':'')+'</button>':'')+
       '</div>'+
-      (ix?'<div class="cov-strip"><div class="cov-lbl"><span><b>Peta Keterbacaan ('+total+' hal.)</b></span><span>Hijau: Teks PDF · Biru: OCR AI · Abu: Daftar Isi · Kuning: Scan</span></div><div class="cov-bars">'+bars.join('')+'</div></div>':'')+
+      (ix?'<div class="cov-strip"><div class="cov-lbl"><span><b>Peta Keterbacaan ('+total+' hal.)</b></span><span class="cov-leg"><span class="cov-leg-it"><i class="cov-dot pdf"></i>Teks PDF</span><span class="cov-leg-it"><i class="cov-dot ocr"></i>OCR AI</span><span class="cov-leg-it"><i class="cov-dot toc"></i>Daftar Isi</span><span class="cov-leg-it"><i class="cov-dot scan"></i>Scan</span></span></div><div class="cov-bars">'+bars.join('')+'</div></div>':'')+
     '</div>'+
     (chaps.length?'<div class="vov-card"><div class="vov-kicker">LOMPAT CEPAT KE BAB UTAMA</div><div class="qchap-grid">'+
       chaps.map(c=>'<button type="button" class="qchap" data-op="'+c.p+'"><small>Halaman '+c.p+'</small><b>'+esc(c.t)+'</b></button>').join('')+

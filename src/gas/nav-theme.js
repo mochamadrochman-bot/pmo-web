@@ -646,7 +646,7 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
     var crumb=info.g&&GRP[info.g]?'<span class="pmo-crumb"><span>'+esc(GRP[info.g])+'</span>'+(info.name?'<span class="sep">›</span><b>'+esc(info.name)+'</b>':'')+'</span>':'';
     var L=isiBtns();
     var isMob=window.innerWidth<=900||document.documentElement.classList.contains('m-mode');
-    var useDrop=(page==='executive'||((page==='weekly'||page==='master'||page==='documents'||page==='dokumen')&&!isMob))&&L.length>0;
+    var useDrop=(page==='executive'||((page==='weekly'||page==='master'||page==='documents'||page==='dokumen'||page==='library')&&!isMob))&&L.length>0;
     var chips=L.length?'<span class="pmo-chips" role="list">'+L.map(function(b,i){var on=b.classList.contains('on')||b.classList.contains('active')||b.getAttribute('aria-current')==='true';var sp=b.querySelector('span');return '<button type="button" role="listitem" class="pmo-chip'+(on?' on':'')+'" data-isi="'+i+'"'+(on?' aria-current="true"':'')+'>'+esc(String((sp&&sp.textContent)||b.textContent||'').trim())+'</button>'}).join('')+'</span>':'';
     if(isEpc()){
       var cur=epcCur();
