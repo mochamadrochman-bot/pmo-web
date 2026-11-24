@@ -141,6 +141,7 @@ app.use('/', require('./routes/model3d'));
 app.use('/', require('./routes/fx').router);
 app.use('/', require('./routes/docmeta'));
 app.use('/', require('./routes/sena'));
+app.use('/', require('./routes/weekly-upload'));
 app.use('/', require('./routes/library'));
 app.use('/', require('./routes/drive-preview'));
 app.use('/', gasRoutes);
@@ -190,6 +191,7 @@ async function start() {
     console.log(JSON.stringify({ ev: 'gas_ready', sheets: info.sheets, functions: rt.functions, html: rt.html }));
     require('./lib/fx').start(() => require('./routes/fx').bumpData());
     // Sena v2: catatan pemakaian (batas harian & anggaran) + indeks teks dokumen di latar.
+    await require('./lib/weekly-upload').init().catch((e) => console.error(JSON.stringify({ ev: 'weekly_upload_init_fail', message: String(e.message || e) })));
     await require('./lib/sena').init().catch((e) => console.error(JSON.stringify({ ev: 'sena_init_fail', message: String(e.message || e) })));
     const auto = gasSync.start();
     console.log(JSON.stringify({ ev: 'gas_sync_schedule', auto, minutes: gasSync.info().minutes }));

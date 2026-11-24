@@ -53,8 +53,8 @@ const HTML_PATCHES = [
     file: 'AccountMenu',
     find: String.raw`  var allowed=/^(Portal Proyek|EPCC Control)/i.test(title);
   var HIDE=/^(Executive Dashboard|Weekly Progress|Master Schedule|Document Control|Library|Pelaporan Manajemen|Input Progress|Laporan Bulanan|Tambah \/ Edit Proyek|Live View|Spotlight)/i;`,
-    replace: String.raw`  var allowed=/^(Portal Proyek|EPCC Control|Weekly Progress|Live View|Visual 3D|PMO Spotlight|Document Control)/i.test(title);
-  var HIDE=/^(Executive Dashboard|Monthly Executive|Master Schedule|Galeri|Library|Pelaporan Manajemen|Management Report|Buat Laporan|Input Progress|Laporan Bulanan|Tambah \/ Edit Proyek)/i;`,
+    replace: String.raw`  var allowed=/^(Portal Proyek|EPCC Control|Weekly Progress|Live View|Visual 3D|PMO Spotlight|Document Control|Input Progress Mingguan)/i.test(title);
+  var HIDE=/^(Executive Dashboard|Monthly Executive|Master Schedule|Galeri|Library|Pelaporan Manajemen|Management Report|Buat Laporan|Input Progress Bulanan|Input Progress$|Laporan Bulanan|Tambah \/ Edit Proyek)/i;`,
   },
   {
     // Menu halaman (ponsel / menu akun): kelompok khusus kontraktor.

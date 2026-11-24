@@ -428,4 +428,6 @@ async function uploadDone(pid, cell, fileId, actor) {
 module.exports = {
   account, authUrl, exchangeCode, disconnect, inventory, setFolder, start, publicJob, restore,
   uploadSession, uploadDone, projects, cells, fileIdOf, folderIdOf, hostKind,
+  // dipakai unggah langsung di Input Progress Mingguan (src/lib/weekly-upload.js)
+  token, gapi, subFolder, shareAnyone, viewUrl, DRIVE, UPLOAD,
 };

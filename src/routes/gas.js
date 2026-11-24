@@ -24,7 +24,7 @@ const router = express.Router();
 
 // Halaman yang boleh dibuka akun kontraktor (selain itu ditolak sebelum kode lama berjalan).
 // Data tiap halaman tetap dibatasi ke proyek kontraktor di sisi server (lihat src/gas/ktr-access.js).
-const KONTRAKTOR_PAGES = ['', 'portal', 'weekly', 'engineering', 'epcc', 'procurement', 'construction', 'commissioning', 'live', 'spotlight', 'lobby', 'visual3d', 'documents'];
+const KONTRAKTOR_PAGES = ['', 'portal', 'weekly', 'engineering', 'epcc', 'procurement', 'construction', 'commissioning', 'live', 'spotlight', 'lobby', 'visual3d', 'documents', 'input'];
 
 function appUrl(req) {
   const base = process.env.APP_BASE_URL || (req.protocol + '://' + req.get('host'));
@@ -239,6 +239,8 @@ router.post('/app/rpc/:fn', requireUser, async (req, res) => {
     if (!failed) failed = new Error('Data proyek tersimpan, tetapi kelompok proyek gagal disimpan. Atur ulang di menu Kelompok Proyek.');
     await groups.load().catch(() => {});
   }
+  // Input mingguan: tandai kiriman kontraktor terpakai + buang file unggahan lama yang tidak dipakai lagi.
+  if (!failed && name === 'submitWeeklyInput') require('../lib/weekly-upload').afterSave(args[1] || {}, legacyUser(req.user)).catch((e) => console.error(JSON.stringify({ ev: 'weekly_upload_after_fail', message: String(e.message || e) })));
   if (!failed && name === 'saveProjectSetup') await require('../lib/project-sync').syncProjects().catch(() => {});
   const ms = Date.now() - started;
   if (ms > 3000) console.warn(JSON.stringify({ ev: 'gas_slow', fn: name, ms }));

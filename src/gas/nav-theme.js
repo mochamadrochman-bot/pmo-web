@@ -551,6 +551,7 @@ html[data-theme="dark"] .pmo-fly{background:#1b2c3e}
     if(!ktr)g('Dokumen & Lapangan',[['documents','Document Control','dokumen kontrak'],['library','Library & Knowledge','pedoman prosedur'],['live','Live View','cctv kamera'],['visual3d','Visual 3D Proyek','model 3d tiga dimensi three']]);
     if(ktr)g('Lapangan & 3D',[['documents','MoM / Risalah rapat','notulen tindak lanjut document control'],['live','Live View','cctv kamera'],['spotlight','Spotlight Lobby','tv lobby'],['visual3d','Visual 3D Proyek','model 3d tiga dimensi three']]);
     if(!ktr&&mr)g('Pelaporan Manajemen',[['report','Management Report · Pelaporan Manajemen','presentasi bulanan'],['weeklyprint','Buat Laporan Weekly','cetak pdf excel'],['monthlydoc','Buat Laporan Bulanan (dokumen)','word']]);
+    if(ktr)g('Input Mingguan',[['input','Input HSE & Video Mingguan','isi k3 hse video materi mingguan']]);
     if(!ktr&&inp)g('Input & Data Proyek',[['input','Input Progress Mingguan','isi mingguan input progres'],['monthly','Input Progress Bulanan','isian bulanan laporan bulanan biaya realisasi'],['project','Tambah / Edit Proyek','proyek baru']]);
     return out;
   }
