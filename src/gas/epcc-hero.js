@@ -3,9 +3,9 @@
 /**
  * EPCC Control (Desktop) · Engineering, Procurement, Construction, & Commissioning.
  * - Menerapkan 1 Unified Hero Banner tematik per bidang EPCC:
- *   ENG  -> /media/epcc-eng-banner.svg
- *   PROC -> /media/brand/login-bg.jpg
- *   CONS -> /media/epcc-cons-banner.svg
+ *   ENG  -> /media/epcc-eng-banner.jpg
+ *   PROC -> /media/epcc-proc-banner.jpg
+ *   CONS -> /media/epcc-cons-banner.jpg
  *   COM  -> /media/epcc-com-banner.jpg
  * - Otomatis menyesuaikan 4 tema dashboard (Biru, Sage, Mocha, Gelap) termasuk
  *   warna batang progres (--c2, --s1) dan badge status.
@@ -55,13 +55,13 @@ html.ex-hero-hdr main.wrap>#epcHero{
   transition:background-image .25s ease;
 }
 html.ex-hero-hdr main.wrap>#epcHero[data-epc-fld="ENG"]{
-  background-image:url('/media/epcc-eng-banner.svg');background-position:right center;
+  background-image:url('/media/epcc-eng-banner.jpg');background-position:center 62%;
 }
 html.ex-hero-hdr main.wrap>#epcHero[data-epc-fld="PROC"]{
-  background-image:url('/media/brand/login-bg.jpg');background-position:75% 42%;
+  background-image:url('/media/epcc-proc-banner.jpg');background-position:center 58%;
 }
 html.ex-hero-hdr main.wrap>#epcHero[data-epc-fld="CONS"]{
-  background-image:url('/media/epcc-cons-banner.svg');background-position:right center;
+  background-image:url('/media/epcc-cons-banner.jpg');background-position:center 44%;
 }
 html.ex-hero-hdr main.wrap>#epcHero[data-epc-fld="COM"]{
   background-image:url('/media/epcc-com-banner.jpg');background-position:center 48%;
