@@ -892,7 +892,7 @@ function resumeAllReport(){const ph=periodHeads();
     replace: "var __wpEl=document.getElementById('weeklyProjectName');__wpEl.textContent=selectedProject.toUpperCase();__wpEl.dataset.pid=data.projectId||'';window.__pmoWeeklyPid=data.projectId||'';",
   },
 ];
-HTML_PATCHES.push(...require('./portal-latest').PORTAL_LATEST_PATCHES, ...require('./nav-theme').NAV_PATCHES, ...require('./sena-extra').SENA_PATCHES, ...require('./live-lan').LIVE_HTML_PATCHES, ...require('./drive-preview').DRIVE_PREVIEW_PATCHES, ...require('./exec-story-brief').EXEC_STORY_PATCHES, ...require('./weekly-hero').WEEKLY_HERO_PATCHES, ...require('./master-hero').MASTER_HERO_PATCHES, ...require('./doc-hero').DOC_HERO_PATCHES, ...require('./library-hero').LIBRARY_HERO_PATCHES, ...require('./visual3d-hero').VISUAL3D_HERO_PATCHES, ...require('./liveview-hero').LIVEVIEW_HERO_PATCHES, ...require('./epcc-hero').EPCC_HERO_PATCHES, ...require('./input-hero').INPUT_HERO_PATCHES);
+HTML_PATCHES.push(...require('./portal-latest').PORTAL_LATEST_PATCHES, ...require('./nav-theme').NAV_PATCHES, ...require('./sena-extra').SENA_PATCHES, ...require('./sena-v2').HTML_PATCHES, ...require('./live-lan').LIVE_HTML_PATCHES, ...require('./drive-preview').DRIVE_PREVIEW_PATCHES, ...require('./exec-story-brief').EXEC_STORY_PATCHES, ...require('./weekly-hero').WEEKLY_HERO_PATCHES, ...require('./master-hero').MASTER_HERO_PATCHES, ...require('./doc-hero').DOC_HERO_PATCHES, ...require('./library-hero').LIBRARY_HERO_PATCHES, ...require('./visual3d-hero').VISUAL3D_HERO_PATCHES, ...require('./liveview-hero').LIVEVIEW_HERO_PATCHES, ...require('./epcc-hero').EPCC_HERO_PATCHES, ...require('./input-hero').INPUT_HERO_PATCHES);
 
 /** Tambahan/perbaikan fungsi server .gs yang belum lengkap di berkas legacy. */
 const GS_PATCHES = [
@@ -1349,7 +1349,8 @@ function load() {
     '\n;\n// ---- pres-video (server)\n' + require('./pres-video').PRES_VIDEO_GS +
     '\n;\n// ---- pres-proj (server)\n' + require('./pres-proj').PRES_PROJ_GS +
     '\n;\n// ---- contract-fx (server)\n' + require('./contract-fx').FX_GS +
-    '\n;\n// ---- cost-fx (server)\n' + require('./cost-fx').COST_GS;
+    '\n;\n// ---- cost-fx (server)\n' + require('./cost-fx').COST_GS +
+    '\n;\n// ---- sena-v2 (deklarasi)\n' + require('./sena-v2').SENA_V2_GS;
   const fnNames = new Set();
   const varNames = new Set();
   for (const m of code.matchAll(/^function\s+([A-Za-z_$][\w$]*)\s*\(/gm)) fnNames.add(m[1]);
@@ -1388,6 +1389,7 @@ function createScope(opts) {
     groupCheck: (id, type, parent, allIds) => require('../lib/groups').check(id, type, parent, allIds),
     groupSet: (id, type, parent) => require('../lib/groups').setSync(id, type, parent, opts.user && opts.user.username),
     fx: () => require('../lib/fx').snapshot(),
+    sena: () => require('../lib/sena').bridge,
   };
   const exported = factory(...GLOBAL_NAMES.map((n) => globals[n]), bridge);
   // Templat melihat fungsi/konstanta kode lama dan layanan global.

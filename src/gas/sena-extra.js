@@ -140,6 +140,31 @@ const SENA_BRIDGE = String.raw`
     return { plain: plain, linked: links.length ? linked : '', links: links };
   }
 
+  // --- Sena v2 (src/lib/sena.js): langkah yang dipakai pemroses asinkron di Node ---
+  senaBegin_ = function (req) { req = req || {}; var dk = req.draft && DRAFTS[String(req.draft)] ? String(req.draft) : ''; req.draft = dk || undefined; SEEN = {}; REQ = req; };
+  senaDraft_ = function (req) { var dk = req && req.draft && DRAFTS[String(req.draft)] ? String(req.draft) : ''; return dk || null; };
+  senaSeen_ = function (obj) { try { seenWalk(obj, 0); } catch (e) {} };
+  senaFinish_ = function (user, answer, dk) {
+    if (dk && DRAFTS[dk]) return { answer: String(answer || '').replace(/\[\[([^\]|]{1,160})\|[^\]]*\]\]/g, '$1').trim(), draft: { kind: dk, label: DRAFTS[dk].label }, cards: [] };
+    var L = linkify(user, String(answer || ''));
+    return { answer: L.plain, answerLinked: L.linked, links: L.links };
+  };
+  senaEnd_ = function () { SEEN = null; REQ = null; };
+  // Jalur lama (sinkron) dimatikan: memblokir server selama Sena berpikir. Widget memakai /api/sena/ask.
+  askAssistant = function () { throw new Error('Sena sudah diperbarui. Muat ulang halaman (Ctrl+F5) lalu tanyakan lagi.'); };
+  // Status widget: kuota harian & anggaran bulanan dari catatan pemakaian baru.
+  var __origStatus = getAiStatus;
+  getAiStatus = function (token) {
+    var s = __origStatus(token);
+    try {
+      if (s && s.enabled && __bridge.sena) {
+        var u = requireUser_(token), x = __bridge.sena().usage(u.username);
+        s.used = x.used; s.limit = x.limit; s.monthUsd = x.monthUsd; s.budgetUsd = x.budgetUsd; s.v2 = true;
+      }
+    } catch (e) {}
+    return s;
+  };
+
   var __origAsk = askAssistant;
   askAssistant = function (token, req) {
     req = req || {};
