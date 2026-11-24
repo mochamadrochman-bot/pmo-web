@@ -892,7 +892,7 @@ function resumeAllReport(){const ph=periodHeads();
     replace: "var __wpEl=document.getElementById('weeklyProjectName');__wpEl.textContent=selectedProject.toUpperCase();__wpEl.dataset.pid=data.projectId||'';window.__pmoWeeklyPid=data.projectId||'';",
   },
 ];
-HTML_PATCHES.push(...require('./portal-latest').PORTAL_LATEST_PATCHES, ...require('./nav-theme').NAV_PATCHES, ...require('./sena-extra').SENA_PATCHES, ...require('./live-lan').LIVE_HTML_PATCHES, ...require('./drive-preview').DRIVE_PREVIEW_PATCHES, ...require('./exec-story-brief').EXEC_STORY_PATCHES, ...require('./weekly-hero').WEEKLY_HERO_PATCHES, ...require('./master-hero').MASTER_HERO_PATCHES, ...require('./doc-hero').DOC_HERO_PATCHES, ...require('./library-hero').LIBRARY_HERO_PATCHES, ...require('./visual3d-hero').VISUAL3D_HERO_PATCHES, ...require('./liveview-hero').LIVEVIEW_HERO_PATCHES, ...require('./epcc-hero').EPCC_HERO_PATCHES);
+HTML_PATCHES.push(...require('./portal-latest').PORTAL_LATEST_PATCHES, ...require('./nav-theme').NAV_PATCHES, ...require('./sena-extra').SENA_PATCHES, ...require('./live-lan').LIVE_HTML_PATCHES, ...require('./drive-preview').DRIVE_PREVIEW_PATCHES, ...require('./exec-story-brief').EXEC_STORY_PATCHES, ...require('./weekly-hero').WEEKLY_HERO_PATCHES, ...require('./master-hero').MASTER_HERO_PATCHES, ...require('./doc-hero').DOC_HERO_PATCHES, ...require('./library-hero').LIBRARY_HERO_PATCHES, ...require('./visual3d-hero').VISUAL3D_HERO_PATCHES, ...require('./liveview-hero').LIVEVIEW_HERO_PATCHES, ...require('./epcc-hero').EPCC_HERO_PATCHES, ...require('./input-hero').INPUT_HERO_PATCHES);
 
 /** Tambahan/perbaikan fungsi server .gs yang belum lengkap di berkas legacy. */
 const GS_PATCHES = [
