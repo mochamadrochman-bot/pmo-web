@@ -1300,7 +1300,7 @@ function load() {
   });
   const v3d = require('./visual3d');
   htmlFiles.set('Visual3D', v3d.VISUAL3D_HTML);
-  for (const p of HTML_PATCHES.concat(v3d.HTML_PATCHES, require('./monthly-fin').HTML_PATCHES, require('./portal-v2').PORTAL_V2_PATCHES, require('./spotlight-v2').SPOTLIGHT_V2_PATCHES, require('./ktr-docs').HTML_PATCHES, require('./ktr-access').HTML_PATCHES, require('./library-v2').HTML_PATCHES, require('./pres-proj').HTML_PATCHES, require('./contract-fx').HTML_PATCHES, require('./cost-fx').HTML_PATCHES, require('./doc-mom').HTML_PATCHES, require('./doc-ins').HTML_PATCHES, require('./project-drive').HTML_PATCHES, require('./weekly-upload').HTML_PATCHES)) {
+  for (const p of HTML_PATCHES.concat(v3d.HTML_PATCHES, require('./monthly-fin').HTML_PATCHES, require('./portal-v2').PORTAL_V2_PATCHES, require('./spotlight-v2').SPOTLIGHT_V2_PATCHES, require('./ktr-docs').HTML_PATCHES, require('./ktr-access').HTML_PATCHES, require('./library-v2').HTML_PATCHES, require('./pres-proj').HTML_PATCHES, require('./contract-fx').HTML_PATCHES, require('./cost-fx').HTML_PATCHES, require('./doc-mom').HTML_PATCHES, require('./doc-ins').HTML_PATCHES, require('./project-drive').HTML_PATCHES, require('./weekly-upload').HTML_PATCHES, require('./viewer-access').HTML_PATCHES)) {
     const src = htmlFiles.get(p.file);
     if (src && src.includes(p.find)) htmlFiles.set(p.file, src.replace(p.find, p.replace));
     else console.warn(JSON.stringify({ ev: 'gas_patch_miss', file: p.file }));

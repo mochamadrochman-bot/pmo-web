@@ -24,6 +24,7 @@ const router = express.Router();
 
 // Halaman yang boleh dibuka akun kontraktor (selain itu ditolak sebelum kode lama berjalan).
 // Data tiap halaman tetap dibatasi ke proyek kontraktor di sisi server (lihat src/gas/ktr-access.js).
+const viewerAccess = require('../gas/viewer-access');
 const KONTRAKTOR_PAGES = ['', 'portal', 'weekly', 'engineering', 'epcc', 'procurement', 'construction', 'commissioning', 'live', 'spotlight', 'lobby', 'visual3d', 'documents', 'input'];
 
 function appUrl(req) {
@@ -157,6 +158,8 @@ router.get('/app', requireUser, async (req, res, next) => {
     const page = String(req.query.page || '').toLowerCase();
     if (!page) return res.redirect('/app?page=portal');
     if (req.user.role === 'kontraktor' && !KONTRAKTOR_PAGES.includes(page)) return forbidden(req, res);
+    // Akun USER / VIEWER: tanpa EPCC Control (src/gas/viewer-access.js).
+    if (viewerAccess.noEpcc(req.user) && viewerAccess.EPCC_PAGES.includes(page)) return forbidden(req, res, 'EPCC Control hanya untuk akun Admin, PIC, Input, dan Kontraktor.');
     const book = store.book();
     if (!book || !book.sheets.has('DATA MINGGUAN PROYEK')) {
       if (req.user.role === 'admin') return res.redirect('/admin/data');
@@ -204,6 +207,9 @@ router.post('/app/rpc/:fn', requireUser, async (req, res) => {
   const args = Array.isArray(req.body && req.body.args) ? req.body.args : [];
   if (!runtime.isPublic(name)) {
     return res.status(404).json({ ok: false, error: 'Fungsi tidak dikenal: ' + name });
+  }
+  if (viewerAccess.noEpcc(req.user) && viewerAccess.EPCC_FNS.has(name)) {
+    return res.status(403).json({ ok: false, error: 'Akun Anda tidak memiliki akses EPCC Control.' });
   }
   const started = Date.now();
   let result;
