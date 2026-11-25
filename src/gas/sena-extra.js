@@ -129,6 +129,7 @@ const SENA_BRIDGE = String.raw`
     var re = /\[\[([^\]|]{1,160})\|([^\]|]{0,80})\|([A-Za-z]{2,7})\|([^\]|]{0,80})\]\]/g;
     linked = text.replace(re, function (m, label, kode, bid, proj) {
       label = String(label).trim(); kode = String(kode).trim().replace(/^G:/i, ''); bid = String(bid).toUpperCase(); proj = String(proj).trim();
+      if (bid === 'WEEKLY') kode = ''; // tautan proyek: kode tidak dipakai (Sena kadang mengisinya dengan ID proyek)
       var p = null;
       if (proj) p = list.filter(function (x) { return x.id === normKey_(proj); })[0] || (function () { try { return findProject_(list, proj); } catch (e) { return null; } })();
       var ok = p && PAGE[bid] && (kode ? (SEEN && SEEN[aiNorm_(kode)]) : (bid === 'WEEKLY' || bid === 'DOC' || bid === 'ENG' || bid === 'PROC' || bid === 'CONS' || bid === 'COM'));

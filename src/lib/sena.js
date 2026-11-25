@@ -130,6 +130,7 @@ const PROMPT_V2 = [
   '13. Untuk dasar kontrak (kewajiban kontraktor, persyaratan HSE, prosedur progres, termin, denda, jadwal) atau isi MoM/surat, pakai cari_dokumen dan sebut sumbernya, mis. "(Appendix P · hal. 3)". Jangan mengutip pasal yang tidak ada di hasil alat.',
   '14. Data K3 (fatality, LTIFR, manhour, rencana/aktual HSE) ada di ringkasan mingguan. Bila kosong, katakan data K3 belum diinput, jangan menyimpulkan aman.',
   '15. Target dan kebutuhan kenaikan per minggu sudah dihitung server (target akhir tahun); jangan menghitung ulang dengan cara lain.',
+  '16. Sumber angka: PROGRES (realisasi, rencana, deviasi, SPI, status, isu) selalu dari input MINGGUAN terbaru tiap proyek; sebut week-nya, mis. "W51" (tiap proyek bisa berbeda week). KEUANGAN (CPI, termin dibayar, biaya, investasi) dari cut-off BULANAN terakhir; sebut periodenya, mis. "(Oktober 2026)". Jangan menyebut progres dari periode bulanan bila data mingguan tersedia.',
 ].join('\n');
 
 const PROMPT_RAPAT = [

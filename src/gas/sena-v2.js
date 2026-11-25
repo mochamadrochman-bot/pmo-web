@@ -8,8 +8,78 @@
  *   tombol "Bahan rapat", kuota & anggaran di kaki widget, tombol "Jadikan isu manajemen" pada jawaban rapat.
  */
 
-const SENA_V2_GS = `
-var senaBegin_ = null, senaDraft_ = null, senaSeen_ = null, senaFinish_ = null, senaEnd_ = null;
+const SENA_V2_GS = String.raw`
+// Satu deklarasi per baris: runtime hanya mengekspor nama yang ditulis "var nama =" di awal baris.
+var senaBegin_ = null;
+var senaDraft_ = null;
+var senaSeen_ = null;
+var senaFinish_ = null;
+var senaEnd_ = null;
+
+// ---- Sumber angka Sena (26 Nov 2026): PROGRES dari input mingguan terbaru tiap proyek,
+// KEUANGAN (CPI, termin dibayar) tetap dari cut-off bulanan terakhir yang tersedia.
+function senaWeeklyOf_(T, p) {
+  const k = 'sw' + p.id;
+  if (T._c[k] !== undefined) return T._c[k];
+  let w = null;
+  try { w = buildWeeklyData_(T.user, '', p.name); if (!w || w.projectId !== p.id) w = null; } catch (e) { w = null; }
+  return (T._c[k] = w);
+}
+function senaWeeklyStatus_(dev) {
+  if (dev === null || dev === undefined || !isFinite(dev)) return 'Data tidak tersedia';
+  const c = Number(DB_CONFIG.CRITICAL_DEVIATION), thr = Math.abs(c) <= 1 ? c * 100 : c;
+  return dev < thr ? 'Critical' : dev <= 0 ? 'At risk' : 'On track';
+}
+var __senaPortfolio = aiToolPortfolio_;
+aiToolPortfolio_ = function(T) {
+  if (T._c.pfw) return T._c.pfw;
+  const base = __senaPortfolio(T);
+  const out = JSON.parse(JSON.stringify(base));
+  out.catatanSumber = 'PROGRES (aktual, rencana, deviasi, SPI, status, isu) = input MINGGUAN terbaru tiap proyek (lihat weekProgres & periodeProgres; tiap proyek bisa berbeda week). KEUANGAN (cpi, terminDibayar) = cut-off BULANAN terakhir (' + (base.periodeBulanan || '-') + ').';
+  const pList = T.allowed();
+  const cnt = { onTrack: 0, atRisk: 0, critical: 0 };
+  out.proyek.forEach(function(x) {
+    x.keuanganBulanan = { periode: base.periodeBulanan || null, cpi: x.cpi, terminDibayar: x.terminDibayar };
+    delete x.cpi; delete x.terminDibayar;
+    const p = pList.find(function(q) { return q.id === x.id; });
+    const w = p ? senaWeeklyOf_(T, p) : null;
+    const berjalan = !x.tahap || x.tahap === 'BERJALAN';
+    if (w && w.overall) {
+      const pl = w.overall.plan, ac = w.overall.actual, dv = w.overall.deviation !== null && w.overall.deviation !== undefined ? w.overall.deviation : (pl !== null && ac !== null ? ac - pl : null);
+      x.weekProgres = w.week; x.periodeProgres = w.period || null; x.sumberProgres = 'mingguan';
+      x.aktual = aiN_(ac, 2); x.rencana = aiN_(pl, 2); x.deviasi = aiN_(dv, 2);
+      x.spi = ac !== null && pl ? aiN_(ac / pl, 3) : null;
+      if (berjalan) x.status = senaWeeklyStatus_(dv);
+      const cc = (w.concern || []).map(function(c) { return typeof c === 'string' ? c : (c && (c.concern || c.text || c.isu)) || ''; }).filter(Boolean).join('; ');
+      const isu = String(cc || w.highlight || '').replace(/\s+/g, ' ').trim().slice(0, 250);
+      x.isu = isu || null;
+      T.src('Weekly ' + x.nama + ' W' + w.week);
+    } else {
+      x.weekProgres = null;
+      x.sumberProgres = 'belum ada input mingguan; angka progres dari cut-off bulanan ' + (base.periodeBulanan || '');
+      x.aktual = x.aktual === undefined ? null : x.aktual;
+    }
+    if (berjalan) { if (x.status === 'On track') cnt.onTrack++; else if (x.status === 'At risk') cnt.atRisk++; else if (x.status === 'Critical') cnt.critical++; }
+  });
+  if (out.ringkasan) {
+    delete out.ringkasan.plan; delete out.ringkasan.actual;
+    out.ringkasan.onTrack = cnt.onTrack; out.ringkasan.atRisk = cnt.atRisk; out.ringkasan.critical = cnt.critical;
+    out.ringkasan.catatan = 'Jumlah status dihitung dari progres mingguan terbaru.';
+  }
+  return (T._c.pfw = out);
+};
+var __senaProject = aiToolProject_;
+aiToolProject_ = function(T, p) {
+  const out = __senaProject(T, p);
+  if (out && out.bulanan) {
+    const b = out.bulanan, pf = aiToolPortfolio_(T), x = (pf.proyek || []).find(function(q) { return q.id === p.id; }) || {}, kb = x.keuanganBulanan || {};
+    out.keuanganBulanan = { periode: kb.periode || pf.periodeBulanan || null, cpi: kb.cpi === undefined ? null : kb.cpi,
+      terminDibayar: kb.terminDibayar === undefined ? null : kb.terminDibayar, selesai: b.selesai || null, addendum: b.addendum || 0 };
+    delete out.bulanan;
+  }
+  if (out) out.catatanSumber = 'Progres pakai "mingguan" (week terbaru). Keuangan (CPI, termin) pakai "keuanganBulanan" (cut-off bulanan terakhir).';
+  return out;
+};
 `;
 
 const WIDGET_JS = String.raw`<style id="senaV2Css">
