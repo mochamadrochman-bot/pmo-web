@@ -214,34 +214,38 @@ const THEME_JS = (theme, accent) => '<script>(function(){' +
   '});' +
 '})();</script>';
 
-router.get('/model3d/:id/view', requireUser, async (req, res) => {
-  const r = await db.query('select project_id, html from model3d where id = $1', [Number(req.params.id) || 0]).catch(() => ({ rows: [] }));
-  if (!r.rows[0]) return res.status(404).type('text').send('Model tidak ditemukan.');
-  if (!canView(req.user, r.rows[0].project_id)) return res.status(403).type('text').send('Tidak tersedia untuk akun ini.');
-  const theme = ['dark', 'light'].includes(String(req.query.theme)) ? String(req.query.theme) : 'light';
-  const accent = ['blue', 'sage', 'mocha'].includes(String(req.query.accent)) ? String(req.query.accent) : 'blue';
-  let html = r.rows[0].html;
-  const inj = THEME_JS(theme, accent);
-  html = /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, (m) => m + inj) : inj + html;
-  res.removeHeader('Content-Security-Policy-Report-Only');
-  res.set({
-    'Content-Security-Policy': VIEW_CSP,
-    'Cache-Control': 'private, no-cache',
-    'X-Content-Type-Options': 'nosniff',
-    'Referrer-Policy': 'no-referrer',
-  });
-  res.type('html').send(html);
+router.get('/model3d/:id/view', requireUser, async (req, res, next) => {
+  try {
+    const r = await db.query('select project_id, html from model3d where id = $1', [Number(req.params.id) || 0]).catch(() => ({ rows: [] }));
+    if (!r.rows[0]) return res.status(404).type('text').send('Model tidak ditemukan.');
+    if (!canView(req.user, r.rows[0].project_id)) return res.status(403).type('text').send('Tidak tersedia untuk akun ini.');
+    const theme = ['dark', 'light'].includes(String(req.query.theme)) ? String(req.query.theme) : 'light';
+    const accent = ['blue', 'sage', 'mocha'].includes(String(req.query.accent)) ? String(req.query.accent) : 'blue';
+    let html = r.rows[0].html;
+    const inj = THEME_JS(theme, accent);
+    html = /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, (m) => m + inj) : inj + html;
+    res.removeHeader('Content-Security-Policy-Report-Only');
+    res.set({
+      'Content-Security-Policy': VIEW_CSP,
+      'Cache-Control': 'private, no-cache',
+      'X-Content-Type-Options': 'nosniff',
+      'Referrer-Policy': 'no-referrer',
+    });
+    res.type('html').send(html);
+  } catch (err) { next(err); }
 });
 
 // Unduh berkas asli (cadangan / dibuka di luar dashboard). Hanya yang boleh mengunggah.
-router.get('/model3d/:id/file', requireUser, async (req, res) => {
-  const r = await db.query('select project_id, title, file_name, html, uploaded_by from model3d where id = $1', [Number(req.params.id) || 0]).catch(() => ({ rows: [] }));
-  const m = r.rows[0];
-  if (!m) return res.status(404).type('text').send('Model tidak ditemukan.');
-  if (!canEdit(req.user, m)) return res.status(403).type('text').send('Hanya Admin atau PIC proyek ini yang boleh mengunduh berkas asli.');
-  const name = (m.file_name || (m.title + '.html')).replace(/[^\w.\- ]+/g, '_');
-  res.set({ 'Content-Disposition': 'attachment; filename="' + name + '"', 'Content-Security-Policy': "sandbox; default-src 'none'" });
-  res.type('application/octet-stream').send(m.html);
+router.get('/model3d/:id/file', requireUser, async (req, res, next) => {
+  try {
+    const r = await db.query('select project_id, title, file_name, html, uploaded_by from model3d where id = $1', [Number(req.params.id) || 0]).catch(() => ({ rows: [] }));
+    const m = r.rows[0];
+    if (!m) return res.status(404).type('text').send('Model tidak ditemukan.');
+    if (!canEdit(req.user, m)) return res.status(403).type('text').send('Hanya Admin atau PIC proyek ini yang boleh mengunduh berkas asli.');
+    const name = (m.file_name || (m.title + '.html')).replace(/[^\w.\- ]+/g, '_');
+    res.set({ 'Content-Disposition': 'attachment; filename="' + name + '"', 'Content-Security-Policy': "sandbox; default-src 'none'" });
+    res.type('application/octet-stream').send(m.html);
+  } catch (err) { next(err); }
 });
 
 module.exports = router;

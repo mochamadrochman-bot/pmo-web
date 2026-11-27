@@ -65,16 +65,28 @@ function clientShim(user) {
 (function () {
   try { sessionStorage.setItem('pmoSessionToken', 'server-session'); } catch (e) {}
   ${pu ? `try { sessionStorage.setItem('pmoUser', JSON.stringify(${pu})); } catch (e) {}` : ''}
-  function call(name, args, ok, fail, userObj) {
+  function call(name, args, ok, fail, userObj, attempt) {
+    attempt = attempt || 0;
     fetch('/app/rpc/' + encodeURIComponent(name), {
       method: 'POST', credentials: 'same-origin',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ args: args })
     }).then(function (r) {
       if (r.status === 401) { location.href = '/login'; throw new Error('Sesi berakhir.'); }
-      return r.json();
+      if ((r.status === 502 || r.status === 503 || r.status === 504) && attempt < 1 && /^(get|list|load|read|find|search|peek|check|auth)/i.test(name)) {
+        return new Promise(function (resolve) { setTimeout(resolve, 1500); }).then(function () {
+          return call(name, args, ok, fail, userObj, attempt + 1);
+        });
+      }
+      return r.text().then(function (txt) {
+        try { return JSON.parse(txt); }
+        catch (e) {
+          throw new Error(r.status >= 500 ? 'Server sedang sibuk atau memuat ulang (HTTP ' + r.status + '). Coba muat ulang halaman.' : 'Respons server tidak valid (HTTP ' + r.status + ').');
+        }
+      });
     }).then(function (j) {
-      if (j && j.ok) { if (ok) ok(j.data, userObj); return; }
+      if (!j) return;
+      if (j.ok) { if (ok) ok(j.data, userObj); return; }
       var err = new Error((j && j.error) || 'Terjadi kesalahan di server.'); err.name = 'ScriptError';
       if (fail) fail(err, userObj); else console.error(err.message);
     }).catch(function (e) { if (fail) fail(e, userObj); else console.error(e); });
@@ -202,69 +214,81 @@ router.post('/api/prefs/accent', requireUser, async (req, res, next) => {
 });
 
 // --- Pengganti google.script.run --------------------------------------------
-router.post('/app/rpc/:fn', requireUser, async (req, res) => {
-  const name = String(req.params.fn || '');
-  const args = Array.isArray(req.body && req.body.args) ? req.body.args : [];
-  if (!runtime.isPublic(name)) {
-    return res.status(404).json({ ok: false, error: 'Fungsi tidak dikenal: ' + name });
-  }
-  if (viewerAccess.noEpcc(req.user) && viewerAccess.EPCC_FNS.has(name)) {
-    return res.status(403).json({ ok: false, error: 'Akun Anda tidak memiliki akses EPCC Control.' });
-  }
-  const started = Date.now();
-  let result;
-  let failed = null;
-  const { scope, wasLoggedOut } = makeScope(req, res);
+router.post('/app/rpc/:fn', requireUser, async (req, res, next) => {
   try {
-    const fn = scope.exported[name];
-    if (typeof fn !== 'function') throw new Error('Fungsi tidak dikenal: ' + name);
-    result = fn.apply(null, args);
-  } catch (err) {
-    failed = err;
-  }
-  if (store.readOnly() && hasSheetChanges()) {
-    // Mode baca-saja: rumus spreadsheet belum dihitung ulang di server, jadi input
-    // tetap dilakukan di aplikasi lama. Perubahan dibatalkan supaya data tidak menyimpang.
-    const reverted = await store.revertDirty();
-    clearCache();
-    console.warn(JSON.stringify({ ev: 'gas_readonly_block', fn: name, sheets: reverted }));
-    failed = new Error('Server baru masih dalam mode baca. Simpan atau ubah data melalui aplikasi lama (Apps Script); data di sini mengikuti Google Sheets secara otomatis.');
-  }
-  try {
-    await store.flush();
-  } catch (err) {
-    console.error(JSON.stringify({ ev: 'gas_flush_fail', fn: name, message: String(err.message || err) }));
-    if (!failed) failed = new Error('Data gagal disimpan ke database. Coba lagi.');
-  }
-  // Kelompok proyek dari menu Tambah/Edit Proyek: ikut tersimpan hanya bila penyimpanan proyek berhasil.
-  try {
-    if (failed) await groups.discard();
-    else await groups.settle();
-  } catch (err) {
-    console.error(JSON.stringify({ ev: 'project_group_save_fail', fn: name, message: String(err.message || err) }));
-    if (!failed) failed = new Error('Data proyek tersimpan, tetapi kelompok proyek gagal disimpan. Atur ulang di menu Kelompok Proyek.');
-    await groups.load().catch(() => {});
-  }
-  // Input mingguan: tandai kiriman kontraktor terpakai + buang file unggahan lama yang tidak dipakai lagi.
-  if (!failed && name === 'submitWeeklyInput') require('../lib/weekly-upload').afterSave(args[1] || {}, legacyUser(req.user)).catch((e) => console.error(JSON.stringify({ ev: 'weekly_upload_after_fail', message: String(e.message || e) })));
-  if (!failed && name === 'saveProjectSetup') await require('../lib/project-sync').syncProjects().catch(() => {});
-  const ms = Date.now() - started;
-  if (ms > 3000) console.warn(JSON.stringify({ ev: 'gas_slow', fn: name, ms }));
-
-  if (wasLoggedOut()) {
-    const token = req.cookies ? req.cookies[session.COOKIE] : null;
-    await session.destroy(token);
-    session.clearCookie(res);
-    await audit(req.user, 'logout', 'user', req.user.username, { via: 'app' });
-  }
-  if (failed) {
-    const msg = String((failed && failed.message) || failed);
-    if (!/^(Sesi|Akun|Halaman|Fitur|Tidak ada|Data|Server baru)/.test(msg)) {
-      console.error(JSON.stringify({ ev: 'gas_error', fn: name, message: msg.slice(0, 300) }));
+    const name = String(req.params.fn || '');
+    const args = Array.isArray(req.body && req.body.args) ? req.body.args : [];
+    if (!runtime.isPublic(name)) {
+      return res.status(404).json({ ok: false, error: 'Fungsi tidak dikenal: ' + name });
     }
-    return res.json({ ok: false, error: msg });
+    if (viewerAccess.noEpcc(req.user) && viewerAccess.EPCC_FNS.has(name)) {
+      return res.status(403).json({ ok: false, error: 'Akun Anda tidak memiliki akses EPCC Control.' });
+    }
+    const started = Date.now();
+    let result;
+    let failed = null;
+    const { scope, wasLoggedOut } = makeScope(req, res);
+    try {
+      const fn = scope.exported[name];
+      if (typeof fn !== 'function') throw new Error('Fungsi tidak dikenal: ' + name);
+      result = fn.apply(null, args);
+    } catch (err) {
+      failed = err;
+    }
+    if (store.readOnly() && hasSheetChanges()) {
+      // Mode baca-saja: rumus spreadsheet belum dihitung ulang di server, jadi input
+      // tetap dilakukan di aplikasi lama. Perubahan dibatalkan supaya data tidak menyimpang.
+      try {
+        const reverted = await store.revertDirty();
+        clearCache();
+        console.warn(JSON.stringify({ ev: 'gas_readonly_block', fn: name, sheets: reverted }));
+      } catch (revErr) {
+        console.error(JSON.stringify({ ev: 'gas_revert_fail', fn: name, message: String(revErr.message || revErr) }));
+      }
+      failed = new Error('Server baru masih dalam mode baca. Simpan atau ubah data melalui aplikasi lama (Apps Script); data di sini mengikuti Google Sheets secara otomatis.');
+    }
+    try {
+      await store.flush();
+    } catch (err) {
+      console.error(JSON.stringify({ ev: 'gas_flush_fail', fn: name, message: String(err.message || err) }));
+      if (!failed) failed = new Error('Data gagal disimpan ke database. Coba lagi.');
+    }
+    // Kelompok proyek dari menu Tambah/Edit Proyek: ikut tersimpan hanya bila penyimpanan proyek berhasil.
+    try {
+      if (failed) await groups.discard();
+      else await groups.settle();
+    } catch (err) {
+      console.error(JSON.stringify({ ev: 'project_group_save_fail', fn: name, message: String(err.message || err) }));
+      if (!failed) failed = new Error('Data proyek tersimpan, tetapi kelompok proyek gagal disimpan. Atur ulang di menu Kelompok Proyek.');
+      await groups.load().catch(() => {});
+    }
+    // Input mingguan: tandai kiriman kontraktor terpakai + buang file unggahan lama yang tidak dipakai lagi.
+    if (!failed && name === 'submitWeeklyInput') require('../lib/weekly-upload').afterSave(args[1] || {}, legacyUser(req.user)).catch((e) => console.error(JSON.stringify({ ev: 'weekly_upload_after_fail', message: String(e.message || e) })));
+    if (!failed && name === 'saveProjectSetup') await require('../lib/project-sync').syncProjects().catch(() => {});
+    const ms = Date.now() - started;
+    if (ms > 3000) console.warn(JSON.stringify({ ev: 'gas_slow', fn: name, ms }));
+
+    if (wasLoggedOut()) {
+      try {
+        const token = req.cookies ? req.cookies[session.COOKIE] : null;
+        await session.destroy(token);
+        session.clearCookie(res);
+        await audit(req.user, 'logout', 'user', req.user.username, { via: 'app' });
+      } catch (outErr) {
+        console.error(JSON.stringify({ ev: 'gas_logout_fail', message: String(outErr.message || outErr) }));
+      }
+    }
+    if (failed) {
+      const msg = String((failed && failed.message) || failed);
+      if (!/^(Sesi|Akun|Halaman|Fitur|Tidak ada|Data|Server baru)/.test(msg)) {
+        console.error(JSON.stringify({ ev: 'gas_error', fn: name, message: msg.slice(0, 300) }));
+      }
+      return res.json({ ok: false, error: msg });
+    }
+    return res.json({ ok: true, data: result === undefined ? null : result });
+  } catch (err) {
+    next(err);
   }
-  return res.json({ ok: true, data: result === undefined ? null : result });
 });
 
 module.exports = router;

@@ -20,11 +20,19 @@ const EXPORT_PDF_MIMES = new Set([
   'application/vnd.google-apps.drawing',
 ]);
 
+async function fetchTimed(url, headers, ms) {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), ms);
+  try { return await fetch(url, { headers, signal: ctl.signal }); }
+  finally { clearTimeout(t); }
+}
+
 async function resolveDriveTarget(id) {
   const token = await gauth.accessToken();
-  const metaRes = await fetch(
+  const metaRes = await fetchTimed(
     `${DRIVE_API}/files/${encodeURIComponent(id)}?fields=id,name,mimeType,size&supportsAllDrives=true`,
-    { headers: { Authorization: `Bearer ${token}` } }
+    { headers: { Authorization: `Bearer ${token}` } },
+    15000
   );
   if (!metaRes.ok) {
     return { ok: false, status: metaRes.status };
@@ -79,9 +87,9 @@ router.get('/api/drive/preview-pdf/:id', requireUser, async (req, res) => {
       return res.json({ ok: true, kind: target.kind, name: target.name });
     }
 
-    const upstream = await fetch(target.url, {
+    const upstream = await fetchTimed(target.url, {
       headers: { Authorization: `Bearer ${target.token}` },
-    });
+    }, 30000);
     if (!upstream.ok) {
       return res.status(upstream.status).json({ ok: false, error: 'Gagal mengambil pratinjau dari Google Drive.' });
     }

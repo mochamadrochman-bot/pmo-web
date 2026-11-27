@@ -47,12 +47,17 @@ let seq = 0;
 
 function getWorker() {
   if (!worker) {
-    worker = new Worker(WORKER_SRC, { eval: true });
-    worker.unref();
-    worker.on('error', (e) => {
+    const w = new Worker(WORKER_SRC, { eval: true });
+    w.unref();
+    w.on('error', (e) => {
       console.error(JSON.stringify({ ev: 'sync_http_worker_error', message: String(e.message || e) }));
-      worker = null;
+      if (worker === w) worker = null;
     });
+    w.on('exit', (code) => {
+      if (code) console.error(JSON.stringify({ ev: 'sync_http_worker_exit', code }));
+      if (worker === w) worker = null;
+    });
+    worker = w;
   }
   return worker;
 }
@@ -80,7 +85,12 @@ function requestAllSync(reqs, totalTimeoutMs) {
   const state = Atomics.wait(signal, 0, 0, limit);
   const msg = receiveMessageOnPort(port1);
   port1.close();
-  if (state === 'timed-out' || !msg) throw new Error('Permintaan ke layanan luar tidak dijawab tepat waktu.');
+  if (state === 'timed-out' || !msg) {
+    // Hentikan worker yang macet supaya permintaan sinkron berikutnya tidak ikut menggantung.
+    if (worker === w) worker = null;
+    w.terminate().catch(() => {});
+    throw new Error('Permintaan ke layanan luar tidak dijawab tepat waktu.');
+  }
   return msg.message.results.map((r) => (r.error ? r : { status: r.status, headers: r.headers, body: Buffer.from(r.body, 'base64') }));
 }
 

@@ -465,8 +465,13 @@ router.post('/api/admin/google/disconnect', onlyAdmin, async (req, res, next) =>
 
 router.post('/api/admin/google/test', onlyAdmin, async (req, res) => {
   try {
-    const token = gauth.accessTokenSync();
-    const r = await fetch((process.env.GOOGLE_DRIVE_API || 'https://www.googleapis.com/drive/v3') + '/about?fields=user(emailAddress),storageQuota(limit,usage)', { headers: { Authorization: 'Bearer ' + token } });
+    const token = await gauth.accessToken();
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 15000);
+    let r;
+    try {
+      r = await fetch((process.env.GOOGLE_DRIVE_API || 'https://www.googleapis.com/drive/v3') + '/about?fields=user(emailAddress),storageQuota(limit,usage)', { headers: { Authorization: 'Bearer ' + token }, signal: ctl.signal });
+    } finally { clearTimeout(timer); }
     const j = await r.json();
     if (!r.ok) throw new Error((j.error && j.error.message) || 'HTTP ' + r.status);
     res.json({ ok: true, data: { email: j.user && j.user.emailAddress, usage: j.storageQuota } });

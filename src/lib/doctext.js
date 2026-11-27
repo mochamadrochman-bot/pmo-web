@@ -19,7 +19,7 @@ const db = require('../db');
 const KATS = ['KONTRAK', 'ADDENDUM', 'OK', 'MOM', 'SURAT_MASUK', 'SURAT_KELUAR', 'ASURANSI'];
 const OCR_MAX_PAGES = Number(process.env.SENA_OCR_MAX_PAGES) || 40;
 const MAX_PAGES = 400;
-const MAX_BYTES = 45 * 1024 * 1024;
+const MAX_BYTES = Math.min(45, Math.max(5, Number(process.env.SENA_DOC_MAX_MB) || 20)) * 1024 * 1024;
 const PAGE_CHARS = 6000;
 const STOP = new Set(('yang dan di ke dari untuk dengan pada dalam atau ini itu adalah akan oleh sebagai tidak juga sudah telah dapat bisa harus ' +
   'serta karena maka bahwa jika bila agar the of and to in for on by with is are be as at or an a this that').split(' '));
@@ -138,18 +138,25 @@ function pageLines(tc) {
 
 const sleep = (ms) => new Promise((r) => { const t = setTimeout(r, ms); if (t.unref) t.unref(); });
 
+let canvasLibCache = undefined;
+function getCanvasLib() {
+  if (canvasLibCache !== undefined) return canvasLibCache;
+  try { canvasLibCache = require('@napi-rs/canvas'); } catch (e) { canvasLibCache = null; }
+  return canvasLibCache;
+}
+
 async function extract(buf) {
   const lib = await pdfjs();
   const pdf = await lib.getDocument({ data: new Uint8Array(buf), disableFontFace: true, isEvalSupported: false, verbosity: 0 }).promise;
   const n = Math.min(pdf.numPages, MAX_PAGES), out = [];
+  const canvasLib = getCanvasLib();
   let ocr = 0, skipped = 0;
   for (let p = 1; p <= n; p++) {
     const page = await pdf.getPage(p);
     let t = pageLines(await page.getTextContent());
     if (t.replace(/\s/g, '').length < 40) {
-      if (ocr < OCR_MAX_PAGES) {
+      if (canvasLib && ocr < OCR_MAX_PAGES) {
         try {
-          const canvasLib = require('@napi-rs/canvas');
           const vp = page.getViewport({ scale: 2.0 });
           const c = canvasLib.createCanvas(Math.ceil(vp.width), Math.ceil(vp.height));
           await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
@@ -164,21 +171,36 @@ async function extract(buf) {
     }
     page.cleanup();
     if (t) out.push({ p, t: t.slice(0, PAGE_CHARS) });
+    if (p % 10 === 0) await sleep(20); // beri kesempatan event loop melayani HTTP /health
   }
   await pdf.destroy().catch(() => {});
   return { pages: pdf.numPages, content: out, ocr, skipped };
+}
+
+async function fetchWithTimeout(url, headers, timeoutMs) {
+  const ctl = new AbortController();
+  const timerId = setTimeout(() => ctl.abort(), timeoutMs);
+  try {
+    return await fetch(url, { headers, signal: ctl.signal });
+  } catch (e) {
+    if (e && e.name === 'AbortError') throw new Error('Waktu unduh dokumen dari Drive habis.');
+    throw e;
+  } finally {
+    clearTimeout(timerId);
+  }
 }
 
 async function download(fileId) {
   const gauth = require('../google/auth');
   const tok = await gauth.accessToken();
   const api = process.env.GOOGLE_DRIVE_API || 'https://www.googleapis.com/drive/v3';
-  const meta = await fetch(api + '/files/' + encodeURIComponent(fileId) + '?fields=id,name,mimeType,size&supportsAllDrives=true', { headers: { Authorization: 'Bearer ' + tok } });
+  const hdrs = { Authorization: 'Bearer ' + tok };
+  const meta = await fetchWithTimeout(api + '/files/' + encodeURIComponent(fileId) + '?fields=id,name,mimeType,size&supportsAllDrives=true', hdrs, 25000);
   if (!meta.ok) throw new Error('Berkas tidak bisa dibaca dari Drive (' + meta.status + ')');
   const m = await meta.json();
   if (m.mimeType !== 'application/pdf') throw new Error('Bukan PDF (' + m.mimeType + ')');
   if (Number(m.size) > MAX_BYTES) throw new Error('Berkas terlalu besar (' + Math.round(Number(m.size) / 1048576) + ' MB)');
-  const r = await fetch(api + '/files/' + encodeURIComponent(fileId) + '?alt=media&supportsAllDrives=true', { headers: { Authorization: 'Bearer ' + tok } });
+  const r = await fetchWithTimeout(api + '/files/' + encodeURIComponent(fileId) + '?alt=media&supportsAllDrives=true', hdrs, 60000);
   if (!r.ok) throw new Error('Unduh berkas gagal (' + r.status + ')');
   return Buffer.from(await r.arrayBuffer());
 }
@@ -212,11 +234,12 @@ async function runOnce(limit) {
     // hapus indeks dokumen yang sudah dihapus dari register
     for (const id of [...docs.keys()]) if (!live.has(id)) { docs.delete(id); await db.query('delete from doc_text where doc_id = $1', [id]).catch(() => {}); }
     const todo = regs.filter((r) => { const d = docs.get(r.id); return !d || d.fileId !== r.fileId || (d.status === 'GAGAL' && Date.now() - new Date(d.at).getTime() > 24 * 3600e3); });
-    for (const r of todo.slice(0, limit || 3)) {
+    for (const r of todo.slice(0, limit || 1)) {
       const base = { id: r.id, pid: r.pid, kat: r.kat, judul: r.judul || r.fileName || r.id, nomor: r.nomor || '', fileId: r.fileId };
       try {
-        const buf = await download(r.fileId);
+        let buf = await download(r.fileId);
         const x = await extract(buf);
+        buf = null;
         await save(Object.assign(base, { pages: x.pages, ocr: x.ocr, content: x.content, status: x.skipped ? 'SEBAGIAN' : 'OK', error: x.skipped ? x.skipped + ' halaman scan belum dibaca (batas OCR ' + OCR_MAX_PAGES + ' halaman)' : '' }));
       } catch (e) {
         await save(Object.assign(base, { pages: 0, ocr: 0, content: [], status: /Bukan PDF|terlalu besar/.test(e.message) ? 'LEWATI' : 'GAGAL', error: e.message }));
@@ -234,10 +257,10 @@ async function runOnce(limit) {
   }
 }
 
-/** Indeks di latar: mulai 3 menit setelah server hidup, lalu tiap 10 menit (maks 3 dokumen per putaran). */
+/** Indeks di latar: mulai 3 menit setelah server hidup, lalu tiap 10 menit (1 dokumen per putaran agar RAM & server ringan). */
 function start() {
   if (String(process.env.SENA_DOC_INDEX || '1') === '0') return;
-  const tick = async () => { try { await runOnce(3); } catch (e) { lastErr = String(e.message || e); } };
+  const tick = async () => { try { await runOnce(1); } catch (e) { lastErr = String(e.message || e); } };
   const t0 = setTimeout(tick, 3 * 60 * 1000); if (t0.unref) t0.unref();
   timer = setInterval(tick, 10 * 60 * 1000); if (timer.unref) timer.unref();
 }

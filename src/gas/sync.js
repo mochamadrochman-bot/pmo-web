@@ -26,8 +26,18 @@ async function lastSyncedModified() {
   return r.rows[0] ? r.rows[0].note.slice('modified:'.length) : null;
 }
 
-async function api(path, token) {
-  const res = await fetch(API + path, { headers: { Authorization: 'Bearer ' + token } });
+async function api(path, token, timeoutMs) {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), timeoutMs || 30000);
+  let res;
+  try {
+    res = await fetch(API + path, { headers: { Authorization: 'Bearer ' + token }, signal: ctl.signal });
+  } catch (e) {
+    if (e && e.name === 'AbortError') throw new Error('Google Drive terlalu lama merespons.');
+    throw e;
+  } finally {
+    clearTimeout(t);
+  }
   if (!res.ok) {
     let msg = 'HTTP ' + res.status;
     try { msg = (await res.json()).error.message; } catch (e) { /* biarkan */ }
@@ -49,14 +59,14 @@ async function syncNow(opts) {
   state.lastCheck = new Date();
   const started = Date.now();
   try {
-    const token = gauth.accessTokenSync();
-    const meta = await (await api('/files/' + store.MAIN_ID + '?fields=modifiedTime,name&supportsAllDrives=true', token)).json();
+    const token = await gauth.accessToken();
+    const meta = await (await api('/files/' + store.MAIN_ID + '?fields=modifiedTime,name&supportsAllDrives=true', token, 25000)).json();
     const prev = await lastSyncedModified();
     if (!o.force && prev && prev === meta.modifiedTime) {
       state.lastResult = { status: 'unchanged', modifiedTime: meta.modifiedTime, at: new Date() };
       return state.lastResult;
     }
-    const res = await api('/files/' + store.MAIN_ID + '/export?mimeType=' + encodeURIComponent(XLSX_MIME), token);
+    const res = await api('/files/' + store.MAIN_ID + '/export?mimeType=' + encodeURIComponent(XLSX_MIME), token, 90000);
     const buf = Buffer.from(await res.arrayBuffer());
     const sheets = parseWorkbook(buf);
     const names = sheets.map((d) => d.name);

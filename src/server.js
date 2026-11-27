@@ -23,6 +23,8 @@ const gasSync = require('./gas/sync');
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
+let appReady = require.main !== module;
+let bootError = null;
 
 app.disable('x-powered-by');
 // Aplikasi berada di belakang Traefik (Coolify): ambil IP pengunjung dari X-Forwarded-For.
@@ -97,12 +99,35 @@ app.use(mustChangePasswordGate);
 
 // ---- publik
 app.get('/health', async (req, res) => {
-  try {
-    const ok = await db.health();
-    res.status(ok ? 200 : 503).json({ ok, uptime: process.uptime() });
-  } catch (err) {
-    res.status(503).json({ ok: false, error: String(err.message || err) });
+  if (!appReady) {
+    return res.status(503).json({ ok: false, ready: false, error: bootError || 'Server sedang menyiapkan data.' });
   }
+  let t;
+  try {
+    const ok = await Promise.race([
+      db.health(),
+      new Promise((_, rej) => { t = setTimeout(() => rej(new Error('Database health timeout')), 3000); if (t.unref) t.unref(); }),
+    ]);
+    res.status(ok ? 200 : 503).json({ ok, ready: true, uptime: process.uptime() });
+  } catch (err) {
+    res.status(503).json({ ok: false, ready: true, error: String(err.message || err) });
+  } finally {
+    if (t) clearTimeout(t);
+  }
+});
+
+app.use((req, res, next) => {
+  if (appReady) return next();
+  res.set('Retry-After', '3');
+  res.set('Cache-Control', 'no-store');
+  if (req.path.startsWith('/api/') || req.path.startsWith('/app/rpc/')) {
+    return res.status(503).json({ ok: false, error: 'Server sedang menyiapkan data. Coba lagi sebentar.' });
+  }
+  return res.status(503).type('html').send(
+    '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="3"><title>Memulai server</title>' +
+    '<body style="font-family:system-ui,sans-serif;padding:40px;text-align:center;background:#0f172a;color:#e2e8f0">' +
+    '<h2>Server sedang memulai ulang</h2><p>Halaman akan dimuat ulang otomatis dalam beberapa detik…</p></body>'
+  );
 });
 
 app.get('/login', (req, res) => {
@@ -163,6 +188,7 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
   if (status >= 500) {
     console.error(JSON.stringify({ ev: 'unhandled', path: req.path, message: String(err.message || err) }));
   }
+  if (res.headersSent) return next(err);
   if (req.path.startsWith('/api/') || req.path.startsWith('/app/rpc/')) {
     return res.status(status).json({
       ok: false,
@@ -170,10 +196,54 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
     });
   }
   res.status(status);
-  renderPage(res, 'pages/error', { code: status, message: 'Terjadi kesalahan di server.' });
+  renderPage(res, 'pages/error', { code: status, message: 'Terjadi kesalahan di server.', user: req.user });
 });
 
 async function start() {
+  appReady = false;
+  let shuttingDown = false;
+  let server = null;
+
+  process.on('unhandledRejection', (reason) => {
+    const msg = reason && reason.stack ? reason.stack : String(reason);
+    console.error(JSON.stringify({ ev: 'unhandled_rejection', message: msg.slice(0, 800) }));
+  });
+  process.on('uncaughtException', (err) => {
+    const msg = err && err.stack ? err.stack : String(err);
+    console.error(JSON.stringify({ ev: 'uncaught_exception', message: msg.slice(0, 800) }));
+    // Error pemrograman atau port fatal tetap keluar rapi agar container diganti bersih.
+    if (err && (err.code === 'EADDRINUSE' || err.code === 'EACCES')) process.exit(1);
+  });
+
+  server = app.listen(PORT, () => {
+    console.log(JSON.stringify({ ev: 'listen', port: PORT, env: process.env.NODE_ENV || 'development' }));
+  });
+  // Cegah 502 Bad Gateway akibat idle keep-alive Node (default 5 dtk) lebih pendek dari proxy Traefik/Nginx.
+  server.keepAliveTimeout = Number(process.env.KEEP_ALIVE_TIMEOUT_MS || 65000);
+  server.headersTimeout = Math.max(server.keepAliveTimeout + 1000, Number(process.env.HEADERS_TIMEOUT_MS || 66000));
+  server.requestTimeout = Number(process.env.REQUEST_TIMEOUT_MS || 300000);
+
+  async function shutdown(signal) {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    appReady = false;
+    console.log(JSON.stringify({ ev: 'shutdown', signal }));
+    const force = setTimeout(() => {
+      console.error(JSON.stringify({ ev: 'shutdown_force' }));
+      process.exit(1);
+    }, 8000);
+    if (force.unref) force.unref();
+    try { if (typeof server.closeIdleConnections === 'function') server.closeIdleConnections(); } catch (e) {}
+    server.close(async () => {
+      clearTimeout(force);
+      await db.close().catch(() => {});
+      process.exit(0);
+    });
+  }
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+
   try {
     await migrate();
     const g = await googleAuth.load();
@@ -190,31 +260,17 @@ async function start() {
     await require('./lib/project-sync').syncProjects().catch((e) => console.error(JSON.stringify({ ev: 'projects_sync_fail', message: String(e.message || e) })));
     console.log(JSON.stringify({ ev: 'gas_ready', sheets: info.sheets, functions: rt.functions, html: rt.html }));
     require('./lib/fx').start(() => require('./routes/fx').bumpData());
-    // Sena v2: catatan pemakaian (batas harian & anggaran) + indeks teks dokumen di latar.
     await require('./lib/weekly-upload').init().catch((e) => console.error(JSON.stringify({ ev: 'weekly_upload_init_fail', message: String(e.message || e) })));
     await require('./lib/sena').init().catch((e) => console.error(JSON.stringify({ ev: 'sena_init_fail', message: String(e.message || e) })));
     const auto = gasSync.start();
     console.log(JSON.stringify({ ev: 'gas_sync_schedule', auto, minutes: gasSync.info().minutes }));
+    appReady = true;
+    try { require('./routes/brand').warm(); } catch (e) { /* gambar diambil saat diminta */ }
   } catch (err) {
-    console.error(JSON.stringify({ ev: 'migrate_fail', message: String(err.message || err) }));
+    bootError = String(err.message || err);
+    console.error(JSON.stringify({ ev: 'migrate_fail', message: bootError }));
     process.exit(1);
   }
-
-  const server = app.listen(PORT, () => {
-    try { require('./routes/brand').warm(); } catch (e) { /* gambar diambil saat diminta */ }
-    console.log(JSON.stringify({ ev: 'listen', port: PORT, env: process.env.NODE_ENV || 'development' }));
-  });
-
-  async function shutdown(signal) {
-    console.log(JSON.stringify({ ev: 'shutdown', signal }));
-    server.close(async () => {
-      await db.close();
-      process.exit(0);
-    });
-  }
-
-  process.on('SIGTERM', () => shutdown('SIGTERM'));
-  process.on('SIGINT', () => shutdown('SIGINT'));
 }
 
 if (require.main === module) {
