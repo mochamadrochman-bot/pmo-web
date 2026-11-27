@@ -721,7 +721,7 @@ const JS = String.raw`<script>
     try{setup()}catch(e){console.warn('pv2 setup',e)}
     loadGalleryForShowcase();
     ST.b=b||{};ST.items=model(ST.b);render();
-    var eye=D.getElementById('heroEye');if(eye&&b&&b.asOfText)eye.textContent='PMO Infrastruktur & Process Plant · Input terakhir '+b.asOfText;
+    var eye=D.getElementById('heroEye');if(eye)eye.textContent='PMO Infrastruktur & Process Plant';
     try{buildMenu()}catch(e){}
   };
   var boot=function(){try{setup()}catch(e){console.warn('pv2',e)}if(window.__pv2b)window.pmoV2Grid(window.__pv2b)};
