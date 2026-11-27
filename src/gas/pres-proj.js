@@ -91,10 +91,13 @@ function presPrognosis_(db, p, week) {
 }
 
 /** Pekerjaan berbobot besar yang rencananya naik s.d. akhir tahun Y (dari 3 Month Look Ahead). */
-function presProgItems_(token, projectId, Y) {
+function presProgItems_(token, projectId, Y, userOpt) {
   try {
-    const r = getExecutiveLookAhead(token, ''), want = normKey_(projectId);
-    const pr = (r.projects || []).find(function(x) { return normKey_(x.id) === want; });
+    const want = normKey_(projectId);
+    const r = (userOpt && ktrIs_(userOpt))
+      ? perfCached_('la-ktr|' + want, function() { return executiveLookAheadBuild_(userOpt, ''); })
+      : getExecutiveLookAhead(token, '');
+    const pr = (r.projects || []).find(function(x) { return normKey_(x.id) === want || normKey_(x.name) === want; });
     if (!pr) return { items: [], months: [] };
     const months = (r.months || []).map(function(m, i) { return { i: i, label: m.label, year: Number(String(m.label || '').slice(-4)) }; }).filter(function(m) { return m.year === Number(Y); });
     // Selalu baseline EPCC Control (seragam untuk semua proyek; jadwal XML hanya ada di sebagian proyek).
@@ -119,23 +122,28 @@ function presProgItems_(token, projectId, Y) {
 function getPresProjSlide(token, projectId, kind) {
   dbReadOnly_();
   const user = requireUser_(token);
-  ktrBlock_(user);
   kind = String(kind || '');
   if (['week', 'fin', 'la', 'prog'].indexOf(kind) < 0) throw new Error('Jenis slide proyek tidak dikenal.');
+  // Kontraktor hanya boleh memuat kind 'prog' untuk card Target akhir tahun pada proyeknya sendiri.
+  if (kind !== 'prog') ktrBlock_(user);
   const db = loadDb_();
   const want = normKey_(projectId);
-  const p = db.projects.filter(function(x) { return userCanAccess_(user, x); }).find(function(x) { return normKey_(x.id) === want; });
+  const p = db.projects.filter(function(x) { return userCanAccess_(user, x); }).find(function(x) { return normKey_(x.id) === want || normKey_(x.name) === want; });
   if (!p) throw new Error('Proyek ' + projectId + ' tidak ditemukan atau tidak dapat diakses.');
   const head = { id: p.id, name: p.name, fullName: p.fullName || p.name };
   if (kind === 'la') {
     const r = getExecutiveLookAhead(token, '');
-    const pr = (r.projects || []).find(function(x) { return normKey_(x.id) === want; }) || null;
+    const pr = (r.projects || []).find(function(x) { return normKey_(x.id) === want || normKey_(x.name) === want; }) || null;
     return { success: true, kind: kind, project: head, data: { period: r.period, months: r.months, project: pr } };
   }
   if (kind === 'prog') {
     const base = perfCached_('presProj|' + p.id + '|prog', function() { return presPrognosis_(db, p, weeklyInfo_(db, p).latestWeek); });
     const out = Object.assign({}, base);
-    if (base && base.year) out.work = presProgItems_(token, p.id, base.year);
+    if (base && base.year) {
+      out.work = ktrIs_(user)
+        ? perfCached_('presProjWork|' + p.id + '|' + base.year, function() { return presProgItems_(token, p.id, base.year, user); })
+        : presProgItems_(token, p.id, base.year, user);
+    }
     return { success: true, kind: kind, project: head, data: out };
   }
   return perfCached_('presProj|' + p.id + '|' + kind, function() {
@@ -391,11 +399,25 @@ html.m-mode #progBox{padding:12px}
         .catch(function(e){box.innerHTML='<div class="pjx-empty">'+esc((e&&e.message)||'Data slide gagal dimuat.')+'</div>'})}};
   }
   /* card Prognosa di Weekly Progress */
-  function progCard(d){
+  function progCard(d,pidOpt){
     var box=document.getElementById('progBox'),yr=document.getElementById('progYear');if(!box)return;
+    var el=document.getElementById('weeklyProjectName');
+    var pid=String(pidOpt||(el&&el.dataset&&el.dataset.pid)||window.__pmoWeeklyPid||(el&&el.textContent)||'').trim();
+    if(!d&&pid){
+      if(yr)yr.textContent='';
+      box.innerHTML='<div class="pjx-empty">Memuat target akhir tahun…</div>';
+      load(pid,'prog').then(function(r){
+        var dd=(r&&r.data)||null;
+        if(yr)yr.textContent=dd&&dd.year?String(dd.year):'';
+        box.innerHTML=progHtml(dd);
+      }).catch(function(){
+        box.innerHTML=progHtml(null);
+      });
+      return;
+    }
     if(yr)yr.textContent=d&&d.year?String(d.year):'';
     box.innerHTML=progHtml(d);
-    var wb=box.querySelector('.pjx-work[data-wait]'),pid=String(window.__pmoWeeklyPid||'');
+    var wb=box.querySelector('.pjx-work[data-wait]');
     if(wb&&pid)load(pid,'prog').then(function(r){if(wb.isConnected)wb.outerHTML=workHtml(r&&r.data&&r.data.work||{items:[]})}).catch(function(){if(wb.isConnected)wb.outerHTML=workHtml({items:[],error:1})});
     else if(wb)wb.remove();
   }
@@ -529,6 +551,9 @@ html.m-mode #progBox{padding:12px}
     refresh();
   }
   window.pmoPresProj={KINDS:KINDS,SHORT:SHORT,slide:slide,title:title,render:render,load:load,progCard:progCard,briefRefs:briefRefs,finNarr:finNarr,issueSlides:issueSlides,prefetch:prefetch,manageIssues:manageIssues};
+  if(window.__pmoLastProg&&document.getElementById('progBox')){
+    try{progCard(window.__pmoLastProg.d,window.__pmoLastProg.pid)}catch(e){}
+  }
 })();
 </script>`;
 
@@ -580,7 +605,7 @@ const HTML_PATCHES = [
   {
     file: 'Dashboard',
     find: 'try{renderFin(data.finance)}catch(e){}',
-    replace: 'try{renderFin(data.finance)}catch(e){}try{if(window.pmoPresProj)pmoPresProj.progCard(data.prognosis)}catch(e){}' +
+    replace: 'try{renderFin(data.finance)}catch(e){}try{window.__pmoLastProg={pid:data.projectId||\'\',d:data.prognosis};if(window.pmoPresProj)pmoPresProj.progCard(data.prognosis,data.projectId||\'\')}catch(e){}' +
       'setTimeout(function(){try{var __pp=document.getElementById(\'projectPurpose\');if(__pp)__pp.title=__pp.textContent;var __hc=document.getElementById(\'hlCount\'),__hn=document.querySelectorAll(\'#highlights>li:not(.empty)\').length;if(__hc)__hc.textContent=__hn?__hn+\' kegiatan\':\'\';[\'projectInvestment\',\'projectContract\'].forEach(function(id){var e=document.getElementById(id);if(!e)return;var tn=e.firstChild;if(!tn||tn.nodeType!==3)return;var t=tn.nodeValue.trim(),n=Number(t.replace(/[^0-9]/g,\'\'));if(!/^Rp/.test(t)||!(n>=1e9))return;e.title=t;tn.nodeValue=\'Rp \'+(n>=1e12?(n/1e12).toLocaleString(\'id-ID\',{maximumFractionDigits:2})+\' T\':(n/1e9).toLocaleString(\'id-ID\',{minimumFractionDigits:2,maximumFractionDigits:2})+\' M\')})}catch(e){}},80);',
   },
   {
