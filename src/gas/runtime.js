@@ -1293,10 +1293,10 @@ ${RETIRED.map((n) => `  ${n} = function () { throw new Error('Akun kini dikelola
 
 function load() {
   const order = JSON.parse(fs.readFileSync(path.join(LEGACY_DIR, 'order.json'), 'utf8'));
-  const gsFiles = order.map((n) => ({ name: n, src: fs.readFileSync(path.join(LEGACY_DIR, n + '.gs'), 'utf8') }));
+  const gsFiles = order.map((n) => ({ name: n, src: fs.readFileSync(path.join(LEGACY_DIR, n + '.gs'), 'utf8').replace(/\r\n/g, '\n') }));
   htmlFiles = new Map();
   fs.readdirSync(LEGACY_DIR).filter((f) => f.endsWith('.html')).forEach((f) => {
-    htmlFiles.set(f.replace(/\.html$/, ''), fs.readFileSync(path.join(LEGACY_DIR, f), 'utf8'));
+    htmlFiles.set(f.replace(/\.html$/, ''), fs.readFileSync(path.join(LEGACY_DIR, f), 'utf8').replace(/\r\n/g, '\n'));
   });
   const v3d = require('./visual3d');
   htmlFiles.set('Visual3D', v3d.VISUAL3D_HTML);

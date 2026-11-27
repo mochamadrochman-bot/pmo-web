@@ -189,8 +189,8 @@ function executivePeriods_(db, projects, useReleaseRule) {
 const HTML_PATCHES = [
   {
     file: 'ExecutiveDashboard',
-    find: '</style></head>',
-    replace: EXEC_PERIOD_CSS + '</style></head>',
+    find: '</style>\n</head><body>',
+    replace: '</style>\n' + EXEC_PERIOD_CSS + '\n</head><body>',
   },
   {
     file: 'ExecutiveDashboard',
