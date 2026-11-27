@@ -304,13 +304,17 @@ const JS = String.raw`<script>
   // Akun kontraktor: hanya halaman yang boleh dibuka (proyeknya sendiri) yang tampil di menu.
   var KTR_OK=/^(Portal Proyek|Weekly Progress|Live View|Spotlight|Visual 3D|Engineering|Procurement|Construction|Commissioning)/i;
   function isKtr(){if(H.classList.contains('is-ktr'))return true;try{var u=JSON.parse(sessionStorage.getItem('pmoUser')||'null');return String(u&&u.role||'').trim().toUpperCase()==='KONTRAKTOR'}catch(e){return false}}
+  function goRoute(p){if(typeof go==='function')go(p);else location.href='/app?page='+p}
   function menuData(){
     var ktr=isKtr();
-    return GROUPS.map(function(g){
+    var out=GROUPS.map(function(g){
       var items=[];if(g[2])items.push({t:'Portal Proyek',on:true,fn:function(){window.scrollTo({top:0,behavior:'smooth'})}});
       g[1].forEach(function(id){var tile=D.getElementById(id);if(!tile||tile.hidden)return;qa('.subs button',tile).forEach(function(b){if(b.hidden||(!ktr&&b.style.display==='none'))return;var t=label(b);if(!t)return;if(ktr&&!KTR_OK.test(t))return;var it={t:t,fn:function(){b.click()}};if(/^Weekly Progress$/i.test(t))it.sub=weeklySub();items.push(it)})});
+      if(ktr&&g[0]==='Dokumen & 3D')items.push({t:'MoM / Risalah Rapat',fn:function(){goRoute('documents')}});
       return {name:g[0],items:items};
     }).filter(function(g){return g.items.length});
+    if(ktr)out.push({name:'Input Mingguan',items:[{t:'Input HSE & Video Mingguan',fn:function(){goRoute('input')}}]});
+    return out;
   }
   function weeklySub(){
     return (ST.items||[]).map(function(m){return {t:NM(m.i.name)+(m.par?'':''),par:m.par?NM(m.par):'',done:m.done,fn:function(){if(typeof goWeek==='function')goWeek(m.i.name,m.wk);else location.href='/app?page=weekly&project='+encodeURIComponent(m.i.name)}}});
@@ -494,11 +498,12 @@ const JS = String.raw`<script>
     var eye=D.getElementById('heroEye');if(eye)eye.textContent='PMO Infrastruktur & Process Plant';
     // strip utilitas
     var u=D.createElement('div');u.className='v-util';
-    u.innerHTML='<div class="v-crumb">PMO Infrastruktur &amp; Process Plant</div><div class="v-ua"><button type="button" class="v-ub" data-v="brief">Ringkasan Eksekutif</button><button type="button" class="v-ub" data-v="grid">Daftar Proyek</button>'+(isKtr()?'':'<button type="button" class="v-ub pri" data-v="exec">Monthly Executive Review →</button>')+'</div>';
+    u.innerHTML='<div class="v-crumb">PMO Infrastruktur &amp; Process Plant</div><div class="v-ua"><button type="button" class="v-ub" data-v="brief">Ringkasan Eksekutif</button><button type="button" class="v-ub" data-v="grid">Daftar Proyek</button>'+(isKtr()?'<button type="button" class="v-ub pri" data-v="ktr-in">Input HSE &amp; Video Mingguan →</button>':'<button type="button" class="v-ub pri" data-v="exec">Monthly Executive Review →</button>')+'</div>';
     first.appendChild(u);
     q('[data-v="brief"]',u).onclick=function(){var t=briefSec||D.getElementById('briefBox');if(t)window.scrollTo({top:Math.max(0,t.getBoundingClientRect().top+window.scrollY-(hdr?hdr.offsetHeight:64)-16),behavior:'smooth'})};
     q('[data-v="grid"]',u).onclick=function(){var s=D.getElementById('vSec');if(s)window.scrollTo({top:Math.max(0,s.getBoundingClientRect().top+window.scrollY-(hdr?hdr.offsetHeight:64)),behavior:'smooth'})};
-    var ex=q('[data-v="exec"]',u);if(ex)ex.onclick=function(){if(typeof go==='function')go('executive');else location.href='/app?page=executive'};
+    var ex=q('[data-v="exec"]',u);if(ex)ex.onclick=function(){goRoute('executive')};
+    var ki=q('[data-v="ktr-in"]',u);if(ki)ki.onclick=function(){goRoute('input')};
     // KPI ke kanvas, ringkasan di atas grid
     var kp=D.getElementById('heroKpis');if(kp){var sum=D.createElement('div');sum.className='v-sum';sum.id='vSum';sum.setAttribute('aria-label','Ringkasan portofolio');main.insertBefore(sum,main.firstChild);sum.appendChild(kp);kp.style.display='contents'}
     var brief=D.getElementById('briefBox'),briefSec=brief&&brief.closest('section'),pulseSec=(D.getElementById('pulse')||{}).closest&&D.getElementById('pulse').closest('section');

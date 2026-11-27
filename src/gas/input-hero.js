@@ -291,8 +291,25 @@ html.ex-hero-hdr.ex-hdr-stuck #exStuckHost{transform:none;opacity:1;pointer-even
 #exStuckHost .inp-isi-menu button:hover{background:rgba(255,255,255,.12);color:#fff}
 #exStuckHost .inp-isi-menu button.on{background:var(--ex-stuck-act);color:#fff}
 
-/* Proteksi Z-Index Modal */
-html.ex-hero-hdr .modal{z-index:320!important}
+/* Proteksi Modal Submit / Simpan agar teks & link panjang membungkus rapi tanpa scrollbar horizontal */
+html[data-inp-page] .modal{z-index:320!important}
+html[data-inp-page] .modal .dialog{
+  width:min(620px,calc(100vw - 32px));max-width:100%;max-height:90vh;overflow-x:hidden;overflow-y:auto;
+  border:1px solid var(--line);color:var(--ink);
+}
+html[data-inp-page] .modal .dialog.wide{width:min(980px,calc(100vw - 32px))}
+html[data-inp-page] .modal .dialog .dh p,
+html[data-inp-page] .modal .dialog .db{overflow-wrap:anywhere;word-break:break-word;min-width:0}
+html[data-inp-page] .modal .dialog .df{flex-wrap:wrap}
+html[data-inp-page] .modal .sum{width:100%;table-layout:fixed;border-collapse:collapse}
+html[data-inp-page] .modal .sum td{padding:9px 0;border-bottom:1px solid var(--line);vertical-align:top}
+html[data-inp-page] .modal .sum td:first-child{width:132px;padding-right:16px;color:var(--muted);white-space:normal;text-align:left;font-weight:500}
+html[data-inp-page] .modal .sum td:last-child{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;word-break:break-word;min-width:0}
+html[data-inp-page] body:has(.actionbar:not([hidden])) .aic-fab{bottom:86px!important}
+html[data-inp-page]:has(.modal:not([hidden])) :is(.pmo-topbtn,.pmo-sdots,.aic-fab){opacity:0!important;pointer-events:none!important}
+@media (max-width:560px){
+  html[data-inp-page] .modal .sum td:first-child{width:104px;padding-right:10px}
+}
 @media (max-width:900px){
   #exStuckHost,.inp-proj-wrap,.inp-ctx-pick,.inp-mode-seg,.inp-isi-drop{display:none!important}
 }
