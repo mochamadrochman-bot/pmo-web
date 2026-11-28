@@ -2740,7 +2740,10 @@ function pangkasSheetMs() {
 function mscSheet_(ss, def) {
   let sh = ss.getSheetByName(def[0]);
   if (!sh) { sh = ss.insertSheet(def[0]); sh.getRange(1, 1, 1, def[1].length).setValues([def[1]]).setFontWeight('bold'); sh.setFrozenRows(1); mscTrim_(sh, def[1].length); }
-  else if (String(sh.getRange(1, def[1].length).getValue()).trim() === '') sh.getRange(1, 1, 1, def[1].length).setValues([def[1]]).setFontWeight('bold'); // kolom baru pada sheet lama
+  else {
+    if (sh.getMaxColumns() < def[1].length) sh.insertColumnsAfter(sh.getMaxColumns(), def[1].length - sh.getMaxColumns());
+    if (String(sh.getRange(1, def[1].length).getValue()).trim() === '') sh.getRange(1, 1, 1, def[1].length).setValues([def[1]]).setFontWeight('bold'); // kolom baru pada sheet lama
+  }
   return sh;
 }
 function mscRows_(ss, def) {
