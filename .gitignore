@@ -5,3 +5,8 @@ node_modules/
 *.log
 .DS_Store
 coverage/
+vid-remotion/.auth.json
+vid-remotion/clips/
+
+# Laporan kontraktor & berkas data proyek: simpan di Drive, jangan ke GitHub
+Laporan Weekly Kontraktor/

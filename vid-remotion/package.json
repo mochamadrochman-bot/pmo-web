@@ -1,0 +1,24 @@
+{
+  "name": "pmo-vid-remotion",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Playwright clip recorder and Remotion presentation builder for PMO Dashboard",
+  "scripts": {
+    "auth": "node record-clips.mjs --auth",
+    "record": "node record-clips.mjs",
+    "studio": "remotion studio",
+    "render": "remotion render PmoExecutiveBrief out/pmo-executive-brief.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.547",
+    "@remotion/media": "^4.0.547",
+    "@remotion/transitions": "^4.0.547",
+    "@types/react": "^19.3.3",
+    "playwright": "^1.52.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remotion": "^4.0.547",
+    "typescript": "^7.0.2"
+  }
+}
