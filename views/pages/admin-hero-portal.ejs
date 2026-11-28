@@ -1,0 +1,368 @@
+<style>
+  .hp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(275px,1fr));gap:14px;margin-top:14px}
+  .hp-card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+  .hp-card.is-reserve{opacity:.82;border-style:dashed}
+  .hp-thumb{position:relative;aspect-ratio:16/9;background:var(--tint);overflow:hidden}
+  .hp-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .hp-rank{position:absolute;top:8px;left:8px;padding:3px 9px;border-radius:99px;font-size:11.5px;font-weight:700;background:rgba(15,23,42,.76);color:#fff;backdrop-filter:blur(4px)}
+  .hp-badge{position:absolute;top:8px;right:8px}
+  .hp-body{padding:12px;display:flex;flex-direction:column;gap:8px;flex:1}
+  .hp-name{font-weight:700;font-size:13px;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hp-meta{font-size:11.5px;color:var(--muted)}
+  .hp-cap{width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--tint);color:var(--ink);font-size:12.5px}
+  .hp-cap:focus{outline:0;border-color:var(--pri)}
+  .hp-acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:4px}
+  .hp-acts .btn.sm{height:30px;padding:0 9px;font-size:12px}
+  .hp-drop{border:2px dashed var(--line);border-radius:12px;padding:18px;background:var(--tint);text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+  .hp-drop.over,.hp-drop:hover{border-color:var(--pri);background:var(--soft)}
+  .hp-drop input[type=file]{display:none}
+  .hp-up-grid{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:12px;align-items:end}
+  .hp-fld-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .hp-fld-row input{flex:1 1 280px;height:36px;padding:0 11px;border:1px solid var(--line);border-radius:8px;background:var(--tint)}
+  .hp-savebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding:10px 14px;border-radius:10px;background:var(--warn-bg);color:var(--warn);font-size:13px;font-weight:600}
+  .hp-savebar[hidden]{display:none!important}
+  .hp-modal-bg{position:fixed;inset:0;z-index:200;background:rgba(15,23,42,.55);display:grid;place-items:center;padding:16px}
+  .hp-modal-bg[hidden]{display:none!important}
+  .hp-modal{background:var(--card);border:1px solid var(--line);border-radius:14px;max-width:420px;width:100%;padding:20px;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+  .hp-modal h3{margin:0 0 8px;color:var(--navy);font-size:16px}
+  .hp-modal p{margin:0 0 16px;color:var(--muted);font-size:13.5px;line-height:1.5}
+  .hp-modal-acts{display:flex;justify-content:flex-end;gap:8px}
+  @media (max-width:640px){.hp-up-grid{grid-template-columns:1fr}}
+</style>
+
+<div class="pg-head">
+  <div>
+    <div class="pg-kicker">Tampilan Portal</div>
+    <h1>Hero Banner Portal</h1>
+    <p class="sub" style="margin:0">Kelola foto slideshow pada banner utama halaman Portal (disimpan di Google Drive, maksimal 12 foto urutan teratas yang tampil).</p>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button type="button" class="btn" id="hpRefresh">Segarkan cache</button>
+    <a class="btn pri" href="/app?page=portal">Lihat Portal →</a>
+  </div>
+</div>
+
+<div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+  <div class="kpi"><small>Total Foto di Folder</small><b id="hpTotal">-</b></div>
+  <div class="kpi"><small>Tampil di Hero Portal</small><b id="hpActive">-</b></div>
+  <div class="kpi"><small>Koneksi Google Drive</small><b id="hpDrive">-</b></div>
+</div>
+
+<div class="cols-2" style="grid-template-columns:1.25fr 1fr;margin-bottom:14px">
+  <div class="panel">
+    <h2 style="margin-top:0">Upload Foto Baru</h2>
+    <label class="hp-drop" id="hpDrop" for="hpFile">
+      <input type="file" id="hpFile" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+      <div style="font-weight:700;color:var(--navy)">Klik atau seret gambar ke sini</div>
+      <div style="font-size:12.5px;color:var(--muted);margin-top:4px">Mendukung JPG, PNG, WEBP (maks 12 MB/foto). Gambar otomatis dioptimalkan ke lebar maks 1920 px agar Portal tetap ringan.</div>
+    </label>
+    <div id="hpQueued" style="margin-top:10px;font-size:12.5px;color:var(--navy);font-weight:600" hidden></div>
+    <div class="hp-up-grid">
+      <div>
+        <label for="hpCaption" style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px">Caption / keterangan foto (opsional)</label>
+        <input id="hpCaption" type="text" maxlength="240" placeholder="contoh: Pemasangan struktur baja proyek Soda Ash" style="width:100%;height:36px;padding:0 11px;border:1px solid var(--line);border-radius:8px;background:var(--tint)">
+      </div>
+      <button type="button" class="btn pri" id="hpUploadBtn" disabled>Upload ke Drive</button>
+    </div>
+    <div class="note" id="hpUploadMsg" role="status"></div>
+  </div>
+
+  <div class="panel">
+    <h2 style="margin-top:0">Folder Google Drive</h2>
+    <p class="note" style="margin-top:2px">Foto pada folder ini diputar bergantian di latar belakang Portal. Foto baru otomatis diletakkan pada urutan pertama.</p>
+    <div class="hp-fld-row" style="margin-top:10px">
+      <input id="hpFolder" type="text" placeholder="Tempel ID atau tautan folder Google Drive" aria-label="Folder Drive Hero Portal">
+      <button type="button" class="btn" id="hpFolderSave">Ganti folder</button>
+      <button type="button" class="btn" id="hpFolderReset">Default</button>
+    </div>
+    <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <a id="hpDriveLink" href="#" target="_blank" rel="noopener" style="font-size:12.5px;font-weight:600">Buka folder di Google Drive ↗</a>
+      <span id="hpFolderMsg" style="font-size:12.5px;color:var(--muted)" role="status"></span>
+    </div>
+  </div>
+</div>
+
+<div class="hp-savebar" id="hpOrderBar" hidden>
+  <span>Urutan foto berubah. Klik "Simpan urutan" untuk menerapkan ke Portal.</span>
+  <button type="button" class="btn pri sm" id="hpSaveOrder" style="margin-left:auto">Simpan urutan</button>
+  <button type="button" class="btn sm" id="hpResetOrder">Batalkan</button>
+</div>
+
+<div id="hpStatusMsg" class="msg" hidden></div>
+<div id="hpList" class="hp-grid">
+  <div class="empty" style="grid-column:1/-1">Memuat foto hero Portal…</div>
+</div>
+
+<div class="hp-modal-bg" id="hpDelModal" hidden role="dialog" aria-modal="true" aria-labelledby="hpDelTitle">
+  <div class="hp-modal">
+    <h3 id="hpDelTitle">Hapus foto dari Hero Portal?</h3>
+    <p id="hpDelDesc">Foto akan dipindahkan ke Trash Google Drive sehingga masih bisa dipulihkan dari Trash Drive bila diperlukan.</p>
+    <div class="hp-modal-acts">
+      <button type="button" class="btn" id="hpDelCancel">Batal</button>
+      <button type="button" class="btn danger" id="hpDelOk">Ya, hapus</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var listEl = document.getElementById('hpList');
+  var statusEl = document.getElementById('hpStatusMsg');
+  var totalEl = document.getElementById('hpTotal'), activeEl = document.getElementById('hpActive'), driveEl = document.getElementById('hpDrive');
+  var folderInp = document.getElementById('hpFolder'), driveLink = document.getElementById('hpDriveLink'), folderMsg = document.getElementById('hpFolderMsg');
+  var fileInp = document.getElementById('hpFile'), dropEl = document.getElementById('hpDrop'), queuedEl = document.getElementById('hpQueued');
+  var capInp = document.getElementById('hpCaption'), uploadBtn = document.getElementById('hpUploadBtn'), uploadMsg = document.getElementById('hpUploadMsg');
+  var orderBar = document.getElementById('hpOrderBar'), delModal = document.getElementById('hpDelModal'), delDesc = document.getElementById('hpDelDesc');
+  var photos = [], savedIds = '', queuedFiles = [], deleteTarget = null;
+
+  function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function showStatus(msg, ok) {
+    if (!msg) { statusEl.hidden = true; return; }
+    statusEl.className = 'msg ' + (ok ? 'ok' : 'err');
+    statusEl.textContent = msg;
+    statusEl.hidden = false;
+  }
+  function fmtSize(n) {
+    if (!n) return '-';
+    if (n >= 1048576) return (n / 1048576).toFixed(2).replace('.', ',') + ' MB';
+    return Math.max(1, Math.round(n / 1024)) + ' KB';
+  }
+  function api(url, opt) {
+    return fetch(url, Object.assign({ credentials: 'same-origin', headers: { 'content-type': 'application/json' } }, opt || {}))
+      .then(function (r) { return r.json(); })
+      .then(function (j) { if (!j || !j.ok) throw new Error((j && j.error) || 'Permintaan gagal.'); return j.data; });
+  }
+
+  function checkDirty() {
+    var cur = photos.map(function (p) { return p.id; }).join(',');
+    orderBar.hidden = (cur === savedIds);
+  }
+
+  function render() {
+    totalEl.textContent = photos.length;
+    activeEl.textContent = Math.min(photos.length, 12);
+    if (!photos.length) {
+      listEl.innerHTML = '<div class="empty" style="grid-column:1/-1">Belum ada foto di folder ini. Unggah foto baru di atas untuk ditampilkan di Hero Banner Portal.</div>';
+      checkDirty();
+      return;
+    }
+    listEl.innerHTML = photos.map(function (p, i) {
+      var active = i < 12;
+      return '<article class="hp-card' + (active ? '' : ' is-reserve') + '" data-id="' + esc(p.id) + '">' +
+        '<div class="hp-thumb">' +
+          '<img src="' + esc(p.thumbUrl) + '" alt="' + esc(p.caption || p.name) + '" loading="lazy">' +
+          '<span class="hp-rank">#' + (i + 1) + '</span>' +
+          '<span class="badge hp-badge ' + (active ? 'on' : 'b-neu') + '">' + (active ? 'Aktif di Portal' : 'Cadangan (>12)') + '</span>' +
+        '</div>' +
+        '<div class="hp-body">' +
+          '<div class="hp-name" title="' + esc(p.name) + '">' + esc(p.name) + '</div>' +
+          '<div class="hp-meta">' + fmtSize(p.size) + (p.modifiedTime ? ' · ' + new Date(p.modifiedTime).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '') + '</div>' +
+          '<input class="hp-cap" type="text" maxlength="240" value="' + esc(p.caption || '') + '" data-orig="' + esc(p.caption || '') + '" placeholder="Tulis caption foto…" aria-label="Caption ' + esc(p.name) + '">' +
+          '<div class="hp-acts">' +
+            '<button type="button" class="btn sm" data-act="top"' + (i === 0 ? ' disabled' : '') + ' title="Jadikan paling depan">Utama</button>' +
+            '<button type="button" class="btn sm" data-act="up"' + (i === 0 ? ' disabled' : '') + ' title="Geser naik">↑</button>' +
+            '<button type="button" class="btn sm" data-act="down"' + (i === photos.length - 1 ? ' disabled' : '') + ' title="Geser turun">↓</button>' +
+            '<button type="button" class="btn sm pri" data-act="save-cap" hidden>Simpan</button>' +
+            '<button type="button" class="btn sm danger" data-act="del" style="margin-left:auto">Hapus</button>' +
+          '</div>' +
+        '</div>' +
+      '</article>';
+    }).join('');
+    checkDirty();
+  }
+
+  function load() {
+    showStatus('', true);
+    api('/api/admin/hero-portal').then(function (d) {
+      driveEl.textContent = d.connected ? (d.email || 'Terhubung') : 'Belum terhubung';
+      folderInp.value = d.folderId || '';
+      driveLink.href = 'https://drive.google.com/drive/folders/' + encodeURIComponent(d.folderId || '');
+      if (!d.connected) {
+        photos = []; savedIds = '';
+        listEl.innerHTML = '<div class="empty" style="grid-column:1/-1">Akun Google belum dihubungkan. Buka menu <a href="/admin/google">Koneksi Google</a> terlebih dahulu.</div>';
+        return;
+      }
+      photos = d.photos || [];
+      savedIds = photos.map(function (p) { return p.id; }).join(',');
+      render();
+    }).catch(function (e) {
+      showStatus(e.message, false);
+    });
+  }
+
+  function setFiles(fileList) {
+    queuedFiles = Array.prototype.slice.call(fileList || []).filter(function (f) { return /^image\/(jpeg|png|webp|gif)$/i.test(f.type); });
+    uploadBtn.disabled = !queuedFiles.length;
+    if (!queuedFiles.length) {
+      queuedEl.hidden = true;
+      return;
+    }
+    queuedEl.textContent = queuedFiles.length + ' file dipilih: ' + queuedFiles.map(function (f) { return f.name + ' (' + fmtSize(f.size) + ')'; }).join(', ');
+    queuedEl.hidden = false;
+  }
+
+  // Kecilkan gambar lebar > 1920 px di browser supaya portal tetap ringan.
+  function prepareImage(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onerror = function () { reject(new Error('Gagal membaca ' + file.name)); };
+      reader.onload = function () {
+        var rawDataUrl = reader.result;
+        if (file.type === 'image/gif' || file.size < 450 * 1024) {
+          return resolve({ name: file.name, mimeType: file.type, dataBase64: rawDataUrl });
+        }
+        var img = new Image();
+        img.onerror = function () { resolve({ name: file.name, mimeType: file.type, dataBase64: rawDataUrl }); };
+        img.onload = function () {
+          var maxW = 1920;
+          if (img.width <= maxW && file.size <= 2 * 1024 * 1024) {
+            return resolve({ name: file.name, mimeType: file.type, dataBase64: rawDataUrl });
+          }
+          var scale = img.width > maxW ? (maxW / img.width) : 1;
+          var w = Math.max(1, Math.round(img.width * scale)), h = Math.max(1, Math.round(img.height * scale));
+          var c = document.createElement('canvas'); c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          var outMime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+          resolve({ name: file.name, mimeType: outMime, dataBase64: c.toDataURL(outMime, 0.88) });
+        };
+        img.src = rawDataUrl;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  fileInp.addEventListener('change', function () { setFiles(fileInp.files); });
+  ['dragenter', 'dragover'].forEach(function (ev) {
+    dropEl.addEventListener(ev, function (e) { e.preventDefault(); dropEl.classList.add('over'); });
+  });
+  ['dragleave', 'drop'].forEach(function (ev) {
+    dropEl.addEventListener(ev, function (e) { e.preventDefault(); dropEl.classList.remove('over'); });
+  });
+  dropEl.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files) setFiles(e.dataTransfer.files); });
+
+  uploadBtn.addEventListener('click', async function () {
+    if (!queuedFiles.length) return;
+    uploadBtn.disabled = true;
+    var caption = (capInp.value || '').trim();
+    var okCount = 0;
+    try {
+      for (var i = 0; i < queuedFiles.length; i++) {
+        uploadMsg.textContent = 'Mengunggah foto ' + (i + 1) + ' dari ' + queuedFiles.length + '…';
+        var item = await prepareImage(queuedFiles[i]);
+        await api('/api/admin/hero-portal/upload', {
+          method: 'POST',
+          body: JSON.stringify({ name: item.name, mimeType: item.mimeType, dataBase64: item.dataBase64, caption: caption }),
+        });
+        okCount++;
+      }
+      uploadMsg.textContent = okCount + ' foto berhasil diunggah dan dipasang ke posisi teratas Hero Portal.';
+      fileInp.value = ''; capInp.value = ''; setFiles([]);
+      load();
+    } catch (e) {
+      uploadMsg.textContent = 'Upload terhenti: ' + e.message;
+      uploadBtn.disabled = false;
+      if (okCount > 0) load();
+    }
+  });
+
+  listEl.addEventListener('input', function (e) {
+    var inp = e.target.closest('.hp-cap'); if (!inp) return;
+    var card = inp.closest('.hp-card'), btn = card && card.querySelector('[data-act="save-cap"]');
+    if (btn) btn.hidden = (inp.value === inp.getAttribute('data-orig'));
+  });
+
+  listEl.addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-act]'); if (!btn) return;
+    var card = btn.closest('.hp-card'), id = card && card.getAttribute('data-id'); if (!id) return;
+    var idx = photos.findIndex(function (x) { return x.id === id; }); if (idx < 0) return;
+    var act = btn.getAttribute('data-act');
+    if (act === 'top' && idx > 0) {
+      photos.unshift(photos.splice(idx, 1)[0]); render(); return;
+    }
+    if (act === 'up' && idx > 0) {
+      var tmp = photos[idx - 1]; photos[idx - 1] = photos[idx]; photos[idx] = tmp; render(); return;
+    }
+    if (act === 'down' && idx < photos.length - 1) {
+      var tmp2 = photos[idx + 1]; photos[idx + 1] = photos[idx]; photos[idx] = tmp2; render(); return;
+    }
+    if (act === 'save-cap') {
+      var inp = card.querySelector('.hp-cap'), nextCap = inp ? inp.value : '';
+      btn.disabled = true; btn.textContent = 'Menyimpan…';
+      api('/api/admin/hero-portal/' + encodeURIComponent(id), { method: 'PATCH', body: JSON.stringify({ caption: nextCap }) })
+        .then(function () {
+          photos[idx].caption = nextCap.trim();
+          inp.setAttribute('data-orig', photos[idx].caption);
+          btn.disabled = false; btn.textContent = 'Simpan'; btn.hidden = true;
+          showStatus('Caption foto diperbarui.', true);
+        }).catch(function (err) {
+          btn.disabled = false; btn.textContent = 'Simpan';
+          showStatus(err.message, false);
+        });
+      return;
+    }
+    if (act === 'del') {
+      deleteTarget = photos[idx];
+      delDesc.textContent = 'Foto "' + deleteTarget.name + '" akan dipindahkan ke Trash Google Drive sehingga masih bisa dipulihkan bila terhapus tidak sengaja.';
+      delModal.hidden = false;
+    }
+  });
+
+  document.getElementById('hpDelCancel').onclick = function () { delModal.hidden = true; deleteTarget = null; };
+  delModal.addEventListener('click', function (e) { if (e.target === delModal) { delModal.hidden = true; deleteTarget = null; } });
+  document.getElementById('hpDelOk').onclick = function () {
+    if (!deleteTarget) return;
+    var okBtn = document.getElementById('hpDelOk'); okBtn.disabled = true; okBtn.textContent = 'Menghapus…';
+    api('/api/admin/hero-portal/' + encodeURIComponent(deleteTarget.id), { method: 'DELETE' })
+      .then(function () {
+        delModal.hidden = true; okBtn.disabled = false; okBtn.textContent = 'Ya, hapus';
+        showStatus('Foto "' + deleteTarget.name + '" dipindahkan ke Trash Drive.', true);
+        deleteTarget = null;
+        load();
+      }).catch(function (err) {
+        okBtn.disabled = false; okBtn.textContent = 'Ya, hapus';
+        delModal.hidden = true;
+        showStatus(err.message, false);
+      });
+  };
+
+  document.getElementById('hpSaveOrder').onclick = function () {
+    var b = document.getElementById('hpSaveOrder'); b.disabled = true; b.textContent = 'Menyimpan…';
+    api('/api/admin/hero-portal/order', { method: 'POST', body: JSON.stringify({ order: photos.map(function (p) { return p.id; }) }) })
+      .then(function () {
+        b.disabled = false; b.textContent = 'Simpan urutan';
+        savedIds = photos.map(function (p) { return p.id; }).join(',');
+        render();
+        showStatus('Urutan foto Hero Portal disimpan.', true);
+      }).catch(function (err) {
+        b.disabled = false; b.textContent = 'Simpan urutan';
+        showStatus(err.message, false);
+      });
+  };
+  document.getElementById('hpResetOrder').onclick = load;
+
+  document.getElementById('hpFolderSave').onclick = function () {
+    folderMsg.textContent = 'Menyimpan…';
+    api('/api/admin/hero-portal/folder', { method: 'POST', body: JSON.stringify({ folder: folderInp.value }) })
+      .then(function (d) {
+        folderMsg.textContent = 'Aktif: ' + (d.folderName || d.folderId);
+        load();
+      }).catch(function (err) { folderMsg.textContent = err.message; });
+  };
+  document.getElementById('hpFolderReset').onclick = function () {
+    folderMsg.textContent = 'Mengembalikan folder bawaan…';
+    api('/api/admin/hero-portal/folder', { method: 'POST', body: JSON.stringify({ reset: true }) })
+      .then(function (d) {
+        folderMsg.textContent = 'Kembali ke bawaan (' + (d.folderName || d.folderId) + ').';
+        load();
+      }).catch(function (err) { folderMsg.textContent = err.message; });
+  };
+  document.getElementById('hpRefresh').onclick = function () {
+    api('/api/admin/hero-portal/refresh', { method: 'POST' }).then(function () {
+      showStatus('Cache gambar & daftar Hero Portal disegarkan.', true);
+      load();
+    }).catch(function (err) { showStatus(err.message, false); });
+  };
+
+  load();
+})();
+</script>
