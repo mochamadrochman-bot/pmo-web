@@ -1216,7 +1216,8 @@ window.MSC=(function(){
       var tp=a.Type==='Start Milestone'?'M':a.Type==='Finish Milestone'?'F':'T';
       var pct=num(a.PercentComplete);if(pct<=1.0001)pct=pct*100;
       if(a.Status==='Completed')pct=100;
-      acts.push([a.ObjectId,String(a.Id||'').trim(),String(a.Name||'').trim(),a.WBSObjectId||'',tp,tp==='T'?r2(num(a.PlannedDuration)/hpd):0,iso(a.PlannedStartDate),iso(a.PlannedFinishDate),iso(a.StartDate),iso(a.FinishDate),iso(a.ActualStartDate),iso(a.ActualFinishDate),r2(pct),P6C[a.PrimaryConstraintType]||'',p6CDate(a.PrimaryConstraintType,a.PrimaryConstraintDate)]);
+      var p6Tf=(a.TotalFloat!==undefined&&a.TotalFloat!==''&&isFinite(Number(a.TotalFloat)))?Math.round(num(a.TotalFloat)/hpd):'';
+      acts.push([a.ObjectId,String(a.Id||'').trim(),String(a.Name||'').trim(),a.WBSObjectId||'',tp,tp==='T'?r2(num(a.PlannedDuration)/hpd):0,iso(a.PlannedStartDate),iso(a.PlannedFinishDate),iso(a.StartDate),iso(a.FinishDate),iso(a.ActualStartDate),iso(a.ActualFinishDate),r2(pct),P6C[a.PrimaryConstraintType]||'',p6CDate(a.PrimaryConstraintType,a.PrimaryConstraintDate),null,null,p6Tf]);
     });
     var dropped=0,links=[];
     R.links.forEach(function(l){if(summary[l[0]]||summary[l[1]]){dropped++;return}links.push([l[0],l[1],l[2],r2(l[3]/hpd)])});
@@ -1284,7 +1285,8 @@ window.MSC=(function(){
       var parent=stack.length?stack[stack.length-1].id:'';
       if(num(t.Summary)){var id='W'+t.UID;summary[t.UID]=1;if(lv===1)report.groups[id]={actual:custom(t,actualId),weight:custom(t,weightId)};wbs.push([id,parent,t.WBS||t.OutlineNumber||'',t.Name||'',++seq]);stack.push({lv:lv,id:id});return}
       var ms=num(t.Milestone)?(String(t.Start||'').slice(11,13)>='12'?'F':'M'):'T',b=t.bl||{},s=iso(t.Start),f=iso(t.Finish);
-      acts.push([String(t.UID),String(t.WBS||t.OutlineNumber||t.ID||t.UID).trim(),String(t.Name||'').trim(),parent,ms,ms==='T'?r2(isoDur(t.Duration)/mpd):0,iso(b.Start)||s,iso(b.Finish)||f,s,f,iso(t.ActualStart),iso(t.ActualFinish),r2(num(t.PercentComplete)),MSC_C[num(t.ConstraintType)]||'',iso(t.ConstraintDate),custom(t,weightId),custom(t,actualId)]);
+      var fTf=(t.TotalSlack!==undefined&&t.TotalSlack!==''&&isFinite(Number(t.TotalSlack)))?Math.round(num(t.TotalSlack)/10/mpd):'';
+      acts.push([String(t.UID),String(t.WBS||t.OutlineNumber||t.ID||t.UID).trim(),String(t.Name||'').trim(),parent,ms,ms==='T'?r2(isoDur(t.Duration)/mpd):0,iso(b.Start)||s,iso(b.Finish)||f,s,f,iso(t.ActualStart),iso(t.ActualFinish),r2(num(t.PercentComplete)),MSC_C[num(t.ConstraintType)]||'',iso(t.ConstraintDate),custom(t,weightId),custom(t,actualId),fTf]);
       t.links.forEach(function(l){links.push([String(l.PredecessorUID),String(t.UID),MST[num(l.Type)]||'FS',r2(num(l.LinkLag)/10/mpd)])});
     });
     var before=links.length;links=links.filter(function(l){return !summary[l[0]]&&!summary[l[1]]});
@@ -1344,9 +1346,11 @@ window.MSC=(function(){
     var order=[],q=[],dg=deg.slice();for(i=0;i<N;i++)if(!dg[i])q.push(i);
     while(q.length){var x=q.pop();order.push(x);succ[x].forEach(function(e){if(--dg[e.s]===0)q.push(e.s)})}
     var cyc=[];if(order.length<N){for(i=0;i<N;i++)if(dg[i]>0)cyc.push(i)}
-    var dur=new Int32Array(N),ES=new Int32Array(N),EF=new Int32Array(N),LS=new Int32Array(N),LF=new Int32Array(N),start0=C.at(mn);
+    var dur=new Int32Array(N),ES=new Int32Array(N),EF=new Int32Array(N),start0=C.at(mn);
     for(i=0;i<N;i++)dur[i]=A[i][4]==='T'?Math.max(1,Math.round(A[i][5]||0)):0;
-    var lock=new Uint8Array(N),sd=parse(model.dataDate||''),sd0=sd===null?start0:Math.max(start0,C.at(sd));
+    var lock=new Uint8Array(N),sd=parse(model.dataDate||''),sd0=sd===null?start0:Math.max(start0,C.at(sd)),cycSet={};
+    cyc.forEach(function(x){cycSet[x]=1});
+    for(i=0;i<N;i++){var as0=parse(A[i][10]),af0=parse(A[i][11]);if(as0!==null)lock[i]=af0!==null?2:1}
     order.forEach(function(k){
       var a=A[k],es=start0,efMin=-1,c=a[13],cd=parse(a[14]),as=parse(a[10]),af=parse(a[11]);
       /* sudah mulai menurut file: tanggal dikunci (selesai = aktual; berjalan = mulai aktual s.d. selesai terjadwal) */
@@ -1358,34 +1362,42 @@ window.MSC=(function(){
       if(efMin-dur[k]>es)es=efMin-dur[k];
       ES[k]=es;EF[k]=es+dur[k];
     });
-    /* mundur: batas paling lambat tiap aktivitas terhadap tanggal selesai proyek */
-    function back(S,E,endIdx){
-      var LFx=new Int32Array(N),LSx=new Int32Array(N);
-      for(var n=order.length-1;n>=0;n--){
-        var k=order[n],a=A[k],d=E[k]-S[k],lf=endIdx,c=a[13],cd=parse(a[14]);
-        succ[k].forEach(function(e){var s=e.s;
-          if(e.t==='SS')lf=Math.min(lf,LSx[s]-e.lag+d);else if(e.t==='FF')lf=Math.min(lf,LFx[s]-e.lag);else if(e.t==='SF')lf=Math.min(lf,LFx[s]-e.lag+d);else lf=Math.min(lf,LSx[s]-e.lag)});
-        if(cd!==null){if(c==='FNLT'||c==='MFO')lf=Math.min(lf,C.at(cd)+1);else if(c==='SNLT'||c==='MSO')lf=Math.min(lf,C.at(cd)+d)}
-        LFx[k]=lf;LSx[k]=lf-d;
-      }
-      return LFx;
-    }
-    /* float dihitung terhadap tanggal jadwal di file (yang ditampilkan), bukan terhadap hasil hitung ulang */
-    var FS=new Int32Array(N),FE=new Int32Array(N),end=0,cycSet={};cyc.forEach(function(x){cycSet[x]=1});
+    var FS=new Int32Array(N),FE=new Int32Array(N),end=0,fin=0;
     for(i=0;i<N;i++){
       var a=A[i],s0=parse(a[10]||a[8]||a[6]),f0=parse(a[11]||a[9]||a[7]);
       if(s0===null||f0===null){FS[i]=ES[i];FE[i]=EF[i]}
       else if(A[i][4]==='F'){FS[i]=FE[i]=C.at(f0)+1}
       else{FS[i]=C.at(s0);FE[i]=A[i][4]==='T'?Math.max(FS[i]+1,C.at(f0)+1):FS[i]}
       if(FE[i]>end)end=FE[i];
+      if(EF[i]>fin)fin=EF[i];
     }
-    var LF=back(FS,FE,end),out=[],crit=0,early=0;
+    /* mundur terhadap jadwal CPM (ES/EF) dengan mengabaikan hubungan ke aktivitas yang sudah mulai/selesai (out-of-sequence) dan cycle agar tidak terjadi akumulasi float negatif semu */
+    function back(S,E,endIdx){
+      var LFx=new Int32Array(N),LSx=new Int32Array(N);
+      for(var idx=0;idx<N;idx++){var dx=E[idx]-S[idx];LFx[idx]=endIdx;LSx[idx]=endIdx-dx}
+      function step(k){
+        var a=A[k],d=E[k]-S[k],lf=endIdx,c=a[13],cd=parse(a[14]);
+        succ[k].forEach(function(e){var s=e.s;
+          if(cycSet[s]||lock[s]===2)return;
+          if(lock[s]>=1&&(e.t==='FS'||e.t==='SS'))return;
+          if(e.t==='SS')lf=Math.min(lf,LSx[s]-e.lag+d);else if(e.t==='FF')lf=Math.min(lf,LFx[s]-e.lag);else if(e.t==='SF')lf=Math.min(lf,LFx[s]-e.lag+d);else lf=Math.min(lf,LSx[s]-e.lag)});
+        if(cd!==null){
+          if(c==='FNLT'||c==='MFO'){if(lock[k]<2)lf=Math.min(lf,C.at(cd)+1)}
+          else if(c==='SNLT'||c==='MSO'){if(lock[k]===0)lf=Math.min(lf,C.at(cd)+d)}
+        }
+        LFx[k]=lf;LSx[k]=lf-d;
+      }
+      for(var n=order.length-1;n>=0;n--)step(order[n]);
+      for(var n=0;n<cyc.length;n++)step(cyc[n]);
+      return LFx;
+    }
+    var LF=back(ES,EF,fin),out=[],crit=0,early=0;
     for(i=0;i<N;i++){
-      var tf=LF[i]-FE[i],done=lock[i]===2,cr=!done&&tf<=0&&!cycSet[i];if(cr)crit++;
+      var done=lock[i]===2,rawTf=A[i][17],hasFile=!model.recalc&&rawTf!==undefined&&rawTf!==null&&rawTf!==''&&isFinite(Number(rawTf));
+      var tf=done?null:(hasFile?Math.round(Number(rawTf)):(LF[i]-EF[i])),cr=!done&&tf<=0&&!cycSet[i];if(cr)crit++;
       if(!lock[i]&&ES[i]<FS[i])early++;
-      out.push({es:fmt(C.day(ES[i])),ef:fmt(C.day(dur[i]?EF[i]-1:(A[i][4]==='F'?ES[i]-1:ES[i]))),tf:done?null:tf,crit:cr,lock:lock[i]});
+      out.push({es:fmt(C.day(ES[i])),ef:fmt(C.day(dur[i]?EF[i]-1:(A[i][4]==='F'?ES[i]-1:ES[i]))),tf:tf,crit:cr,lock:lock[i]});
     }
-    var fin=0;for(i=0;i<N;i++)if(EF[i]>fin)fin=EF[i];
     return {rows:out,index:ix,pred:pred,succ:succ,critical:crit,cycle:cyc,badLinks:bad,finish:fmt(C.day(Math.max(0,end-1))),calcFinish:fmt(C.day(Math.max(0,fin-1))),early:early,cal:C};
   }
 
@@ -1497,9 +1509,10 @@ window.MSC=(function(){
     if(!d.rev){CP.model=null;CP.base=null;renderEmpty();return}
     fixStatus(d);
     var all=d.links.map(function(l){return [l[0],l[1],l[2],+l[3]||0,String(l[4]||'IMPORT').toUpperCase(),String(l[5]||'DISETUJUI').toUpperCase(),l[6]||'',l[7]||'',l[8]||'']});
+    var revManual=String(d.rev.source||'').toUpperCase()==='MANUAL';
     var b={cal:d.rev.cal||{work:[1,1,1,1,1,1,1],hol:[]},dataDate:d.rev.dataDate,statusDate:d.rev.statusDate,
       wbs:d.wbs.map(function(w){return [w[0],w[1],w[2],String(w[3]).trim(),+w[4]||0]}),
-      acts:d.acts.map(function(a){a=a.slice();a[1]=String(a[1]).trim();a[2]=String(a[2]).trim();a[5]=+a[5]||0;a[12]=+a[12]||0;return a}),
+      acts:d.acts.map(function(a){a=a.slice();a[1]=String(a[1]).trim();a[2]=String(a[2]).trim();a[5]=+a[5]||0;a[12]=+a[12]||0;var ft=revManual?'':String(a[17]==null?'':a[17]).trim();a[17]=ft!==''&&isFinite(Number(ft))?Math.round(Number(ft)):null;return a}),
       linksAll:all};
     b.links=all.filter(function(l){return l[5]!=='NONAKTIF'}).map(function(l){return l.slice(0,4)});
     CP.base=b;CP.sim=null;CP.bl={};(d.baseline||[]).forEach(function(r){CP.bl[String(r[0]).trim()]=[r[1],r[2]]});
@@ -1531,7 +1544,7 @@ window.MSC=(function(){
         if(dS||dE){moved[i]=dE;nm++;if(Math.abs(dE)>Math.abs(mx))mx=dE}
         c._o=a;return c;
       });
-      CP.model={cal:b.cal,dataDate:b.dataDate,statusDate:b.statusDate,wbs:b.wbs,acts:acts,links:links};CP.moved={map:moved,n:nm,max:mx};
+      CP.model={cal:b.cal,dataDate:b.dataDate,statusDate:b.statusDate,wbs:b.wbs,acts:acts,links:links,recalc:true};CP.moved={map:moved,n:nm,max:mx};
     }
     CP.cpm=MSC.cpm(CP.model);build(fresh);
     if(fresh)renderShell();else{renderTop();layout();detail()}

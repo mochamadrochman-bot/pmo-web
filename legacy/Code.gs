@@ -2703,7 +2703,7 @@ function gabungSemuaHalamanHTML() {
 const MSCPM = {
   REV: ['MS_REVISI', ['PROYEK_ID','REVISI','STATUS','SUMBER','NAMA_FILE','NAMA_PROYEK_FILE','DATA_DATE','STATUS_DATE','JML_WBS','JML_AKTIVITAS','JML_LINK','KALENDER_JSON','DIUNGGAH_OLEH','WAKTU']],
   WBS: ['MS_WBS', ['PROYEK_ID','REVISI','WBS_ID','INDUK_ID','KODE','NAMA','URUT']],
-  ACT: ['MS_AKTIVITAS', ['PROYEK_ID','REVISI','AKT_ID','KODE','NAMA','WBS_ID','TIPE','DURASI_HARI','RENCANA_MULAI','RENCANA_SELESAI','MULAI','SELESAI','AKTUAL_MULAI','AKTUAL_SELESAI','PERSEN','BATAS','BATAS_TGL','BOBOT_KONTRAK_XML','BOBOT_REALISASI_XML']],
+  ACT: ['MS_AKTIVITAS', ['PROYEK_ID','REVISI','AKT_ID','KODE','NAMA','WBS_ID','TIPE','DURASI_HARI','RENCANA_MULAI','RENCANA_SELESAI','MULAI','SELESAI','AKTUAL_MULAI','AKTUAL_SELESAI','PERSEN','BATAS','BATAS_TGL','BOBOT_KONTRAK_XML','BOBOT_REALISASI_XML','FLOAT_FILE']],
   LINK: ['MS_LINK', ['PROYEK_ID','REVISI','PRED','SUCC','TIPE','LAG_HARI','SUMBER','STATUS','OLEH','WAKTU','CATATAN']],
   BASE: ['MS_BASELINE', ['PROYEK_ID','REVISI_ASAL','KODE','MULAI','SELESAI']],
   FC: ['MS_FORECAST', ['PROYEK_ID','MINGGU','REVISI','TGL_STATUS','OPTIMIS','PALING_MUNGKIN','PESIMIS','SPI_FILE','RENCANA_FILE','AKTUAL_FILE','OLEH','WAKTU']],
@@ -3052,7 +3052,7 @@ function msCpmSaveManual(token, projectId, rev, p) {
     const ch = {}; (Array.isArray(p.acts) ? p.acts : []).slice(0, 20000).forEach(function(a) { ch[String(a[0])] = a; });
     const ids = {};
     const acts = mscRows_(c.ss, MSCPM.ACT).filter(mine).map(function(r) {
-      r = r.slice(); r[1] = N; ids[r[2]] = true;
+      r = r.slice(); r[1] = N; r[19] = ''; ids[r[2]] = true;
       const x = ch[r[2]];
       if (x && !r[12]) { // aktivitas yang sudah mulai tidak diubah
         const d = Number(x[1]); if (isFinite(d) && d >= 0 && d < 10000) r[7] = String(Math.round(d * 100) / 100);
